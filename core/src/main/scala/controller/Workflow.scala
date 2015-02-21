@@ -24,6 +24,7 @@ import io.prediction.core.BaseEngine
 import io.prediction.core.Doer
 import io.prediction.workflow.WorkflowUtils
 import io.prediction.workflow.CoreWorkflow
+import io.prediction.workflow.TuningWorkflow
 import io.prediction.workflow.NameParamsSerializer
 import scala.reflect.ClassTag
 import org.json4s._
@@ -61,112 +62,6 @@ case class WorkflowParams(
   * @group Workflow
   */
 object Workflow {
-  /** Creates a workflow that runs an engine.
-    *
-    * @tparam EI Evaluation info class.
-    * @tparam TD Training data class.
-    * @tparam PD Prepared data class.
-    * @tparam Q Input query class.
-    * @tparam P Output prediction class.
-    * @tparam A Actual value class.
-    * @tparam MU Evaluator unit class.
-    * @tparam MR Evaluator result class.
-    * @tparam MMR Multiple evaluator results class.
-    * @param params Workflow parameters.
-    * @param engine An instance of [[Engine]].
-    * @param engineParams Engine parameters.
-    * @param evaluatorClassOpt Optional evaluator class.
-    * @param evaluatorParams Evaluator parameters.
-    */
-  /*
-  def runEngine[
-      EI, TD, PD, Q, P, A,
-      MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
-      ](
-      params: WorkflowParams = WorkflowParams(),
-      engine: Engine[TD, EI, PD, Q, P, A],
-      engineParams: EngineParams,
-      evaluatorClassOpt
-        : Option[Class[_ <: BaseEvaluator[EI, Q, P, A, MU, MR, MMR]]]
-        = None,
-      evaluatorParams: Params = EmptyParams()) {
-
-    run(
-      dataSourceClassMapOpt = Some(engine.dataSourceClassMap),
-      dataSourceParams = engineParams.dataSourceParams,
-      preparatorClassMapOpt = Some(engine.preparatorClassMap),
-      preparatorParams = engineParams.preparatorParams,
-      algorithmClassMapOpt = Some(engine.algorithmClassMap),
-      algorithmParamsList = engineParams.algorithmParamsList,
-      servingClassMapOpt = Some(engine.servingClassMap),
-      servingParams = engineParams.servingParams,
-      evaluatorClassOpt = evaluatorClassOpt,
-      evaluatorParams = evaluatorParams,
-      params = params
-    )
-  }
-  */
-
-  /** Creates a workflow that runs a collection of engine components.
-    *
-    * @tparam EI Evaluation info class.
-    * @tparam TD Training data class.
-    * @tparam PD Prepared data class.
-    * @tparam Q Input query class.
-    * @tparam P Output prediction class.
-    * @tparam A Actual value class.
-    * @tparam MU Evaluator unit class.
-    * @tparam MR Evaluator result class.
-    * @tparam MMR Multiple evaluator results class.
-    * @param dataSourceClassMapOpt Optional map of data source class.
-    * @param dataSourceParams Tuple of data source name and parameters.
-    * @param preparatorClassMapOpt Optional map of preparator class.
-    * @param preparatorParams Tuple of preparator name and parameters.
-    * @param algorithmClassMapOpt Optional map of algorithm names to classes.
-    * @param algorithmParamsList List of instantiated algorithms and their
-    *                            parameters.
-    * @param servingClassMapOpt Optional map of serving class.
-    * @param servingParams Tuple of serving name and parameters.
-    * @param evaluatorClassOpt Optional evaluator class.
-    * @param evaluatorParams Evaluator parameters.
-    * @param params Workflow parameters.
-    */
-  /*
-  def run[
-      EI, TD, PD, Q, P, A,
-      MU : ClassTag, MR : ClassTag, MMR <: AnyRef :ClassTag
-      ](
-      dataSourceClassMapOpt
-        : Option[Map[String, Class[_ <: BaseDataSource[TD, EI, Q, A]]]] = None,
-      dataSourceParams: (String, Params) = ("", EmptyParams()),
-      preparatorClassMapOpt
-        : Option[Map[String, Class[_ <: BasePreparator[TD, PD]]]] = None,
-      preparatorParams: (String, Params) = ("", EmptyParams()),
-      algorithmClassMapOpt
-        : Option[Map[String, Class[_ <: BaseAlgorithm[PD, _, Q, P]]]]
-        = None,
-      algorithmParamsList: Seq[(String, Params)] = null,
-      servingClassMapOpt: Option[Map[String, Class[_ <: BaseServing[Q, P]]]]
-        = None,
-      servingParams: (String, Params) = ("", EmptyParams()),
-      evaluatorClassOpt
-        : Option[Class[_ <: BaseEvaluator[EI, Q, P, A, MU, MR, MMR]]]
-        = None,
-      evaluatorParams: Params = EmptyParams(),
-      params: WorkflowParams = WorkflowParams()
-    ) {
-
-    CoreWorkflow.runTypeless(
-        dataSourceClassMapOpt, dataSourceParams,
-        preparatorClassMapOpt, preparatorParams,
-        algorithmClassMapOpt, algorithmParamsList,
-        servingClassMapOpt, servingParams,
-        evaluatorClassOpt, evaluatorParams,
-        params = params
-      )
-  }
-  */
- 
   // evaluator is already instantiated.
   // evaluatorParams is used to write into EngineInstance, will be shown in
   // dashboard.
@@ -208,6 +103,51 @@ object Workflow {
       engineInstance = engineInstance,
       evaluator = evaluator,
       evaluatorParams = evaluatorParams,
+      env = env,
+      params = params)
+  }
+
+  /* @experimental */
+  def runTuning[EI, Q, P, A, R](
+      engine: BaseEngine[EI, Q, P, A],
+      engineParamsList: Seq[EngineParams],
+      metric: Metric[EI, Q, P, A, R],
+      env: Map[String, String] = WorkflowUtils.pioEnvVars,
+      params: WorkflowParams = WorkflowParams()) {
+
+    implicit lazy val formats = Utils.json4sDefaultFormats +
+      new NameParamsSerializer
+
+    // FIXME: Save with best output
+    val engineParams = engineParamsList.head
+
+    val engineInstance = EngineInstance(
+      id = "",
+      status = "INIT",
+      startTime = DateTime.now,
+      endTime = DateTime.now,
+      engineId = "",
+      engineVersion = "",
+      engineVariant = "",
+      engineFactory = "FIXME",
+      evaluatorClass = "FIXME",
+      batch = params.batch,
+      env = env,
+      dataSourceParams = write(engineParams.dataSourceParams),
+      preparatorParams = write(engineParams.preparatorParams),
+      algorithmsParams = write(engineParams.algorithmParamsList),
+      servingParams = write(engineParams.servingParams),
+      //evaluatorParams = write(evaluatorParams),
+      evaluatorParams = "",
+      evaluatorResults = "",
+      evaluatorResultsHTML = "",
+      evaluatorResultsJSON = "")
+
+    CoreWorkflow.runTuning(
+      engine = engine,
+      engineParamsList = engineParamsList,
+      engineInstance = engineInstance,
+      metric = metric,
       env = env,
       params = params)
   }

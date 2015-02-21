@@ -22,7 +22,7 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Suite
 import scala.util.Random
 
-class EngineDevSuite
+class EngineSuite
 extends FunSuite with Inside with SharedSparkContext {
   import io.prediction.controller.Engine0._
   @transient lazy val logger = Logger[this.type] 

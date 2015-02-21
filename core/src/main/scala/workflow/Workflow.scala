@@ -21,6 +21,7 @@ import io.prediction.controller.EngineParams
 import io.prediction.controller.IPersistentModel
 import io.prediction.controller.LAlgorithm
 import io.prediction.controller.PAlgorithm
+import io.prediction.controller.Metric
 import io.prediction.controller.Params
 import io.prediction.controller.Utils
 import io.prediction.controller.NiceRendering
@@ -93,6 +94,7 @@ object WorkflowContext extends Logging {
 
 object CoreWorkflow {
   @transient lazy val logger = Logger[this.type]
+  /*
   @transient lazy val engineInstanceStub = EngineInstance(
     id = "",
     status = "INIT",
@@ -113,7 +115,7 @@ object CoreWorkflow {
     evaluatorResults = "",
     evaluatorResultsHTML = "",
     evaluatorResultsJSON = "")
-    
+  */  
   @transient val engineInstances = Storage.getMetaDataEngineInstances
 
   def runTrain[EI, Q, P, A](
@@ -189,16 +191,16 @@ object CoreWorkflow {
     val evalEngineInstance = engineInstance.copy(id = eiId)
 
     logger.info("Start spark context")
+
     val mode = "evaluation"
-    WorkflowUtils.checkUpgrade(mode)
-
-    logger.info("Instantiate evaluator")
-
+    
     val sc = WorkflowContext(
       params.batch,
       env,
       params.sparkEnv,
       mode.capitalize)
+
+    WorkflowUtils.checkUpgrade(mode)
 
     val evalDataSet: Seq[(EI, RDD[(Q, P, A)])] = engine.eval(sc, engineParams)
 
@@ -263,8 +265,60 @@ object CoreWorkflow {
       env,
       params)
   }
+  
+  def runTuning[EI, Q, P, A, R](
+      engine: BaseEngine[EI, Q, P, A],
+      engineParamsList: Seq[EngineParams],
+      engineInstance: EngineInstance,
+      metric: Metric[EI, Q, P, A, R],
+      env: Map[String, String] = WorkflowUtils.pioEnvVars,
+      params: WorkflowParams = WorkflowParams()) {
+    logger.info("CoreWorkflow.runTuning")
+  
+    logger.info("Start spark context")
+
+    val mode = "tuning"
+    val sc = WorkflowContext(
+      params.batch,
+      env,
+      params.sparkEnv,
+      mode.capitalize)
+
+    WorkflowUtils.checkUpgrade(mode)
+
+    val (bestEngineParams, bestScore) = TuningWorkflow.runTuning(
+      sc,
+      engine,
+      engineParamsList,
+      metric,
+      params)
+
+    implicit lazy val formats = Utils.json4sDefaultFormats +
+      new NameParamsSerializer
+
+    // TODO: Save best instance to EngineInstance
+    val tunedEI = engineInstance.copy(
+      status = "EVALCOMPLETED",
+      endTime = DateTime.now,
+      evaluatorResults = bestScore.toString,
+      dataSourceParams = write(bestEngineParams.dataSourceParams),
+      preparatorParams = write(bestEngineParams.preparatorParams),
+      algorithmsParams = write(bestEngineParams.algorithmParamsList),
+      servingParams = write(bestEngineParams.servingParams)
+    )
+    
+    logger.info(s"Insert tuning result")
+    engineInstances.update(tunedEI)
 
 
+    logger.info("Stop spark context")
+    sc.stop()
+
+    logger.info(s"Optimal score: $bestScore")
+    logger.info(s"EngineParams: $bestEngineParams")
+
+    logger.info("CoreWorkflow.runTuning completed.")
+  }
 
 }
 
