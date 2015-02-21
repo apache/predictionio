@@ -99,4 +99,12 @@ with SharedSparkContext with LabeledPointFixture {
     score should not be None
     score.get should be(-4.9236 +- Tolerance)
   }
+
+  "Model predict" should "return the correct label" in {
+    val labeledPointsRdd = sc.parallelize(labeledPoints)
+    val model = CategoricalNaiveBayes.train(labeledPointsRdd)
+
+    val label = model.predict(Array(Long, Sweet, Yellow))
+    label should be(Banana)
+  }
 }
