@@ -6,7 +6,14 @@ title: Quick Start - E-Commerce Recommendation Engine Template
 
 This engine template provides personalized recommendation for e-commerce alike applications.
 
+The template has the following features:
+
+- handle out of stock items with the itemConstraint event
+- recommend items to new user who signs up after the model is trained.
+- recommend unseen items only.
+
 WARNING: This template requires PredictionIO version >= 0.8.7
+
 
 ## Usage
 
@@ -30,10 +37,15 @@ Output PredictedResult:
 By default, this template takes the following data from Event Server as Training Data:
 
 - Users' *view* events
+- Users' *buy* events
 - Items' with *categories* properties
-- Real time unavaiable item contraint events
+- *Unavaiable* item contraint events
 
-INFO: This template can easily be customized to consider more user events such as *buy*, *rate* and *like*.
+INFO: This template can easily be customized to consider more user events such as *rate* and *like*.
+
+By default, the *view* events are used as Training Data to train the model. The algorithm has a paramter *unseenOnly* so the engine would recommend unseen items only when it's set to true. You can specify a list events which are considered as *seen* events in another algoritm paramter *seenEvents*. The default is that any *view* and *buy* events are considered as *seen* events so the engine recommends unviewed and unbought items only. You can define your own events which are considered as *seen*.
+
+The *unavailable* item constraint events are used to exclude a list of unaviable items (such as out of stock) in real time for all users.
 
 ## Install PredictionIO
 
@@ -51,11 +63,11 @@ INFO: This template can easily be customized to consider more user events such a
 
 Next, let's collect some training data for the app of this Engine. By default,
 the E-Commerce Recommendation Engine Template supports 2 types of entities: **user** and
-**item**, and event **view**. An item has the **categories** property, which is a list of category names (String). A user can view an item.
+**item**, events **view** and **buy**. An item has the **categories** property, which is a list of category names (String). A user can view and buy an item.
 
 <%= partial 'shared/quickstart/install_sdk' %>
 
-The following is sample code of using different SDKs to import events of setting user and item's properties, and user-view-item events:
+The following is sample code of using different SDKs to import events of setting user and item's properties, and user-view-item events, user-buy-item event:
 
 <div class="tabs">
   <div data-tab="Python SDK" data-lang="python">
@@ -97,6 +109,19 @@ client.create_event(
   target_entity_type="item",
   target_entity_id=<ITEM ID>
 )
+
+# A user buys an item
+
+client.create_event(
+  event="buy",
+  entity_type="user",
+  entity_id=<USER ID>,
+  target_entity_type="item",
+  target_entity_id=<ITEM ID>
+)
+
+# TODO item constraint
+
 ```
   </div>
   <div data-tab="PHP SDK" data-lang="php">
@@ -126,6 +151,15 @@ $client->createEvent(array(
 // A user views an item
 $client->createEvent(array(
    'event' => 'view',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'targetEntityType' => 'item',
+   'targetEntityId' => <ITEM ID>
+));
+
+// A user buys an item
+$client->createEvent(array(
+   'event' => 'buy',
    'entityType' => 'user',
    'entityId' => <USER ID>,
    'targetEntityType' => 'item',
@@ -167,6 +201,16 @@ client.create_event(
   }
 )
 
+# A user buys an item.
+client.create_event(
+  'buy',
+  'user',
+  <USER ID>, {
+    'targetEntityType' => 'item',
+    'targetEntityId' => <ITEM ID>
+  }
+)
+
 ```
   </div>
   <div data-tab="Java SDK" data-lang="java">
@@ -197,6 +241,15 @@ client.createEvent(itemEvent)
 // A user views an item
 Event viewEvent = new Event()
     .event("view")
+    .entityType("user")
+    .entityId(<USER_ID>)
+    .targetEntityType("item")
+    .targetEntityId(<ITEM_ID>);
+client.createEvent(viewEvent);
+
+// A user buys an item
+Event viewEvent = new Event()
+    .event("buy")
     .entityType("user")
     .entityId(<USER_ID>)
     .targetEntityType("item")
@@ -245,6 +298,19 @@ curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
   "eventTime" : <TIME OF THIS EVENT>
 }'
 
+# A user buys an item
+
+curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "buy",
+  "entityType" : "user"
+  "entityId" : <USER ID>,
+  "targetEntityType" : "item",
+  "targetEntityId" : <ITEM ID>,
+  "eventTime" : <TIME OF THIS EVENT>
+}'
+
 ```
   </div>
 </div>
@@ -267,13 +333,14 @@ You should see the following output:
 
 ```
 ...
-User u10 views item i20
-User u10 views item i17
-User u10 views item i22
-User u10 views item i31
-User u10 views item i18
-User u10 views item i29
-160 events are imported.
+User u10 buys item i14
+User u10 views item i46
+User u10 buys item i46
+User u10 views item i30
+User u10 buys item i30
+User u10 views item i40
+User u10 buys item i40
+204 events are imported.
 ```
 
 WARNING: If you see error **TypeError: __init__() got an unexpected keyword argument 'access_key'**,
@@ -303,7 +370,7 @@ WARNING: Note that the "algorithms" also has `appId` parameter which needs to ma
 
 ## Using the Engine
 
-Now, You can retrieve predicted results. To retrieve 4 items which are similar to item ID "i1". You send this JSON `{ "items": ["i1"], "num": 4 }` to the deployed engine and it will return a JSON of the recommended items. Simply send a query by making a HTTP request or through the `EngineClient` of an SDK:
+Now, You can retrieve predicted results. To recommend 4 items to user ID "u1". You send this JSON `{ "user": ["u1"], "num": 4 }` to the deployed engine and it will return a JSON of the recommended items. Simply send a query by making a HTTP request or through the `EngineClient` of an SDK:
 
 <div class="tabs">
   <div data-tab="Python SDK" data-lang="python">
@@ -365,7 +432,7 @@ $ curl -H "Content-Type: application/json" \
 -d '{ "user": "u1", "num": 4 }' \
 http://localhost:8000/queries.json
 
-{"itemScores":[{"item":"i43","score":0.7071067811865475},{"item":"i21","score":0.7071067811865475},{"item":"i46","score":0.5773502691896258},{"item":"i8","score":0.5773502691896258}]}
+{"itemScores":[{"item":"i4","score":0.006009267718658978},{"item":"i33","score":0.005999267822052033},{"item":"i14","score":0.005261309429391667},{"item":"i3","score":0.003007015026561692}]}
 ```
   </div>
 </div>
@@ -382,30 +449,29 @@ In addition, the Query support the following optional parameters `categories`, `
 ### Recommend items in selected categories:
 
 ```
-curl -H "Content-Type: application/json" \
+$ curl -H "Content-Type: application/json" \
 -d '{
   "user": "u1",
-  "num": 10,
+  "num": 4,
   "categories" : ["c4", "c3"]
 }' \
 http://localhost:8000/queries.json
 
-{"itemScores":[{"item":"i21","score":1.1153550716504106},{"item":"i14","score":1.0773502691896257},{"item":"i26","score":1.0773502691896257},{"item":"i39","score":1.0773502691896257},{"item":"i44","score":1.0773502691896257},{"item":"i45","score":0.7886751345948129},{"item":"i47","score":0.7618016810571367},{"item":"i9","score":0.7618016810571367},{"item":"i28","score":0.7618016810571367},{"item":"i6","score":0.7618016810571367}]}
+{"itemScores":[{"item":"i4","score":0.006009267718658978},{"item":"i33","score":0.005999267822052033},{"item":"i14","score":0.005261309429391667},{"item":"i2","score":0.002848917309942939}]}
 ```
 
 ### Recommend items in the whiteList:
 
 ```
-curl -H "Content-Type: application/json" \
+$ curl -H "Content-Type: application/json" \
 -d '{
   "user": "u1",
-  "num": 10,
-  "categories" : ["c4", "c3"],
-  "whiteList": ["i21", "i26", "i40"]
+  "num": 4,
+  "whiteList": ["i1", "i2", "i3", "i21", "i22", "i23", "i24", "i25"]
 }' \
 http://localhost:8000/queries.json
 
-{"itemScores":[{"item":"i21","score":1.1153550716504106},{"item":"i26","score":1.0773502691896257}]}
+{"itemScores":[{"item":"i3","score":0.003007015026561692},{"item":"i2","score":0.002848917309942939},{"item":"i23","score":0.0016857619403278443},{"item":"i25","score":1.3707548965227745E-4}]}
 ```
 
 ### Recommend items not in the blackList:
@@ -414,13 +480,65 @@ http://localhost:8000/queries.json
 curl -H "Content-Type: application/json" \
 -d '{
   "user": "u1",
-  "num": 10,
+  "num": 4,
   "categories" : ["c4", "c3"],
   "blackList": ["i21", "i26", "i40"]
 }' \
 http://localhost:8000/queries.json
 
-{"itemScores":[{"item":"i39","score":1.0773502691896257},{"item":"i44","score":1.0773502691896257},{"item":"i14","score":1.0773502691896257},{"item":"i45","score":0.7886751345948129},{"item":"i47","score":0.7618016810571367},{"item":"i6","score":0.7618016810571367},{"item":"i28","score":0.7618016810571367},{"item":"i9","score":0.7618016810571367},{"item":"i29","score":0.6220084679281463},{"item":"i30","score":0.5386751345948129}]}
+{"itemScores":[{"item":"i4","score":0.006009267718658978},{"item":"i33","score":0.005999267822052033},{"item":"i14","score":0.005261309429391667},{"item":"i2","score":0.002848917309942939}]}
 ```
+
+### Set unavailable itemConstraint
+
+Now let's send a item contraint "unaviable" (replace accessKey with your Access Key):
+
+```
+curl -i -X POST http://localhost:7070/events.json?accessKey=zPkr6sBwQoBwBjVHK2hsF9u26L38ARSe19QzkdYentuomCtYSuH0vXP5fq7advo4 \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "itemConstraint"
+  "entityId" : "unavailable",
+  "properties" : {
+    "items": ["i4", "i14", "i11"],
+  }
+  "eventTime" : "2015-02-17T02:11:21.934Z"
+}'
+```
+
+Try to get recommendation for user *u1* again, you will see the unavaiable items (e.g. i4, i14, i11). won't be recommended anymore:
+
+```
+curl -H "Content-Type: application/json" \
+-d '{
+  "user": "u1",
+  "num": 4,
+  "categories" : ["c4", "c3"],
+  "blackList": ["i21", "i26", "i40"]
+}' \
+http://localhost:8000/queries.json
+
+{"itemScores":[{"item":"i33","score":0.005999267822052033},{"item":"i5","score":0.002848917309942939},{"item":"i2","score":0.002848917309942939},{"item":"i7","score":0.0017118948432933486}]}
+```
+
+INFO: You should send the full list of unavailable items whenever there is any updates in the list.
+
+When there is no more unavilable items, simply set an empty list. ie.
+
+```
+curl -i -X POST http://localhost:7070/events.json?accessKey=zPkr6sBwQoBwBjVHK2hsF9u26L38ARSe19QzkdYentuomCtYSuH0vXP5fq7advo4 \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "itemConstraint"
+  "entityId" : "unavailable",
+  "properties" : {
+    "items": [],
+  }
+  "eventTime" : "2015-02-18T02:11:21.934Z"
+}'
+```
+
 
 #### [Next: DASE Components Explained](/templates/ecommercerecommendation/dase/)
