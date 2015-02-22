@@ -8,7 +8,7 @@ This engine template provides personalized recommendation for e-commerce alike a
 
 The template has the following features:
 
-- handle out of stock items with the itemConstraint event
+- handle out of stock items
 - recommend items to new user who signs up after the model is trained.
 - recommend unseen items only.
 
@@ -34,18 +34,18 @@ Output PredictedResult:
 
 ### Predictive Model Training
 
-By default, this template takes the following data from Event Server as Training Data:
+By default, this template takes the following data from Event Server:
 
 - Users' *view* events
 - Users' *buy* events
 - Items' with *categories* properties
-- *Unavaiable* item contraint events
+- Constraint *unavailableItems* set events
 
 INFO: This template can easily be customized to consider more user events such as *rate* and *like*.
 
-By default, the *view* events are used as Training Data to train the model. The algorithm has a paramter *unseenOnly* so the engine would recommend unseen items only when it's set to true. You can specify a list events which are considered as *seen* events in another algoritm paramter *seenEvents*. The default is that any *view* and *buy* events are considered as *seen* events so the engine recommends unviewed and unbought items only. You can define your own events which are considered as *seen*.
+The *view* events are used as Training Data to train the model. The algorithm has a paramter *unseenOnly* so the engine would recommend unseen items only when it's set to true. You can specify a list of events which are considered as *seen* events with the algoritm paramter *seenEvents*. The default value is *view* and *buy* events, which means that the engine recommends unviewed and unbought items only. You can also define your own events which are considered as *seen*.
 
-The *unavailable* item constraint events are used to exclude a list of unaviable items (such as out of stock) in real time for all users.
+The constraint *unavailableItems* set events are used to exclude a list of unaviable items (such as out of stock) for all users in real time.
 
 ## Install PredictionIO
 
@@ -65,9 +65,11 @@ Next, let's collect some training data for the app of this Engine. By default,
 the E-Commerce Recommendation Engine Template supports 2 types of entities: **user** and
 **item**, events **view** and **buy**. An item has the **categories** property, which is a list of category names (String). A user can view and buy an item.
 
+There is also one specical **constraint** entiy with entityId **unavailableItems**, which defines a list of unavailable items and is taken into account in real time during serving.
+
 <%= partial 'shared/quickstart/install_sdk' %>
 
-The following is sample code of using different SDKs to import events of setting user and item's properties, and user-view-item events, user-buy-item event:
+The following is sample code of using different SDKs to import events of setting user and item's properties, and user-view-item events, user-buy-item event and setting the constraint unavailableItems.
 
 <div class="tabs">
   <div data-tab="Python SDK" data-lang="python">
@@ -120,7 +122,16 @@ client.create_event(
   target_entity_id=<ITEM ID>
 )
 
-# TODO item constraint
+# Set a list of unavailable items
+
+client.create_event(
+  event="$set",
+  entity_type="constraint",
+  entity_id="unavailableItems",
+  properties={
+    "items" : ["<ITEM ID1>", "<ITEM ID2>"]
+  }
+)
 
 ```
   </div>
@@ -166,6 +177,15 @@ $client->createEvent(array(
    'targetEntityId' => <ITEM ID>
 ));
 
+// Set a list of unavailable items
+$client->createEvent(array(
+  'event' => '$set',
+  'entityType' => 'constraint',
+  'entityId' => 'unavailableItems',
+  'properties' => array('items' => array('<ITEM ID1>', '<ITEM ID2>'))
+));
+
+
 ?>
 ```
   </div>
@@ -208,6 +228,15 @@ client.create_event(
   <USER ID>, {
     'targetEntityType' => 'item',
     'targetEntityId' => <ITEM ID>
+  }
+)
+
+# Set a list of unavailable items
+client.create_event(
+  '$set',
+  'constraint',
+  'unavailableItems', {
+    'properties' => { 'items' => ['<ITEM ID1>', '<ITEM ID2>'] }
   }
 )
 
@@ -255,6 +284,14 @@ Event viewEvent = new Event()
     .targetEntityType("item")
     .targetEntityId(<ITEM_ID>);
 client.createEvent(viewEvent);
+
+// Set a list of unavailable items
+Event itemEvent = new Event()
+  .event("$set")
+  .entityType("constraint")
+  .entityId("unavailableItems")
+  .property("items", ImmutableList.of("<ITEM ID1>", "<ITEM ID2>"));
+client.createEvent(itemEvent)
 
 ```
   </div>
@@ -308,6 +345,19 @@ curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
   "entityId" : <USER ID>,
   "targetEntityType" : "item",
   "targetEntityId" : <ITEM ID>,
+  "eventTime" : <TIME OF THIS EVENT>
+}'
+
+# Set a list of unavailable items
+curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "constraint"
+  "entityId" : "unavailableItems",
+  "properties" : {
+    "categories" : ["<ITEM ID1>", "<ITEM ID2>"]
+  }
   "eventTime" : <TIME OF THIS EVENT>
 }'
 
@@ -489,17 +539,17 @@ http://localhost:8000/queries.json
 {"itemScores":[{"item":"i4","score":0.006009267718658978},{"item":"i33","score":0.005999267822052033},{"item":"i14","score":0.005261309429391667},{"item":"i2","score":0.002848917309942939}]}
 ```
 
-### Set unavailable itemConstraint
+### Setting constraint "unavailableItems"
 
-Now let's send a item contraint "unaviable" (replace accessKey with your Access Key):
+Now let's send a item contraint "unavailableItems" (replace accessKey with your Access Key):
 
 ```
 curl -i -X POST http://localhost:7070/events.json?accessKey=zPkr6sBwQoBwBjVHK2hsF9u26L38ARSe19QzkdYentuomCtYSuH0vXP5fq7advo4 \
 -H "Content-Type: application/json" \
 -d '{
   "event" : "$set",
-  "entityType" : "itemConstraint"
-  "entityId" : "unavailable",
+  "entityType" : "constraint"
+  "entityId" : "unavailableItems",
   "properties" : {
     "items": ["i4", "i14", "i11"],
   }
@@ -522,7 +572,7 @@ http://localhost:8000/queries.json
 {"itemScores":[{"item":"i33","score":0.005999267822052033},{"item":"i5","score":0.002848917309942939},{"item":"i2","score":0.002848917309942939},{"item":"i7","score":0.0017118948432933486}]}
 ```
 
-INFO: You should send the full list of unavailable items whenever there is any updates in the list.
+INFO: You should send a full list of unavailable items whenever there is any updates in the list.
 
 When there is no more unavilable items, simply set an empty list. ie.
 
@@ -531,8 +581,8 @@ curl -i -X POST http://localhost:7070/events.json?accessKey=zPkr6sBwQoBwBjVHK2hs
 -H "Content-Type: application/json" \
 -d '{
   "event" : "$set",
-  "entityType" : "itemConstraint"
-  "entityId" : "unavailable",
+  "entityType" : "constraint"
+  "entityId" : "unavailableItems",
   "properties" : {
     "items": [],
   }
