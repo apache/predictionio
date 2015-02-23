@@ -1,46 +1,35 @@
 ---
-title: System Overview
+title: PredictionIO - A Quick Intro
 ---
 
-PredictionIO consists of two main components: **Event Server** and **Engine**.
-It ingests data from an application and outputs prediction results.
+In a common scenario, PredictionIO's **Event Server** continuously collects data from your application.
+A PredictionIO **engine** then builds predictive model(s) with one or more algorithms using the data.
+After it is deployed as a web service, it listens to queries from your application and respond with predicted results in real-time. 
 
-![System Overview Simple](/images/system-overview-simple.png)
-
-
-After [installing PredictionIO](/install), your application can
-send data to PredictionIO's [Event Server](/datacollection/overview.html)
-through [Event API](/datacollection/eventapi.html).
-
-## App
-
-You can send data to PredictionIO from any application, be it a website or
-mobile app. Each application can be identified by a unique *app_name*. You can
-use PredictionIO with multiple apps at the same time.
+![PredictionIO Single Engine Overview](/images/overview-singleengine.png)
 
 ## Event Server
 
-Event Server is designed to collect data into PredictionIO in an event-based
-style. Once the Event Server is launched, your application can send data to it
-through its Event API with HTTP requests or with **EventClient** implementations
-of PredictionIO's SDKs.
+[Event Server](/datacollection/) collects data from your application, in real-time or in batch. It can also unify data that are related to your application from multiple platforms.
+After data is collected, it mainly serves two purposes:
 
-Alternatively, you can import data from your own datastore instead of using
-Event Server.
+1. Provide data to Engine(s) for model training and evaluation
+2. Offer a unified view for data analysis
+
+Like a database server, Event Server can host multiple applications. Data are separated for each application by a unique *app_name*.
+
+Once Event Server is launched, you can send data to a specific *app_name*, identified by an Access Key, through its [Event API](/datacollection/eventapi.html) with HTTP requests or with [one of the SDKs](/sdk/).
+
+In some special case, you may want your engine to read data from another datastore instead of Event Server.
+It can be achieved by [making some modifications](#).
 
 ## Engine
 
-Engine is the core of PredictionIO. It represents a type of Machine Learning
-task. Each Engine has the following components: **Data Source**, **Data
-Preparator (Preparator)**, **Algorithm**, and **Serving**.
+Engine is responsible for making prediction.
+It contains one or more machine learning algorithms. An engine reads training data and build predictive model(s).
+It is then deployed as a web service. A deployed engine responds to prediction queries from your application through REST API in real-time. 
 
-PredictionIO comes with a few *Engine* templates for different types of Machine
-Learning, e.g. [Recommendation](/templates/recommendation/quickstart.html) and
-[Classification](/templates/classification/quickstart.html) that can be customized to
-support your unique machine learning needs.
+PredictionIO's [template gallery](http://templates.prediction.io/) offers Engine Templates for all kinds of machine learning tasks.
+You can easily create one or more engines from these templates .
 
-To learn more about Engine and Engine Templates, please refer to [Engine: A
-Closer Look](/start/engines.html).
-
-
-#### [Next: Install PredictionIO](/install)
+The components of a template, namely **Data Source**, **Data Preparator**, **Algorithm(s)**, and **Serving**, are all [customizable](/start/customize/) for your specific needs.

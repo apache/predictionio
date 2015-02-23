@@ -40,9 +40,3 @@ goal. We are happy to [assist you with your
 questions](mailto:support@preidiction.io).
 
 
-
-
-<!-- ## Bulk import data -->
-
-
-#### [Next: Using Event API to collect data into Event Server](eventapi.html)

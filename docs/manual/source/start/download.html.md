@@ -1,5 +1,5 @@
 ---
-title: Choosing an Engine Template
+title: Downloading an Engine Template
 ---
 
 The first step to create a new engine is to browse [PredictionIO template gallery](http://templates.prediction.io/).
@@ -13,10 +13,10 @@ To download a template, run:
 pio template get <template-repo-path> <new-engine-directory>
 ```
 
-For example, to create "MySimilarProductEngine" with Similar Product template, run:
+For example, to create "MyRecommendation" with the basic Recommendation template, run:
 
 ```
-$ pio template get PredictionIO/template-scala-parallel-similarproduct MySimilarProductEngine
+pio template get PredictionIO/template-scala-parallel-recommendation MyRecommendation
 ```
 
 

@@ -12,7 +12,7 @@ to the community! Simply edit [this page](https://github.com/PredictionIO/Predic
 
 ## SDKs
 
-Community-powered SDKs are [separately listed](/install/sdk).
+Community-powered SDKs are [separately listed](/sdk/).
 
 ## Vagrant Installation for PredictionIO
 

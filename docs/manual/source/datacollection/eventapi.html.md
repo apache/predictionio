@@ -1,5 +1,5 @@
 ---
-title: Collecting Data through Event API
+title: Collecting Data through REST/SDKs
 ---
 
 **Event Server** is designed to collect data into PredictionIO in an event-based
@@ -57,9 +57,9 @@ Content-Length: 18
 ```
 
 
-### Create App
+### Generating App ID and Access Key
 
-First, you need to create a new App before importing data to the Event Server:
+First, you need to create a new app in the Event Server. You will later send data into it.
 
 ```
 $ pio app new MyTestApp

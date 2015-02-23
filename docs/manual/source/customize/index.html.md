@@ -1,9 +1,8 @@
 ---
-title: Engine - A Closer Look
+title: Learning DASE
 ---
 
-An Engine is a type of Machine Learning task. It follows the DASE architecture,
-containing the following components:
+The code of an engine consists of D-A-S-E components:
 
 ### [D] Data Source and Data Preparator
 
@@ -35,21 +34,12 @@ which one to be deployed when you create an Engine.
 
 ![Engine Overview](/images/engineinstance-overview.png)
 
+## The Roles of an Engine
 
-## Engine Templates
+THe main functions of an engine are:
 
-While PredictionIO makes it easy to create your own engine completely from
-scratch, it also comes with engine templates that are almost-complete engine
-implementations. You can customize it easily to fit your specific needs.
-PredictionIO currently offers two engine templates for **Apache Spark MLlib**:
-
-* [Recommendation Engine Template - with MLlib ALS]
-  (/templates/recommendation/quickstart)
-* [Classification Engine Template - with MLlib Naive Bayes]
-  (/templates/classification/quickstart)
-
-
-## Engine Deployment
+* Train a model using the training data and be deployed as a web service
+* Respond to prediction query in real-time
 
 An engine puts all DASE components into a deployable state by specifying:
 
@@ -69,18 +59,15 @@ Therefore, every engine serves its own set of prediction results. For example,
 you may deploy two engines for your mobile application: one for recommending
 news to users and another one for suggesting new friends to users.
 
+### Training a Model - The DASE View
 
-## Engine Evaluation
+The following graph shows the workflow of DASE components when `pio train` is run.
 
-To evaluate the prediction accuracy of an Engine, all you need to do is to
-specify an Evaluation Metric when you run an evaluation on an Engine, i.e.:
+![Engine Overview](/images/engine-training.png)
 
-* An Engine (One Data Source, One Data Preparator, One or more Algorithm(s), One
-  Serving)
 
-* One Evaluation Metric
+### Respond to Prediction Query - The DASE View
 
-Having a good understanding of Engine and Engine Template, you can now follow
-the Quick Start guide and develop a custom engine.
+The following graph shows the workflow of DASE components when a REST query is received by a deployed engine.
 
-#### [Next: Recommendation Engine Quick Start](/templates/recommendation/quickstart)
+![Engine Overview](/images/engine-query.png)
