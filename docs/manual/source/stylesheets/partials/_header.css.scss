@@ -20,7 +20,7 @@
     float: right;
     display: none;
     margin: 0 25px 0 0;
-    @include large {
+    @include x-large {
       display: block;
     }
   }
@@ -33,5 +33,3 @@
     margin-top: 5px;
   }
 }
-
-
