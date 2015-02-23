@@ -4,7 +4,7 @@ title: Quick Start - Product Ranking Engine Template
 
 ## Overview
 
-This engine template sorts a list of products for a user based on his/her preference. This is ideal for personalizing the display order of product page, catalog, or menu items if you have large number of options. It creates engagement and early conversion by placing products that a user prefers on the top. 
+This engine template sorts a list of products for a user based on his/her preference. This is ideal for personalizing the display order of product page, catalog, or menu items if you have large number of options. It creates engagement and early conversion by placing products that a user prefers on the top.
 
 
 
@@ -262,6 +262,8 @@ WARNING: If you see error **TypeError: __init__() got an unexpected keyword argu
 please update the Python SDK to the latest version.
 
 ## Deploy the Engine as a Service
+
+<%= partial 'shared/quickstart/deploy_enginejson', locals: { engine_name: 'MyProductRanking' } %>
 
 <%= partial 'shared/quickstart/deploy', locals: { engine_name: 'MyProductRanking' } %>
 

@@ -115,10 +115,10 @@ url, etc.) with it. You can supply these as pass-through arguments at the end of
 `bin/pio` command.
 
 For example, the follow command set the Spark master to `spark://localhost:7077`
-(the default url of standalone cluster) and set the executor memory to 24G for `pio train`.
+(the default url of standalone cluster), set the driver memory to 16G and set the executor memory to 24G for `pio train`.
 
 ```
-$ pio train -- --master spark://localhost:7077 --executor-memory 24G
+$ pio train -- --master spark://localhost:7077 --driver-memory 16G --executor-memory 24G
 ```
 
 ### Q: How to resolve "Exception in thread "main" org.apache.spark.SparkException: Job aborted due to stage failure: Serialized task 165:35 was 110539813 bytes, which exceeds max allowed: spark.akka.frameSize (10485760 bytes) - reserved (204800 bytes). Consider increasing spark.akka.frameSize or using broadcast variables for large values."?

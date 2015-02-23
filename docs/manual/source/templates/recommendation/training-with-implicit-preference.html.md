@@ -7,11 +7,15 @@ There are two types of user preferences:
 - explicit preference (also referred as "explicit feedback"), such as "rating" given to item by users.
 - implicit preference (also referred as "implicit feedback"), such as "view" and "buy" history.
 
-MLlib ALS provides two functions, `ALS.train()` and `ALS.trainImplicit()` to handle these two cases, respectively.
+MLlib ALS provides two functions, `ALS.train()` and `ALS.trainImplicit()` to handle these two cases, respectively. The ALS algorithm takes RDD[Rating] as training data input. The Rating class is defined in Spark MLlib library as:
 
-By default, the recommendation template uses `ALS.train()` which expects explicit rating values.
+```
+case class Rating(user: Int, product: Int, rating: Double)
+```
 
-To handle implicit preference, `ALS.trainImplicit()` can be used. In this case, the "rating" is used to calculate the confidence level that the user likes the item. Higher "rating" means a stronger indication that the user likes the item.
+By default, the recommendation template uses `ALS.train()` which expects explicit rating values which the user has rated the item.
+
+To handle implicit preference, `ALS.trainImplicit()` can be used. In this case, the "rating" value input to ALS is used to calculate the confidence level that the user likes the item. Higher "rating" means a stronger indication that the user likes the item.
 
 The following provides an example of using implicit preference.
 
@@ -61,7 +65,7 @@ class DataSource(val dsp: DataSourceParams)
     .reduceByKey { case (a, b) => a + b }
     .map { case ((uid, iid), r) =>
       Rating(uid, iid, r)
-    }
+    }.cache()
 
     new TrainingData(ratingsRDD)
   }
