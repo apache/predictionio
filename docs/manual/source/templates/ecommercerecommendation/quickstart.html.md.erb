@@ -489,6 +489,57 @@ http://localhost:8000/queries.json
 
 <%= partial 'shared/quickstart/production' %>
 
+## Setting constraint "unavailableItems"
+
+Now let's send a item contraint "unavailableItems" (replace accessKey with your Access Key):
+
+NOTE: You can also use SDK to send this event as decribed in the SDK sample above.
+
+```
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=zPkr6sBwQoBwBjVHK2hsF9u26L38ARSe19QzkdYentuomCtYSuH0vXP5fq7advo4 \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "constraint"
+  "entityId" : "unavailableItems",
+  "properties" : {
+    "items": ["i4", "i14", "i11"],
+  }
+  "eventTime" : "2015-02-17T02:11:21.934Z"
+}'
+```
+
+Try to get recommendation for user *u1* again, the unavaiable items (e.g. i4, i14, i11). won't be recommended anymore:
+
+```
+$ curl -H "Content-Type: application/json" \
+-d '{
+  "user": "u1",
+  "num": 4,
+  "blackList": ["i21", "i26", "i40"]
+}' \
+http://localhost:8000/queries.json
+
+{"itemScores":[{"item":"i33","score":0.005999267822052019},{"item":"i3","score":0.0030070150265619003},{"item":"i2","score":0.0028489173099429527},{"item":"i5","score":0.0028489173099429527}]}
+```
+
+INFO: You should send a full list of unavailable items whenever there is any updates in the list. The latest event is used.
+
+When there is no more unavilable items, simply set an empty list. ie.
+
+```
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=zPkr6sBwQoBwBjVHK2hsF9u26L38ARSe19QzkdYentuomCtYSuH0vXP5fq7advo4 \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "constraint"
+  "entityId" : "unavailableItems",
+  "properties" : {
+    "items": [],
+  }
+  "eventTime" : "2015-02-18T02:11:21.934Z"
+}'
+```
 
 ## Advanced Query
 
@@ -525,7 +576,7 @@ http://localhost:8000/queries.json
 ### Recommend items not in the blackList:
 
 ```
-curl -H "Content-Type: application/json" \
+$ curl -H "Content-Type: application/json" \
 -d '{
   "user": "u1",
   "num": 4,
@@ -537,55 +588,4 @@ http://localhost:8000/queries.json
 {"itemScores":[{"item":"i4","score":0.006009267718658978},{"item":"i33","score":0.005999267822052033},{"item":"i14","score":0.005261309429391667},{"item":"i2","score":0.002848917309942939}]}
 ```
 
-### Setting constraint "unavailableItems"
-
-Now let's send a item contraint "unavailableItems" (replace accessKey with your Access Key):
-
-```
-curl -i -X POST http://localhost:7070/events.json?accessKey=zPkr6sBwQoBwBjVHK2hsF9u26L38ARSe19QzkdYentuomCtYSuH0vXP5fq7advo4 \
--H "Content-Type: application/json" \
--d '{
-  "event" : "$set",
-  "entityType" : "constraint"
-  "entityId" : "unavailableItems",
-  "properties" : {
-    "items": ["i4", "i14", "i11"],
-  }
-  "eventTime" : "2015-02-17T02:11:21.934Z"
-}'
-```
-
-Try to get recommendation for user *u1* again, the unavaiable items (e.g. i4, i14, i11). won't be recommended anymore:
-
-```
-curl -H "Content-Type: application/json" \
--d '{
-  "user": "u1",
-  "num": 4,
-  "categories" : ["c4", "c3"],
-  "blackList": ["i21", "i26", "i40"]
-}' \
-http://localhost:8000/queries.json
-
-{"itemScores":[{"item":"i33","score":0.005999267822052033},{"item":"i5","score":0.002848917309942939},{"item":"i2","score":0.002848917309942939},{"item":"i7","score":0.0017118948432933486}]}
-```
-
-INFO: You should send a full list of unavailable items whenever there is any updates in the list.
-
-When there is no more unavilable items, simply set an empty list. ie.
-
-```
-curl -i -X POST http://localhost:7070/events.json?accessKey=zPkr6sBwQoBwBjVHK2hsF9u26L38ARSe19QzkdYentuomCtYSuH0vXP5fq7advo4 \
--H "Content-Type: application/json" \
--d '{
-  "event" : "$set",
-  "entityType" : "constraint"
-  "entityId" : "unavailableItems",
-  "properties" : {
-    "items": [],
-  }
-  "eventTime" : "2015-02-18T02:11:21.934Z"
-}'
-```
-
-
+#### [Next: DASE Components Explained](/templates/ecommercerecommendation/dase/)
