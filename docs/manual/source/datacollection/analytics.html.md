@@ -6,7 +6,7 @@ Event Server collects and unifies data for your application from multiple channe
 
 Data can be exported to Apache parquet format with `pio export` for fast analysis. The following analytics tools are currently supported:
 
-1. [Spark SQL](/datacollection/analytics-sparksql/)
+1. [IPython Notebook](/datacollection/analytics-ipython/)
 
 2. [Tableau](/datacollection/analytics-tableau/)
 
