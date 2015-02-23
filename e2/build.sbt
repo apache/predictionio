@@ -14,6 +14,8 @@
   */
 name := "e2"
 
+parallelExecution in Test := false
+
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % sparkVersion.value % "provided",
   "org.apache.spark" %% "spark-mllib" % sparkVersion.value % "provided",
