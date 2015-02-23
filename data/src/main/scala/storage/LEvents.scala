@@ -22,8 +22,9 @@ import scala.concurrent.duration.Duration
 import org.joda.time.DateTime
 
 import scala.concurrent.ExecutionContext
+import scala.concurrent.TimeoutException
 
-private[prediction] trait LEvents {
+trait LEvents {
 
   private def notImplemented(implicit ec: ExecutionContext) = Future {
     Left(StorageError("Not implemented."))
@@ -34,13 +35,13 @@ private[prediction] trait LEvents {
    * initialization routine to be called when app is first created.
    * return true if succeed or false if fail.
    */
-  def init(appId: Int): Boolean = {
+  private[prediction] def init(appId: Int): Boolean = {
     throw new Exception("init() is not implemented.")
     false
   }
 
   /** Remove Event Store for this appId */
-  def remove(appId: Int): Boolean = {
+  private[prediction] def remove(appId: Int): Boolean = {
     throw new Exception("remove() is not implemented.")
     false
   }
@@ -48,31 +49,41 @@ private[prediction] trait LEvents {
   /** Close this Event Store interface object.
    * (Eg. close connection, release resources)
    */
-  def close(): Unit = {
+  private[prediction] def close(): Unit = {
     throw new Exception("close() is not implemented.")
     ()
   }
 
-  def futureInsert(event: Event, appId: Int)(implicit ec: ExecutionContext):
+  private[prediction]
+  def futureInsert(
+    event: Event, appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, String]] =
     notImplemented
 
+  private[prediction]
   def futureGet(eventId: String, appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Option[Event]]] =
     notImplemented
 
+  private[prediction]
   def futureDelete(eventId: String, appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Boolean]] =
     notImplemented
 
+  /** @deprecated */
+  private[prediction]
   def futureGetByAppId(appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]] = notImplemented
 
   /* where t >= start and t < untilTime */
+  /** @deprecated */
+  private[prediction]
   def futureGetByAppIdAndTime(appId: Int, startTime: Option[DateTime],
     untilTime: Option[DateTime])(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]] = notImplemented
 
+  /** @deprecated */
+  private[prediction]
   def futureGetByAppIdAndTimeAndEntity(appId: Int,
     startTime: Option[DateTime],
     untilTime: Option[DateTime],
@@ -104,7 +115,7 @@ private[prediction] trait LEvents {
     * @param ec ExecutionContext
     * @return Future[Either[StorageError, Iterator[Event]]]
     */
-  def futureFind(
+  private[prediction] def futureFind(
     appId: Int,
     startTime: Option[DateTime] = None,
     untilTime: Option[DateTime] = None,
@@ -130,7 +141,7 @@ private[prediction] trait LEvents {
     * @param ec ExecutionContext
     * @return Future[Either[StorageError, Map[String, PropertyMap]]]
     */
-  def futureAggregateProperties(
+  private[prediction] def futureAggregateProperties(
     appId: Int,
     entityType: String,
     startTime: Option[DateTime] = None,
@@ -153,7 +164,7 @@ private[prediction] trait LEvents {
     * @param ec ExecutionContext
     * @return Future[Either[StorageError, Option[PropertyMap]]]
     */
-  def futureAggregatePropertiesSingle(
+  private[prediction] def futureAggregatePropertiesSingle(
     appId: Int,
     entityType: String,
     entityId: String,
@@ -161,34 +172,38 @@ private[prediction] trait LEvents {
     untilTime: Option[DateTime] = None)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Option[PropertyMap]]] = notImplemented
 
+  private[prediction]
   def futureDeleteByAppId(appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Unit]] = notImplemented
 
   // following is blocking
-  def insert(event: Event, appId: Int,
+  private[prediction] def insert(event: Event, appId: Int,
     timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
     Either[StorageError, String] = {
     Await.result(futureInsert(event, appId), timeout)
   }
 
-  def get(eventId: String, appId: Int,
+  private[prediction] def get(eventId: String, appId: Int,
     timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
     Either[StorageError, Option[Event]] = {
     Await.result(futureGet(eventId, appId), timeout)
   }
 
-  def delete(eventId: String, appId: Int,
+  private[prediction] def delete(eventId: String, appId: Int,
     timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
     Either[StorageError, Boolean] = {
     Await.result(futureDelete(eventId, appId), timeout)
   }
 
-  def getByAppId(appId: Int,
+  /** @deprecated */
+  private[prediction] def getByAppId(appId: Int,
     timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
     Either[StorageError, Iterator[Event]] = {
     Await.result(futureGetByAppId(appId), timeout)
   }
 
+  /** @deprecated */
+  private[prediction]
   def getByAppIdAndTime(appId: Int, startTime: Option[DateTime],
     untilTime: Option[DateTime],
     timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
@@ -196,7 +211,8 @@ private[prediction] trait LEvents {
     Await.result(futureGetByAppIdAndTime(appId, startTime, untilTime), timeout)
   }
 
-  def getByAppIdAndTimeAndEntity(appId: Int,
+  /** @deprecated */
+  private[prediction] def getByAppIdAndTimeAndEntity(appId: Int,
     startTime: Option[DateTime],
     untilTime: Option[DateTime],
     entityType: Option[String],
@@ -225,13 +241,14 @@ private[prediction] trait LEvents {
     *   - Some(None) means no targetEntityId for this event
     *   - Some(Some(x)) means targetEntityId should match x.
     * @param limit Limit number of events. Get all events if None or Some(-1)
-    * @param reversed Reverse the order.
+    * @param reversed Reverse the order (should be used with both
+    *   targetEntityType and targetEntityId specified)
     *   - return oldest events first if None or Some(false) (default)
     *   - return latest events first if Some(true)
     * @param ec ExecutionContext
     * @return Either[StorageError, Iterator[Event]]
     */
-  def find(
+  private[prediction] def find(
     appId: Int,
     startTime: Option[DateTime] = None,
     untilTime: Option[DateTime] = None,
@@ -244,17 +261,72 @@ private[prediction] trait LEvents {
     reversed: Option[Boolean] = None,
     timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
     Either[StorageError, Iterator[Event]] = {
-    Await.result(futureFind(
+      try {
+        Await.result(futureFind(
+          appId = appId,
+          startTime = startTime,
+          untilTime = untilTime,
+          entityType = entityType,
+          entityId = entityId,
+          eventNames = eventNames,
+          targetEntityType = targetEntityType,
+          targetEntityId = targetEntityId,
+          limit = limit,
+          reversed = reversed), timeout)
+      } catch {
+        case e: TimeoutException => Left(StorageError(s"${e}"))
+        case e: Exception => Left(StorageError(s"${e}"))
+      }
+  }
+
+  /** reads events of the specified entity.
+    *
+    * @param appId return events of this app ID
+    * @param entityType return events of this entityType
+    * @param entityId return events of this entityId
+    * @param eventNames return events with any of these event names.
+    * @param targetEntityType return events of this targetEntityType:
+    *   - None means no restriction on targetEntityType
+    *   - Some(None) means no targetEntityType for this event
+    *   - Some(Some(x)) means targetEntityType should match x.
+    * @param targetEntityId return events of this targetEntityId
+    *   - None means no restriction on targetEntityId
+    *   - Some(None) means no targetEntityId for this event
+    *   - Some(Some(x)) means targetEntityId should match x.
+    * @param startTime return events with eventTime >= startTime
+    * @param untilTime return events with eventTime < untilTime
+    * @param limit Limit number of events. Get all events if None or Some(-1)
+    * @param latest Return latest event first (default true)
+    * @param ec ExecutionContext
+    * @return Either[StorageError, Iterator[Event]]
+    */
+  def findSingleEntity(
+    appId: Int,
+    entityType: String,
+    entityId: String,
+    eventNames: Option[Seq[String]] = None,
+    targetEntityType: Option[Option[String]] = None,
+    targetEntityId: Option[Option[String]] = None,
+    startTime: Option[DateTime] = None,
+    untilTime: Option[DateTime] = None,
+    limit: Option[Int] = None,
+    latest: Boolean = true,
+    timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
+    Either[StorageError, Iterator[Event]] = {
+
+    find(
       appId = appId,
       startTime = startTime,
       untilTime = untilTime,
-      entityType = entityType,
-      entityId = entityId,
+      entityType = Some(entityType),
+      entityId = Some(entityId),
       eventNames = eventNames,
       targetEntityType = targetEntityType,
       targetEntityId = targetEntityId,
       limit = limit,
-      reversed = reversed), timeout)
+      reversed = Some(latest),
+      timeout = timeout)
+
   }
 
   /** Aggregate properties of entities based on these special events:
@@ -270,7 +342,7 @@ private[prediction] trait LEvents {
     * @param ec ExecutionContext
     * @return Either[StorageError, Map[String, PropertyMap]]
     */
-  def aggregateProperties(
+  private[prediction] def aggregateProperties(
     appId: Int,
     entityType: String,
     startTime: Option[DateTime] = None,
@@ -301,7 +373,7 @@ private[prediction] trait LEvents {
     * @param ec ExecutionContext
     * @return Future[Either[StorageError, Option[PropertyMap]]]
     */
-  def aggregatePropertiesSingle(
+  private[prediction] def aggregatePropertiesSingle(
     appId: Int,
     entityType: String,
     entityId: String,
@@ -318,7 +390,7 @@ private[prediction] trait LEvents {
       untilTime = untilTime), timeout)
   }
 
-  def deleteByAppId(appId: Int,
+  private[prediction] def deleteByAppId(appId: Int,
     timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
     Either[StorageError, Unit] = {
     Await.result(futureDeleteByAppId(appId), timeout)

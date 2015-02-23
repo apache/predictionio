@@ -372,3 +372,64 @@ object Engine0 {
     }
   }
 }
+
+object Engine1 {
+  case class EvalInfo(val v: Double) extends Serializable
+  case class Query() extends Serializable
+  case class Prediction() extends Serializable
+  case class Actual() extends Serializable
+  case class DSP(val v: Double) extends Params
+}
+
+class Engine1 
+extends BaseEngine[
+  Engine1.EvalInfo, Engine1.Query, Engine1.Prediction, Engine1.Actual] {
+
+  def train(
+    sc: SparkContext, 
+    engineParams: EngineParams,
+    engineInstanceId: String = "",
+    params: WorkflowParams = WorkflowParams()): Seq[Any] = Seq[Any]()
+
+  def eval(sc: SparkContext, engineParams: EngineParams)
+  : Seq[(Engine1.EvalInfo, 
+      RDD[(Engine1.Query, Engine1.Prediction, Engine1.Actual)])] = {
+    val dsp = engineParams.dataSourceParams._2.asInstanceOf[Engine1.DSP]
+    Seq(
+      (Engine1.EvalInfo(dsp.v),
+        sc.emptyRDD[(Engine1.Query, Engine1.Prediction, Engine1.Actual)]))
+  }
+}
+
+
+class Metric0
+extends Metric[Engine1.EvalInfo, Engine1.Query, Engine1.Prediction,
+Engine1.Actual, Double] {
+  def header: String = "Metric0"
+
+  def calculate(
+    sc: SparkContext, 
+    evalDataSet: Seq[(Engine1.EvalInfo, RDD[(Engine1.Query, Engine1.Prediction,
+    Engine1.Actual)])]): Double = {
+    return evalDataSet.head._1.v
+  }
+}
+
+object Metric1 {
+  case class Result(val c: Int, val v: Double) extends Serializable
+}
+
+
+class Metric1
+extends Metric[Engine1.EvalInfo, Engine1.Query, Engine1.Prediction,
+Engine1.Actual, Metric1.Result]()(Ordering.by[Metric1.Result, Double](_.v)) {
+  def header: String = "Metric1"
+
+  def calculate(
+    sc: SparkContext, 
+    evalDataSet: Seq[(Engine1.EvalInfo, RDD[(Engine1.Query, Engine1.Prediction,
+    Engine1.Actual)])]): Metric1.Result = {
+    return Metric1.Result(0, evalDataSet.head._1.v)
+  }
+}
+
