@@ -4,34 +4,34 @@ title: Quick Start - Recommendation Engine Template
 
 ## Overview
 
-An engine template is an almost-complete implementation of an engine.
-PredictionIO's Recommendation Engine Template has integrated **Apache Spark MLlib**'s Collaborative Filtering algorithm by
+This Recommendation Engine Template has integrated **Apache Spark MLlib**'s Collaborative Filtering algorithm by
 default. You can customize it easily to fit your specific needs.
 
 We are going to show you how to create your own recommendation engine for
 production use based on this template.
 
-## Install PredictionIO
+## 1. Install and Run PredictionIO
 
 <%= partial 'shared/quickstart/install' %>
 
-## Create a Sample App
-
-<%= partial 'shared/quickstart/create_app' %>
-
-## Create a new Engine from an Engine Template
+## 2. Create a new Engine from an Engine Template
 
 <%= partial 'shared/quickstart/create_engine', locals: { engine_name: 'MyRecommendation', template_name: 'Recommendation Engine Template', template_repo: 'template-scala-parallel-recommendation' } %>
 
-## Collecting Data
+## 3. Generate an App ID and Access Key
 
-Next, let's collect some training data for the app of this Engine. By default,
+<%= partial 'shared/quickstart/create_app' %>
+
+
+## 4. Collecting Data
+
+Next, let's collect some training data. By default,
 the Recommendation Engine Template supports 2 types of events: **rate** and
 **buy**. A user can give a rating score to an item or he can buy an item.
 
 <%= partial 'shared/quickstart/install_sdk' %>
 
-The following is sample code of using different SDKs to import user-view-item and user-buy-item events:
+The following is the sample code of using some SDKs to import user-view-item and user-buy-item events:
 
 <div class="tabs">
   <div data-tab="Python SDK" data-lang="python">
@@ -181,18 +181,20 @@ curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
   </div>
 </div>
 
-## Import Sample Data
+### Import Sample Data
 
-We will use the sample movie data from MLlib repo for demonstration purpose.
-Execute the following to get the data set:
+Although you can integrate your app with PredictionIO and collect training data in real-time, 
+we are going to import a sample dataset with a Python script for demonstration purpose.
 
-WARNING: These commands must be exectued in the Engine Directory for example: `PredictionIO/MyRecomendation`.
+Execute the following to get the sample movie dataset from MLlib repo:
+
+WARNING: These commands must be executed in the Engine directory, for example: `MyRecomendation`.
 
 ```
 $ curl https://raw.githubusercontent.com/apache/spark/master/data/mllib/sample_movielens_data.txt --create-dirs -o data/sample_movielens_data.txt
 ```
 
-A Python import script `import_eventserver.py` is provided to import the data to
+A Python import script `import_eventserver.py` is provided in the template to import the data to
 Event Server using Python SDK. Please upgrade to the latest Python SDK.
 
 NOTE: You need to install Python SDK to run the import script. Please follow [Python SDK README](https://github.com/PredictionIO/PredictionIO-Python-SDK) to install.
@@ -220,13 +222,13 @@ Now the movie ratings data is stored as events inside the Event Store.
 INFO: By default, the template train the model with "rate" events (explicit rating). You can customize the engine to [read other custom events](/templates/recommendation/reading-custom-events/) and [handle events of implicit preference (such as, view, buy)](/templates/recommendation/training-with-implicit-preference/)
 
 
-## Deploy the Engine as a Service
+## 5. Deploy the Engine as a Service
 
 <%= partial 'shared/quickstart/deploy_enginejson', locals: { engine_name: 'MyRecommendation' } %>
 
 <%= partial 'shared/quickstart/deploy', locals: { engine_name: 'MyRecommendation' } %>
 
-## Using the Engine
+## 6. Use the Engine
 
 Now, You can try to retrieve predicted results. To recommend 4 movies to user
 whose id is 1, you send this JSON `{ "user": "1", "num": 4 }` to the deployed
@@ -292,11 +294,6 @@ $ curl -H "Content-Type: application/json" -d '{ "user": "1", "num": 4 }' http:/
   </div>
 </div>
 
-*MyRecommendation* is now running.
+Congratulations, *MyRecommendation* is now running!
 
 <%= partial 'shared/quickstart/production' %>
-
-Next, we are going to take a look
-at the engine architecture and explain how you can customize it completely.
-
-#### [Next: DASE Components Explained](/templates/recommendation/dase/)

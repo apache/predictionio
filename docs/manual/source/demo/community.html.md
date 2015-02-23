@@ -1,10 +1,10 @@
 ---
-title: Built with PredictionIO
+title: Demo Tutorials with PredictionIO
 ---
 
-Here is a list of projects built with PredictionIO.
+Here is a list of demo tutorials for PredictionIO.
 
-INFO: If you want to showcase your app here, simply edit [this page](https://github.com/PredictionIO/PredictionIO/blob/livedoc/docs/manual/source/community/showcase.html.md) and submit a pull request.
+INFO: If you want to showcase your demo app here, simply edit [this page](https://github.com/PredictionIO/PredictionIO/blob/livedoc/docs/manual/source/community/showcase.html.md) and submit a pull request.
 
 ## OnTapp
 

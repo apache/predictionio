@@ -3,29 +3,62 @@ title: Welcome to PredictionIO <%= data.versions.pio %>
 description: PredictionIO Open Source Machine Learning Server
 ---
 
-PredictionIO is an open source Machine Learning Server. It empowers developers
-and data scientists to build smart applications with data productively.
+###Build and Deploy Predictive Engines
+####on production environments, in a fraction of the time.
 
-PredictionIO currently offers 2 basic engine templates for Apache Spark MLlib:
+PredictionIO is an open source Machine Learning Server for developers and data scientists to build and deploy predictive engines.
+PredictionIO lets you quickly deploy an engine as a web service on production by choosing one from the template gallery.
+PredictionIO lets you customize the code of every engine components for your specific business needs.
+PredictionIO also enables you to evaluate, and tune, multiple engine variants systematically.  
 
-* [Recommendation](/templates/recommendation/quickstart/) - with MLlib ALS
-* [Classification](/templates/classification/quickstart/) - with MLlib Naive Bayes
+PredictionIO consists of:
 
-It also offers an engine template with more business logics:
+* **PredictionIO platform** - our open source machine learning stack for building, evaluating and deploying engines with machine learning algorithms. 
+* **Event Server** - our open source machine learning analytics layer for unifying events from multiple platforms 
+* **Template Gallery** - the place for you to download engine templates for different type of machine learning applications 
 
-* [Similar Product](/templates/similarproduct/quickstart/) - with MLlib ALS and Cosine Similarity
-* [Product Ranking](/templates/productranking/quickstart/) - with MLlib ALS
+![PredictionIO Overview](/images/overview-multiengines.png)
+
+System Architecture:
+
+PredictionIO can be installed as a full machine learning stack, bundled with **Apache Spark**, **MLlib**, **HBase**, **Spray** and **Elasticsearch**, which simplifies and accelerates scalable machine learning infrastructure management.
 
 
-With these templates, you can create a custom predictive engine for production deployment efficiently:
+## Why PredictionIO
 
-* predict user behaviors and demand
-* offer personalized video, news, deals, ads and job openings
-* help users to discover interesting events, documents, apps and restaurants
-* spam detection
-* and more...
+* Open Source
+* Built on top of state-of-the-art open source stack: Apache Spark, HBase and Spray
+* Build predictve engines faster with customizable templates for all kind of machine learning tasks
+* Deploy engines as scalable web services easily
+* Support building multiple type of engines for an application on a single platform 
+* Unify data from multiple platforms in batch or in real-time for comprehensive predictive analytics
+* Simplify data infrastructure management
+* Speed up machine learning modeling with systematic processes and pre-built evaluation measures
+* Support algorithm libraries such as Spark MLlib seamlessly, also allow you to create your own
+* Designed for distributed production deployment
 
-A standard PredictionIO stack is built on top of solid open source technology,
-such as Scala, Apache Spark, HBase and Elasticsearch.
+## About this guide
 
-### [Next: System Overview](/start)
+The following sections will recommended if you are new to PredictionIO:
+
+* [Getting Started](/start/) - Install PredictionIO and try to deploy an engine!
+* [App Integration Overview](/appintegration/) - Learn how to integrate Prediction with your web/mobile app
+* Browse the [template gallery](http://templates.prediction.io) to choose an engine template
+
+For advanced learning, you may:
+
+* [Learn the DASE architecture](/customize/) of an engine.
+* [Understand PredictionIO architecture](/system)
+
+
+## Installation
+
+The [installation section](/install/) will show you how to install PredictionIO on a variety of platforms.
+
+## Release Notes
+
+A summary of the changes in each release in the current series can now be found on the separate [Release Notes](/release-notes) page
+
+## Licensing
+
+PredictionIO is licensed under the Apache License, Version 2.0. See [LICENSE](https://github.com/PredictionIO/PredictionIO/blob/master/LICENSE.txt) for the full license text.
