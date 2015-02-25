@@ -38,7 +38,7 @@ private[prediction] case class DataMapException(msg: String, cause: Exception)
 class DataMap (
   val fields: Map[String, JValue]
 ) extends Serializable {
-  lazy implicit private val formats = DefaultFormats +
+  @transient lazy implicit private val formats = DefaultFormats +
     new DateTimeJson4sSupport.serializer
 
   /** Check the existence of a required property name. Throw an exception if

@@ -24,7 +24,7 @@ import org.joda.time.DateTime
 
 private[prediction] object DateTimeJson4sSupport {
 
-  implicit val formats = DefaultFormats
+  @transient lazy implicit val formats = DefaultFormats
 
   def serializeToJValue: PartialFunction[Any, JValue] = {
     case d: DateTime => JString(DataUtils.dateTimeToString(d))
