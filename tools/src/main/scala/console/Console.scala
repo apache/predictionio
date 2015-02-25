@@ -15,6 +15,7 @@
 
 package io.prediction.tools.console
 
+import io.prediction.tools.admin.{AdminServer, AdminServerConfig}
 import io.prediction.controller.Utils
 import io.prediction.core.BuildInfo
 import io.prediction.data.storage.EngineManifest
@@ -52,6 +53,7 @@ case class ConsoleArgs(
   accessKey: AccessKeyArgs = AccessKeyArgs(),
   deploy: DeployArgs = DeployArgs(),
   eventServer: EventServerArgs = EventServerArgs(),
+  adminServer: AdminServerArgs = AdminServerArgs(),
   dashboard: DashboardArgs = DashboardArgs(),
   upgrade: UpgradeArgs = UpgradeArgs(),
   template: TemplateArgs = TemplateArgs(),
@@ -102,6 +104,10 @@ case class EventServerArgs(
   enabled: Boolean = false,
   ip: String = "localhost",
   port: Int = 7070)
+
+case class AdminServerArgs(
+ip: String = "localhost",
+port: Int = 7071)
 
 case class DashboardArgs(
   ip: String = "localhost",
@@ -311,6 +317,12 @@ object Console extends Logging {
           opt[Int]("event-server-port") action { (x, c) =>
             c.copy(eventServer = c.eventServer.copy(port = x))
           } text("Event server port. Default: 7070"),
+          opt[Int]("admin-server-port") action { (x, c) =>
+            c.copy(adminServer = c.adminServer.copy(port = x))
+          } text("Admin server port. Default: 7071"),
+          opt[String]("admin-server-port") action { (x, c) =>
+          c.copy(adminServer = c.adminServer.copy(ip = x))
+          } text("Admin server IP. Default: localhost"),
           opt[String]("accesskey") action { (x, c) =>
             c.copy(accessKey = c.accessKey.copy(accessKey = x))
           } text("Access key of the App where feedback data will be stored."),
@@ -362,6 +374,18 @@ object Console extends Logging {
           opt[Int]("port") action { (x, c) =>
             c.copy(eventServer = c.eventServer.copy(port = x))
           } text("Port to bind to. Default: 7070")
+        )
+      cmd("adminserver").
+        text("Launch an Admin Server at the specific IP and port.").
+        action { (_, c) =>
+        c.copy(commands = c.commands :+ "adminserver")
+      } children(
+        opt[String]("ip") action { (x, c) =>
+          c.copy(adminServer = c.adminServer.copy(ip = x))
+        } text("IP to bind to. Default: localhost"),
+        opt[Int]("port") action { (x, c) =>
+          c.copy(adminServer = c.adminServer.copy(port = x))
+        } text("Port to bind to. Default: 7071")
         )
       note("")
       cmd("run").
@@ -612,6 +636,9 @@ object Console extends Logging {
         case Seq("eventserver") =>
           eventserver(ca)
           0
+        case Seq("adminserver") =>
+          adminserver(ca)
+          0
         case Seq("run") =>
           generateManifestJson(ca.common.manifestJson)
           run(ca)
@@ -677,6 +704,7 @@ object Console extends Logging {
     "train" -> txt.train().toString,
     "deploy" -> txt.deploy().toString,
     "eventserver" -> txt.eventserver().toString,
+    "adminserver" -> txt.adminserver().toString,
     "app" -> txt.app().toString,
     "accesskey" -> txt.accesskey().toString,
     "import" -> txt.imprt().toString,
@@ -795,6 +823,15 @@ object Console extends Logging {
     EventServer.createEventServer(EventServerConfig(
       ip = ca.eventServer.ip,
       port = ca.eventServer.port))
+  }
+
+  def adminserver(ca: ConsoleArgs): Unit = {
+    info(
+      s"Creating Admin Server at ${ca.adminServer.ip}:${ca.adminServer.port}")
+    AdminServer.createAdminServer(AdminServerConfig(
+      ip = ca.adminServer.ip,
+      port = ca.adminServer.port
+    ))
   }
 
   def undeploy(ca: ConsoleArgs): Int = {

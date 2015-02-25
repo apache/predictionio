@@ -1,3 +1,18 @@
+## Admin API (under developement)
+
+### Start Admin API
+
+NOTE: eleasticsearch and hbase should be running first.
+
+```
+$ sbt/sbt "data/compile"
+$ set -a
+$ source conf/pio-env.sh
+$ set +a
+$ sbt/sbt "data/run-main io.prediction.data.api.AdminRun"
+```
+
+
 ## Data Collection API
 
 Please refer to the documentation site - [Collecting Data through Event API](http://docs.prediction.io/datacollection/eventapi/).
