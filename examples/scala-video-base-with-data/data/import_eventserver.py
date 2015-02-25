@@ -36,7 +36,10 @@ def import_events(client):
       entity_type="item",
       entity_id=item_id,
       properties={
-        "categories" : random.sample(categories, random.randint(1, 4))
+	"categories" : random.sample(categories, random.randint(1, 4)),
+	"title": "title for movie " + item_id,
+	"date": 1935,
+	"imdbUrl": "http://imdb/fake/url/id/" + item_id
       }
     )
     count += 1
