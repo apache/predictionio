@@ -25,6 +25,8 @@ libraryDependencies ++= Seq(
   "me.lessis"              %% "semverfi"       % "0.1.3",
   "org.apache.hadoop"       % "hadoop-common"  % "2.5.0",
   "org.apache.hadoop"       % "hadoop-hdfs"    % "2.5.0",
+  "org.apache.spark"       %% "spark-core"     % sparkVersion.value % "provided",
+  "org.apache.spark"       %% "spark-sql"      % sparkVersion.value % "provided",
   "org.clapper"            %% "grizzled-slf4j" % "1.0.2",
   "org.json4s"             %% "json4s-native"  % json4sVersion.value,
   "org.json4s"             %% "json4s-ext"     % json4sVersion.value,

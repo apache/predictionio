@@ -18,6 +18,7 @@ libraryDependencies ++= Seq(
   "commons-codec"           % "commons-codec"  % "1.9",
   "io.spray"               %% "spray-can"      % "1.3.2",
   "io.spray"               %% "spray-routing"  % "1.3.2",
+  "io.spray"               %% "spray-testkit"  % "1.3.2" % "test",
   "org.apache.hadoop"       % "hadoop-common"  % "2.5.0"
     exclude("javax.servlet", "servlet-api"),
   "org.apache.hbase"        % "hbase-common"   % "0.98.5-hadoop2",
@@ -44,3 +45,5 @@ libraryDependencies ++= Seq(
   "org.slf4j"               % "slf4j-log4j12"  % "1.7.7",
   "org.spark-project.akka" %% "akka-actor"     % "2.3.4-spark",
   "org.specs2"             %% "specs2"         % "2.3.13" % "test")
+
+parallelExecution in Test := false

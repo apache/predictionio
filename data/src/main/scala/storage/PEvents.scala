@@ -81,7 +81,7 @@ trait PEvents extends Serializable {
     * @param untilTime use events with eventTime < untilTime
     * @param required only keep entities with these required properties defined
     * @param sc Spark context
-    * @return RDD[(String, DataMap)] RDD of entityId and properties DataMap pair
+    * @return RDD[(String, PropertyMap)] RDD of entityId and PropetyMap pair
     */
   def aggregateProperties(
     appId: Int,
@@ -89,7 +89,7 @@ trait PEvents extends Serializable {
     startTime: Option[DateTime] = None,
     untilTime: Option[DateTime] = None,
     required: Option[Seq[String]] = None)
-    (sc: SparkContext): RDD[(String, DataMap)]
+    (sc: SparkContext): RDD[(String, PropertyMap)]
 
   /** @experimental
     * Extract EntityMap[A] from events for the entityType
@@ -102,4 +102,14 @@ trait PEvents extends Serializable {
     untilTime: Option[DateTime] = None,
     required: Option[Seq[String]] = None)
     (sc: SparkContext)(extract: DataMap => A): EntityMap[A]
+
+  /** @experimental
+    * Write events to database
+    *
+    * @param events RDD of Event
+    * @param appId the app ID
+    * @param sc Spark Context
+    */
+  def write(events: RDD[Event], appId: Int)(sc: SparkContext): Unit
+
 }

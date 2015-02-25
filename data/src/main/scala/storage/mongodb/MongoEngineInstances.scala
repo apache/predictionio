@@ -66,6 +66,12 @@ class MongoEngineInstances(client: MongoClient, dbname: String)
       dbObjToEngineInstance(_)
     }
 
+  def getAll() = {
+    engineInstanceColl.find().map {
+      dbObjToEngineInstance(_)
+    }.toSeq
+  }
+
   def getCompleted(
       engineId: String,
       engineVersion: String,

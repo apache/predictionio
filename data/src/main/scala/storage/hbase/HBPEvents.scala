@@ -17,6 +17,7 @@ package io.prediction.data.storage.hbase
 
 import io.prediction.data.storage.Event
 import io.prediction.data.storage.DataMap
+import io.prediction.data.storage.PropertyMap
 import io.prediction.data.storage.PEvents
 import io.prediction.data.storage.PEventAggregator
 import io.prediction.data.storage.EntityMap
@@ -25,8 +26,12 @@ import io.prediction.data.storage.BiMap
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.Result
 import org.apache.hadoop.hbase.mapreduce.TableInputFormat
+import org.apache.hadoop.hbase.mapreduce.TableOutputFormat
 import org.apache.hadoop.hbase.mapreduce.PIOHBaseUtil
 import org.apache.hadoop.hbase.TableNotFoundException
+import org.apache.hadoop.hbase.io.ImmutableBytesWritable
+import org.apache.hadoop.mapreduce.OutputFormat
+import org.apache.hadoop.io.Writable
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -84,7 +89,7 @@ class HBPEvents(client: HBClient, namespace: String)
 
     // HBase is not accessed until this rdd is actually used.
     val rdd = sc.newAPIHadoopRDD(conf, classOf[TableInputFormat],
-      classOf[org.apache.hadoop.hbase.io.ImmutableBytesWritable],
+      classOf[ImmutableBytesWritable],
       classOf[Result]).map {
         case (key, row) => HBEventsUtil.resultToEvent(row, appId)
       }
@@ -99,7 +104,7 @@ class HBPEvents(client: HBClient, namespace: String)
     startTime: Option[DateTime] = None,
     untilTime: Option[DateTime] = None,
     required: Option[Seq[String]] = None)
-    (sc: SparkContext): RDD[(String, DataMap)] = {
+    (sc: SparkContext): RDD[(String, PropertyMap)] = {
 
     checkTableExists(appId)
 
@@ -156,6 +161,25 @@ class HBPEvents(client: HBClient, namespace: String)
     }.collectAsMap.toMap
 
     new EntityMap(idToData)
+  }
+
+  override
+  def write(events: RDD[Event], appId: Int)(sc: SparkContext): Unit = {
+
+    checkTableExists(appId)
+
+    val conf = HBaseConfiguration.create()
+    conf.set(TableOutputFormat.OUTPUT_TABLE,
+      HBEventsUtil.tableName(namespace, appId))
+    conf.setClass("mapreduce.outputformat.class",
+      classOf[TableOutputFormat[Object]],
+      classOf[OutputFormat[Object, Writable]])
+
+    events.map { event =>
+      val (put, rowKey) = HBEventsUtil.eventToPut(event, appId)
+      (new ImmutableBytesWritable(rowKey.toBytes), put)
+    }.saveAsNewAPIHadoopDataset(conf)
+
   }
 
 }

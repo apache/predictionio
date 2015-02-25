@@ -271,7 +271,10 @@ object Storage extends Logging {
   private[prediction] def getModelDataModels(): Models =
     getDataObject[Models](ModelDataRepository)
 
-  private[prediction] def getLEvents(test: Boolean = false): LEvents =
+  /** Obtains a data access object that returns [[Event]] related local data
+    * structure.
+    */
+  def getLEvents(test: Boolean = false): LEvents =
     getDataObject[LEvents](EventDataRepository, test = test)
 
   /** Obtains a data access object that returns [[Event]] related RDD data

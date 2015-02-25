@@ -16,6 +16,7 @@
 package io.prediction.core
 
 import io.prediction.controller.Utils
+import io.prediction.controller.Params
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -26,6 +27,31 @@ trait WithBaseQuerySerializer {
   @transient lazy val querySerializer = Utils.json4sDefaultFormats
 }
 
+abstract class BaseAlgorithm[PD, M, Q : Manifest, P]
+  extends AbstractDoer with WithBaseQuerySerializer {
+  def trainBase(sc: SparkContext, pd: PD): M
+
+  // Used by Evaluation
+  def batchPredictBase(sc: SparkContext, bm: Any, qs: RDD[(Long, Q)])
+  : RDD[(Long, P)]
+
+  // Used by Deploy
+  def predictBase(bm: Any, q: Q): P
+
+  def queryManifest(): Manifest[Q] = manifest[Q]
+  
+  def makePersistentModel(sc: SparkContext, modelId: String, 
+    algoParams: Params, bm: Any)
+  : Any = Unit
+
+  //def loadPersistentModel(sc: SparkContext ...)
+  
+  def isJava: Boolean
+  def isParallel: Boolean = true
+}
+
+
+/*
 abstract class BaseAlgorithm[PD, M, Q : Manifest, P]
   extends AbstractDoer
   with WithBaseQuerySerializer {
@@ -75,3 +101,4 @@ trait LModelAlgorithm[M, Q, P] {
 
   def predict(model: M, query: Q): P
 }
+*/

@@ -31,5 +31,8 @@ if [ -z "$PIO_ENV_LOADED" ]; then
     set -a
     . "${use_conf_dir}/pio-env.sh"
     set +a
+  else
+    echo "Warning: pio-env.sh was not found in ${use_conf_dir}. Using system environment variables instead."
+    echo ""
   fi
 fi

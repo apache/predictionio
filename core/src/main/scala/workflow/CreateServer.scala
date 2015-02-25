@@ -28,6 +28,7 @@ import io.prediction.controller.java.LJavaServing
 import io.prediction.controller.java.PJavaAlgorithm
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseServing
+import io.prediction.core.BaseEngine
 import io.prediction.core.Doer
 import io.prediction.data.storage.EngineInstance
 import io.prediction.data.storage.EngineManifest
@@ -197,154 +198,35 @@ object CreateServer extends Logging {
     engine: Engine[TD, EIN, PD, Q, P, A],
     engineLanguage: EngineLanguage.Value,
     manifest: EngineManifest): ActorRef = {
-    implicit val formats = DefaultFormats
 
-    val algorithmsParamsWithNames =
-      read[Seq[(String, JValue)]](engineInstance.algorithmsParams).map {
-        case (algoName, params) =>
-          val extractedParams = WorkflowUtils.extractParams(
-            engineLanguage,
-            compact(render(params)),
-            engine.algorithmClassMap(algoName))
-          (algoName, extractedParams)
-      }
-
-    val algorithmsParams = algorithmsParamsWithNames.map { _._2 }
-
-    val algorithms = algorithmsParamsWithNames.map { case (n, p) =>
-      Doer(engine.algorithmClassMap(n), p)
-    }
-
-    val servingParamsWithName: (String, Params) = {
-      val (name, params) = read[(String, JValue)](engineInstance.servingParams)
-      if (!engine.servingClassMap.contains(name)) {
-        error(s"Unable to find serving class with name '${name}'" +
-          " defined in Engine.")
-        sys.exit(1)
-      }
-      val extractedParams = WorkflowUtils.extractParams(
-        engineLanguage,
-        compact(render(params)),
-        engine.servingClassMap(name))
-      (name, extractedParams)
-    }
-
-    /*val servingParams =
-      if (engineInstance.servingParams == "")
-        EmptyParams()
-      else
-        WorkflowUtils.extractParams(
-          engineLanguage,
-          engineInstance.servingParams,
-          engine.servingClass) */
-    val serving = Doer(engine.servingClassMap(servingParamsWithName._1),
-      servingParamsWithName._2)
+    val engineParams = engine.engineInstanceToEngineParams(engineInstance)
 
     val kryoInstantiator = new KryoInstantiator(getClass.getClassLoader)
     val kryo = KryoInjection.instance(kryoInstantiator)
+
     val modelsFromEngineInstance =
       kryo.invert(modeldata.get(engineInstance.id).get.models).get.
-      asInstanceOf[Seq[Seq[Any]]]
+      asInstanceOf[Seq[Any]]
 
-    val sparkContext =
-      Option(WorkflowContext(
-        batch = (if (sc.batch == "") engineInstance.batch else sc.batch),
-        executorEnv = engineInstance.env,
-        mode = "Serving")).
-        filter(_ => algorithms.exists(_.isParallel))
-    /*val dataSourceParams = WorkflowUtils.extractParams(
-      engineLanguage,
-      engineInstance.dataSourceParams,
-      engine.dataSourceClass)*/
-    val dataSourceParamsWithName: (String, Params) = {
-      val (name, params) =
-        read[(String, JValue)](engineInstance.dataSourceParams)
-      if (!engine.dataSourceClassMap.contains(name)) {
-        error(s"Unable to find datasource class with name '${name}'" +
-          " defined in Engine.")
-        sys.exit(1)
-      }
-      val extractedParams = WorkflowUtils.extractParams(
-        engineLanguage,
-        compact(render(params)),
-        engine.dataSourceClassMap(name))
-      (name, extractedParams)
+    val sparkContext = WorkflowContext(
+      batch = (if (sc.batch == "") engineInstance.batch else sc.batch),
+      executorEnv = engineInstance.env,
+      mode = "Serving")
+
+    val models = engine.prepareDeploy(
+      sparkContext, 
+      engineParams, 
+      engineInstance.id,
+      modelsFromEngineInstance)
+    
+    val algorithms = engineParams.algorithmParamsList.map { case (n, p) =>
+      Doer(engine.algorithmClassMap(n), p)
     }
-    /*val preparatorParams = WorkflowUtils.extractParams(
-      engineLanguage,
-      engineInstance.preparatorParams,
-      engine.preparatorClass)*/
-    val preparatorParamsWithName: (String, Params) = {
-      val (name, params) =
-        read[(String, JValue)](engineInstance.preparatorParams)
-      if (!engine.preparatorClassMap.contains(name)) {
-        error(s"Unable to find preparator class with name '${name}'" +
-          " defined in Engine.")
-        sys.exit(1)
-      }
-      val extractedParams = WorkflowUtils.extractParams(
-        engineLanguage,
-        compact(render(params)),
-        engine.preparatorClassMap(name))
-      (name, extractedParams)
-    }
+    
+    val servingParamsWithName = engineParams.servingParams
 
-    val evalPreparedMap = sparkContext.filter(_ =>
-      algorithms.zip(modelsFromEngineInstance.head).exists(am =>
-        am._1.isParallel && !am._2.isInstanceOf[PersistentModelManifest]
-    )).map { sc =>
-      logger.info("Data Source")
-      val dataSource = Doer(
-        engine.dataSourceClassMap(dataSourceParamsWithName._1),
-        dataSourceParamsWithName._2)
-      val evalParamsDataMap
-      : Map[EI, (TD, EIN, RDD[(Q, A)])] = dataSource
-        .readBase(sc)
-        .zipWithIndex
-        .map(_.swap)
-        .toMap
-      val evalDataMap: Map[EI, (TD, RDD[(Q, A)])] = evalParamsDataMap.map {
-        case(ei, e) => (ei -> (e._1, e._3))
-      }
-      logger.info("Preparator")
-      val preparator = Doer(
-        engine.preparatorClassMap(preparatorParamsWithName._1),
-        preparatorParamsWithName._2)
-
-      val evalPreparedMap: Map[EI, PD] = evalDataMap
-      .map{ case (ei, data) => (ei, preparator.prepareBase(sc, data._1)) }
-      logger.info("Preparator complete")
-
-      evalPreparedMap
-    }
-
-    val models = modelsFromEngineInstance.head.zip(algorithms).
-      zip(algorithmsParamsWithNames).zipWithIndex.map {
-        case (((m, a), pwn), i) =>
-          if (m.isInstanceOf[PersistentModelManifest]) {
-            info("Custom-persisted model detected for algorithm " +
-              a.getClass.getName)
-            SparkWorkflowUtils.getPersistentModel(
-              m.asInstanceOf[PersistentModelManifest],
-              Seq(engineInstance.id, i, pwn._1).mkString("-"),
-              pwn._2,
-              sparkContext,
-              getClass.getClassLoader)
-          } else if (a.isParallel) {
-            info(s"Parallel model detected for algorithm ${a.getClass.getName}")
-            a.trainBase(sparkContext.get, evalPreparedMap.get(0))
-          } else {
-            try {
-              info(s"Loaded model ${m.getClass.getName} for algorithm " +
-                s"${a.getClass.getName}")
-              m
-            } catch {
-              case e: NullPointerException =>
-                warn(s"Null model detected for algorithm ${a.getClass.getName}")
-                m
-            }
-          }
-      }
+    val serving = Doer(engine.servingClassMap(servingParamsWithName._1),
+      servingParamsWithName._2)
 
     actorSystem.actorOf(
       Props(
@@ -354,13 +236,13 @@ object CreateServer extends Logging {
         engine,
         engineLanguage,
         manifest,
-        dataSourceParamsWithName._2,
-        preparatorParamsWithName._2,
+        engineParams.dataSourceParams._2,
+        engineParams.preparatorParams._2,
         algorithms,
-        algorithmsParams,
+        engineParams.algorithmParamsList.map(_._2),
         models,
         serving,
-        servingParamsWithName._2))
+        engineParams.servingParams._2))
   }
 }
 
@@ -479,10 +361,19 @@ class MasterActor(
     val (engineLanguage, engineFactory) =
       WorkflowUtils.getEngine(engineFactoryName, getClass.getClassLoader)
     val engine = engineFactory()
+   
+    // EngineFactory return a base engine, which may not be deployable.
+    if (!engine.isInstanceOf[Engine[_,_,_,_,_,_]]) {
+      throw new NoSuchMethodException(s"Engine $engine is not deployable")
+    }
+
+    val deployableEngine = engine.asInstanceOf[Engine[_,_,_,_,_,_]]
+
     CreateServer.createServerActorWithEngine(
       sc,
       engineInstance,
-      engine,
+      //engine,
+      deployableEngine,
       engineLanguage,
       manifest)
   }
@@ -505,6 +396,10 @@ class ServerActor[Q, P](
   lazy val gson = new Gson
   val log = Logging(context.system, this)
   val (javaAlgorithms, scalaAlgorithms) = algorithms.partition(_.isJava)
+
+  var requestCount: Int = 0
+  var avgServingSec: Double = 0.0
+  var lastServingSec: Double = 0.0
 
   def actorRefFactory = context
 
@@ -558,7 +453,11 @@ class ServerActor[Q, P](
                 serverStartTime,
                 feedbackEnabled,
                 args.eventServerIp,
-                args.eventServerPort).toString
+                args.eventServerPort,
+                requestCount,
+                avgServingSec,
+                lastServingSec
+              ).toString
             }
           }
         }
@@ -569,6 +468,8 @@ class ServerActor[Q, P](
         detach() {
           entity(as[String]) { queryString =>
             try {
+              val servingStartTime = DateTime.now
+
               val queryTime = DateTime.now
               val javaQuery = javaAlgorithms.headOption map { alg =>
                 val queryClass = if (
@@ -667,6 +568,15 @@ class ServerActor[Q, P](
                   r._1 merge parse(s"""{"prId" : "${newPrId}"}""")
                 else r._1
               } else r._1
+              
+              // Bookkeeping 
+              val servingEndTime = DateTime.now
+              lastServingSec = (
+                servingEndTime.getMillis - servingStartTime.getMillis) / 1000.0
+              avgServingSec = (
+                ((avgServingSec * requestCount) + lastServingSec) /
+                (requestCount + 1))
+              requestCount += 1
 
               respondWithMediaType(`application/json`) {
                 complete(compact(render(result)))

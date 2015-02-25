@@ -87,7 +87,8 @@ abstract class PJavaAlgorithm[PD, M, Q, P]
   /** Do not use directly or override this method, as this is called by
     * PredictionIO workflow to perform batch prediction.
     */
-  override def batchPredictBase(baseModel: Any, indexedQueries: RDD[(Long, Q)])
+  override def batchPredictBase(
+      sc: SparkContext, baseModel: Any, indexedQueries: RDD[(Long, Q)])
   : RDD[(Long, P)] = {
     implicit val fakeQTag: ClassTag[Q] = JavaUtils.fakeClassTag[Q]
     batchPredict(baseModel.asInstanceOf[M],
@@ -133,5 +134,5 @@ abstract class PJavaAlgorithm[PD, M, Q, P]
   }
 
   def isJava = true
-  def isParallel = true
+  override def isParallel = true
 }

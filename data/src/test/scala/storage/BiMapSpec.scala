@@ -192,4 +192,5 @@ class BiMapSpec extends Specification {
     }
   }
 
+  step(sc.stop())
 }

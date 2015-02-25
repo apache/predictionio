@@ -36,3 +36,7 @@ libraryDependencies ++= Seq(
   "org.specs2"             %% "specs2"          % "2.3.13" % "test")
 
 net.virtualvoid.sbt.graph.Plugin.graphSettings
+
+//testOptions := Seq(Tests.Filter(s => Seq("Dev").exists(s.contains(_))))
+
+parallelExecution in Test := false

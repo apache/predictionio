@@ -16,6 +16,7 @@
 package io.prediction.data.storage
 
 import org.json4s._
+import org.json4s.native.JsonMethods.parse
 
 import scala.collection.GenTraversableOnce
 
@@ -34,7 +35,7 @@ private[prediction] case class DataMapException(msg: String, cause: Exception)
   *
   * @param fields Map of property name to JValue
   */
-case class DataMap (
+class DataMap (
   val fields: Map[String, JValue]
 ) extends Serializable {
   lazy implicit private val formats = DefaultFormats +
@@ -136,10 +137,26 @@ case class DataMap (
 
   /** Converts this DataMap to a JObject.
     *
-    * @return the JObject initizalized by this DataMap.
+    * @return the JObject initialized by this DataMap.
     */
   def toJObject(): JObject = JObject(toList())
 
+  override
+  def toString: String = s"DataMap(${fields})"
+
+  override
+  def hashCode: Int = (41 + fields.hashCode)
+
+  override
+  def equals(other: Any): Boolean = other match {
+    case that: DataMap => {
+      (that.canEqual(this)) &&
+      (this.fields.equals(that.fields))
+    }
+    case _ => false
+  }
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[DataMap]
 }
 
 /** Companion object of the [[DataMap]] class. */
@@ -147,13 +164,29 @@ object DataMap {
   /** Create an empty DataMap
     * @return an empty DataMap
     */
-  def apply(): DataMap = DataMap(Map[String, JValue]())
+  def apply(): DataMap = new DataMap(Map[String, JValue]())
+
+  /** Create an DataMap from a Map of String to JValue
+    * @param fields a Map of String to JValue
+    * @return a new DataMap initialized by fields
+    */
+  def apply(fields: Map[String, JValue]) = new DataMap(fields)
 
   /** Create an DataMap from a JObject
     * @param jObj JObject
-    * @return a new DataMap initlized by a JObject
+    * @return a new DataMap initialized by a JObject
     */
   def apply(jObj: JObject): DataMap = {
-    if (jObj == null) DataMap() else DataMap(jObj.obj.toMap)
+    if (jObj == null)
+      apply()
+    else
+      new DataMap(jObj.obj.toMap)
   }
+
+  /** Create an DataMap from a JSON String
+    * @param js JSON String. eg """{ "a": 1, "b": "foo" }"""
+    * @return a new DataMap initialized by a JSON string
+    */
+  def apply(js: String): DataMap = apply(parse(js).asInstanceOf[JObject])
+
 }

@@ -112,6 +112,17 @@ class ESEngineInstances(client: Client, index: String)
     }
   }
 
+  def getAll() = {
+    try {
+      val builder = client.prepareSearch(index).setTypes(estype)
+      ESUtils.getAll[EngineInstance](client, builder)
+    } catch {
+      case e: ElasticsearchException =>
+        error(e.getMessage)
+        Seq()
+    }
+  }
+
   def getCompleted(
       engineId: String,
       engineVersion: String,

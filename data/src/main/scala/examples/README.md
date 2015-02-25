@@ -8,7 +8,7 @@ $ ./make-distribution.sh
 $ $SPARK_HOME/bin/spark-submit \
   --class "io.prediction.data.storage.examples.HBPEventsTest" \
   --master local[4] \
-  assembly/pio-assembly-0.8.2.jar <appId>
+  assembly/pio-assembly-0.8.7-SNAPSHOT.jar <from appId> <to appId>
 ```
 
 PBatchViewTest

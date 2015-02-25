@@ -1,75 +1,95 @@
 nav#nav-main role="navigation"
   ul
     li.expand
+      = link_to 'PredictionIO Docs', '#'
+      ul
+        li = link_to_with_active 'Welcome to PredictionIO', '/'
+    li.expand
       = link_to 'Getting Started', '#'
       ul
-        li = link_to_with_active 'Overview', '/start/'
+        li = link_to_with_active 'A Quick Intro', '/start/'
         li = link_to_with_active 'Installing PredictionIO', '/install/'
-        li = link_to_with_active 'Engine - A Closer Look', '/start/engines/'
+        li = link_to_with_active 'Downloading an Engine Template', '/start/download/'
+        li = link_to_with_active 'Deploying Your First Engine', '/start/deploy/'
+        li = link_to_with_active 'Customizing the Engine', '/start/customize/'
     li.expand
-      = link_to 'Recommendation Template', '#'
+      = link_to 'Integrating with Your App', '#'
       ul
-        li = link_to_with_active 'Quick Start', '/templates/recommendation/quickstart/'
-        li = link_to_with_active 'DASE Components Explained', '/templates/recommendation/dase/'
-        li = link_to_with_active 'How To', '/templates/recommendation/how-to/'
-        
+        li = link_to_with_active 'App Integration Overview', '/appintegration/'
+        li = link_to_with_active 'List of SDKs', '/sdk/'
     li.expand
-      = link_to 'Similar Product Template', '#'
+      = link_to 'Deploying an Engine', '#'
       ul
-        li = link_to_with_active 'Quick Start', '/templates/similarproduct/quickstart/'
-        li = link_to_with_active 'DASE Components Explained', '/templates/similarproduct/dase/'
-        li = link_to_with_active 'How To', '/templates/similarproduct/how-to/'
+        li = link_to_with_active 'Deploying as a Web Service', '/deploy/'
+        li = link_to_with_active 'Engine Command-line Interface', '/cli/#engine-commands'
+        li = link_to_with_active 'Setting Engine Parameters', '/deploy/engineparams/'
+        li = link_to_with_active 'Deploying Multiple Engine Variants', '/deploy/enginevariants/'
     li.expand
-      = link_to 'Classification Template', '#'
+      = link_to 'Customizing an Engine', '#'
       ul
-        li = link_to_with_active 'Quick Start', '/templates/classification/quickstart/'
-        li = link_to_with_active 'DASE Components Explained', '/templates/classification/dase/'
-        li = link_to_with_active 'How To', '/templates/classification/how-to/'
-
+        li = link_to_with_active 'Learning DASE', '/customize/'
+        li = link_to_with_active 'Troubleshooting Engine Development', '/customize/troubleshooting/'
+        li = link_to_with_active 'Engine Scala APIs', '/api/current/#package'
     li.expand
-    li.expand
-      = link_to 'Vanilla Template', '#'
+      = link_to 'Collecting and Analyzing Data', '#'
       ul
-        li = link_to_with_active 'Quick Start', '/templates/vanilla/quickstart/'
-        li = link_to_with_active 'DASE Components Explained', '/templates/vanilla/dase/'
+        li = link_to_with_active 'Event Server Overview', '/datacollection/'
+        li = link_to_with_active 'Event Server Command-line Interface', '/cli/#event-server-commands'
+        li = link_to_with_active 'Collecting Data with REST/SDKs', '/datacollection/eventapi/'
+        li = link_to_with_active 'Unifying Multichannel Data with Webhooks', '/datacollection/webhook/'
+        li = link_to_with_active 'Importing Data in Batch', '/datacollection/batchimport/'
+        li = link_to_with_active 'Using Analytics Tools', '/datacollection/analytics/'
     li.expand
-      = link_to 'Data Collection', '#'
+      = link_to 'Choosing an Algorithm(s)', '#'
       ul
-        li = link_to_with_active 'Overview', '/datacollection/overview/'
-        li = link_to_with_active 'Collecting Data', '/datacollection/eventapi/'
-        li = link_to_with_active 'Sample Data Sets', '/datacollection/sample/'
-        
+        li = link_to_with_active 'Built-in Algorithm Libraries', '/algorithm/'
+        li = link_to_with_active 'Switching to Another Algorithm', '/algorithm/switch/'
+        li = link_to_with_active 'Combining Multiple Algorithms', '/algorithm/multiple/'
+        li = link_to_with_active 'Adding your own Algorithms', '/algorithm/custom/' 
+    li.expand
+      = link_to 'ML Tuning and Evaluation', '#'
+      ul
+        li = link_to_with_active 'Overview', '/evaluation/'
+        li = link_to_with_active 'Hyperparameter Tuning', '/evaluation/paramtuning/'
+        li = link_to_with_active 'Tracking Evaluation History', '/evaluation/history/'
+        li = link_to_with_active 'Choosing an Evaluation Measure', '/evaluation/measurechoose/'
+        li = link_to_with_active 'Building an Evaluation Measure', '/evaluation/measurebuild/'
+    li.expand
+      = link_to 'System Architecture', '#'
+      ul
+        li = link_to_with_active 'Architecture Overview', '/system/'
+        li = link_to_with_active 'Production Deployment with Cloudformation', '/system/deploy-cloudformation/'
+        li = link_to_with_active 'Using Another Datastore', '/system/anotherdatastore'
+    li.expand
+      = link_to 'Engine Template Gallery', '#'
+      ul
+        li = link_to_with_active 'Browse', 'http://templates.prediction.io'
+        li = link_to_with_active 'Submit your Engine as a Template', '/community/submit-template/'
     li.expand
       = link_to 'Demo Tutorials', '#'
       ul
         li = link_to_with_active 'Tapster - Similar Product Template', '/demo/tapster/'  
-        li = link_to_with_active 'Community Contributed', '/demo/community/'
-        
-        
+        li = link_to_with_active 'Community Contributed Demo', '/demo/community/'  
     li.expand
-      = link_to 'Get Involved', '#'
+      = link_to 'Getting Involved', '#'
       ul
         li = link_to_with_active 'Contribute Code', '/community/contribute-code/'
         li = link_to_with_active 'Contribute Documentation', '/community/contribute-documentation/'
+        li = link_to_with_active 'Contribute a SDK', '/community/contribute-sdk/'
+        li = link_to_with_active 'Contribute a Webhook', '/community/contribute-webhook/'
         li = link_to_with_active 'Community Projects', '/community/projects/'
-        
     li.expand
-      = link_to 'SDKs and Plugins', '#'
+      = link_to 'Getting Help', '#'
       ul
-        li = link_to_with_active 'Java & Android SDK', '/sdk/java/'
-        li = link_to_with_active 'PHP SDK', '/sdk/php/'
-        li = link_to_with_active 'Python SDK', '/sdk/python/'
-        li = link_to_with_active 'Ruby SDK', '/sdk/ruby/'
+        li = link_to_with_active 'FAQs', '/resources/faq/'
+        li = link_to_with_active 'Community Support', '/support/'
+        li = link_to_with_active 'Enterprise Support', '/support/#enterprise-support'
     li.expand
       = link_to 'Resources', '#'
       ul
-        li = link_to_with_active 'FAQs', '/resources/faq/'
+        li = link_to_with_active 'Develop an engine with Intellij IDEA', '/resources/intellij/'
         li = link_to_with_active 'Upgrade Instructions', '/resources/upgrade/'
-        li = link_to_with_active 'Architecture', '/resources/systems/'
-        li = link_to_with_active 'Command Line', '/resources/command-line/'
-        li = link_to_with_active 'Troubleshoot Engine Development', '/resources/engine-development/'
         li = link_to_with_active 'Glossary', '/resources/glossary/'
-        li = link_to_with_active 'API Docs', '/api/current/#package'
     - unless build?
       li
         = link_to 'Samples', '#'

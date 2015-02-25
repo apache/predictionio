@@ -15,7 +15,11 @@
   serverStartTime: DateTime,
   feedback: Boolean,
   eventServerIp: String,
-  eventServerPort: Int)
+  eventServerPort: Int,
+  requestCount: Int,
+  avgServingSec: Double,
+  lastServingSec: Double
+  )
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -41,6 +45,9 @@
       <h2>Server Information</h2>
       <table class="table table-bordered table-striped">
         <tr><th>Start Time</th><td>@{DateTimeFormat.forStyle("FF").print(serverStartTime)}</td></tr>
+        <tr><th>Request Count</th><td>@{requestCount}</td></tr>
+        <tr><th>Average Serving Time</th><td>@{f"${avgServingSec}%.4f"} seconds</td></tr>
+        <tr><th>Last Serving Time</th><td>@{f"${lastServingSec}%.4f"} seconds</td></tr>
         <tr><th>Engine Factory Class (Scala/Java)</th><td>@{engineInstance.engineFactory}</td></tr>
         <tr>
           <th rowspan="@(manifest.files.size)">Library Files</th>

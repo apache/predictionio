@@ -268,7 +268,7 @@ cat <<EOT > $hbase_dir/conf/hbase-site.xml
 <configuration>
   <property>
     <name>hbase.rootdir</name>
-    <value>file://$hbase_dir</value>
+    <value>file://$hbase_dir/data</value>
   </property>
   <property>
     <name>hbase.zookeeper.property.dataDir</name>

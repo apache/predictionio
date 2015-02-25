@@ -44,6 +44,12 @@ $ set +a
 $ sbt/sbt "data/test"
 ```
 
+- test for EventService
+
+```
+$ sbt/sbt "data/test-only io.prediction.data.api.EventServiceSpec"
+```
+
 ### Upgrade from 0.8.0/0.8.1 to 0.8.2
 
 Experimental upgrade tool (Upgrade HBase schema from 0.8.0/0.8.1 to 0.8.2)

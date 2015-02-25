@@ -16,7 +16,7 @@
 package io.prediction.data.storage.hbase
 
 import io.prediction.data.storage.Event
-import io.prediction.data.storage.DataMap
+import io.prediction.data.storage.PropertyMap
 import io.prediction.data.storage.LEvents
 import io.prediction.data.storage.LEventAggregator
 import io.prediction.data.storage.StorageError
@@ -254,7 +254,7 @@ class HBLEvents(val client: HBClient, val namespace: String)
     startTime: Option[DateTime] = None,
     untilTime: Option[DateTime] = None,
     required: Option[Seq[String]] = None)(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Map[String, DataMap]]] = {
+    Future[Either[StorageError, Map[String, PropertyMap]]] = {
       futureFind(
         appId = appId,
         startTime = startTime,
@@ -280,7 +280,7 @@ class HBLEvents(val client: HBClient, val namespace: String)
     entityId: String,
     startTime: Option[DateTime] = None,
     untilTime: Option[DateTime] = None)(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Option[DataMap]]] = {
+    Future[Either[StorageError, Option[PropertyMap]]] = {
       futureFind(
         appId = appId,
         startTime = startTime,

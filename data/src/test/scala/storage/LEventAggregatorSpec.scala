@@ -22,92 +22,78 @@ import org.json4s.native.JsonMethods.parse
 
 import org.joda.time.DateTime
 
-import scala.util.Random
+class LEventAggregatorSpec extends Specification with TestEvents {
 
-class LEventAggregatorSpec extends Specification {
+  "LEventAggregator.aggregateProperties()" should {
 
-  val baseTime = new DateTime(654321)
+    "aggregate two entities' properties as DataMap correctly" in {
+      val events = Vector(u1e5, u2e2, u1e3, u1e1, u2e3, u2e1, u1e4, u1e2)
+      val result: Map[String, DataMap] =
+        LEventAggregator.aggregateProperties(events.toIterator)
 
-  def stringToJObject(s: String): JObject = {
-    parse(s).asInstanceOf[JObject]
+      val expected = Map(
+        "u1" -> DataMap(u1),
+        "u2" -> DataMap(u2)
+      )
+
+      result must beEqualTo(expected)
+    }
+
+    "aggregate two entities' properties as PropertyMap correctly" in {
+      val events = Vector(u1e5, u2e2, u1e3, u1e1, u2e3, u2e1, u1e4, u1e2)
+      val result: Map[String, PropertyMap] =
+        LEventAggregator.aggregateProperties(events.toIterator)
+
+      val expected = Map(
+        "u1" -> PropertyMap(u1, u1BaseTime, u1LastTime),
+        "u2" -> PropertyMap(u2, u2BaseTime, u2LastTime)
+      )
+
+      result must beEqualTo(expected)
+    }
+
+
+    "aggregate deleted entity correctly" in {
+      val events = Vector(u1e5, u2e2, u1e3, u1ed, u1e1, u2e3, u2e1, u1e4, u1e2)
+
+      val result = LEventAggregator.aggregateProperties(events.toIterator)
+      val expected = Map(
+        "u2" -> PropertyMap(u2, u2BaseTime, u2LastTime)
+      )
+
+      result must beEqualTo(expected)
+    }
   }
 
-  val e1 = Event(
-    event = "$set",
-    entityType = "user",
-    entityId = "u1",
-    properties = DataMap(stringToJObject(
-      """{
-        "a" : 1,
-        "b" : "value2",
-        "d" : [1, 2, 3],
-      }""")),
-    eventTime = baseTime
-  )
-
-  val e2 = e1.copy(
-    event = "$set",
-    properties = DataMap(stringToJObject(
-      """{
-        "a" : 2
-      }""")),
-    eventTime = e1.eventTime.plusDays(1)
-  )
-
-  val e3 = e1.copy(
-    event = "$set",
-    properties = DataMap(stringToJObject(
-      """{
-        "b" : "value4"
-      }""")),
-    eventTime = e2.eventTime.plusDays(1)
-  )
-
-  val e4 = e1.copy(
-    event = "$unset",
-    properties = DataMap(stringToJObject(
-      """{
-        "b" : null
-      }""")),
-    eventTime = e3.eventTime.plusDays(1)
-  )
-
-  val e5 = e1.copy(
-    event = "$set",
-    properties = DataMap(stringToJObject(
-      """{
-        "e" : "new"
-      }""")),
-    eventTime = e4.eventTime.plusDays(1)
-  )
-
-  val random = new Random(3)
 
   "LEventAggregator.aggregatePropertiesSingle()" should {
-    "aggregate single entity properties correctly" in {
-        val events = Vector(e1, e2, e3, e4, e5)
-        val eventsIt = random.shuffle(events).toIterator
 
-        val result = LEventAggregator.aggregatePropertiesSingle(eventsIt)
-        val expected = DataMap(stringToJObject(
-          """{
-            "a" : 2,
-            "d" : [1, 2, 3],
-            "e" : "new"
-          }"""
-        ))
+    "aggregate single entity properties as DataMap correctly" in {
+        val events = Vector(u1e5, u1e3, u1e1, u1e4, u1e2)
+        val eventsIt = events.toIterator
+
+        val result: Option[DataMap] = LEventAggregator
+          .aggregatePropertiesSingle(eventsIt)
+        val expected = DataMap(u1)
+
+        result must beEqualTo(Some(expected))
+    }
+
+    "aggregate single entity properties as PropertyMap correctly" in {
+        val events = Vector(u1e5, u1e3, u1e1, u1e4, u1e2)
+        val eventsIt = events.toIterator
+
+        val result: Option[PropertyMap] = LEventAggregator
+          .aggregatePropertiesSingle(eventsIt)
+        val expected = PropertyMap(u1, u1BaseTime, u1LastTime)
 
         result must beEqualTo(Some(expected))
     }
 
     "aggregate deleted entity correctly" in {
-      val e = e1.copy(
-        event = "$delete",
-        properties = DataMap(),
-        eventTime = e5.eventTime.plusDays(1)
-      )
-      val events = Vector(e1, e2, e3, e4, e5, e)
-      val eventsIt = random.shuffle(events).toIterator
+      // put the delete event in the middle
+      val events = Vector(u1e4, u1e2, u1ed, u1e3, u1e1, u1e5)
+      val eventsIt = events.toIterator
 
       val result = LEventAggregator.aggregatePropertiesSingle(eventsIt)
 

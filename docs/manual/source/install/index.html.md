@@ -1,11 +1,24 @@
 ---
-title: Installation PredictionIO
+title: Installing PredictionIO
 ---
 
-To get started, install PredictionIO Server and choose a SDK for your
-application.
+## Method 1: Launch an AWS Instance
 
-## Prerequisites
+You can [launch PredictionIO on Amazon Web Services](launch-aws.html).
+This is a hassle-free way to get a well-configured PredictionIO server quickly.
+
+## Method 2: Quick Install
+
+On Linux / Mac OS X, PredictionIO can now be installed with a single command:<br />
+`$ bash -c "$(curl -s https://install.prediction.io/install.sh)"`
+
+INFO: The install script will start Elasticsearch and HBase as background processes. If you restart your machine, you need to manually start ElasticSearch and HBase in order to use PredictionIO. Please see [Using PredictionIO FAQ](/resources/faq/#using-predictionio).
+
+The above script will complete the rest of the instructions on this page for you and you can proceed to the [Choosing an Engine Template](/start/templategallery).
+
+## Method 3: Manual Install
+
+### Prerequisites
 
 It is **very important** to meet the minimum version of the following
 technologies that power PredictionIO.
@@ -23,14 +36,13 @@ operation mode without further configuration, may not work. In that case,
 configure your Apache Spark to run in [standalone cluster
 mode](http://spark.apache.org/docs/latest/spark-standalone.html).
 
-## Installing PredictionIO Server
+### Installing PredictionIO
 
 PredictionIO runs on a Java virtual machine, so it runs on most platforms.
 Choose your platform below:
 
 * [Installing PredictionIO on Linux / Mac OS X](install-linux.html)
 * [Installing PredictionIO from Source Code](install-sourcecode.html)
-* [Launching PredictionIO on Amazon Web Services](launch-aws.html)
 * [Installing PredictionIO with Vagrant(VirtualBox)](install-vagrant.html)
 
 You may also use one of the community-contributed packages to install
@@ -54,4 +66,3 @@ Elasticsearch. See more [here](/resources/upgrade/).**
 [//]: # (For production environment setup, please refer to [Production)
 [//]: # (Deployment](/production/deploy.html) guide.)
 
-#### [Next: Recommendation Engine Quick Start](/templates/recommendation/quickstart/)

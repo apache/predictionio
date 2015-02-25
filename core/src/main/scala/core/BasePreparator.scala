@@ -20,7 +20,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import scala.reflect._
 
-// Probably will add an extra parameter for adhoc json formatter.
+// Probably will add an extra parameter for ad hoc json formatter.
 abstract class BasePreparator[TD, PD]
   extends AbstractDoer {
   def prepareBase(sc: SparkContext, td: TD): PD

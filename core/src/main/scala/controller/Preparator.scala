@@ -26,6 +26,31 @@ import org.apache.spark.rdd.RDD
 import scala.reflect._
 import scala.reflect.runtime.universe._
 
+/** Base class of a parallel preparator.
+  *
+  * A parallel preparator can be run in parallel on a cluster and produces a
+  * prepared data that is distributed across a cluster.
+  *
+  * @tparam TD Training data class.
+  * @tparam PD Prepared data class.
+  * @group Preparator
+  */
+abstract class PPreparator[TD, PD]
+  extends BasePreparator[TD, PD] {
+
+  def prepareBase(sc: SparkContext, td: TD): PD = {
+    prepare(sc, td)
+  }
+
+  /** Implement this method to produce prepared data that is ready for model
+    * training.
+    *
+    * @param sc An Apache Spark context.
+    * @param trainingData Training data to be prepared.
+    */
+  def prepare(sc: SparkContext, trainingData: TD): PD
+}
+
 /** Base class of a local preparator.
   *
   * A local preparator runs locally within a single machine and produces
@@ -50,31 +75,6 @@ abstract class LPreparator[TD, PD : ClassTag]
   def prepare(trainingData: TD): PD
 }
 
-/** Base class of a parallel preparator.
-  *
-  * A parallel preparator can be run in parallel on a cluster and produces a
-  * prepared data that is distributed across a cluster.
-  *
-  * @tparam TD Training data class.
-  * @tparam PD Prepared data class.
-  * @group Preparator
-  */
-abstract class PPreparator[TD, PD]
-  extends BasePreparator[TD, PD] {
-
-  def prepareBase(sc: SparkContext, td: TD): PD = {
-    prepare(sc, td)
-    // TODO: Optinally check pd size. Shouldn't exceed a few KB.
-  }
-
-  /** Implement this method to produce prepared data that is ready for model
-    * training.
-    *
-    * @param sc An Apache Spark context.
-    * @param trainingData Training data to be prepared.
-    */
-  def prepare(sc: SparkContext, trainingData: TD): PD
-}
 
 /** A helper concrete implementation of [[io.prediction.core.BasePreparator]]
   * that pass training data through without any special preparation.

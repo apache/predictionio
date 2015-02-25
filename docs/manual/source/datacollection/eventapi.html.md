@@ -1,5 +1,5 @@
 ---
-title: Collecting Data through Event API
+title: Collecting Data through REST/SDKs
 ---
 
 **Event Server** is designed to collect data into PredictionIO in an event-based
@@ -35,12 +35,8 @@ To start the event server, run
 $ pio eventserver
 ```
 
-By default, the Event Server is bound to localhost, which serves only local
-traffic. To serve global traffic, you can use 0.0.0.0, i.e.
-
-```
-$ pio eventserver --ip 0.0.0.0
-```
+INFO: By default, the Event Server is bound to localhost, which serves only local
+traffic. To serve global traffic, you can use $pio eventserver --ip 0.0.0.0
 
 ### Check Server Status
 
@@ -61,9 +57,9 @@ Content-Length: 18
 ```
 
 
-### Create App
+### Generating App ID and Access Key
 
-First, you need to create a new App before importing data to the Event Server:
+First, you need to create a new app in the Event Server. You will later send data into it.
 
 ```
 $ pio app new MyTestApp

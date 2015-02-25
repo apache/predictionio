@@ -65,7 +65,7 @@ abstract class LJavaDataSource[TD, EI, Q, A]
 
   /** Implement this method to return one set of test data (
     * an Iterable of query and actual value pairs) from a data source.
-    * Should also implement readTraining to return correponding training data.
+    * Should also implement readTraining to return corresponding training data.
     */
   def readTest(): Tuple2[EI, JIterable[Tuple2[Q, A]]] =
     (null.asInstanceOf[EI], JCollections.emptyList())
