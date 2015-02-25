@@ -68,8 +68,8 @@ import pandas as pd
 def rows_to_df(rows):
     return pd.DataFrame(map(lambda e: e.asDict(), rows))
 from pyspark.sql import SQLContext
-sqlContext = SQLContext(sc)
-rdd = sqlContext.parquetFile("/tmp/movies")
+sqlc = SQLContext(sc)
+rdd = sqlc.parquetFile("/tmp/movies")
 rdd.registerTempTable("events")
 ```
 
