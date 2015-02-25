@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+# Copyright 2014 TappingStone, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+search() {
+  local i=0;
+  local needle=$1;
+  shift
+  for str in $@; do
+    if [ "$str" = "$needle" ]; then
+      echo $i
+      return
+    else
+      ((i++))
+    fi
+  done
+  echo $i
+}
+
+export PIO_HOME="$(cd `dirname $0`/..; pwd)"
+
+export PIO_CONF_DIR="$PIO_HOME/conf"
+
+PIDFILE=$1
+
+shift
+
+FIRST_SEP=$(search "--" $@)
+
+FIRST_HALF="${@:1:$FIRST_SEP}"
+
+SECOND_HALF="${@:$FIRST_SEP+1}"
+
+exec nohup $PIO_HOME/bin/pio-class io.prediction.tools.console.Console $FIRST_HALF --pio-home $PIO_HOME $SECOND_HALF <&- > /dev/null 2>&1 &
+
+echo $! > $PIDFILE
