@@ -165,7 +165,7 @@ object CreateWorkflow extends Logging {
 
     val wfc = wfcOpt.get
 
-    WorkflowUtils.setupLogging(wfc.verbose, wfc.debug, "train", wfc.logFile)
+    WorkflowUtils.modifyLogging(wfc.verbose)
     val targetfs = if (wfc.deployMode == "cluster") hdfs else localfs
     val variantJson = parse(stringFromFile("", wfc.engineVariant, targetfs))
     val engineFactory = if (wfc.engineFactory == "") {

@@ -42,7 +42,7 @@ object FileToEvents extends Logging {
       }
     }
     parser.parse(args, FileToEventsArgs()) map { args =>
-      WorkflowUtils.setupLogging(verbose = args.verbose, debug = args.debug)
+      WorkflowUtils.modifyLogging(verbose = args.verbose)
       @transient lazy implicit val formats = Utils.json4sDefaultFormats +
         new EventJson4sSupport.APISerializer
       val sc = WorkflowContext(

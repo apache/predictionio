@@ -36,6 +36,11 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
+# Warn if log4j.properties is not present
+if [ ! -f "$FWDIR/conf/log4j.properties" ]; then
+  echo "Warning: log4j.properties is missing from $FWDIR/conf"
+fi
+
 # Make sure the Apache Spark version meets the prerequisite if it is a binary
 # distribution
 MIN_SPARK_VERSION="1.2.0"

@@ -160,7 +160,7 @@ object CreateServer extends Logging {
     }
 
     parser.parse(args, ServerConfig()) map { sc =>
-      WorkflowUtils.setupLogging(sc.verbose, sc.debug, "deploy", sc.logFile)
+      WorkflowUtils.modifyLogging(sc.verbose)
       engineInstances.get(sc.engineInstanceId) map { engineInstance =>
         val engineId = sc.engineId.getOrElse(engineInstance.engineId)
         val engineVersion = sc.engineVersion.getOrElse(

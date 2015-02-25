@@ -15,13 +15,11 @@
 
 package io.prediction.workflow
 
-import io.prediction.controller.Engine
 import io.prediction.controller.IEngineFactory
 import io.prediction.controller.IPersistentModelLoader
 import io.prediction.controller.EmptyParams
 import io.prediction.controller.Params
 import io.prediction.controller.Utils
-import io.prediction.core.BuildInfo
 
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
@@ -29,27 +27,17 @@ import grizzled.slf4j.Logging
 import org.apache.spark.SparkContext
 import org.json4s._
 import org.json4s.native.JsonMethods._
-import org.apache.log4j.Appender
-import org.apache.log4j.ConsoleAppender
-import org.apache.log4j.EnhancedPatternLayout
-import org.apache.log4j.FileAppender
 import org.apache.log4j.Level
 import org.apache.log4j.LogManager
-import org.apache.log4j.spi.Filter
-import org.apache.log4j.spi.LoggingEvent
-import org.apache.spark.SparkContext._
 import org.apache.spark.api.java.JavaRDDLike
 import org.apache.spark.rdd.RDD
 
-import scala.collection.JavaConversions._
 import scala.io.Source
 import scala.language.existentials
-import scala.reflect._
 import scala.reflect.runtime.universe
 
 import java.io.File
 import java.io.FileNotFoundException
-import java.util.concurrent.Callable
 
 /** Collection of reusable workflow related utilities. */
 object WorkflowUtils extends Logging {
@@ -172,7 +160,7 @@ object WorkflowUtils extends Logging {
       }.getOrElse(EmptyParams())
 
       (np.name, extractedParams)
-    } getOrElse ("", EmptyParams())
+    } getOrElse("", EmptyParams())
   }
 
   /** Grab environmental variables that starts with 'PIO_'. */
@@ -185,19 +173,19 @@ object WorkflowUtils extends Logging {
     */
   def javaObjectToJValue(params: AnyRef): JValue = parse(gson.toJson(params))
 
-  private [prediction] def checkUpgrade(component: String = "core"): Unit = {
+  private[prediction] def checkUpgrade(component: String = "core"): Unit = {
     val runner = new Thread(new UpgradeCheckRunner(component))
-    runner.start
+    runner.start()
   }
 
   // Extract debug string by recursively traversing the data.
   def debugString[D](data: D): String = {
     val s: String = data match {
       case rdd: RDD[_] => {
-        debugString(rdd.collect)
+        debugString(rdd.collect())
       }
       case javaRdd: JavaRDDLike[_, _] => {
-        debugString(javaRdd.collect)
+        debugString(javaRdd.collect())
       }
       case array: Array[_] => {
         "[" + array.map(debugString).mkString(",") + "]"
@@ -240,37 +228,17 @@ object WorkflowUtils extends Logging {
     ).flatten
   }
 
-  def setupLogging(
-      verbose: Boolean,
-      debug: Boolean,
-      mode: String = "",
-      logFile: Option[String] = None): Unit = {
-    val filter = new PIOFilter(verbose, debug, mode)
-    val rootLogger = LogManager.getRootLogger()
-    val appenders = rootLogger.getAllAppenders.toList
-    appenders foreach { a =>
-      val appender = a.asInstanceOf[Appender]
-      appender.addFilter(filter)
-    }
+  def modifyLogging(verbose: Boolean) = {
+    val rootLoggerLevel = if (verbose) Level.TRACE else Level.INFO
+    val chattyLoggerLevel = if (verbose) Level.INFO else Level.WARN
 
-    val consoleLayout = new EnhancedPatternLayout("%d %-5p %c{2} - %m%n")
-    val consoleAppender = new ConsoleAppender(consoleLayout)
-    consoleAppender.setFollow(true)
-    consoleAppender.addFilter(filter)
-    rootLogger.addAppender(consoleAppender)
+    LogManager.getRootLogger.setLevel(rootLoggerLevel)
 
-    logFile map { l =>
-      val fileLayout = new EnhancedPatternLayout("%d %-5p %c [%t] - %m%n")
-      val fileAppender = new FileAppender(fileLayout, l, true)
-      fileAppender.addFilter(new PIOFilter(true, debug, mode))
-      rootLogger.addAppender(fileAppender)
-    }
-
-    if (debug) {
-      rootLogger.setLevel(Level.DEBUG)
-    } else {
-      rootLogger.setLevel(Level.INFO)
-    }
+    LogManager.getLogger("org.elasticsearch").setLevel(chattyLoggerLevel)
+    LogManager.getLogger("org.apache.hadoop").setLevel(chattyLoggerLevel)
+    LogManager.getLogger("org.apache.spark").setLevel(chattyLoggerLevel)
+    LogManager.getLogger("org.eclipse.jetty").setLevel(chattyLoggerLevel)
+    LogManager.getLogger("akka").setLevel(chattyLoggerLevel)
   }
 
   def extractNameParams(jv: JValue): NameParams = {
@@ -290,10 +258,10 @@ object WorkflowUtils extends Logging {
     }
 
     if (nameOpt.isEmpty)
-    info(s"No 'name' is found. Default empty String will be used.")
+      info(s"No 'name' is found. Default empty String will be used.")
 
     if (paramsOpt.isEmpty)
-    info(s"No 'params' is found. Default EmptyParams will be used.")
+      info(s"No 'params' is found. Default EmptyParams will be used.")
 
     NameParams(
       name = nameOpt.getOrElse(""),
@@ -304,34 +272,14 @@ object WorkflowUtils extends Logging {
 
 case class NameParams(name: String, params: Option[JValue])
 
-class NameParamsSerializer extends CustomSerializer[NameParams](format => (
-  {
-    case jv: JValue => WorkflowUtils.extractNameParams(jv)
-  },
-  {
-    case x: NameParams =>
+class NameParamsSerializer extends CustomSerializer[NameParams](format => ( {
+  case jv: JValue => WorkflowUtils.extractNameParams(jv)
+}, {
+  case x: NameParams =>
     JObject(JField("name", JString(x.name)) ::
-    JField("params", x.params.getOrElse(JNothing)) :: Nil)
-  }
-))
-
-class PIOFilter(
-    verbose: Boolean = false,
-    debug: Boolean = false,
-    mode: String = "") extends Filter {
-  override def decide(event: LoggingEvent): Int = {
-    val from = event.getLocationInformation.getClassName
-    if (verbose || debug)
-      Filter.NEUTRAL
-    else if (from.startsWith("grizzled.slf4j.Logger") ||
-      (mode != "train" && from.startsWith("akka.event.slf4j.Slf4jLogger")))
-      Filter.NEUTRAL
-    else if (event.getLevel.isGreaterOrEqual(Level.ERROR))
-      Filter.NEUTRAL
-    else
-      Filter.DENY
-  }
+      JField("params", x.params.getOrElse(JNothing)) :: Nil)
 }
+  ))
 
 /** Collection of reusable workflow related utilities that touch on Apache
   * Spark. They are separated to avoid compilation problems with certain code.
@@ -358,7 +306,7 @@ object SparkWorkflowUtils extends Logging {
           classOf[String],
           classOf[Params],
           classOf[SparkContext])
-        loadMethod.invoke(null, runId, params, sc.getOrElse(null)).asInstanceOf[M]
+        loadMethod.invoke(null, runId, params, sc.orNull).asInstanceOf[M]
       } catch {
         case e: ClassNotFoundException =>
           error(s"Model class ${pmm.className} cannot be found.")
