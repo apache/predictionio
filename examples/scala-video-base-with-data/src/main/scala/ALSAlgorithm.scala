@@ -193,8 +193,12 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
     val topScores = getTopN(filteredScore, query.num)(ord).toArray
 
     val itemScores = topScores.map { case (i, s) =>
+      val it = model.items(i)
       new ItemScore(
         item = model.itemIntStringMap(i),
+        title = it.title,
+        date = it.date,
+        imdbUrl = it.imdbUrl,
         score = s
       )
     }

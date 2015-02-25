@@ -35,7 +35,7 @@ class Serving
               (is.score - mvList(i).mean) / mvList(i).stdDev
             }
 
-            ItemScore(is.item, score)
+            ItemScore(is.item, is.title, is.date, is.imdbUrl, score)
           }
         }
     }
@@ -43,11 +43,11 @@ class Serving
     // sum the standardized score if same item
     val combined = standard.flatten // Array of ItemScore
       .groupBy(_.item) // groupBy item id
-      .mapValues(itemScores => itemScores.map(_.score).reduce(_ + _))
+      .mapValues(itemScores => (itemScores.map(_.score).reduce(_ + _), itemScores(0)))
       .toArray // array of (item id, score)
-      .sortBy(_._2)(Ordering.Double.reverse)
+      .sortBy(_._2._1)(Ordering.Double.reverse)
       .take(query.num)
-      .map { case (k,v) => ItemScore(k, v) }
+      .map { case (k, (d, is)) =>  is.copy(score = d)}
 
     new PredictedResult(combined)
   }
