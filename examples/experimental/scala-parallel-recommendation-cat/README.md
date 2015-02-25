@@ -2,7 +2,14 @@
 
 ## Documentation
 
-Please refer to TODO
+The data requirement is similar to "Similar Product Template". Please see.
+http://docs.prediction.io/templates/similarproduct/quickstart/
+
+By default, view events and MLlib ALS trainImplicit is used.
+
+The main difference is:
+
+Query by user Id instead of list of item Ids.
 
 ## Development Notes
 
