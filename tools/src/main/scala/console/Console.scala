@@ -81,9 +81,7 @@ case class CommonArgs(
   skipSanityCheck: Boolean = false,
   verbose: Boolean = false,
   verbosity: Int = 0,
-  debug: Boolean = false,
-  sparkKryo: Boolean = false,
-  logFile: String = "pio.log")
+  sparkKryo: Boolean = false)
 
 case class BuildArgs(
   sbt: Option[File] = None,
@@ -171,14 +169,8 @@ object Console extends Logging {
       opt[Unit]("verbose") action { (x, c) =>
         c.copy(common = c.common.copy(verbose = true))
       }
-      opt[Unit]("debug") action { (x, c) =>
-        c.copy(common = c.common.copy(debug = true))
-      }
       opt[Unit]("spark-kryo") abbr("sk") action { (x, c) =>
         c.copy(common = c.common.copy(sparkKryo = true))
-      }
-      opt[String]("log-file") abbr("l") action { (x, c) =>
-        c.copy(common = c.common.copy(logFile = x))
       }
       note("")
       cmd("version").
@@ -849,7 +841,7 @@ object Console extends Logging {
     info(s"Going to run: ${buildCmd}")
     try {
       val r =
-        if (ca.common.verbose || ca.common.debug)
+        if (ca.common.verbose)
         buildCmd.!(ProcessLogger(line => info(line), line => error(line)))
         else
         buildCmd.!(ProcessLogger(

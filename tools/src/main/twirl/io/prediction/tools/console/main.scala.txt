@@ -3,7 +3,7 @@ Usage: pio <command> [options] <args>...
 Options common to all commands:
   [--pio-home <value>] [--spark-home <value>] [--sbt <value>]
   [-ei <value>] [-ev <value>] [-v <value>] [-m <value>]
-  [-sk | --spark-kryo] [--verbose] [--debug] [-l <value> | --log <value>]
+  [-sk | --spark-kryo] [--verbose]
   [<args>] [-- [<args passed to Spark>] [-- [<args passed to runner]]]
 
   --sbt <value>
@@ -19,12 +19,8 @@ Options common to all commands:
   -sk | --spark-kryo
       Shorthand for setting the spark.serializer property to
       org.apache.spark.serializer.KryoSerializer.
-  -l <value> | --log-file <value>
-      Specify an alternate log file location. Default: pio.log
   --verbose
       Enable third-party informational messages.
-  --debug
-      Enable all debug messages.
 
 Note that it is possible to supply pass-through arguments at the en
 of the command by using a '--' separator, e.g.

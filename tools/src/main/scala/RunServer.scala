@@ -16,7 +16,6 @@
 package io.prediction.tools
 
 import io.prediction.data.storage.EngineManifest
-import io.prediction.tools.console.Console
 import io.prediction.tools.console.ConsoleArgs
 import io.prediction.workflow.WorkflowUtils
 
@@ -37,7 +36,7 @@ object RunServer extends Logging {
     ).mkString(",")
 
     val sparkHome = ca.common.sparkHome.getOrElse(
-      sys.env.get("SPARK_HOME").getOrElse("."))
+      sys.env.getOrElse("SPARK_HOME", "."))
 
     val extraFiles = WorkflowUtils.thirdPartyConfFiles
 
@@ -108,27 +107,24 @@ object RunServer extends Logging {
         "--event-server-ip",
         ca.eventServer.ip,
         "--event-server-port",
-        ca.eventServer.port.toString,
-        "--log-file",
-        ca.common.logFile) ++
+        ca.eventServer.port.toString) ++
       (if (ca.accessKey.accessKey != "")
         Seq("--accesskey", ca.accessKey.accessKey) else Seq()) ++
       (if (ca.eventServer.enabled) Seq("--feedback") else Seq()) ++
       (if (ca.common.batch != "") Seq("--batch", ca.common.batch) else Seq()) ++
       (if (ca.common.verbose) Seq("--verbose") else Seq()) ++
-      (if (ca.common.debug) Seq("--debug") else Seq()) ++
       ca.deploy.logUrl.map(x => Seq("--log-url", x)).getOrElse(Seq()) ++
       ca.deploy.logPrefix.map(x => Seq("--log-prefix", x)).getOrElse(Seq())
 
     info(s"Submission command: ${sparkSubmit.mkString(" ")}")
 
     val proc =
-      Process(sparkSubmit, None, "SPARK_YARN_USER_ENV" -> pioEnvVars).run
+      Process(sparkSubmit, None, "SPARK_YARN_USER_ENV" -> pioEnvVars).run()
     Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
       def run(): Unit = {
-        proc.destroy
+        proc.destroy()
       }
     }))
-    proc.exitValue
+    proc.exitValue()
   }
 }

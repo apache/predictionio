@@ -80,7 +80,6 @@ object Runner extends Logging {
       Seq("")
 
     val verbose = if (ca.common.verbose) Seq("--verbose") else Seq()
-    val debug = if (ca.common.debug) Seq("--debug") else Seq()
 
     val sparkSubmit = Seq(
       sparkSubmitCommand,
@@ -92,9 +91,7 @@ object Runner extends Logging {
       Seq(mainJar),
       classArgs,
       Seq("--env", pioEnvVars),
-      Seq("--log-file", ca.common.logFile),
-      verbose,
-      debug).flatten.filter(_ != "")
+      verbose).flatten.filter(_ != "")
     info(s"Submission command: ${sparkSubmit.mkString(" ")}")
     val proc =
       Process(sparkSubmit, None, "SPARK_YARN_USER_ENV" -> pioEnvVars).run

@@ -16,7 +16,6 @@
 package io.prediction.tools
 
 import io.prediction.data.storage.EngineManifest
-import io.prediction.tools.console.Console
 import io.prediction.tools.console.ConsoleArgs
 import io.prediction.workflow.WorkflowUtils
 
@@ -44,7 +43,7 @@ object RunWorkflow extends Logging {
       "mp" -> (ca.metricsParamsJsonPath, "metrics.json"))
 
     val sparkHome = ca.common.sparkHome.getOrElse(
-      sys.env.get("SPARK_HOME").getOrElse("."))
+      sys.env.getOrElse("SPARK_HOME", "."))
 
     val hadoopConf = new Configuration
     val hdfs = FileSystem.get(hadoopConf)
@@ -126,8 +125,6 @@ object RunWorkflow extends Logging {
         mainJar,
         "--env",
         pioEnvVars,
-        "--log-file",
-        ca.common.logFile,
         "--engineId",
         em.id,
         "--engineVersion",
@@ -148,7 +145,6 @@ object RunWorkflow extends Logging {
       (if (deployMode == "cluster") Seq("--deploy-mode", "cluster") else Seq()) ++
       (if (ca.common.batch != "") Seq("--batch", ca.common.batch) else Seq()) ++
       (if (ca.common.verbose) Seq("--verbose") else Seq()) ++
-      (if (ca.common.debug) Seq("--debug") else Seq()) ++
       (if (ca.common.skipSanityCheck) Seq("--skip-sanity-check") else Seq()) ++
       (if (ca.common.stopAfterRead) Seq("--stop-after-read") else Seq()) ++
       (if (ca.common.stopAfterPrepare)
