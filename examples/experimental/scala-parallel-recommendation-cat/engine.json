@@ -1,7 +1,7 @@
 {
   "id": "default",
   "description": "Default settings",
-  "engineFactory": "org.template.ecommercerecommendation.ECommerceRecommendationEngine",
+  "engineFactory": "org.template.recommendation.RecommendationEngine",
   "datasource": {
     "params" : {
       "appId": 17

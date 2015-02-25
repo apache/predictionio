@@ -1,4 +1,4 @@
-package org.template.ecommercerecommendation
+package org.template.recommendation
 
 import io.prediction.controller.IEngineFactory
 import io.prediction.controller.Engine
@@ -20,7 +20,7 @@ case class ItemScore(
   score: Double
 ) extends Serializable
 
-object ECommerceRecommendationEngine extends IEngineFactory {
+object RecommendationEngine extends IEngineFactory {
   def apply() = {
     new Engine(
       classOf[DataSource],

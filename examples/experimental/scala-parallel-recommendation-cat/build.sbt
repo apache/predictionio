@@ -2,7 +2,7 @@ import AssemblyKeys._
 
 assemblySettings
 
-name := "template-scala-parallel-ecommercerecommendation"
+name := "template-scala-parallel-recommendation-cat"
 
 organization := "io.prediction"
 
