@@ -124,8 +124,7 @@ object CoreWorkflow {
       engineInstance: EngineInstance,
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
       params: WorkflowParams = WorkflowParams()) {
-    logger.info("CoreWorkflow.runTrain")
-    logger.info("Start spark context")
+    logger.info("Starting spark context")
     val mode = "training"
     WorkflowUtils.checkUpgrade(mode)
 
@@ -144,24 +143,22 @@ object CoreWorkflow {
 
     val instanceId = Storage.getMetaDataEngineInstances
    
-    logger.info("runTrain. Insert Perssistent Model")
+    logger.info("Inserting persistent model")
     Storage.getModelDataModels.insert(Model(
       id = engineInstance.id,
       models = KryoInjection(models)))
-    logger.info("runTrain. Finish inserting Perssistent Model")
-    
-    val engineInstances = Storage.getMetaDataEngineInstances
 
+    logger.info("Updating engine instance")
+    val engineInstances = Storage.getMetaDataEngineInstances
     engineInstances.update(engineInstance.copy(
       status = "COMPLETED",
       endTime = DateTime.now
       ))
-    logger.info("runTrain. Engine instance updated")
-    
-    logger.info("Stop spark context")
+
+    logger.info("Stopping spark context")
     sc.stop()
 
-    logger.info("CoreWorkflow.train completed.")
+    logger.info("Training completed.")
 
     /*
     if (params.stopAfterRead)
@@ -210,7 +207,7 @@ object CoreWorkflow {
 
     val (evalResultHTML, evalResultJSON) = evalResult match {
       case niceRenderingResult: NiceRendering => {
-        (niceRenderingResult.toHTML, niceRenderingResult.toJSON)
+        (niceRenderingResult.toHTML(), niceRenderingResult.toJSON())
       }
       case e: Any => {
         logger.warn(s"${e.getClass.getName} is not a NiceRendering instance.")
