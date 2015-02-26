@@ -15,7 +15,6 @@
 
 package io.prediction.controller
 
-import io.prediction.core.AbstractDoer
 import io.prediction.core.BaseDataSource
 import io.prediction.core.BasePreparator
 import io.prediction.core.BaseAlgorithm
@@ -39,7 +38,7 @@ import scala.language.implicitConversions
 
 import org.json4s._
 import org.json4s.native.JsonMethods._
-import org.json4s.native.Serialization.{ read, write }
+import org.json4s.native.Serialization.read
 
 import io.prediction.workflow.NameParamsSerializer
 import grizzled.slf4j.Logger
@@ -139,9 +138,9 @@ class Engine[TD, EI, PD, Q, P, A](
  
     val algoParamsList = engineParams.algorithmParamsList
 
-    val algorithms = algoParamsList.map { case (algoName, algoParams) => {
+    val algorithms = algoParamsList.map { case (algoName, algoParams) =>
       Doer(algorithmClassMap(algoName), algoParams)
-    }}
+    }
 
     val models = EngineWorkflow.train(sc, dataSource, preparator, algorithms)
 
@@ -171,9 +170,9 @@ class Engine[TD, EI, PD, Q, P, A](
     params: WorkflowParams = WorkflowParams()): Seq[Any] = {
       
     val algoParamsList = engineParams.algorithmParamsList
-    val algorithms = algoParamsList.map { case (algoName, algoParams) => {
+    val algorithms = algoParamsList.map { case (algoName, algoParams) =>
       Doer(algorithmClassMap(algoName), algoParams)
-    }}
+    }
 
     val models = if (persistedModels.exists(m => m.isInstanceOf[Unit.type])) {
       // If any of persistedModels is Unit, we need to re-train the model.
@@ -187,15 +186,15 @@ class Engine[TD, EI, PD, Q, P, A](
       val td = dataSource.readTrainingBase(sc)
       val pd = preparator.prepareBase(sc, td)
 
-      val models = algorithms.zip(persistedModels).map { case (algo, m) => {
+      val models = algorithms.zip(persistedModels).map { case (algo, m) =>
         m match {
           case Unit => algo.trainBase(sc, pd)
           case _ => m
         }
-      }}
+      }
       models
     } else {
-      logger.error("No need retrain")
+      logger.info("Using persisted model")
       persistedModels
     }
 
@@ -253,17 +252,17 @@ class Engine[TD, EI, PD, Q, P, A](
     //params: WorkflowParams
   ): Seq[Any] = {
 
-    logger.error(s"makeSerializableModels: engineInstanceId=$engineInstanceId") 
+    logger.info(s"engineInstanceId=$engineInstanceId")
   
     algoTuples
     .zipWithIndex
-    .map { case ((name, params, algo, model), ax) => {
+    .map { case ((name, params, algo, model), ax) =>
       algo.makePersistentModel(
         sc = sc,
         modelId = Seq(engineInstanceId, ax, name).mkString("-"),
         algoParams = params,
         bm = model)
-    }}
+    }
   }
 
   def eval(sc: SparkContext, engineParams: EngineParams)
@@ -313,7 +312,7 @@ class Engine[TD, EI, PD, Q, P, A](
         //engine.dataSourceClassMap,
         dataSourceClassMap,
         engineLanguage)
-    logger.info(s"datasource: ${dataSourceParams}")
+    logger.info(s"Datasource params: ${dataSourceParams}")
 
     logger.info(s"Extracting preparator params...")
     val preparatorParams: (String, Params) =
@@ -323,7 +322,7 @@ class Engine[TD, EI, PD, Q, P, A](
         //engine.preparatorClassMap,
         preparatorClassMap,
         engineLanguage)
-    logger.info(s"preparator: ${preparatorParams}")
+    logger.info(s"Preparator params: ${preparatorParams}")
 
     val algorithmsParams: Seq[(String, Params)] =
       variantJson findField {
@@ -355,7 +354,7 @@ class Engine[TD, EI, PD, Q, P, A](
         //engine.servingClassMap,
         servingClassMap,
         engineLanguage)
-    logger.info(s"serving: ${servingParams}")
+    logger.info(s"Serving params: ${servingParams}")
 
     new EngineParams(
       dataSourceParams = dataSourceParams,
