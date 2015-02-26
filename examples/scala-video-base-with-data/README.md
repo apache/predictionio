@@ -1,4 +1,6 @@
+---
 #PredictionIO: Add Your Own Properties to Retured Items
+---
 
 This small how-to explains how to add user defined properties to items returned by PredictionIO engine.
 This how-to is based on the [Similar Product Engine](/templates/similarproduct/quickstart/).
@@ -94,8 +96,8 @@ Item(
 Now, when you've fixed item creation, take a look on class `ItemScore` from the file [Engine.scala](https://github.com/PredictionIO/PredictionIO/blob/develop/examples/scala-parallel-similarproduct-multi/src/main/scala/Engine.scala)
 ```scala
 case class ItemScore(
-item: String,
-score: Double
+	item: String,
+	score: Double
 ) extends Serializable
 ```
 Engine will return class `PredictedResult` which contains property `itemScores: Array[ItemScore]`.
@@ -103,11 +105,11 @@ So, since your result is of class`ItemScore`, you need modify it too.
 In our example after modification you will have something similar to below
 ```scala 
 case class ItemScore(
-item: String,
-title: String,
-date: String,
-imdbUrl: String,
-score: Double
+	item: String,
+	title: String,
+	date: String,
+	imdbUrl: String,
+	score: Double
 ) extends Serializable
 ```
 
