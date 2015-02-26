@@ -59,12 +59,15 @@ object Storage extends Logging {
     try {
       val keyedPath = sourcesPrefixPath(k)
       val sourceType = sys.env(prefixPath(keyedPath, "TYPE"))
+      // hosts and ports are to be deprecated
       val hosts = sys.env(prefixPath(keyedPath, "HOSTS")).split(',')
       val ports = sys.env(prefixPath(keyedPath, "PORTS")).split(',').
         map(_.toInt)
+      val props = sys.env.filter(t => t._1.startsWith(keyedPath))
       val clientConfig = StorageClientConfig(
         hosts = hosts,
         ports = ports,
+        properties = props,
         parallel = parallel,
         test = test)
       val client = getClient(clientConfig, sourceType)
@@ -77,24 +80,13 @@ object Storage extends Logging {
         None
     }
   }
-  private def sourcesToClientMetaGet(
+  private def sourcesToClientMeta(
       source: String,
       parallel: Boolean,
       test: Boolean): Option[ClientMeta] = {
     val sourceName = if (parallel) s"parallel-${source}" else source
     s2cm.getOrElseUpdate(sourceName, updateS2CM(source, parallel, test))
   }
-  private def sourcesToClientMeta(
-      source: String,
-      parallel: Boolean,
-      test: Boolean): ClientMeta =
-    sourcesToClientMetaGet(source, parallel, test).get
-
-  /*
-  if (sys.env.get("PIO_STORAGE_INIT_SOURCES").getOrElse(false)) {
-    sourcesToClientMeta.
-  }
-  */
 
   /** Reference to the app data repository. */
   private val EventDataRepository = "EVENTDATA"
@@ -165,12 +157,6 @@ object Storage extends Logging {
     }
   }
 
-  private def getClient(
-      sourceName: String,
-      parallel: Boolean,
-      test: Boolean): Option[BaseStorageClient] =
-    sourcesToClientMetaGet(sourceName, parallel, test).map(_.client)
-
   private[prediction]
   def getDataObject[T](repo: String, test: Boolean = false)
     (implicit tag: TypeTag[T]): T = {
@@ -191,7 +177,10 @@ object Storage extends Logging {
       databaseName: String,
       parallel: Boolean = false,
       test: Boolean = false)(implicit tag: TypeTag[T]): T = {
-    val clientMeta = sourcesToClientMeta(sourceName, parallel, test)
+    val clientMeta = sourcesToClientMeta(sourceName, parallel, test) getOrElse {
+      throw new StorageClientException(
+        s"Data source $sourceName was not properly initialized.")
+    }
     val sourceType = clientMeta.sourceType
     val ctorArgs = dataObjectCtorArgs(clientMeta.client, databaseName)
     val classPrefix = clientMeta.client.prefix
@@ -221,6 +210,8 @@ object Storage extends Logging {
           s" Exception message: ${e.getMessage}).")
         errors += 1
         throw e
+      case e: java.lang.reflect.InvocationTargetException =>
+        throw e.getCause
     }
   }
 
@@ -285,7 +276,7 @@ object Storage extends Logging {
 
   if (errors > 0) {
     error(s"There were $errors configuration errors. Exiting.")
-    System.exit(1)
+    System.exit(errors)
   }
 }
 
@@ -296,10 +287,11 @@ private[prediction] trait BaseStorageClient {
 }
 
 private[prediction] case class StorageClientConfig(
-  hosts: Seq[String],
-  ports: Seq[Int],
-  parallel: Boolean = false,
-  test: Boolean = false) // test mode config
+  hosts: Seq[String] = Seq(), // deprecated
+  ports: Seq[Int] = Seq(), // deprecated
+  parallel: Boolean = false, // parallelized access (RDD)?
+  test: Boolean = false, // test mode config
+  properties: Map[String, String] = Map())
 
 private[prediction] class StorageClientException(msg: String)
     extends RuntimeException(msg)
