@@ -28,13 +28,13 @@ https://github.com/k4hoo/systest/tree/master/0.8/ml100k/demo-movielens
 $ python -m batch_import <Access Key> http://127.0.0.1:7070
 ```
 
-Goal: sample code for the recommendation engine not to recommend movies prior to 1990
+### Goal: sample code for the recommendation engine not to recommend movies prior to 1990
 
 Create new engine and install movie lens 100k data which is in below format:
 
 UserID::MovieID::Rating::Timestamp
 
-Changes to Engine.scala
+### Changes to Engine.scala
 
 Added “recommendFromYear” attribute to the Query class. we can pass the “recommendFromYear” attribute from the query request.
 
@@ -56,7 +56,7 @@ case class ItemScore(
 ) extends Serializable
 
 
-Changes to DataSource.scala
+### Changes to DataSource.scala
 
 Added attribute “year” to the class Item
 
@@ -66,7 +66,7 @@ Added attribute “year” to the class Item
 
   Item(categories = properties.getOpt[List[String]]("categories"),year = properties.get[Int]("year"))
 
-Changes to ALSAlgorihm.scala
+### Changes to ALSAlgorihm.scala
 
 In the predict method, passing “recommendFromYear” attribute to the isCandidateItem method
 		 isCandidateItem(
