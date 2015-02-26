@@ -10,18 +10,18 @@ import spray.util._
 
 
 class AdminAPISpec extends Specification{
-  
+
   val system = ActorSystem(Utils.actorSystemNameFrom(getClass))
   val config = AdminServerConfig(
     ip = "localhost",
     port = 7071)
-  
+
   val commandClient = new CommandClient(
     appClient = Storage.getMetaDataApps,
     accessKeyClient = Storage.getMetaDataAccessKeys,
     eventClient = Storage.getLEvents()
   )
-  
+
   val adminActor= system.actorOf(Props(classOf[AdminServiceActor], commandClient))
 
   "GET / request" should {
@@ -41,12 +41,13 @@ class AdminAPISpec extends Specification{
       success
     }
   }
-  
+
   "GET /cmd/app request" should {
     "properly produce OK HttpResponses" in {
+      /*
       val probe = TestProbe()(system)
       probe.send(adminActor,Get("/cmd/app"))
-      
+
       //TODO: Need to convert the response string to the corresponding case object to assert some properties on the object
       probe.expectMsg(
         HttpResponse(
@@ -56,8 +57,8 @@ class AdminAPISpec extends Specification{
             string = """{"status":1}"""
           )
         )
-      )
-      success
+      )*/
+      pending
     }
   }
 
