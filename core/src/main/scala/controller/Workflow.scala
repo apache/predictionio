@@ -107,6 +107,35 @@ object Workflow {
       params = params)
   }
 
+  def runTuning(
+      evalDef: EvaluationDefinition,
+      evalEngineParamsList: EvaluationEngineParamsList,
+      env: Map[String, String] = WorkflowUtils.pioEnvVars,
+      params: WorkflowParams = WorkflowParams()) {
+    runTuningTypeless(
+      evalDef.engine,
+      evalEngineParamsList.evalEngineParamsList,
+      evalDef.metric,
+      env,
+      params
+    )
+  }
+
+  def runTuningTypeless[EI, Q, P, A, MEI, MQ, MP, MA, MR](
+      engine: BaseEngine[EI, Q, P, A],
+      engineParamsList: Seq[EngineParams],
+      metric: Metric[MEI, MQ, MP, MA, MR],
+      env: Map[String, String] = WorkflowUtils.pioEnvVars,
+      params: WorkflowParams = WorkflowParams()) {
+    runTuning(
+      engine,
+      engineParamsList,
+      metric.asInstanceOf[Metric[EI, Q, P, A, MR]],
+      env,
+      params)
+  }
+
+
   /* @experimental */
   def runTuning[EI, Q, P, A, R](
       engine: BaseEngine[EI, Q, P, A],

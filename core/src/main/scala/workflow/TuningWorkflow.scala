@@ -69,6 +69,8 @@ import java.io.FileInputStream
 import java.io.ObjectInputStream
 import java.lang.{ Iterable => JIterable }
 import java.util.{ HashMap => JHashMap, Map => JMap }
+import org.json4s._
+import org.json4s.native.Serialization.write
 
 object TuningWorkflow {
   @transient lazy val logger = Logger[this.type]
@@ -103,8 +105,13 @@ object TuningWorkflow {
       (engineParams, metricResult)
     }}
    
+    implicit lazy val formats = Utils.json4sDefaultFormats +
+      new NameParamsSerializer
+
     evalResultList.zipWithIndex.foreach { case ((ep, r), idx) => {
-      logger.info(s"Metric: EngineParamsIdx = $idx, Result: $r")
+      logger.info(s"Iteration $idx")
+      logger.info(s"EngineParams: ${write(ep)}")
+      logger.info(s"Result: $r")
     }}
 
     // use max. take implicit from Metric.

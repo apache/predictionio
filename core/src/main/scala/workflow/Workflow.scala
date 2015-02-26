@@ -57,6 +57,8 @@ import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.json4s._
 import org.json4s.native.Serialization.write
+import org.json4s.native.Serialization.writePretty
+
 
 import scala.collection.JavaConversions._
 import scala.language.existentials
@@ -314,10 +316,12 @@ object CoreWorkflow {
     logger.info("Stop spark context")
     sc.stop()
 
-    val bestEpJson = write(bestEngineParams)
+    //val bestEpJson = write(bestEngineParams)
+    //val bestEpJson = pretty(render(json))
+    val bestEpJson = writePretty(bestEngineParams)
 
     logger.info(s"Optimal score: $bestScore")
-    logger.info(s"EngineParams: $bestEpJson")
+    logger.info(s"Optimal engine params: $bestEpJson")
 
     logger.info("CoreWorkflow.runTuning completed.")
   }

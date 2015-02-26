@@ -588,12 +588,64 @@ class SimpleEngineParams(
   */
 trait IEngineFactory {
   /** Creates an instance of an [[Engine]]. */
-  //def apply(): Engine[_, _, _, _, _, _]
   def apply(): BaseEngine[_, _, _, _]
 
   /** Override this method to programmatically return engine parameters. */
   def engineParams(key: String): EngineParams = EngineParams()
 }
+
+trait EngineDefinition extends IEngineFactory {
+  protected[this] var _engine: BaseEngine[_, _, _, _] = _
+  protected[this] var engineSet: Boolean = false
+
+  def apply(): BaseEngine[_, _, _, _] = {
+    assert(engineSet, "Engine not set")
+    _engine
+  }
+
+  def engine: BaseEngine[_, _, _, _] = {
+    assert(engineSet, "Engine not set")
+    _engine
+  }
+
+  def engine_=[EI, Q, P, A](engine: BaseEngine[EI, Q, P, A]) {
+    assert(!engineSet, "Engine can be at most one")
+    _engine = engine
+    engineSet = true
+  }
+}
+
+trait EvaluationDefinition extends EngineDefinition {
+  protected[this] var _metric: Metric[_, _, _, _, _] = _
+  protected[this] var metricSet: Boolean = false
+  
+  def metric: Metric[_, _, _, _, _] = {
+    assert(metricSet, "Metric not set")
+    _metric
+  }
+
+  // Engine Metric
+  def engineMetric: (BaseEngine[_, _, _, _], Metric[_, _, _, _, _]) = {
+    assert(engineSet, "Engine not set")
+    assert(metricSet, "Metric not set")
+    (_engine, _metric)
+  }
+
+  def engineMetric_=[EI, Q, P, A](
+    engineMetric: (BaseEngine[EI, Q, P, A], Metric[EI, Q, P, A, _])) {
+    assert(!engineSet, "Engine can be at most one")
+    assert(!metricSet, "Metric can be at most one")
+    _engine = engineMetric._1
+    _metric = engineMetric._2
+    engineSet = true
+    metricSet = true
+  }
+}
+
+trait EvaluationEngineParamsList {
+  def evalEngineParamsList: Seq[EngineParams]
+}
+
 
 /** Mix in this trait for queries that contain prId (PredictedResultId).
   * This is useful when your engine expects queries to also be associated with
