@@ -37,8 +37,8 @@ UserID::MovieID::Rating::Timestamp
 ### Changes to Engine.scala
 
 Added “recommendFromYear” attribute to the Query class. we can pass the “recommendFromYear” attribute from the query request.
-
-	case class Query(
+```
+case class Query(
   items: List[String],
   num: Int,
   categories: Option[Set[String]],
@@ -55,20 +55,21 @@ case class ItemScore(
   year: Int
 ) extends Serializable
 
-
+```
 ### Changes to DataSource.scala
 
 Added attribute “year” to the class Item
-
-		case class Item(categories: Option[List[String]],year: Int)
+```
+      1) 	case class Item(categories: Option[List[String]],year: Int)
 
       2) 	In the eventsDb.aggregateProperties, adding year property
 
   Item(categories = properties.getOpt[List[String]]("categories"),year = properties.get[Int]("year"))
-
+```
 ### Changes to ALSAlgorihm.scala
 
 In the predict method, passing “recommendFromYear” attribute to the isCandidateItem method
+```
 		 isCandidateItem(
         i = i,
         items = model.items,
@@ -123,10 +124,12 @@ In “isCandidateItem” method, verifying if Item’s year is greater than “r
     new PredictedResult(itemScores)
 
 
-
+```
 
 ### Example Request
 
+```
 curl -H "Content-Type: application/json" \
 -d '{ "items": ["171"], "num": 10, "recommendFromYear":1990 }' \
 http://localhost:8000/queries.json
+```
