@@ -49,6 +49,8 @@ lazy val pioBuildInfoSettings = buildInfoSettings ++ Seq(
     sparkVersion),
   buildInfoPackage := "io.prediction.core")
 
+lazy val conf = file(".") / "conf"
+
 lazy val root = project in file(".") aggregate(
   core,
   data,
@@ -61,22 +63,27 @@ lazy val core = (project in file("core")).
   settings(genjavadocSettings: _*).
   settings(pioBuildInfoSettings: _*).
   settings(sonatypeSettings: _*).
-  enablePlugins(SbtTwirl)
+  enablePlugins(SbtTwirl).
+  settings(unmanagedClasspath in Test += conf)
 
 lazy val data = (project in file("data")).
-  settings(sonatypeSettings: _*)
+  settings(sonatypeSettings: _*).
+  settings(unmanagedClasspath in Test += conf)
 
 lazy val engines = (project in file("engines")).
   dependsOn(core).
   settings(sonatypeSettings: _*).
-  enablePlugins(SbtTwirl)
+  enablePlugins(SbtTwirl).
+  settings(unmanagedClasspath in Test += conf)
 
 lazy val tools = (project in file("tools")).
   dependsOn(core).
   dependsOn(data).
-  enablePlugins(SbtTwirl)
+  enablePlugins(SbtTwirl).
+  settings(unmanagedClasspath in Test += conf)
 
-lazy val e2 = (project in file("e2")).settings(sonatypeSettings: _*)
+lazy val e2 = (project in file("e2")).settings(sonatypeSettings: _*).
+  settings(unmanagedClasspath in Test += conf)
 
 scalaJavaUnidocSettings
 
