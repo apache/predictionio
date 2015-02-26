@@ -24,7 +24,7 @@ import org.json4s.native.JsonMethods._
 
 import scala.reflect._
 
-// This class exists for legacy reason.
+// Base class for all controllers.
 abstract class AbstractDoer extends Serializable 
 
 object Doer extends Logging {

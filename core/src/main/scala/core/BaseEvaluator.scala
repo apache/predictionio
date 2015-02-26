@@ -15,26 +15,11 @@
 
 package io.prediction.core
 
-/*
-import scala.reflect._
-
-abstract class BaseEvaluator[-EI, -Q, P, A, EU, ES, ER <: AnyRef]
-  extends AbstractDoer {
-
-  def evaluateUnitBase(input: (Q, P, A)): EU
-
-  def evaluateSetBase(evalInfo: EI, metricUnits: Seq[EU]): ES
-
-  def evaluateAllBase(input: Seq[(EI, ES)]): ER
-}
-*/
-
 import scala.reflect._
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
-//abstract class BaseEvaluator[-EI, Q, P, A, ER <: AnyRef]
 abstract class BaseEvaluator[-EI, Q, P, A, ER]
   extends AbstractDoer {
 
