@@ -1,26 +1,23 @@
-# Similar Product Template
+# Similar Product Template With Filter by Item Year support
+
+This example engine is based on Similar Product Tempplate version v0.1.1 and is modified to support filter recommendation by the item property 'year'.
+
+For example, recommend movies after year 1990.
 
 ## Documentation
 
 Please refer to http://docs.prediction.io/templates/similarproduct/quickstart/
 
-## Versions
-
-### develop
-
-### v0.1.1
-
-- Persist RDD to memory (.cache()) in DataSource for better performance
-- Use local model for faster serving.
-
-### v0.1.0
-
-- initial version
-
-
 ## Development Notes
 
-### import sample data
+### Sample data
+
+The movie lens 100k data which is in below format:
+
+UserID::MovieID::Rating::Timestamp
+
+### import ML-100K sample data
+
 Import movielens data using below repository
 https://github.com/k4hoo/systest/tree/master/0.8/ml100k/demo-movielens
 
@@ -28,17 +25,12 @@ https://github.com/k4hoo/systest/tree/master/0.8/ml100k/demo-movielens
 $ python -m batch_import <Access Key> http://127.0.0.1:7070
 ```
 
-### Goal: sample code for the recommendation engine not to recommend movies prior to 1990
-
-Create new engine and install movie lens 100k data which is in below format:
-
-UserID::MovieID::Rating::Timestamp
-
 ### Changes to Engine.scala
-```
 
- 1) Added “recommendFromYear” attribute to the Query class. we can pass the “recommendFromYear” attribute from the query request.
 
+1) Added “recommendFromYear” attribute to the Query class. we can pass the “recommendFromYear” attribute from the query request.
+
+```scala
 case class Query(
   items: List[String],
   num: Int,
@@ -47,9 +39,11 @@ case class Query(
   blackList: Option[Set[String]],
   recommendFromYear: Option[Int]
 ) extends Serializable
+```
 
- 2)  Added “year” attribute to the class ItemScore. 
+2)  Added “year” attribute to the class ItemScore.
 
+```scala
 case class ItemScore(
   item: String,
   score: Double,
@@ -57,34 +51,42 @@ case class ItemScore(
 ) extends Serializable
 
 ```
+
 ### Changes to DataSource.scala
-```
+
 1) Added attribute “year” to the class Item
 
-      	case class Item(categories: Option[List[String]],year: Int)
+```scala
+case class Item(categories: Option[List[String]],year: Int)
+```
 
 2) In the eventsDb.aggregateProperties, adding year property
 
+```scala
   Item(categories = properties.getOpt[List[String]]("categories"),year = properties.get[Int]("year"))
 ```
+
 ### Changes to ALSAlgorihm.scala
-```
+
+
 1) In the predict method, passing “recommendFromYear” attribute to the isCandidateItem method
 
-		 isCandidateItem(
-        i = i,
-        items = model.items,
-        categories = query.categories,
-        queryList = queryList,
-        whiteList = whiteList,
-        blackList = blackList,
-        recommendFromYear = query.recommendFromYear
-     		 )
-
+```scala
+  isCandidateItem(
+    i = i,
+    items = model.items,
+    categories = query.categories,
+    queryList = queryList,
+    whiteList = whiteList,
+    blackList = blackList,
+    recommendFromYear = query.recommendFromYear
+  )
+```
 
 2) In “isCandidateItem” method, verifying if Item’s year is greater than “recommendFromYear” attribute.
-		
-		 private  def isCandidateItem(
+
+```scala
+  private def isCandidateItem(
     i: Int,
     items: Map[Int, Item],
     categories: Option[Set[String]],
@@ -106,14 +108,11 @@ case class ItemScore(
       }.getOrElse(false) // discard this item if it has no categories
     }.getOrElse(true)
   }
-
-
-	
-
+```
 
 3)  In the predict method, returning year as well as part of ItemScore
 
-
+```scala
     val itemScores = topScores.map { case (i, s) =>
       new ItemScore(
         item = model.itemIntStringMap(i),
@@ -123,8 +122,6 @@ case class ItemScore(
     }
 
     new PredictedResult(itemScores)
-
-
 ```
 
 ### Example Request
