@@ -35,9 +35,10 @@ Create new engine and install movie lens 100k data which is in below format:
 UserID::MovieID::Rating::Timestamp
 
 ### Changes to Engine.scala
-
-Added “recommendFromYear” attribute to the Query class. we can pass the “recommendFromYear” attribute from the query request.
 ```
+
+ 1) Added “recommendFromYear” attribute to the Query class. we can pass the “recommendFromYear” attribute from the query request.
+
 case class Query(
   items: List[String],
   num: Int,
@@ -47,7 +48,7 @@ case class Query(
   recommendFromYear: Option[Int]
 ) extends Serializable
 
-    2)  Added “year” attribute to the class ItemScore. 
+ 2)  Added “year” attribute to the class ItemScore. 
 
 case class ItemScore(
   item: String,
@@ -57,19 +58,19 @@ case class ItemScore(
 
 ```
 ### Changes to DataSource.scala
-
-Added attribute “year” to the class Item
 ```
-      1) 	case class Item(categories: Option[List[String]],year: Int)
+1) Added attribute “year” to the class Item
 
-      2) 	In the eventsDb.aggregateProperties, adding year property
+      	case class Item(categories: Option[List[String]],year: Int)
+
+2) In the eventsDb.aggregateProperties, adding year property
 
   Item(categories = properties.getOpt[List[String]]("categories"),year = properties.get[Int]("year"))
 ```
 ### Changes to ALSAlgorihm.scala
-
-In the predict method, passing “recommendFromYear” attribute to the isCandidateItem method
 ```
+1) In the predict method, passing “recommendFromYear” attribute to the isCandidateItem method
+
 		 isCandidateItem(
         i = i,
         items = model.items,
@@ -81,7 +82,7 @@ In the predict method, passing “recommendFromYear” attribute to the isCandid
      		 )
 
 
-In “isCandidateItem” method, verifying if Item’s year is greater than “recommendFromYear” attribute.
+2) In “isCandidateItem” method, verifying if Item’s year is greater than “recommendFromYear” attribute.
 		
 		 private  def isCandidateItem(
     i: Int,
