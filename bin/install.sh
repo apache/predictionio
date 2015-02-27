@@ -133,12 +133,8 @@ else
     if confirm "Recieve updates?"; then
       guess_email=''
       if hash git 2>/dev/null; then
-        echo "Git installed!"
+        # Git installed!
         guess_email=$(git config --global user.email)
-
-        echo "Email: $guess_email"
-      else
-        echo "Git not installed"
       fi
 
       if [ -n "$guess_email" ]; then
@@ -148,11 +144,8 @@ else
       fi
       email=${email:-$guess_email}
 
-      echo "Got email: $email"
       url="http://direct.prediction.io/$PIO_VERSION/install.json/install/install/$email/"
-
-      echo "Sending data to: $url"
-      curl --silent $url
+      curl --silent $url > /dev/null
     fi
 
     spark_dir=$vendors_dir/spark-$SPARK_VERSION
