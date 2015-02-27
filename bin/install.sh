@@ -130,6 +130,31 @@ else
     read -e -p "Vendor path ($pio_dir/vendors): " vendors_dir
     vendors_dir=${vendors_dir:-$pio_dir/vendors}
 
+    if confirm "Recieve updates?"; then
+      guess_email=''
+      if hash git 2>/dev/null; then
+        echo "Git installed!"
+        guess_email=$(git config --global user.email)
+
+        echo "Email: $guess_email"
+      else
+        echo "Git not installed"
+      fi
+
+      if [ -n "$guess_email" ]; then
+        read -e -p "Email ($guess_email): " email
+      else
+        read -e -p "Enter email: " email
+      fi
+      email=${email:-$guess_email}
+
+      echo "Got email: $email"
+      url="http://direct.prediction.io/$PIO_VERSION/install.json/install/install/$email/"
+
+      echo "Sending data to: $url"
+      curl --silent $url
+    fi
+
     spark_dir=$vendors_dir/spark-$SPARK_VERSION
     elasticsearch_dir=$vendors_dir/elasticsearch-$ELASTICSEARCH_VERSION
     hbase_dir=$vendors_dir/hbase-$HBASE_VERSION
@@ -288,16 +313,17 @@ if [[ $USER ]]; then
   chown -R $USER $vendors_dir
 fi
 
-$elasticsearch_dir/bin/elasticsearch -d
-$hbase_dir/bin/start-hbase.sh
+echo -e "\033[1;32mInstallation done!\033[0m"
 
-echo -e "\033[1;32mElasticserach and HBase started!\033[0m"
+
+
+
 
 echo "--------------------------------------------------------------------------------"
 echo -e "\033[1;32mInstallation of PredictionIO $PIO_VERSION complete!\033[0m"
-echo -e "\033[1;33mIMPORTANT: You still have to start the eventserver manually:\033[0m"
-echo -e "Run: '\033[1mpio eventserver --ip 0.0.0.0\033[0m'"
-echo -e "Check the eventserver status with: '\033[1mcurl -i -X GET http://localhost:7070\033[0m'"
+echo -e "\033[1;33mIMPORTANT: You still have to start the PredictionIO manually:\033[0m"
+echo -e "Run: '\033[1mpio start-all\033[0m'"
+echo -e "Check the status with: '\033pio status\033[0m'"
 echo -e "Use: '\033[1mpio [train|deploy|...]\033[0m' commands"
 echo -e "Please report any problems to: \033[1;34msupport@prediction.io\033[0m"
 echo -e "\033[1;34mDocumentation at: http://docs.prediction.io\033[0m"
