@@ -44,6 +44,8 @@ Choose your platform below:
 * [Installing PredictionIO on Linux / Mac OS X](install-linux.html)
 * [Installing PredictionIO from Source Code](install-sourcecode.html)
 * [Installing PredictionIO with Vagrant(VirtualBox)](install-vagrant.html)
+* [Installing PredictionIO with Terminal.com Snap](https://www.terminal.com/snapshot/f444bfb7538dfc596485374f56167ec6f79cbc16f793f013ad120067070eb81a)
+
 
 You may also use one of the community-contributed packages to install
 PredictionIO:
