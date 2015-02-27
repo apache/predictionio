@@ -10,23 +10,23 @@ WARNING: This template requires PredictionIO version >= 0.8.7
 
 ## Usage
 
-### Event Data Requirment
+### Event Data Requirements
 
 By default, the template requires the following events to be collected:
 
-- page 'view' events with session ID
+- 'page view' events with session ID
 - the first page view event can optionally provide the browser and referrer ID
 - user 'buy' event with session ID
 
 The landing page ID, referrer ID, browser information and user's buy event will be used to train the model.
 
-NOTE: You can customize what the "conversion" event is (such as 'subscribe'). It's "buy" item event by default.
+NOTE: You can customize what the "conversion" event is. It's "buy" item event by default but it can be modified to others such as "subscribe". 
 
 #### Input Query:
 
-- landing page ID
-- referrer ID
-- browser
+- Landing page ID
+- Referrer ID
+- Browser
 
 #### Output PredictedResult:
 
@@ -47,9 +47,9 @@ NOTE: You can customize what the "conversion" event is (such as 'subscribe'). It
 ## Collecting Data
 
 Next, let's collect training data for this Engine. By default,
-the Lead Score Engine Template supports the following entities: **user**, **page**, and **item**. An user view a page, and buy an item.
+ Lead Score Engine Template supports the following entities: **user**, **page**, and **item**. An user views a page, and buys an item.
 
-Note that a "sessionId" property is required for these events to indicate these events happen in the same session. When the user first visit your site and views a page in the session, you should also specify the optional "referrral ID" and optional "browser" information. This is needed to determine who refer the user to land on your site and the browser information.
+Note that a "sessionId" property is required to indicate these events happen in the same session. In the first visit of a user, you should specify the optional "referrral ID" and "browser" information. These are used to determine where the user comes from and the browser information.
 
 <%= partial 'shared/quickstart/install_sdk' %>
 
@@ -249,7 +249,7 @@ curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
 
 ## Import Sample Data
 
-For demonstration purpose, a python script is provided to import sample data. It imports 50 sessions of events. In each session, randomly select an user (with user ID "u1" to "u10") to lamd on a page (randomly selected from example.com/page1 to example.com/page20) with referrerId (randomly selected from referrer1.com to referrer10.com) and browser information, the user may view more pages, and may or may not buy an item (with item ID "i1" to "i50").
+For demonstration purpose, a python script is provided to import sample data. The sample data includes 50 sessions of events. In each session, a randomly selected user (with user ID "u1" to "u10") lands on a page (randomly selected from example.com/page1 to example.com/page20) with referrerId (randomly selected from referrer1.com to referrer10.com) and browser information. The user may view more pages, and may or may not buy an item (with item ID "i1" to "i50").
 
 NOTE: You need to install Python SDK to run the import script. Please follow [Python SDK README](https://github.com/PredictionIO/PredictionIO-Python-SDK) to install.
 
@@ -283,7 +283,7 @@ please update the Python SDK to the latest version.
 
 ## Using the Engine
 
-Now, You can retrieve predicted results. When a user lands on your page "example.com/page9", with referrer "referrer10.com" and browser "Firefox", you can predict the lead score by sending this JSON '{ "landingPageId" : "example.com/page9", "referrerId" : "referrer10.com", "browser": "Firefox" }' to the deployed engine. The engine will return a JSON with the score
+Now, You can retrieve the results. When a user lands on your page "example.com/page9", with referrer "referrer10.com" and browser "Firefox", you can get the predicted lead score by sending this JSON '{ "landingPageId" : "example.com/page9", "referrerId" : "referrer10.com", "browser": "Firefox" }' to the deployed engine. The engine will return a JSON with the score
 
 Simply send a query by making a HTTP request or through the `EngineClient` of an SDK:
 
