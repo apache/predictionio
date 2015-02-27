@@ -79,7 +79,7 @@ case class Item(
 
 #### Create The Item Properly
 Now, your IDE (or compiler) will say you about all the places where you need make changes to create item
-properly. For example, [DataSource.scala#L50](https://github.com/PredictionIO/PredictionIO/blob/develop/examples/add-scala-video-base-with-data/examples/scala-video-base-with-data/src/main/scala/DataSource.scala#L50)
+properly. For example, [DataSource.scala#L50](https://github.com/PredictionIO/PredictionIO/blob/develop/examples/scala-parallel-similarproduct-multi/src/main/scala/DataSource.scala#L50)
 ```scala
 Item(categories = properties.getOpt[List[String]]("categories"))
 ```
@@ -101,7 +101,7 @@ case class ItemScore(
 ) extends Serializable
 ```
 Engine will return class `PredictedResult` which contains property `itemScores: Array[ItemScore]`.
-So, since your result is of class`ItemScore`, you need modify it too. 
+So, since your result items are of class`ItemScore`, you need modify this class too. 
 In our example after modification you will have something similar to below
 ```scala 
 case class ItemScore(
@@ -113,7 +113,61 @@ case class ItemScore(
 ) extends Serializable
 ```
 
-And again now you need go through all the places where `ItemScore` is created and fix compiler errors.
+#### Create The ItemScore Properly
+
+Again, now you need to go through all the places where `ItemScore` is created and fix compiler errors.
+
+Result is initially created by the `Algorithm` component and then is passed to the `Serving` component.
+Take a look on a place where object of class ItemScore is initially created in file [ALSAlgorithm.scala#L196](https://github.com/PredictionIO/PredictionIO/blob/develop/examples/scala-parallel-similarproduct-multi/src/main/scala/ALSAlgorithm.scala#L196).
+```scala
+new ItemScore(
+	item = model.itemIntStringMap(i),
+	score = s
+)
+```
+You code after changes will be similar to posted below
+```scala
+val it = model.items(i)
+new ItemScore(
+	item = model.itemIntStringMap(i),
+	title = it.title,
+	date = it.date,
+	imdbUrl = it.imdbUrl,
+	score = s
+)
+```
+Using `model.items(i)` you can receive corresponding object of the `Item` class,
+and now you can access its properties which you created during previous step.
+Using `model.itemIntStringMap(i)` you can receive ID of corresponding item.
+
+The last place where you need to make changes is file [Serving.scala](https://github.com/PredictionIO/PredictionIO/blob/develop/examples/scala-parallel-similarproduct-multi/src/main/scala/Serving.scala).
+
+Engine makes some preliminary data transformations here before sending results to the requester.
+Again, all you need is just to fix compiler errors to let results pass through this place.
+First, see [Serving.scala#L38](https://github.com/PredictionIO/PredictionIO/blob/develop/examples/scala-parallel-similarproduct-multi/src/main/scala/Serving.scala#L38).
+You have object of class `ItemScore` in parameter named `is`. Just use usual `scala` `copy` method here to return identical object with needed score value
+```scala
+is.copy(score = score)
+```
+
+You need also make changes on lines
+[46](https://github.com/PredictionIO/PredictionIO/blob/develop/examples/scala-parallel-similarproduct-multi/src/main/scala/Serving.scala#L46),
+[48](https://github.com/PredictionIO/PredictionIO/blob/develop/examples/scala-parallel-similarproduct-multi/src/main/scala/Serving.scala#L48),
+and [50](https://github.com/PredictionIO/PredictionIO/blob/develop/examples/scala-parallel-similarproduct-multi/src/main/scala/Serving.scala#L50) to get transformation finished.
+The idea is to pass not only the `score` property, but whole `ItemScore` object when counting final scores on lines 44...49 to save all the data.
+To achieve this task, one may create tuple of `(score, item-score-object)` instead of passing just the `score` value
+and then recreate `ItemScore` object on line 50 with counted `score` value by using the `copy` method.
+Since all items with the same IDes represent the same object, we can just take `itemScores(0)` for our purposes. 
+See resulting code below
+```scala
+val combined = standard.flatten // Array of ItemScore
+  .groupBy(_.item) // groupBy item id
+  .mapValues(itemScores => (itemScores.map(_.score).reduce(_ + _), itemScores(0))) //Add tuple (score, ItemScore) instead of just score value
+  .toArray // array of (item id, score)
+  .sortBy(_._2._1)(Ordering.Double.reverse) //Order by score value
+  .take(query.num)
+  .map { case (k, (d, is)) =>  is.copy(score = d)} //Create resulting ItemScore with proper score value
+```
 
 #### Modify Script That Supplies Data For The Engine
 And this is the final step. You should supply your data to the engine using new format now.
