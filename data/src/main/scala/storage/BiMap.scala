@@ -124,4 +124,41 @@ object BiMap {
     stringInt(keys.distinct.collect)
   }
 
+  private[this] def stringDoubleImpl(keys: Seq[String])
+  : BiMap[String, Double] = {
+    val ki = keys.zipWithIndex.map(e => (e._1, e._2.toDouble))
+    new BiMap(HashMap(ki : _*))
+  }
+
+  /** Create a BiMap[String, Double] from a set of String. The Double index 
+    * starts from 0.
+    * @param keys a set of String
+    * @return a String to Double BiMap
+    */
+  def stringDouble(keys: Set[String]): BiMap[String, Double] = {
+    //val hm = HashMap(keys.toSeq.zipWithIndex.map(_.toDouble) : _*)
+    //new BiMap(hm)
+    stringDoubleImpl(keys.toSeq)
+  }
+
+  /** Create a BiMap[String, Double] from an array of String.
+    * NOTE: the the array cannot have duplicated element.
+    * The Double index starts from 0.
+    * @param keys a set of String
+    * @return a String to Double BiMap
+    */
+  def stringDouble(keys: Array[String]): BiMap[String, Double] = {
+    //val hm = HashMap(keys.zipWithIndex.mapValues(_.toDouble) : _*)
+    //new BiMap(hm)
+    stringDoubleImpl(keys.toSeq)
+  }
+
+  /** Create a BiMap[String, Double] from RDD[String]. The Double index starts
+    * from 0.
+    * @param keys RDD of String
+    * @return a String to Double BiMap
+    */
+  def stringDouble(keys: RDD[String]): BiMap[String, Double] = {
+    stringDoubleImpl(keys.distinct.collect)
+  }
 }
