@@ -108,14 +108,14 @@ object Workflow {
   }
 
   def runTuning(
-      evalDef: EvaluationDefinition,
-      evalEngineParamsList: EvaluationEngineParamsList,
+      iEvaluation: IEvaluation,
+      iEngineParamsGenerator: IEngineParamsGenerator,
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
       params: WorkflowParams = WorkflowParams()) {
     runTuningTypeless(
-      evalDef.engine,
-      evalEngineParamsList.evalEngineParamsList,
-      evalDef.metric,
+      iEvaluation.engine,
+      iEngineParamsGenerator.engineParamsList,
+      iEvaluation.metric,
       env,
       params
     )

@@ -593,7 +593,7 @@ trait IEngineFactory {
   def engineParams(key: String): EngineParams = EngineParams()
 }
 
-trait EngineDefinition extends IEngineFactory {
+trait IEngine extends IEngineFactory {
   protected[this] var _engine: BaseEngine[_, _, _, _] = _
   protected[this] var engineSet: Boolean = false
 
@@ -608,13 +608,13 @@ trait EngineDefinition extends IEngineFactory {
   }
 
   def engine_=[EI, Q, P, A](engine: BaseEngine[EI, Q, P, A]) {
-    assert(!engineSet, "Engine can be at most one")
+    assert(!engineSet, "Engine can be set at most once")
     _engine = engine
     engineSet = true
   }
 }
 
-trait EvaluationDefinition extends EngineDefinition {
+trait IEvaluation extends IEngine {
   protected[this] var _metric: Metric[_, _, _, _, _] = _
   protected[this] var metricSet: Boolean = false
   
@@ -632,8 +632,8 @@ trait EvaluationDefinition extends EngineDefinition {
 
   def engineMetric_=[EI, Q, P, A](
     engineMetric: (BaseEngine[EI, Q, P, A], Metric[EI, Q, P, A, _])) {
-    assert(!engineSet, "Engine can be at most one")
-    assert(!metricSet, "Metric can be at most one")
+    assert(!engineSet, "Engine can be set at most once")
+    assert(!metricSet, "Metric can be set at most once")
     _engine = engineMetric._1
     _metric = engineMetric._2
     engineSet = true
@@ -641,8 +641,20 @@ trait EvaluationDefinition extends EngineDefinition {
   }
 }
 
-trait EvaluationEngineParamsList {
-  def evalEngineParamsList: Seq[EngineParams]
+trait IEngineParamsGenerator {
+  protected[this] var epList: Seq[EngineParams] = _
+  protected[this] var epListSet: Boolean = false
+
+  def engineParamsList: Seq[EngineParams] = {
+    assert(epListSet, "EngineParamsList not set")
+    epList
+  }
+
+  def engineParamsList_=(l: Seq[EngineParams]) {
+    assert(!epListSet, "EngineParamsList can bet set at most once")
+    epList = Seq(l:_*)
+    epListSet = true
+  }
 }
 
 
