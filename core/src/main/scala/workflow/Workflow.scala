@@ -265,18 +265,18 @@ object CoreWorkflow {
       params)
   }
   
-  def runTuning[EI, Q, P, A, R](
+  def runEvaluation[EI, Q, P, A, R](
       engine: BaseEngine[EI, Q, P, A],
       engineParamsList: Seq[EngineParams],
       engineInstance: EngineInstance,
       metric: Metric[EI, Q, P, A, R],
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
       params: WorkflowParams = WorkflowParams()) {
-    logger.info("CoreWorkflow.runTuning")
+    logger.info("CoreWorkflow.runEvaluation")
   
     logger.info("Start spark context")
 
-    val mode = "tuning"
+    val mode = "evaluation"
     val sc = WorkflowContext(
       params.batch,
       env,
@@ -285,7 +285,7 @@ object CoreWorkflow {
 
     WorkflowUtils.checkUpgrade(mode)
 
-    val (bestEngineParams, bestScore) = TuningWorkflow.runTuning(
+    val (bestEngineParams, bestScore) = EvaluationWorkflow.runEvaluation(
       sc,
       engine,
       engineParamsList,
@@ -296,7 +296,7 @@ object CoreWorkflow {
       new NameParamsSerializer
 
     // TODO: Save best instance to EngineInstance
-    val tunedEI = engineInstance.copy(
+    val evaledEI = engineInstance.copy(
       status = "EVALCOMPLETED",
       endTime = DateTime.now,
       evaluatorResults = bestScore.toString,
@@ -306,8 +306,8 @@ object CoreWorkflow {
       servingParams = write(bestEngineParams.servingParams)
     )
     
-    logger.info(s"Insert tuning result")
-    engineInstances.update(tunedEI)
+    logger.info(s"Insert evaluation result")
+    engineInstances.update(evaledEI)
 
 
     logger.info("Stop spark context")
@@ -318,7 +318,7 @@ object CoreWorkflow {
     logger.info(s"Optimal score: $bestScore")
     logger.info(s"Optimal engine params: $bestEpJson")
 
-    logger.info("CoreWorkflow.runTuning completed.")
+    logger.info("CoreWorkflow.runEvaluation completed.")
   }
 }
 

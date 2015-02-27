@@ -42,7 +42,6 @@ import io.prediction.core.BasePreparator
 import io.prediction.core.BaseServing
 import io.prediction.core.BaseEngine
 import io.prediction.core.Doer
-//import io.prediction.core.LModelAlgorithm
 import io.prediction.data.storage.EngineInstance
 import io.prediction.data.storage.EngineInstances
 import io.prediction.data.storage.Model
@@ -72,7 +71,7 @@ import java.util.{ HashMap => JHashMap, Map => JMap }
 import org.json4s._
 import org.json4s.native.Serialization.write
 
-object TuningWorkflow {
+object EvaluationWorkflow {
   @transient lazy val logger = Logger[this.type]
   @transient val engineInstances = Storage.getMetaDataEngineInstances
 
@@ -84,13 +83,13 @@ object TuningWorkflow {
     }
   }
 
-  def runTuning[EI, Q, P, A, R](
+  def runEvaluation[EI, Q, P, A, R](
       sc: SparkContext,
       engine: BaseEngine[EI, Q, P, A],
       engineParamsList: Seq[EngineParams],
       metric: Metric[EI, Q, P, A, R],
       params: WorkflowParams = WorkflowParams()): (EngineParams, R) = {
-    logger.info("TuningWorkflow.runTuning completed.")
+    logger.info("EvaluationWorkflow.runTuning completed.")
 
     val tuningEvaluator = new TuningEvaluator(metric)
 
@@ -118,7 +117,7 @@ object TuningWorkflow {
     val (bestEngineParams, bestScore) = evalResultList.reduce(
       (x, y) => (if (metric.compare(x._2, y._2) >= 0) x else y))
 
-    logger.info("TuningWorkflow.runTuning completed.")
+    logger.info("EvaluationWorkflow.runTuning completed.")
     (bestEngineParams, bestScore)
   }
 }

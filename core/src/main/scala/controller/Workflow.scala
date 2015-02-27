@@ -24,7 +24,7 @@ import io.prediction.core.BaseEngine
 import io.prediction.core.Doer
 import io.prediction.workflow.WorkflowUtils
 import io.prediction.workflow.CoreWorkflow
-import io.prediction.workflow.TuningWorkflow
+import io.prediction.workflow.EvaluationWorkflow
 import io.prediction.workflow.NameParamsSerializer
 import scala.reflect.ClassTag
 import org.json4s._
@@ -63,6 +63,7 @@ case class WorkflowParams(
   */
 object Workflow {
   // evaluator is already instantiated.
+  // This is an undocumented way of using evaluator. Still experimental.
   // evaluatorParams is used to write into EngineInstance, will be shown in
   // dashboard.
   def runEval[EI, Q, P, A, ER <: AnyRef](
@@ -107,12 +108,12 @@ object Workflow {
       params = params)
   }
 
-  def runTuning(
+  def runEvaluation(
       iEvaluation: IEvaluation,
       iEngineParamsGenerator: IEngineParamsGenerator,
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
       params: WorkflowParams = WorkflowParams()) {
-    runTuningTypeless(
+    runEvaluationTypeless(
       iEvaluation.engine,
       iEngineParamsGenerator.engineParamsList,
       iEvaluation.metric,
@@ -121,13 +122,13 @@ object Workflow {
     )
   }
 
-  def runTuningTypeless[EI, Q, P, A, MEI, MQ, MP, MA, MR](
+  def runEvaluationTypeless[EI, Q, P, A, MEI, MQ, MP, MA, MR](
       engine: BaseEngine[EI, Q, P, A],
       engineParamsList: Seq[EngineParams],
       metric: Metric[MEI, MQ, MP, MA, MR],
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
       params: WorkflowParams = WorkflowParams()) {
-    runTuning(
+    runEvaluation(
       engine,
       engineParamsList,
       metric.asInstanceOf[Metric[EI, Q, P, A, MR]],
@@ -137,7 +138,7 @@ object Workflow {
 
 
   /* @experimental */
-  def runTuning[EI, Q, P, A, R](
+  def runEvaluation[EI, Q, P, A, R](
       engine: BaseEngine[EI, Q, P, A],
       engineParamsList: Seq[EngineParams],
       metric: Metric[EI, Q, P, A, R],
@@ -172,7 +173,7 @@ object Workflow {
       evaluatorResultsHTML = "",
       evaluatorResultsJSON = "")
 
-    CoreWorkflow.runTuning(
+    CoreWorkflow.runEvaluation(
       engine = engine,
       engineParamsList = engineParamsList,
       engineInstance = engineInstance,
