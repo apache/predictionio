@@ -109,14 +109,14 @@ object Workflow {
   }
 
   def runEvaluation(
-      iEvaluation: IEvaluation,
-      iEngineParamsGenerator: IEngineParamsGenerator,
+      evaluation: Evaluation,
+      engineParamsGenerator: EngineParamsGenerator,
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
       params: WorkflowParams = WorkflowParams()) {
     runEvaluationTypeless(
-      iEvaluation.engine,
-      iEngineParamsGenerator.engineParamsList,
-      iEvaluation.metric,
+      evaluation.engine,
+      engineParamsGenerator.engineParamsList,
+      evaluation.metric,
       env,
       params
     )

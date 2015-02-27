@@ -593,7 +593,7 @@ trait IEngineFactory {
   def engineParams(key: String): EngineParams = EngineParams()
 }
 
-trait IEngine extends IEngineFactory {
+trait Deployment extends IEngineFactory {
   protected[this] var _engine: BaseEngine[_, _, _, _] = _
   protected[this] var engineSet: Boolean = false
 
@@ -614,7 +614,7 @@ trait IEngine extends IEngineFactory {
   }
 }
 
-trait IEvaluation extends IEngine {
+trait Evaluation extends Deployment {
   protected[this] var _metric: Metric[_, _, _, _, _] = _
   protected[this] var metricSet: Boolean = false
   
@@ -641,7 +641,7 @@ trait IEvaluation extends IEngine {
   }
 }
 
-trait IEngineParamsGenerator {
+trait EngineParamsGenerator {
   protected[this] var epList: Seq[EngineParams] = _
   protected[this] var epListSet: Boolean = false
 

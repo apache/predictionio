@@ -20,9 +20,9 @@ import grizzled.slf4j.{ Logger, Logging }
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Suite
 
-class TuningWorkflowDevSuite extends FunSuite with SharedSparkContext {
+class EvaluationWorkflowDevSuite extends FunSuite with SharedSparkContext {
   import io.prediction.controller.Engine1._
-  test("Tuning return best engine params, simple result type: Double") {
+  test("Evaluation return best engine params, simple result type: Double") {
     val engine = new Engine1()
     val ep0 = EngineParams(dataSourceParams = Engine1.DSP(0.2))
     val ep1 = EngineParams(dataSourceParams = Engine1.DSP(0.3))
@@ -32,7 +32,7 @@ class TuningWorkflowDevSuite extends FunSuite with SharedSparkContext {
 
     val metric = new Metric0()
 
-    val (bestEngineParams, bestScore) = TuningWorkflow.runTuning(
+    val (bestEngineParams, bestScore) = EvaluationWorkflow.runEvaluation(
       sc,
       engine,
       engineParamsList,
@@ -42,7 +42,7 @@ class TuningWorkflowDevSuite extends FunSuite with SharedSparkContext {
     bestScore shouldBe 0.3
   }
 
-  test("Tuning return best engine params, complex result type") {
+  test("Evaluation return best engine params, complex result type") {
     val engine = new Engine1()
     val ep0 = EngineParams(dataSourceParams = Engine1.DSP(0.2))
     val ep1 = EngineParams(dataSourceParams = Engine1.DSP(0.3))
@@ -52,7 +52,7 @@ class TuningWorkflowDevSuite extends FunSuite with SharedSparkContext {
 
     val metric = new Metric1()
 
-    val (bestEngineParams, bestScore) = TuningWorkflow.runTuning(
+    val (bestEngineParams, bestScore) = EvaluationWorkflow.runEvaluation(
       sc,
       engine,
       engineParamsList,
