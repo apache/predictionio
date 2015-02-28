@@ -39,6 +39,7 @@ import org.json4s.native.Serialization.{read, write}
 import scalaj.http.Http
 import semverfi._
 
+import scala.collection.JavaConversions._
 import scala.io.Source
 import scala.sys.process._
 import scala.util.Random
@@ -814,6 +815,13 @@ object Console extends Logging {
   }
 
   def compile(ca: ConsoleArgs): Unit = {
+    FileUtils.writeLines(
+      new File("pio.sbt"),
+      Seq(
+        "// Generated automatically by pio build.",
+        "// Changes in this file will be overridden.",
+        "",
+        "pioVersion := \"" + BuildInfo.version + "\""))
     val sbt = detectSbt(ca)
     info(s"Using command '${sbt}' at the current working directory to build.")
     info("If the path above is incorrect, this process will fail.")
