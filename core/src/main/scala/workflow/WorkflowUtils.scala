@@ -28,6 +28,8 @@ import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import grizzled.slf4j.Logging
 import org.apache.spark.SparkContext
+import org.json4s.JValue
+import org.json4s.JsonAST.JValue
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.apache.log4j.Level
@@ -310,6 +312,26 @@ object WorkflowUtils extends Logging {
       name = nameOpt.getOrElse(""),
       params = paramsOpt
     )
+  }
+
+  def extractSparkConf(root: JValue): List[(String, String)] = {
+    def flatten(jv: JValue): List[(List[String], String)] = {
+      jv match {
+        case JObject(fields) =>
+          for ((namePrefix, childJV) <- fields;
+               (name, value) <- flatten(childJV))
+          yield (namePrefix :: name) -> value
+        case JArray(_) => {
+          error("Arrays are not allowed in the sparkConf section of engine.js.")
+          sys.exit(1)
+        }
+        case JNothing => List()
+        case _ => List(List() -> jv.values.toString)
+      }
+    }
+
+    flatten(root \ "sparkConf").map(x =>
+      (x._1.reduce((a, b) => s"$a.$b"), x._2))
   }
 }
 

@@ -42,10 +42,6 @@ import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization.{ read, write }
 
 import scala.language.existentials
-import scala.reflect.Manifest
-import scala.reflect.runtime.universe
-
-import java.io.File
 
 object CreateWorkflow extends Logging {
 
@@ -218,6 +214,16 @@ object CreateWorkflow extends Logging {
       ).toMap
     ).getOrElse(Map())
 
+    val customSparkConf = WorkflowUtils.extractSparkConf(variantJson)
+    val workflowParams = WorkflowParams(
+      verbose = wfc.verbosity,
+      batch = (if (wfc.batch == "") engineFactory else wfc.batch),
+      skipSanityCheck = wfc.skipSanityCheck,
+      stopAfterRead = wfc.stopAfterRead,
+      stopAfterPrepare = wfc.stopAfterPrepare,
+      sparkEnv = WorkflowParams().sparkEnv ++ customSparkConf)
+
+
     if (evaluation.isEmpty) {
       // Evaluator Not Specified. Do training.
       if (!engine.isInstanceOf[Engine[_,_,_,_,_,_]]) {
@@ -244,6 +250,7 @@ object CreateWorkflow extends Logging {
         evaluatorClass = wfc.evaluationClass.getOrElse(""),
         batch = (if (wfc.batch == "") engineFactory else wfc.batch),
         env = pioEnvVars,
+        sparkConf = workflowParams.sparkEnv,
         dataSourceParams = write(engineParams.dataSourceParams),
         preparatorParams = write(engineParams.preparatorParams),
         algorithmsParams = write(engineParams.algorithmParamsList),
@@ -258,17 +265,15 @@ object CreateWorkflow extends Logging {
 
       CoreWorkflow.runTrain(
         env = pioEnvVars,
-        params = WorkflowParams(
-          verbose = wfc.verbosity,
-          batch = (if (wfc.batch == "") engineFactory else wfc.batch),
-          skipSanityCheck = wfc.skipSanityCheck,
-          stopAfterRead = wfc.stopAfterRead,
-          stopAfterPrepare = wfc.stopAfterPrepare),
+        params = workflowParams,
         engine = trainableEngine,
         engineParams = engineParams,
         engineInstance = engineInstance.copy(id = engineInstanceId))
     } else {
-      Workflow.runEvaluation(evaluation.get, engineParamsGenerator.get)
+      Workflow.runEvaluation(
+        evaluation = evaluation.get,
+        engineParamsGenerator = engineParamsGenerator.get,
+        params = workflowParams)
     }
   }
 }

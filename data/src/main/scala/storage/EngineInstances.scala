@@ -56,6 +56,7 @@ private[prediction] case class EngineInstance(
   evaluatorClass: String,
   batch: String,
   env: Map[String, String],
+  sparkConf: Map[String, String],
   dataSourceParams: String,
   preparatorParams: String,
   algorithmsParams: String,
@@ -127,6 +128,7 @@ private[prediction] class EngineInstanceSerializer
           evaluatorClass = "",
           batch = "",
           env = Map(),
+          sparkConf = Map(),
           dataSourceParams = "",
           preparatorParams = "",
           algorithmsParams = "",
@@ -156,6 +158,8 @@ private[prediction] class EngineInstanceSerializer
           case JField("batch", JString(batch)) => i.copy(batch = batch)
           case JField("env", env) =>
             i.copy(env = Extraction.extract[Map[String, String]](env))
+          case JField("sparkConf", sparkConf) =>
+            i.copy(sparkConf = Extraction.extract[Map[String, String]](sparkConf))
           case JField("dataSourceParams", JString(dataSourceParams)) =>
             i.copy(dataSourceParams = dataSourceParams)
           case JField("preparatorParams", JString(preparatorParams)) =>
@@ -193,6 +197,7 @@ private[prediction] class EngineInstanceSerializer
         JField("metricsClass", JString(i.evaluatorClass)) ::
         JField("batch", JString(i.batch)) ::
         JField("env", Extraction.decompose(i.env)(DefaultFormats)) ::
+        JField("sparkConf", Extraction.decompose(i.sparkConf)(DefaultFormats)) ::
         JField("dataSourceParams", JString(i.dataSourceParams)) ::
         JField("preparatorParams", JString(i.preparatorParams)) ::
         JField("algorithmsParams", JString(i.algorithmsParams)) ::
