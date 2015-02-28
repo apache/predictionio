@@ -57,7 +57,7 @@ root
 ## Creating Hive Tables
 
 Before you can use Spark SQL's Thrift JDBC/ODBC Server, you will need to create
-the table schema in Hive first. Please make sure to replcae `path_of_hive` with
+the table schema in Hive first. Please make sure to replace `path_of_hive` with
 the real path.
 
 ```
@@ -69,7 +69,7 @@ hive> exit;
 
 ## Launch Spark SQL's Thrift JDBC/ODBC Server
 
-Once you have created Hive tables, create a Hive configuration in your Spark's
+Once you have created your Hive tables, create a Hive configuration in your Spark
 installation. If you have a custom `hive-site.xml`, simply copy or link it to
 `$SPARK_HOME/conf`. Otherwise, Hive would have created a local Derby database,
 and you will need to let Spark knows about it. Create
@@ -101,7 +101,7 @@ You can test the server using the included Beeline client.
 $ $SPARK_HOME/bin/beeline
 beeline> !connect jdbc:hive2://localhost:10000
 (Use empty username and password when prompted)
-0: jdbc:hive2://localhost:10000> select * from events limi 10;
+0: jdbc:hive2://localhost:10000> select * from events limit 10;
 +--------+-------------+-----------+-------------------+-----------------+------------------+
 | event  | entitytype  | entityid  | targetentitytype  | targetentityid  |    properties    |
 +--------+-------------+-----------+-------------------+-----------------+------------------+
