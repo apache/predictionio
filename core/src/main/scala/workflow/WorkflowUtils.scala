@@ -15,6 +15,8 @@
 
 package io.prediction.workflow
 
+import io.prediction.controller.EngineParamsGenerator
+import io.prediction.controller.Evaluation
 import io.prediction.controller.IEngineFactory
 import io.prediction.controller.IPersistentModelLoader
 import io.prediction.controller.EmptyParams
@@ -67,6 +69,44 @@ object WorkflowUtils extends Logging {
         (
           EngineLanguage.Java,
           Class.forName(engine).newInstance.asInstanceOf[IEngineFactory]
+        )
+      }
+    }
+  }
+
+  def getEngineParamsGenerator(epg: String, cl: ClassLoader) = {
+    val runtimeMirror = universe.runtimeMirror(cl)
+    val epgModule = runtimeMirror.staticModule(epg)
+    val epgObject = runtimeMirror.reflectModule(epgModule)
+    try {
+      (
+        EngineLanguage.Scala,
+        epgObject.instance.asInstanceOf[EngineParamsGenerator]
+      )
+    } catch {
+      case e @ (_: NoSuchFieldException | _: ClassNotFoundException) => try {
+        (
+          EngineLanguage.Java,
+          Class.forName(epg).newInstance.asInstanceOf[EngineParamsGenerator]
+        )
+      }
+    }
+  }
+
+  def getEvaluation(evaluation: String, cl: ClassLoader) = {
+    val runtimeMirror = universe.runtimeMirror(cl)
+    val evaluationModule = runtimeMirror.staticModule(evaluation)
+    val evaluationObject = runtimeMirror.reflectModule(evaluationModule)
+    try {
+      (
+        EngineLanguage.Scala,
+        evaluationObject.instance.asInstanceOf[Evaluation]
+      )
+    } catch {
+      case e @ (_: NoSuchFieldException | _: ClassNotFoundException) => try {
+        (
+          EngineLanguage.Java,
+          Class.forName(evaluation).newInstance.asInstanceOf[Evaluation]
         )
       }
     }
