@@ -1,6 +1,7 @@
 package org.template.recommendation
 
 import breeze.stats.MeanAndVariance
+import breeze.stats.meanAndVariance
 import io.prediction.controller.LServing
 
 class Serving

@@ -10,13 +10,8 @@ import org.apache.spark.mllib.recommendation.{Rating => MLlibRating}
 
 import grizzled.slf4j.Logger
 
-import scala.collection.mutable
-
-case class ALSAlgorithmParams(
-  rank: Int,
-  numIterations: Int,
-  lambda: Double,
-  seed: Option[Long]) extends Params
+case class ALSAlgorithmParams(rank: Int, numIterations: Int, lambda: Double,
+                              seed: Option[Long]) extends Params
 
 /**
  * Use ALS to build item x feature matrix
@@ -75,75 +70,53 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
       alpha = 1.0,
       seed = seed)
 
-    new ALSModel(
-      productFeatures = m.productFeatures,
-      itemStringIntMap = itemStringIntMap,
-      items = items
-    )
+    new ALSModel(productFeatures = m.productFeatures,
+      itemStringIntMap = itemStringIntMap, items = items)
   }
 
   def predict(model: ALSModel, query: Query): PredictedResult = {
-    val queryFeatures = model.items.filter { case (ixd, item) =>
-      item.creationYear.map(icr => query.creationYear.forall(icr >= _))
-        .getOrElse(true)
-    }.keys.map { itemId => model.productFeatures.lookup(itemId).headOption }
-    .seq.flatten
+    val queryFeatures =
+      model.items.filter { case (ixd, item) => filterItem(item, query) }
+        .keys.map { itemId => model.productFeatures.lookup(itemId).headOption }
+        .seq.flatten
 
-    val ord = Ordering.by[(Int, Double, Int), Double](_._3)
-
-    val indexScores: Array[(Int, Double)] = if (queryFeatures.isEmpty) {
+    val indexScores = if (queryFeatures.isEmpty) {
       logger.info(s"No productFeatures found for query ${query}.")
       Array[(Int, Double)]()
     } else {
       model.productFeatures.mapValues { f =>
-        queryFeatures.map { qf => cosine(qf, f)
-        }.reduce(_ + _)
-      }
-        .filter(_._2 > 0) // keep items with score > 0
-        .collect()
+        queryFeatures.map { qf => cosine(qf, f) }.reduce(_ + _)
+      }.filter(_._2 > 0) // keep items with score > 0
+       .collect()
     }
 
-    val filteredScore = indexScores.view.filter { case (i, v) =>
-      isCandidateItem(
-        i = i,
-        items = model.items,
-        categories = query.categories,
-        queryList = queryList,
-        whiteList = whiteList,
-        blackList = blackList
-      )
-    }
-
-    val topScores = getTopN(filteredScore, query.num)(ord).toArray
+    implicit val ord = Ordering.by[(Int, Double), Double](_._2)
+    val topScores = getTopN(indexScores, query.num).toArray
 
     val itemScores = topScores.map { case (i, s) =>
-      new ItemScore(
-        item = model.itemIntStringMap(i),
-        score = s
-      )
+      new ItemScore(item = model.itemIntStringMap(i), score = s)
     }
 
     new PredictedResult(itemScores)
   }
 
   private def getTopN[T](s: Seq[T], n: Int)
-                        (implicit ord: Ordering[T]): Seq[T] = {
+                        (implicit ord: Ordering[T]): Iterable[T] = {
 
-    val q = mutable.PriorityQueue()
+    var result = List.empty[T]
 
     for (x <- s) {
-      if (q.size < n)
-        q.enqueue(x)
+      if (result.size < n)
+        result = x :: result
       else {
-        // q is full
-        if (ord.compare(x, q.head) < 0) {
-          q.dequeue()
-          q.enqueue(x)
+        val min = result.min
+        if (ord.compare(x, min) < 0) {
+          result = x :: result.filter(_ != min)
         }
       }
     }
 
-    q.dequeueAll.toSeq.reverse
+    result.sorted.reverse
   }
 
   private def cosine(v1: Array[Double], v2: Array[Double]): Double = {
@@ -162,26 +135,7 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
     if (n1n2 == 0) 0 else (d / n1n2)
   }
 
-  private
-  def isCandidateItem(
-                       i: Int,
-                       items: Map[Int, Item],
-                       categories: Option[Set[String]],
-                       queryList: Set[Int],
-                       whiteList: Option[Set[Int]],
-                       blackList: Option[Set[Int]]
-                       ): Boolean = {
-    whiteList.map(_.contains(i)).getOrElse(true) &&
-      blackList.map(!_.contains(i)).getOrElse(true) &&
-      // discard items in query as well
-      (!queryList.contains(i)) &&
-      // filter categories
-      categories.map { cat =>
-        items(i).categories.map { itemCat =>
-          // keep this item if has ovelap categories with the query
-          !(itemCat.toSet.intersect(cat).isEmpty)
-        }.getOrElse(false) // discard this item if it has no categories
-      }.getOrElse(true)
-  }
-
+  private def filterItem(item: Item, query: Query) = item.creationYear
+    .map(icr => query.creationYear.forall(icr >= _))
+    .getOrElse(true)
 }

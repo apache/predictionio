@@ -4,8 +4,7 @@ import io.prediction.controller.PDataSource
 import io.prediction.controller.EmptyEvaluationInfo
 import io.prediction.controller.EmptyActualResult
 import io.prediction.controller.Params
-import io.prediction.data.storage.Event
-import io.prediction.data.storage.Storage
+import io.prediction.data.storage.{DataMap, Event, Storage}
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -13,8 +12,6 @@ import org.apache.spark.rdd.RDD
 import grizzled.slf4j.Logger
 
 case class DataSourceParams(appId: Int) extends Params
-
-case class User()
 
 case class Item(creationYear: Option[Int])
 
@@ -24,8 +21,6 @@ class DataSource(val dsp: DataSourceParams)
 
   @transient lazy val logger = Logger[this.type]
 
-  private val creationDate = "creationDate"
-
   override
   def readTraining(sc: SparkContext): TrainingData = {
     val eventsDb = Storage.getPEvents()
@@ -34,8 +29,8 @@ class DataSource(val dsp: DataSourceParams)
     val itemsRDD = eventsDb.aggregateProperties(
       appId = dsp.appId,
       entityType = "item"
-    )(sc).map { case (entityId, properties) =>
-      entityId -> Item(properties.getOpt[Int](creationDate))
+    )(sc).flatMap { case (entityId, properties) =>
+      ItemMarshaller.unmarshall(properties).map(entityId -> _)
     }
 
     // get all user rate events
@@ -60,6 +55,14 @@ class DataSource(val dsp: DataSourceParams)
     }.cache()
 
     new TrainingData(ratingsRDD, itemsRDD)
+  }
+}
+
+object ItemMarshaller {
+  private val creationDate = "creationDate"
+
+  def unmarshall(properties: DataMap): Option[Item] = {
+    Some(Item(properties.getOpt[Int](creationDate)))
   }
 }
 
