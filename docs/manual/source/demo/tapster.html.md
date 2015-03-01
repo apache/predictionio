@@ -54,7 +54,13 @@ $ rake db:create
 $ rake db:migrate
 ```
 
-At this point, you should have the demo application ready but with an empty database. You can start the app and point your browser to [http://locahost:3000](http://localhost.com/)
+At this point, you should have the demo application ready but with an empty database. Lets import the episodes data into our database. We will do this with: `$ rake import:episodes`. An "Episode" is a single [comic strip](http://en.wikipedia.org/wiki/Comic_strip). 
+
+[View on GitHub](https://github.com/PredictionIO/Demo-Tapster/blob/master/lib/tasks/import/episodes.rake)
+
+This script is pretty simple. It loops through the CSV file and creates a new episode for each line in the file in our local database.
+
+You can start the app and point your browser to [http://locahost:3000](http://localhost.com/)
 
 ```
 $rails server
@@ -178,17 +184,9 @@ $ ./stop-hbase.sh
 $ ./start-hbase.sh
 ```
 
-The key event we are importing into PredictionIO event server is the "Like" event (for example, user X likes episode Y). An "Episode" is a single [comic strip](http://en.wikipedia.org/wiki/Comic_strip). First we have to import the episodes into our database.
+The key event we are importing into PredictionIO event server is the "Like" event (for example, user X likes episode Y). 
 
-We will do this with: `$ rake import:episodes`
-
-[View on GitHub](https://github.com/PredictionIO/Demo-Tapster/blob/master/lib/tasks/import/episodes.rake)
-
-This script is pretty simple. It loops through the CSV file and creates a new episode for each line in the file in our local database.
-
-Next we will send the data to PredictionIO.
-
-We will do this with: `$ rake import:predictionio`
+We will send this data to PredictionIO by executing `$ rake import:predictionio` command.
 
 [View on GitHub](https://github.com/PredictionIO/Demo-Tapster/blob/master/lib/tasks/import/predictionio.rake)
 
