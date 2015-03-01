@@ -1,22 +1,10 @@
-Usage: pio eval [--batch <value>] [--metrics-class <value>]
-                [--params-path <value>] [-mp <value>]
-                [--engine-factory <value>] [--engine-params-key <value>]
+Usage: pio eval <evaluation-class> <engine-parameters-generator-class>
+                [--batch <value>]
                 [common options...]
 
-Kick off an evaluation using an engine (variant) to produce an engine instance.
-This command will pass all pass-through arguments to its underlying spark-submit
-command.
+Kick off an evaluation using specified evaluation and engine parameters
+generator class. This command will pass all pass-through arguments to its
+underlying spark-submit command.
 
   --batch <value>
       Batch label of the run.
-  --metrics-class <value>
-      Name of metrics class to run.
-  --params-path <value>
-      Directory to lookup parameters JSON files. Default: params
-  -mp <value>
-      Metrics parameters JSON file. Will try to use metrics.json in
-      '--params-path'.
-  --engine-factory
-      Override engine factory class.
-  --engine-params-key
-      Retrieve engine parameters programmatically from the engine factory class.
