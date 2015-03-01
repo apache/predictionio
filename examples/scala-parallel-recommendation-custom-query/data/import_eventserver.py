@@ -6,7 +6,7 @@ import predictionio
 import argparse
 import random
 
-RATE_ACTIONS_DELIMITER = "::"
+RATE_ACTIONS_DELIMITER = "\t"
 SEED = 3
 
 def import_events(client, file):
@@ -16,24 +16,14 @@ def import_events(client, file):
   print "Importing data..."
   for line in f:
     data = line.rstrip('\r\n').split(RATE_ACTIONS_DELIMITER)
-    # For demonstration purpose, randomly mix in some buy events
-    if (random.randint(0, 1) == 1):
-      client.create_event(
-        event="rate",
-        entity_type="user",
-        entity_id=data[0],
-        target_entity_type="item",
-        target_entity_id=data[1],
-        properties= { "rating" : float(data[2]) }
-      )
-    else:
-      client.create_event(
-        event="buy",
-        entity_type="user",
-        entity_id=data[0],
-        target_entity_type="item",
-        target_entity_id=data[1]
-      )
+    client.create_event(
+      event="rate",
+      entity_type="user",
+      entity_id=data[0],
+      target_entity_type="item",
+      target_entity_id=data[1],
+      properties= { "rating" : float(data[2]) }
+    )
     count += 1
   f.close()
   print "%s events are imported." % count
