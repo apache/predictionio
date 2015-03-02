@@ -70,6 +70,6 @@ Elasticsearch. See more [here](/resources/upgrade/).**
 
 ## Method 4: Terminal.com
 
-Public snaps are available on Terminal.com [here](https://www.terminal.com/user/predictionio).
+Public snaps are available on our Terminal.com [page](https://www.terminal.com/user/predictionio).
 
-Instance type **must be** set to **medium** or higher for PredictionIO to function correctly. 
+Instance type **must be** set to __medium__ or higher for PredictionIO to function correctly. 
