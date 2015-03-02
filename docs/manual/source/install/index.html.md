@@ -68,3 +68,8 @@ Elasticsearch. See more [here](/resources/upgrade/).**
 [//]: # (For production environment setup, please refer to [Production)
 [//]: # (Deployment](/production/deploy.html) guide.)
 
+## Method 4: Terminal.com
+
+Public snaps are available on Terminal.com [here](https://www.terminal.com/user/predictionio).
+
+Instance type **must be** set to **medium** or higher for PredictionIO to function correctly. 
