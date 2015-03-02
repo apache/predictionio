@@ -20,7 +20,7 @@ By default, the template requires the following events to be collected:
 
 The landing page ID, referrer ID, browser information and user's buy event will be used to train the model.
 
-NOTE: You can customize what the "conversion" event is. It's "buy" item event by default but it can be modified to others such as "subscribe". 
+NOTE: You can customize what the "conversion" event is. It's "buy" item event by default but it can be modified to others such as "subscribe".
 
 #### Input Query:
 
@@ -195,14 +195,14 @@ Event viewEvent = new Event()
 client.createEvent(viewEvent);
 
 // A user buys an item
-Event viewEvent = new Event()
+Event buyEvent = new Event()
     .event("buy")
     .entityType("user")
     .entityId(<USER_ID>)
     .targetEntityType("item")
     .targetEntityId(<ITEM_ID>)
     .property("sessionId", "<SESSION ID>");
-client.createEvent(viewEvent);
+client.createEvent(buyEvent);
 
 ```
   </div>
