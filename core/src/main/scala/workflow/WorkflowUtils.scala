@@ -377,6 +377,11 @@ class UpgradeCheckRunner(val component: String) extends Runnable with Logging {
   }
 }
 
+class WorkflowInterruption() extends Exception
+
+case class StopAfterReadInterruption() extends WorkflowInterruption
+
+case class StopAfterPrepareInterruption() extends WorkflowInterruption
 
 object EngineLanguage extends Enumeration {
   val Scala, Java = Value

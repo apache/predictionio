@@ -25,7 +25,12 @@ import io.prediction.controller.{ Params => PIOParams }
 object Engine0 {
   @transient lazy val logger = Logger[this.type] 
 
-  case class TrainingData(id: Int)
+  case class TrainingData(id: Int, error: Boolean = false) extends SanityCheck {
+    def sanityCheck(): Unit = {
+      Predef.assert(!error, "Not Error")
+    }
+  }
+
   case class EvalInfo(id: Int)
   case class ProcessedData(id: Int, td: TrainingData)
 
@@ -78,6 +83,14 @@ object Engine0 {
       }}
     }
   }
+  
+  class PDataSource3(id: Int = 0, error: Boolean = false) 
+  extends PDataSource[TrainingData, EvalInfo, Query, Actual] {
+    def readTraining(sc: SparkContext): TrainingData = {
+      TrainingData(id = id, error = error)
+    }
+  }
+  
   
   class LDataSource0(id: Int, en: Int = 0, qn: Int = 0) 
     extends LDataSource[TrainingData, EvalInfo, Query, Actual] {

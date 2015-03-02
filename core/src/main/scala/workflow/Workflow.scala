@@ -96,28 +96,6 @@ object WorkflowContext extends Logging {
 
 object CoreWorkflow {
   @transient lazy val logger = Logger[this.type]
-  /*
-  @transient lazy val engineInstanceStub = EngineInstance(
-    id = "",
-    status = "INIT",
-    startTime = DateTime.now,
-    endTime = DateTime.now,
-    engineId = "",
-    engineVersion = "",
-    engineVariant = "",
-    engineFactory = "",
-    evaluatorClass = "",
-    batch = "",
-    env = Map(),
-    dataSourceParams = "",
-    preparatorParams = "",
-    algorithmsParams = "",
-    servingParams = "",
-    evaluatorParams = "",
-    evaluatorResults = "",
-    evaluatorResultsHTML = "",
-    evaluatorResultsJSON = "")
-  */  
   @transient val engineInstances = Storage.getMetaDataEngineInstances
 
   def runTrain[EI, Q, P, A](
@@ -129,50 +107,47 @@ object CoreWorkflow {
     logger.info("Starting spark context")
     val mode = "training"
     WorkflowUtils.checkUpgrade(mode)
-
+      
     val sc = WorkflowContext(
       params.batch,
       env,
       params.sparkEnv,
       mode.capitalize)
+
+    try {
+  
+      val models: Seq[Any] = engine.train(
+        sc = sc, 
+        engineParams = engineParams,
+        engineInstanceId = engineInstance.id,
+        params = params
+      )
+
+      val instanceId = Storage.getMetaDataEngineInstances
    
-    val models: Seq[Any] = engine.train(
-      sc = sc, 
-      engineParams = engineParams,
-      engineInstanceId = engineInstance.id,
-      params = params
-    )
+      logger.info("Inserting persistent model")
+      Storage.getModelDataModels.insert(Model(
+        id = engineInstance.id,
+        models = KryoInjection(models)))
 
-    val instanceId = Storage.getMetaDataEngineInstances
-   
-    logger.info("Inserting persistent model")
-    Storage.getModelDataModels.insert(Model(
-      id = engineInstance.id,
-      models = KryoInjection(models)))
-
-    logger.info("Updating engine instance")
-    val engineInstances = Storage.getMetaDataEngineInstances
-    engineInstances.update(engineInstance.copy(
-      status = "COMPLETED",
-      endTime = DateTime.now
-      ))
-
-    logger.info("Stopping spark context")
-    sc.stop()
-
-    logger.info("Training completed.")
-
-    /*
-    if (params.stopAfterRead)
-      logger.info(
-        "Training has stopped after reading from data source and is " +
-        "incomplete.")
-    else if (params.stopAfterPrepare)
-      logger.info(
-        "Training has stopped after data preparation and is incomplete.")
-    else
-      logger.info("Your engine has been trained successfully.")
-    */
+      logger.info("Updating engine instance")
+      val engineInstances = Storage.getMetaDataEngineInstances
+      engineInstances.update(engineInstance.copy(
+        status = "COMPLETED",
+        endTime = DateTime.now
+        ))
+    
+      logger.info("Training completed.")
+    } catch {
+      case e @(
+          _: StopAfterReadInterruption | 
+          _: StopAfterPrepareInterruption) => {
+        logger.info(s"Training interrupted by $e.")
+      }
+    } finally {
+      logger.info("Stopping spark context")
+      sc.stop()
+    }
   }
   
   def runEval[EI, Q, P, A, ER <: AnyRef](

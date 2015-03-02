@@ -4,6 +4,8 @@ import io.prediction.core.BaseDataSource
 import io.prediction.core.BasePreparator
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseServing
+import io.prediction.controller.SanityCheck
+import io.prediction.controller.WorkflowParams
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -23,15 +25,79 @@ object EngineWorkflow {
       sc: SparkContext,
       dataSource: BaseDataSource[TD, _, Q, _],
       preparator: BasePreparator[TD, PD],
-      algorithmList: Seq[BaseAlgorithm[PD, _, Q, _]]): Seq[Any] = {
+      algorithmList: Seq[BaseAlgorithm[PD, _, Q, _]],
+      params: WorkflowParams
+    ): Seq[Any] = {
     logger.info("EngineWorkflow.train")
     logger.info(s"DataSource: $dataSource")
     logger.info(s"Preparator: $preparator")
     logger.info(s"AlgorithmList: $algorithmList")
 
+    if (params.skipSanityCheck)
+      logger.info("Data sanity check is off.")
+    else
+      logger.info("Data santiy check is on.")
+
     val td = dataSource.readTrainingBase(sc)
+
+    if (!params.skipSanityCheck) { 
+      td match {
+        case sanityCheckable: SanityCheck => {
+          logger.info(s"${td.getClass.getName} supports data sanity" +
+            " check. Performing check.")
+          sanityCheckable.sanityCheck()
+        }
+        case _ => {
+          logger.info(s"${td.getClass.getName} does not support" +
+            " data sanity check. Skipping check.")
+        }
+      }
+    }
+    
+    if (params.stopAfterRead) {
+      logger.info("Stopping here because --stop-after-read is set.")
+      throw StopAfterReadInterruption()
+    }
+
     val pd = preparator.prepareBase(sc, td)
+    
+    if (!params.skipSanityCheck) { 
+      pd match {
+        case sanityCheckable: SanityCheck => {
+          logger.info(s"${pd.getClass.getName} supports data sanity" +
+            " check. Performing check.")
+          sanityCheckable.sanityCheck()
+        }
+        case _ => {
+          logger.info(s"${pd.getClass.getName} does not support" +
+            " data sanity check. Skipping check.")
+        }
+      }
+    }
+
+    if (params.stopAfterPrepare) {
+      logger.info("Stopping here because --stop-after-prepare is set.")
+      throw StopAfterPrepareInterruption()
+    }
+
     val models: Seq[Any] = algorithmList.map(_.trainBase(sc, pd))
+    
+    if (!params.skipSanityCheck) { 
+      models.foreach { model => {
+        model match {
+          case sanityCheckable: SanityCheck => {
+            logger.info(s"${model.getClass.getName} supports data sanity" +
+              " check. Performing check.")
+            sanityCheckable.sanityCheck()
+          }
+          case _ => {
+            logger.info(s"${model.getClass.getName} does not support" +
+              " data sanity check. Skipping check.")
+          }
+        }
+      }}
+    }
+
     logger.info("EngineWorkflow.train completed")
     models
   }

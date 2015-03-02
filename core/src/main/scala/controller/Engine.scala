@@ -132,7 +132,7 @@ class Engine[TD, EI, PD, Q, P, A](
       params: WorkflowParams = WorkflowParams()): Seq[Any] = {
     val (dataSourceName, dataSourceParams) = engineParams.dataSourceParams
     val dataSource = Doer(dataSourceClassMap(dataSourceName), dataSourceParams)
-    
+
     val (preparatorName, preparatorParams) = engineParams.preparatorParams
     val preparator = Doer(preparatorClassMap(preparatorName), preparatorParams)
  
@@ -142,8 +142,8 @@ class Engine[TD, EI, PD, Q, P, A](
       Doer(algorithmClassMap(algoName), algoParams)
     }
 
-    val models = EngineWorkflow.train(sc, dataSource, preparator, algorithms)
-
+    val models = EngineWorkflow.train(
+      sc, dataSource, preparator, algorithms, params)
 
     val algoCount = algorithms.size
     val algoTuples: Seq[(String, Params, BaseAlgorithm[_, _, _, _], Any)] = 
