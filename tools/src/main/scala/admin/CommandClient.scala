@@ -32,6 +32,9 @@ case class AppRequest(
   description: String = ""
 )
 
+case class TrainRequest(
+  enginePath: String = ""
+)
 case class AppResponse(
   id: Int = 0,
   name: String = "",
@@ -43,7 +46,7 @@ case class AppNewResponse(
   message: String = "",
   id: Int = 0,
   name: String = "",
-  keys: Seq[AccessKey]
+  key: String
 ) extends BaseResponse()
 
 case class AppListResponse(
@@ -83,7 +86,7 @@ class CommandClient(
               appid = id,
               events = Seq()))
             accessKey2 map { k =>
-              new AppNewResponse(1,"App created successfully.",id, req.name, Seq[AccessKey](accessKey))
+              new AppNewResponse(1,"App created successfully.",id, req.name, k)
             } getOrElse {
               GeneralResponse(0, s"Unable to create new access key.")
             }
@@ -148,5 +151,9 @@ class CommandClient(
       GeneralResponse(0, s"App ${appName} does not exist.")
     }
     response
+  }
+
+  def futureTrain(req: TrainRequest)(implicit ec: ExecutionContext): Future[GeneralResponse] = Future {
+    return null;
   }
 }

@@ -4,14 +4,14 @@
 
 #### For development
 
-NOTE: eleasticsearch and hbase should be running first.
+NOTE: elasticsearch and hbase should be running first.
 
 ```
-$ sbt/sbt "data/compile"
+$ sbt/sbt "tools/compile"
 $ set -a
 $ source conf/pio-env.sh
 $ set +a
-$ sbt/sbt "data/run-main io.prediction.tools.admin.AdminRun"
+$ sbt/sbt "tools/run-main io.prediction.tools.admin.AdminRun"
 ```
 
 #### Start with pio command adminserver
