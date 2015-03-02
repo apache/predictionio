@@ -166,13 +166,15 @@ object CreateServer extends Logging {
         val engineVersion = sc.engineVersion.getOrElse(
           engineInstance.engineVersion)
         engineManifests.get(engineId, engineVersion) map { manifest =>
-          val upgrade = actorSystem.actorOf(Props[UpgradeActor], "upgrade")
+          val engineFactoryName = engineInstance.engineFactory
+          val upgrade = actorSystem.actorOf(Props(
+            classOf[UpgradeActor],
+            engineFactoryName))
           actorSystem.scheduler.schedule(
             0.seconds,
             1.days,
             upgrade,
             UpgradeCheck())
-          val engineFactoryName = engineInstance.engineFactory
           val master = actorSystem.actorOf(Props(
             classOf[MasterActor],
             sc,
@@ -214,15 +216,15 @@ object CreateServer extends Logging {
       mode = "Serving")
 
     val models = engine.prepareDeploy(
-      sparkContext, 
-      engineParams, 
+      sparkContext,
+      engineParams,
       engineInstance.id,
       modelsFromEngineInstance)
-    
+
     val algorithms = engineParams.algorithmParamsList.map { case (n, p) =>
       Doer(engine.algorithmClassMap(n), p)
     }
-    
+
     val servingParamsWithName = engineParams.servingParams
 
     val serving = Doer(engine.servingClassMap(servingParamsWithName._1),
@@ -246,12 +248,12 @@ object CreateServer extends Logging {
   }
 }
 
-class UpgradeActor() extends Actor {
+class UpgradeActor(engineClass: String) extends Actor {
   val log = Logging(context.system, this)
   implicit val system = context.system
   def receive = {
     case x: UpgradeCheck =>
-      WorkflowUtils.checkUpgrade("deployment")
+      WorkflowUtils.checkUpgrade("deployment", engineClass)
   }
 }
 
@@ -361,7 +363,7 @@ class MasterActor(
     val (engineLanguage, engineFactory) =
       WorkflowUtils.getEngine(engineFactoryName, getClass.getClassLoader)
     val engine = engineFactory()
-   
+
     // EngineFactory return a base engine, which may not be deployable.
     if (!engine.isInstanceOf[Engine[_,_,_,_,_,_]]) {
       throw new NoSuchMethodException(s"Engine $engine is not deployable")
@@ -568,8 +570,8 @@ class ServerActor[Q, P](
                   r._1 merge parse(s"""{"prId" : "${newPrId}"}""")
                 else r._1
               } else r._1
-              
-              // Bookkeeping 
+
+              // Bookkeeping
               val servingEndTime = DateTime.now
               lastServingSec = (
                 servingEndTime.getMillis - servingStartTime.getMillis) / 1000.0

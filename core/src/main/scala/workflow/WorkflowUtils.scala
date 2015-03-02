@@ -22,6 +22,7 @@ import io.prediction.controller.IPersistentModelLoader
 import io.prediction.controller.EmptyParams
 import io.prediction.controller.Params
 import io.prediction.controller.Utils
+import io.prediction.core.BuildInfo
 
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
@@ -213,8 +214,10 @@ object WorkflowUtils extends Logging {
     */
   def javaObjectToJValue(params: AnyRef): JValue = parse(gson.toJson(params))
 
-  private[prediction] def checkUpgrade(component: String = "core"): Unit = {
-    val runner = new Thread(new UpgradeCheckRunner(component))
+  private[prediction] def checkUpgrade(
+      component: String = "core",
+      engine: String = ""): Unit = {
+    val runner = new Thread(new UpgradeCheckRunner(component, engine))
     runner.start()
   }
 
@@ -360,12 +363,14 @@ object SparkWorkflowUtils extends Logging {
   }
 }
 
-class UpgradeCheckRunner(val component: String) extends Runnable with Logging {
+class UpgradeCheckRunner(
+    val component: String,
+    val engine: String) extends Runnable with Logging {
   val version = BuildInfo.version
   val versionsHost = "http://direct.prediction.io/"
 
   def run(): Unit = {
-    val url = s"${versionsHost}${version}/${component}.json"
+    val url = s"${versionsHost}${version}/${component}/${engine}.json"
     try {
       val upgradeData = Source.fromURL(url)
     } catch {
