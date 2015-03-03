@@ -326,12 +326,17 @@ The properties of the `user` can be set, unset, or delete by special events **$s
 
 ## Import Sample Data
 
+<!---
+(yipjustin notes. We use larger fake data instead of the 6-lines dataset from
+mllib. The data file resides in data/data.txt)
+
 We will use the sample data from MLlib repo for demonstration purpose. Execute
 the following to get the data set:
 
 ```
 $ curl https://raw.githubusercontent.com/apache/spark/master/data/mllib/sample_naive_bayes_data.txt --create-dirs -o data/sample_naive_bayes_data.txt
 ```
+--->
 
 A Python import script `import_eventserver.py` is provided to import the data to
 Event Server using Python SDK. Please upgrade to the latest Python SDK.
