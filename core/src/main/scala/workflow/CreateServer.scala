@@ -213,7 +213,8 @@ object CreateServer extends Logging {
     val sparkContext = WorkflowContext(
       batch = (if (sc.batch == "") engineInstance.batch else sc.batch),
       executorEnv = engineInstance.env,
-      mode = "Serving")
+      mode = "Serving",
+      sparkEnv = engineInstance.sparkConf)
 
     val models = engine.prepareDeploy(
       sparkContext,
