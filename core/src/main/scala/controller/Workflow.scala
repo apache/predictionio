@@ -15,6 +15,7 @@
 
 package io.prediction.controller
 
+import io.prediction.annotation.Experimental
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseDataSource
 import io.prediction.core.BaseEvaluator
@@ -73,7 +74,7 @@ object Workflow {
       evaluatorParams: Params,
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
       params: WorkflowParams = WorkflowParams()) {
-  
+
     implicit lazy val formats = Utils.json4sDefaultFormats +
       new NameParamsSerializer
 
@@ -137,7 +138,8 @@ object Workflow {
   }
 
 
-  /* @experimental */
+  /** :: Experimental :: */
+  @Experimental
   def runEvaluation[EI, Q, P, A, R](
       engine: BaseEngine[EI, Q, P, A],
       engineParamsList: Seq[EngineParams],

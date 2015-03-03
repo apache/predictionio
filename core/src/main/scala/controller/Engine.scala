@@ -124,7 +124,7 @@ class Engine[TD, EI, PD, Q, P, A](
       servingClassMap)
   }
 
-  // Return persistentable models from trained model
+  /** Return persistentable models from trained model. */
   def train(
       sc: SparkContext,
       engineParams: EngineParams,
@@ -159,9 +159,10 @@ class Engine[TD, EI, PD, Q, P, A](
       algoTuples = algoTuples)
   }
 
-  // Algorithm models can be persisted before deploy. However, it is also
-  // possible that models are not persisted. This method retrains non-persisted
-  // models and return a list of model that can be used directly in deploy.
+  /** Algorithm models can be persisted before deploy. However, it is also
+    * possible that models are not persisted. This method retrains non-persisted
+    * models and return a list of model that can be used directly in deploy.
+    */
   def prepareDeploy(
     sc: SparkContext,
     engineParams: EngineParams,

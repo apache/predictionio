@@ -24,6 +24,9 @@ import org.joda.time.DateTime
 import scala.concurrent.ExecutionContext
 import scala.concurrent.TimeoutException
 
+/** Base trait of a data access object that directly returns [[Event]] without
+  * going through Spark's parallelization.
+  */
 trait LEvents {
 
   private def notImplemented(implicit ec: ExecutionContext) = Future {
@@ -91,7 +94,7 @@ trait LEvents {
     entityId: Option[String])(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]] = notImplemented
 
-  /** reads from database and returns a Future of either StorageError or
+  /** Reads from database and returns a Future of either StorageError or
     * events iterator.
     *
     * @param appId return events of this app ID

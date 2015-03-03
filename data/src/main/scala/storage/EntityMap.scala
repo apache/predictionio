@@ -55,14 +55,16 @@ class EntityIdIxMap(val idToIx: BiMap[String, Long]) extends Serializable {
   override def toString = idToIx.toString
 }
 
-/* @experimental */
+/** :: Experimental :: */
+@Experimental
 object EntityIdIxMap {
   def apply(keys: RDD[String]): EntityIdIxMap = {
     new EntityIdIxMap(BiMap.stringLong(keys))
   }
 }
 
-/* @experimental */
+/** :: Experimental :: */
+@Experimental
 class EntityMap[A](val idToData: Map[String, A],
   override val idToIx: BiMap[String, Long]) extends EntityIdIxMap(idToIx) {
 
