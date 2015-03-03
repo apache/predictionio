@@ -34,6 +34,7 @@ import akka.util.Timeout
 
 import org.json4s.DefaultFormats
 import org.json4s.ext.JodaTimeSerializers
+import org.json4s.native.JsonMethods.parse
 
 import spray.can.Http
 import spray.http.HttpCharsets
@@ -111,8 +112,9 @@ class Stats(val startTime: DateTime) {
 }
 
 class EventServiceActor(
-  val eventClient: LEvents,
-  val accessKeysClient: AccessKeys) extends HttpServiceActor {
+    val eventClient: LEvents,
+    val accessKeysClient: AccessKeys,
+    val stats: Boolean) extends HttpServiceActor {
 
   object Json4sProtocol extends Json4sSupport {
     implicit def json4sFormats = DefaultFormats +
@@ -239,7 +241,8 @@ class EventServiceActor(
                     case Right(id) =>
                       (StatusCodes.Created, Map("eventId" -> s"${id}"))
                   }
-                  statsActorRef ! Bookkeeping(appId, result._1, event)
+                  if (stats)
+                    statsActorRef ! Bookkeeping(appId, result._1, event)
                   result
                 }
                 data
@@ -321,11 +324,17 @@ class EventServiceActor(
         handleRejections(rejectionHandler) {
           authenticate(withAccessKey) { appId =>
             respondWithMediaType(MediaTypes.`application/json`) {
-              complete {
-                statsActorRef ? GetStats(appId) map {
-                  _.asInstanceOf[Map[String, StatsSnapshot]]
+              if (stats)
+                complete {
+                  statsActorRef ? GetStats(appId) map {
+                    _.asInstanceOf[Map[String, StatsSnapshot]]
+                  }
                 }
-              }
+              else
+                complete(
+                  StatusCodes.NotFound,
+                  parse("""{"message": "To see stats, launch Event Server """ +
+                    """with --stats argument."}"""))
             }
           }
         }
@@ -385,15 +394,15 @@ class StatsActor extends Actor {
 /* message */
 case class StartServer(
   val host: String,
-  val port: Int
-)
+  val port: Int)
 
 class EventServerActor(
-  val eventClient: LEvents,
-  val accessKeysClient: AccessKeys) extends Actor {
+    val eventClient: LEvents,
+    val accessKeysClient: AccessKeys,
+    val stats: Boolean) extends Actor {
   val log = Logging(context.system, this)
   val child = context.actorOf(
-    Props(classOf[EventServiceActor], eventClient, accessKeysClient),
+    Props(classOf[EventServiceActor], eventClient, accessKeysClient, stats),
     "EventServiceActor")
   implicit val system = context.system
 
@@ -407,11 +416,10 @@ class EventServerActor(
   }
 }
 
-
 case class EventServerConfig(
   ip: String = "localhost",
-  port: Int = 7070
-)
+  port: Int = 7070,
+  stats: Boolean = false)
 
 object EventServer {
   def createEventServer(config: EventServerConfig) = {
@@ -421,14 +429,17 @@ object EventServer {
     val accessKeysClient = Storage.getMetaDataAccessKeys
 
     val serverActor = system.actorOf(
-      Props(classOf[EventServerActor], eventClient, accessKeysClient),
+      Props(
+        classOf[EventServerActor],
+        eventClient,
+        accessKeysClient,
+        config.stats),
       "EventServerActor")
-    val statsActor = system.actorOf(Props[StatsActor], "StatsActor")
+    if (config.stats) system.actorOf(Props[StatsActor], "StatsActor")
     serverActor ! StartServer(config.ip, config.port)
     system.awaitTermination
   }
 }
-
 
 object Run {
 

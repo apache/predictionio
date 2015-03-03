@@ -102,7 +102,8 @@ case class DeployArgs(
 case class EventServerArgs(
   enabled: Boolean = false,
   ip: String = "localhost",
-  port: Int = 7070)
+  port: Int = 7070,
+  stats: Boolean = false)
 
 case class DashboardArgs(
   ip: String = "localhost",
@@ -352,7 +353,10 @@ object Console extends Logging {
           } text("IP to bind to. Default: localhost"),
           opt[Int]("port") action { (x, c) =>
             c.copy(eventServer = c.eventServer.copy(port = x))
-          } text("Port to bind to. Default: 7070")
+          } text("Port to bind to. Default: 7070"),
+          opt[Unit]("stats") action { (x, c) =>
+            c.copy(eventServer = c.eventServer.copy(stats = true))
+          }
         )
       note("")
       cmd("run").
@@ -781,7 +785,8 @@ object Console extends Logging {
       s"Creating Event Server at ${ca.eventServer.ip}:${ca.eventServer.port}")
     EventServer.createEventServer(EventServerConfig(
       ip = ca.eventServer.ip,
-      port = ca.eventServer.port))
+      port = ca.eventServer.port,
+      stats = ca.eventServer.stats))
   }
 
   def undeploy(ca: ConsoleArgs): Int = {
