@@ -90,12 +90,12 @@ class Stats(val startTime: DateTime) {
     statusCodeCount((appId, statusCode)) += 1
     eteCount((appId, new EntityTypesEvent(event))) += 1
   }
-  
+
   def extractByAppId[K, V](appId: Int, m: mutable.Map[(Int, K), V])
   : Seq[KV[K, V]] = {
     m
     .toSeq
-    .flatMap { case (k, v) => 
+    .flatMap { case (k, v) =>
       if (k._1 == appId) { Seq(KV(k._2, v)) } else { Seq() }
     }
   }
@@ -113,34 +113,6 @@ class Stats(val startTime: DateTime) {
 class EventServiceActor(
   val eventClient: LEvents,
   val accessKeysClient: AccessKeys) extends HttpServiceActor {
-
-  def getCurrent: DateTime = {
-    DateTime.now
-    .withMinuteOfHour(0)
-    .withSecondOfMinute(0)
-    .withMillisOfSecond(0)
-  }
- 
-  var longLiveStats = new Stats(DateTime.now)
-  var hourlyStats = new Stats(getCurrent)
-
-  var prevHourlyStats = new Stats(getCurrent.minusHours(1))
-  prevHourlyStats.cutoff(hourlyStats.startTime)
-
-  def bookkeeping(appId: Int, statusCode: StatusCode, event: Event) {
-    val current = getCurrent
-    // If the current hour is different from the stats start time, we create
-    // another stats instance, and move the current to prev.
-    if (current != hourlyStats.startTime) {
-      prevHourlyStats = hourlyStats
-      prevHourlyStats.cutoff(current)
-      hourlyStats = new Stats(current)
-    }
-
-    hourlyStats.update(appId, statusCode, event)
-    longLiveStats.update(appId, statusCode, event)
-  }
-  
 
   object Json4sProtocol extends Json4sSupport {
     implicit def json4sFormats = DefaultFormats +
@@ -188,6 +160,8 @@ class EventServiceActor(
         }
       }
   }
+
+  val statsActorRef = context.actorSelection("/user/StatsActor")
 
   val route: Route =
     pathSingleSlash {
@@ -265,7 +239,7 @@ class EventServiceActor(
                     case Right(id) =>
                       (StatusCodes.Created, Map("eventId" -> s"${id}"))
                   }
-                  bookkeeping(appId, result._1, event)
+                  statsActorRef ! Bookkeeping(appId, result._1, event)
                   result
                 }
                 data
@@ -347,14 +321,11 @@ class EventServiceActor(
         handleRejections(rejectionHandler) {
           authenticate(withAccessKey) { appId =>
             respondWithMediaType(MediaTypes.`application/json`) {
-              complete(
-                Map(
-                  "time" -> DateTime.now,
-                  "currentHour" -> hourlyStats.get(appId),
-                  "prevHour" -> prevHourlyStats.get(appId),
-                  "longLive" -> longLiveStats.get(appId)
-                )
-              )
+              complete {
+                statsActorRef ? GetStats(appId) map {
+                  _.asInstanceOf[Map[String, StatsSnapshot]]
+                }
+              }
             }
           }
         }
@@ -363,6 +334,52 @@ class EventServiceActor(
 
   def receive = runRoute(route)
 
+}
+
+case class Bookkeeping(val appId: Int, statusCode: StatusCode, event: Event)
+case class GetStats(val appId: Int)
+
+class StatsActor extends Actor {
+  implicit val system = context.system
+  val log = Logging(system, this)
+
+  def getCurrent: DateTime = {
+    DateTime.now.
+      withMinuteOfHour(0).
+      withSecondOfMinute(0).
+      withMillisOfSecond(0)
+  }
+
+  var longLiveStats = new Stats(DateTime.now)
+  var hourlyStats = new Stats(getCurrent)
+
+  var prevHourlyStats = new Stats(getCurrent.minusHours(1))
+  prevHourlyStats.cutoff(hourlyStats.startTime)
+
+  def bookkeeping(appId: Int, statusCode: StatusCode, event: Event) {
+    val current = getCurrent
+    // If the current hour is different from the stats start time, we create
+    // another stats instance, and move the current to prev.
+    if (current != hourlyStats.startTime) {
+      prevHourlyStats = hourlyStats
+      prevHourlyStats.cutoff(current)
+      hourlyStats = new Stats(current)
+    }
+
+    hourlyStats.update(appId, statusCode, event)
+    longLiveStats.update(appId, statusCode, event)
+  }
+
+  def receive = {
+    case Bookkeeping(appId, statusCode, event) =>
+      bookkeeping(appId, statusCode, event)
+    case GetStats(appId) => sender() ! Map(
+      "time" -> DateTime.now,
+      "currentHour" -> hourlyStats.get(appId),
+      "prevHour" -> prevHourlyStats.get(appId),
+      "longLive" -> longLiveStats.get(appId))
+    case _ => log.error("Unknown message.")
+  }
 }
 
 /* message */
@@ -406,9 +423,9 @@ object EventServer {
     val serverActor = system.actorOf(
       Props(classOf[EventServerActor], eventClient, accessKeysClient),
       "EventServerActor")
+    val statsActor = system.actorOf(Props[StatsActor], "StatsActor")
     serverActor ! StartServer(config.ip, config.port)
     system.awaitTermination
-
   }
 }
 
