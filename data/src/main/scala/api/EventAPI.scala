@@ -33,7 +33,7 @@ import akka.pattern.ask
 import akka.util.Timeout
 
 import org.json4s.DefaultFormats
-//import org.json4s.ext.JodaTimeSerializers
+import org.json4s.ext.JodaTimeSerializers
 
 import spray.can.Http
 import spray.http.HttpCharsets
@@ -41,6 +41,7 @@ import spray.http.HttpEntity
 import spray.http.HttpResponse
 import spray.http.MediaTypes
 import spray.http.StatusCodes
+import spray.http.StatusCode
 import spray.httpx.Json4sSupport
 import spray.httpx.unmarshalling.Unmarshaller
 import spray.routing._
@@ -48,18 +49,103 @@ import spray.routing.authentication.Authentication
 import spray.routing.Directives._
 
 import scala.concurrent.Future
+import scala.collection.mutable.{ HashMap => MHashMap }
+import scala.collection.mutable
 
 import java.util.concurrent.TimeUnit
+
+import com.github.nscala_time.time.Imports.DateTime
+
+case class EntityTypesEvent(
+  val entityType: String,
+  val targetEntityType: Option[String],
+  val event: String) {
+
+  def this(e: Event) = this(
+    e.entityType,
+    e.targetEntityType,
+    e.event)
+}
+
+case class KV[K, V](key: K, value: V)
+
+case class StatsSnapshot(
+  val startTime: DateTime,
+  val endTime: Option[DateTime],
+  val basic: Seq[KV[EntityTypesEvent, Long]],
+  val statusCode: Seq[KV[StatusCode, Long]]
+)
+
+
+class Stats(val startTime: DateTime) {
+  private[this] var _endTime: Option[DateTime] = None
+  var statusCodeCount = MHashMap[(Int, StatusCode), Long]().withDefaultValue(0L)
+  var eteCount = MHashMap[(Int, EntityTypesEvent), Long]().withDefaultValue(0L)
+
+  def cutoff(endTime: DateTime) {
+    _endTime = Some(endTime)
+  }
+
+  def update(appId: Int, statusCode: StatusCode, event: Event) {
+    statusCodeCount((appId, statusCode)) += 1
+    eteCount((appId, new EntityTypesEvent(event))) += 1
+  }
+  
+  def extractByAppId[K, V](appId: Int, m: mutable.Map[(Int, K), V])
+  : Seq[KV[K, V]] = {
+    m
+    .toSeq
+    .flatMap { case (k, v) => 
+      if (k._1 == appId) { Seq(KV(k._2, v)) } else { Seq() }
+    }
+  }
+
+  def get(appId: Int): StatsSnapshot = {
+    StatsSnapshot(
+      startTime,
+      _endTime,
+      extractByAppId(appId, eteCount),
+      extractByAppId(appId, statusCodeCount)
+    )
+  }
+}
 
 class EventServiceActor(
   val eventClient: LEvents,
   val accessKeysClient: AccessKeys) extends HttpServiceActor {
 
+  def getCurrent: DateTime = {
+    DateTime.now
+    .withMinuteOfHour(0)
+    .withSecondOfMinute(0)
+    .withMillisOfSecond(0)
+  }
+ 
+  var longLiveStats = new Stats(DateTime.now)
+  var hourlyStats = new Stats(getCurrent)
+
+  var prevHourlyStats = new Stats(getCurrent.minusHours(1))
+  prevHourlyStats.cutoff(hourlyStats.startTime)
+
+  def bookkeeping(appId: Int, statusCode: StatusCode, event: Event) {
+    val current = getCurrent
+    // If the current hour is different from the stats start time, we create
+    // another stats instance, and move the current to prev.
+    if (current != hourlyStats.startTime) {
+      prevHourlyStats = hourlyStats
+      prevHourlyStats.cutoff(current)
+      hourlyStats = new Stats(current)
+    }
+
+    hourlyStats.update(appId, statusCode, event)
+    longLiveStats.update(appId, statusCode, event)
+  }
+  
+
   object Json4sProtocol extends Json4sSupport {
     implicit def json4sFormats = DefaultFormats +
-      new EventJson4sSupport.APISerializer
-    //implicit def json4sFormats: Formats = DefaultFormats.lossless ++
-    //  JodaTimeSerializers.all
+      new EventJson4sSupport.APISerializer ++
+      JodaTimeSerializers.all
   }
 
   import Json4sProtocol._
@@ -172,13 +258,15 @@ class EventServiceActor(
               complete {
                 log.debug(s"POST events")
                 val data = eventClient.futureInsert(event, appId).map { r =>
-                  r match {
+                  val result = r match {
                     case Left(StorageError(message)) =>
                       (StatusCodes.InternalServerError,
                         Map("message" -> message))
                     case Right(id) =>
                       (StatusCodes.Created, Map("eventId" -> s"${id}"))
                   }
+                  bookkeeping(appId, result._1, event)
+                  result
                 }
                 data
               }
@@ -253,6 +341,24 @@ class EventServiceActor(
           }
         }
       }
+    } ~
+    path("stats.json") {
+      get {
+        handleRejections(rejectionHandler) {
+          authenticate(withAccessKey) { appId =>
+            respondWithMediaType(MediaTypes.`application/json`) {
+              complete(
+                Map(
+                  "time" -> DateTime.now,
+                  "currentHour" -> hourlyStats.get(appId),
+                  "prevHour" -> prevHourlyStats.get(appId),
+                  "longLive" -> longLiveStats.get(appId)
+                )
+              )
+            }
+          }
+        }
+      }  // stats.json get
     }
 
   def receive = runRoute(route)
