@@ -71,10 +71,10 @@ Take note of the *Access Key* and *App ID* generated. You need the *Access Key*
 to use the Event API. You should see something like the following output:
 
 ```
-2014-11-12 08:56:02,519 INFO  tools.Console$ - Created new app:
-2014-11-12 08:56:02,519 INFO  tools.Console$ -         Name: MyTestApp
-2014-11-12 08:56:02,520 INFO  tools.Console$ -           ID: 6
-2014-11-12 08:56:02,520 INFO  tools.Console$ -   Access Key: WPgcXKd42FPQpZHVbVeMyqF4CQJUnXQmIMTHhX3ZUrSzvy1KXJjdFUrslifa9rnB
+[INFO] [App$] Created new app:
+[INFO] [App$]         Name: MyTestApp
+[INFO] [App$]           ID: 6
+[INFO] [App$]   Access Key: WPgcXKd42FPQpZHVbVeMyqF4CQJUnXQmIMTHhX3ZUrSzvy1KXJjdFUrslifa9rnB
 ```
 
 ### Creating Your First Event

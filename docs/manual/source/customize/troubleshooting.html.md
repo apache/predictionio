@@ -6,9 +6,13 @@ PredictionIO provides the following features to help you debug engines during de
 
 ## Stop Training between Stages
 
-By default `pio train` runs through the whole training process including [DataSource, Preparator and Algorithm](/templates/recommendation/dase/). To speed up the development and debug cycle, you can stop the process after each stage to verify it has completed correctly. 
+By default `pio train` runs through the whole training process including
+[DataSource, Preparator and Algorithm](/templates/recommendation/dase/). To
+speed up the development and debug cycle, you can stop the process after each
+stage to verify it has completed correctly.
 
-If you have modified DataSource and want to confirm the TrainingData is generated as expected, you can run `pio train` with `--stop-after-read` option:
+If you have modified DataSource and want to confirm the TrainingData is
+generated as expected, you can run `pio train` with `--stop-after-read` option:
 
 ```
 pio train --stop-after-read
@@ -16,16 +20,19 @@ pio train --stop-after-read
 
 This would stop the training process after the TrainingData is generated.
 
-For example, if you are running [Recommendation Template](/templates/recommendation/quickstart/), you should see the the training process stops after the TrainingData is printed.
+For example, if you are running [Recommendation
+Template](/templates/recommendation/quickstart/), you should see the the
+training process stops after the TrainingData is printed.
 
 ```
-2015-01-12 17:01:26,531 INFO  workflow.CoreWorkflow$ - TrainingData:
-2015-01-12 17:01:26,532 INFO  workflow.CoreWorkflow$ - ratings: [1501] (List(Rating(3,0,4.0), Rating(3,1,4.0))...)
+[INFO] [CoreWorkflow$] TrainingData:
+[INFO] [CoreWorkflow$] ratings: [1501] (List(Rating(3,0,4.0), Rating(3,1,4.0))...)
 ...
-2015-01-12 17:01:27,717 INFO  workflow.CoreWorkflow$ - Training has stopped after reading from data source and is incomplete.
+[INFO] [CoreWorkflow$] Training interrupted by io.prediction.workflow.StopAfterReadInterruption.
 ```
 
-Similarly, you can stop the training after the Preparator phase by using --stop-after-prepare option and it would stop after PreparedData is generated:
+Similarly, you can stop the training after the Preparator phase by using
+--stop-after-prepare option and it would stop after PreparedData is generated:
 
 ```
 pio train --stop-after-prepare
@@ -33,11 +40,19 @@ pio train --stop-after-prepare
 
 ##  Sanity Check
 
-If you overrides `toString()` method in the data classes (TrainingData, PreparedData, and Model), PredictionIO will print the data to the console output for debugging purpose.
+If you overrides `toString()` method in the data classes (TrainingData,
+PreparedData, and Model), PredictionIO will print the data to the console output
+for debugging purpose.
 
-In addition, you can extend a trait `SanityCheck` and implement the method `sanityCheck()` with your error checking code. The `sanityCheck()` is called when the data is generated.
+In addition, you can extend a trait `SanityCheck` and implement the method
+`sanityCheck()` with your error checking code. The `sanityCheck()` is called
+when the data is generated.
 
-For example, one frequent error with the Recommendation Template is that the TrainingData is empty because the DataSource is not reading data correctly. You can add the check of empty data inside the `sanityCheck()` function. You can easily add other checking logic into the `sanityCheck()` function based on your own needs.
+For example, one frequent error with the Recommendation Template is that the
+TrainingData is empty because the DataSource is not reading data correctly. You
+can add the check of empty data inside the `sanityCheck()` function. You can
+easily add other checking logic into the `sanityCheck()` function based on your
+own needs.
 
 Modify DataSource.scala in the Recommendation Template:
 
@@ -66,11 +81,12 @@ pio build
 pio train --stop-after-read
 ```
 
-If your data is empty, you should see the following error thrown by the `sanityCheck()` function:
+If your data is empty, you should see the following error thrown by the
+`sanityCheck()` function:
 
 ```
-2015-01-12 17:46:14,026 INFO  workflow.CoreWorkflow$ - Performing data sanity check on training data.
-2015-01-12 17:46:14,027 INFO  workflow.CoreWorkflow$ - org.template.recommendation.TrainingData supports data sanity check. Performing check.
+[INFO] [CoreWorkflow$] Performing data sanity check on training data.
+[INFO] [CoreWorkflow$] org.template.recommendation.TrainingData supports data sanity check. Performing check.
 Exception in thread "main" java.lang.IllegalArgumentException: requirement failed: ratings cannot be empty!
 	at scala.Predef$.require(Predef.scala:233)
 	at org.template.recommendation.TrainingData.sanityCheck(DataSource.scala:73)
@@ -89,8 +105,8 @@ pio train --stop-after-read --skip-sanity-check
 You should see the checking is skipped such as the following output:
 
 ```
-2015-01-12 17:54:01,049 INFO  workflow.CoreWorkflow$ - Data sanity checking is off.
-2015-01-12 17:54:01,049 INFO  workflow.CoreWorkflow$ - Data Source
+[INFO] [CoreWorkflow$] Data sanity checking is off.
+[INFO] [CoreWorkflow$] Data Source
 ...
-2015-01-12 17:54:05,320 INFO  workflow.CoreWorkflow$ - Training has stopped after reading from data source and is incomplete.
+[INFO] [CoreWorkflow$] Training interrupted by io.prediction.workflow.StopAfterReadInterruption.
 ```

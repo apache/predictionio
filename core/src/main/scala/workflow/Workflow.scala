@@ -104,7 +104,7 @@ object CoreWorkflow {
       engineInstance: EngineInstance,
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
       params: WorkflowParams = WorkflowParams()) {
-    logger.info("Starting spark context")
+    logger.debug("Starting SparkContext")
     val mode = "training"
     WorkflowUtils.checkUpgrade(mode)
 
@@ -145,7 +145,7 @@ object CoreWorkflow {
         logger.info(s"Training interrupted by $e.")
       }
     } finally {
-      logger.info("Stopping spark context")
+      logger.debug("Stopping SparkContext")
       sc.stop()
     }
   }

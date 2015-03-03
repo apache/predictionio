@@ -1,5 +1,5 @@
-Let's assume you want to use this engine in an application named "MyApp1". 
-You will need to collect some training data for machine learning modeling. 
+Let's assume you want to use this engine in an application named "MyApp1".
+You will need to collect some training data for machine learning modeling.
 You can generate an **App ID** and **Access Key** that represent "MyApp1" on the Event Server easily:
 
 ```
@@ -10,11 +10,11 @@ You should find the following in the console output:
 
 ```
 ...
-2014-11-18 12:38:47,636 INFO  tools.Console$ - Initialized Event Store for this app ID: 1.
-2014-11-18 12:38:47,721 INFO  tools.Console$ - Created new app:
-2014-11-18 12:38:47,722 INFO  tools.Console$ -       Name: MyApp1
-2014-11-18 12:38:47,723 INFO  tools.Console$ -         ID: 1
-2014-11-18 12:38:47,724 INFO  tools.Console$ - Access Key: 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
+[INFO] [App$] Initialized Event Store for this app ID: 1.
+[INFO] [App$] Created new app:
+[INFO] [App$]       Name: MyApp1
+[INFO] [App$]         ID: 1
+[INFO] [App$] Access Key: 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
 ```
 
 Take note of the **Access Key** and **App ID**. You will need the **Access Key**
@@ -25,11 +25,10 @@ ID** to refer to "MyApp1" in engine code.
 
 ```
 $ pio app list
-2014-12-03 14:19:34,134 INFO  elasticsearch.plugins - [Hephaestus] loaded [], sites []
-2014-12-03 14:19:36,206 INFO  tools.Console$ -                 Name |   ID
-2014-12-03 14:19:36,208 INFO  tools.Console$ -               MyApp1 |    1
-2014-12-03 14:19:36,208 INFO  tools.Console$ -               MyApp2 |    2
-2014-12-03 14:19:36,209 INFO  tools.Console$ - Finished listing 2 app(s).
+[INFO] [App$]                 Name |   ID |                                                       Access Key | Allowed Event(s)
+[INFO] [App$]               MyApp1 |    1 | 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F | (all)
+[INFO] [App$]               MyApp2 |    2 | io5lz6Eg4m3Xe4JZTBFE13GMAf1dhFl6ZteuJfrO84XpdOz9wRCrDU44EUaYuXq5 | (all)
+[INFO] [App$] Finished listing 2 app(s).
 ```
 <!-- dummy markdown link needed if code block is last -->
 []()
