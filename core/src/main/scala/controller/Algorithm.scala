@@ -44,14 +44,14 @@ abstract class PAlgorithm[PD, M, Q : Manifest, P]
   /** Do not use directly or override this method, as this is called by
     * PredictionIO workflow to train a model.
     */
-  def trainBase(sc: SparkContext, pd: PD): M = train(pd)
+  def trainBase(sc: SparkContext, pd: PD): M = train(sc, pd)
 
   /** Implement this method to produce a model from prepared data.
     *
     * @param pd Prepared data for model training.
     * @return Trained model.
     */
-  def train(pd: PD): M
+  def train(sc: SparkContext, pd: PD): M
   
   def batchPredictBase(sc: SparkContext, bm: Any, qs: RDD[(Long, Q)]) 
   : RDD[(Long, P)] = batchPredict(bm.asInstanceOf[M], qs)
@@ -201,14 +201,14 @@ abstract class P2LAlgorithm[PD, M : ClassTag, Q : Manifest, P]
   /** Do not use directly or override this method, as this is called by
     * PredictionIO workflow to train a model.
     */
-  def trainBase(sc: SparkContext, pd: PD): M = train(pd)
+  def trainBase(sc: SparkContext, pd: PD): M = train(sc, pd)
 
   /** Implement this method to produce a model from prepared data.
     *
     * @param pd Prepared data for model training.
     * @return Trained model.
     */
-  def train(pd: PD): M
+  def train(sc: SparkContext, pd: PD): M
   
   def batchPredictBase(sc: SparkContext, bm: Any, qs: RDD[(Long, Q)]) 
   : RDD[(Long, P)] = batchPredict(bm.asInstanceOf[M], qs)

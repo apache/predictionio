@@ -170,7 +170,8 @@ object Engine0 {
 
   class PAlgo0(id: Int = 0)
   extends PAlgorithm[ProcessedData, PAlgo0.Model, Query, Prediction] {
-    def train(pd: ProcessedData): PAlgo0.Model = PAlgo0.Model(id, pd)
+    def train(sc: SparkContext, pd: ProcessedData)
+    : PAlgo0.Model = PAlgo0.Model(id, pd)
 
     override
     def batchPredict(m: PAlgo0.Model, qs: RDD[(Long, Query)])
@@ -189,7 +190,8 @@ object Engine0 {
 
   class PAlgo1(id: Int = 0)
   extends PAlgorithm[ProcessedData, PAlgo1.Model, Query, Prediction] {
-    def train(pd: ProcessedData): PAlgo1.Model = PAlgo1.Model(id, pd)
+    def train(sc: SparkContext, pd: ProcessedData)
+    : PAlgo1.Model = PAlgo1.Model(id, pd)
 
     override
     def batchPredict(m: PAlgo1.Model, qs: RDD[(Long, Query)])
@@ -211,7 +213,8 @@ object Engine0 {
   extends PAlgorithm[ProcessedData, PAlgo2.Model, Query, Prediction] {
     val id = params.id
 
-    def train(pd: ProcessedData): PAlgo2.Model = PAlgo2.Model(id, pd)
+    def train(sc: SparkContext, pd: ProcessedData)
+    : PAlgo2.Model = PAlgo2.Model(id, pd)
 
     override
     def batchPredict(m: PAlgo2.Model, qs: RDD[(Long, Query)])
@@ -237,7 +240,8 @@ object Engine0 {
   extends PAlgorithm[ProcessedData, PAlgo3.Model, Query, Prediction] {
     val id = params.id
 
-    def train(pd: ProcessedData): PAlgo3.Model = PAlgo3.Model(id, pd)
+    def train(sc: SparkContext, pd: ProcessedData)
+    : PAlgo3.Model = PAlgo3.Model(id, pd)
 
     override
     def batchPredict(m: PAlgo3.Model, qs: RDD[(Long, Query)])
@@ -316,7 +320,8 @@ object Engine0 {
 
   class NAlgo0 (id: Int = 0)
   extends P2LAlgorithm[ProcessedData, NAlgo0.Model, Query, Prediction] {
-    def train(pd: ProcessedData): NAlgo0.Model = NAlgo0.Model(id, pd)
+    def train(sc: SparkContext, pd: ProcessedData)
+    : NAlgo0.Model = NAlgo0.Model(id, pd)
   
     def predict(m: NAlgo0.Model, q: Query): Prediction = {
       Prediction(id, q, Some(m))
@@ -329,7 +334,8 @@ object Engine0 {
 
   class NAlgo1 (id: Int = 0)
   extends P2LAlgorithm[ProcessedData, NAlgo1.Model, Query, Prediction] {
-    def train(pd: ProcessedData): NAlgo1.Model = NAlgo1.Model(id, pd)
+    def train(sc: SparkContext, pd: ProcessedData)
+    : NAlgo1.Model = NAlgo1.Model(id, pd)
    
     def predict(m: NAlgo1.Model, q: Query): Prediction = {
       Prediction(id, q, Some(m))
@@ -347,7 +353,8 @@ object Engine0 {
 
   class NAlgo2(params: NAlgo2.Params) 
   extends P2LAlgorithm[ProcessedData, NAlgo2.Model, Query, Prediction] {
-    def train(pd: ProcessedData): NAlgo2.Model = NAlgo2.Model(params.id, pd)
+    def train(sc: SparkContext, pd: ProcessedData)
+    : NAlgo2.Model = NAlgo2.Model(params.id, pd)
     
     def predict(m: NAlgo2.Model, q: Query): Prediction = {
       Prediction(params.id, q, Some(m))
@@ -362,7 +369,8 @@ object Engine0 {
 
   class NAlgo3(params: NAlgo3.Params) 
   extends P2LAlgorithm[ProcessedData, NAlgo3.Model, Query, Prediction] {
-    def train(pd: ProcessedData): NAlgo3.Model = NAlgo3.Model(params.id, pd)
+    def train(sc: SparkContext, pd: ProcessedData)
+    : NAlgo3.Model = NAlgo3.Model(params.id, pd)
     
     def predict(m: NAlgo3.Model, q: Query): Prediction = {
       Prediction(params.id, q, Some(m))
@@ -418,7 +426,7 @@ extends BaseEngine[
 class Metric0
 extends Metric[Engine1.EvalInfo, Engine1.Query, Engine1.Prediction,
 Engine1.Actual, Double] {
-  def header: String = "Metric0"
+  override def header: String = "Metric0"
 
   def calculate(
     sc: SparkContext, 
@@ -436,7 +444,7 @@ object Metric1 {
 class Metric1
 extends Metric[Engine1.EvalInfo, Engine1.Query, Engine1.Prediction,
 Engine1.Actual, Metric1.Result]()(Ordering.by[Metric1.Result, Double](_.v)) {
-  def header: String = "Metric1"
+  override def header: String = "Metric1"
 
   def calculate(
     sc: SparkContext, 
