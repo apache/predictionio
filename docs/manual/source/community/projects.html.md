@@ -47,3 +47,12 @@ Implementation of Delta-Simrank algorithm using Spark's GraphX framework.
 - Status: It works with PredictionIO v0.8 - Under active development
 
 
+## Magento Similar Products Extension
+
+URL: https://github.com/magento-hackathon/Predictionio
+
+Similar Products is a Magento extension that utilizes PredictionIO to create a more personalized suggestion of up-sell products on the Magento product page.
+
+- Core Author: Steven Richardson, Raphael Mäder & Damian Luszczymak
+
+- Status: It works with PredictionIO v0.8 - Under active development

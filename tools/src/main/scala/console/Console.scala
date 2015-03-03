@@ -39,6 +39,7 @@ import org.json4s.native.Serialization.{read, write}
 import scalaj.http.Http
 import semverfi._
 
+import scala.collection.JavaConversions._
 import scala.io.Source
 import scala.sys.process._
 import scala.util.Random
@@ -74,6 +75,8 @@ case class CommonArgs(
   engineVersion: Option[String] = None,
   engineFactory: Option[String] = None,
   engineParamsKey: Option[String] = None,
+  evaluation: Option[String] = None,
+  engineParamsGenerator: Option[String] = None,
   variantJson: File = new File("engine.json"),
   manifestJson: File = new File("manifest.json"),
   stopAfterRead: Boolean = false,
@@ -260,19 +263,15 @@ object Console extends Logging {
         action { (_, c) =>
           c.copy(commands = c.commands :+ "eval")
         } children(
+          arg[String]("<evaluation-class>") action { (x, c) =>
+            c.copy(common = c.common.copy(evaluation = Some(x)))
+          },
+          arg[String]("<engine-parameters-generator-class>") action { (x, c) =>
+            c.copy(common = c.common.copy(engineParamsGenerator = Some(x)))
+          },
           opt[String]("batch") action { (x, c) =>
             c.copy(common = c.common.copy(batch = x))
-          } text("Batch label of the run."),
-          opt[String]("params-path") action { (x, c) =>
-            c.copy(paramsPath = x)
-          } text("Directory to lookup parameters JSON files. Default: params"),
-          opt[String]("metrics-class") required() action { (x, c) =>
-            c.copy(metricsClass = Some(x))
-          } text("Name of metrics class to run."),
-          opt[String]("metrics-params") abbr("mp") action { (x, c) =>
-            c.copy(metricsParamsJsonPath = Some(x))
-          } text("Metrics parameters JSON file. Will try to use\n" +
-            "        metrics.json in the base path.")
+          } text("Batch label of the run.")
         )
       note("")
       cmd("deploy").
@@ -814,6 +813,16 @@ object Console extends Logging {
   }
 
   def compile(ca: ConsoleArgs): Unit = {
+    // only add pioVersion to sbt if project/pio.sbt exists
+    if (new File("project", "pio.sbt").exists) {
+      FileUtils.writeLines(
+        new File("pio.sbt"),
+        Seq(
+          "// Generated automatically by pio build.",
+          "// Changes in this file will be overridden.",
+          "",
+          "pioVersion := \"" + BuildInfo.version + "\""))
+    }
     val sbt = detectSbt(ca)
     info(s"Using command '${sbt}' at the current working directory to build.")
     info("If the path above is incorrect, this process will fail.")

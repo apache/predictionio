@@ -96,28 +96,6 @@ object WorkflowContext extends Logging {
 
 object CoreWorkflow {
   @transient lazy val logger = Logger[this.type]
-  /*
-  @transient lazy val engineInstanceStub = EngineInstance(
-    id = "",
-    status = "INIT",
-    startTime = DateTime.now,
-    endTime = DateTime.now,
-    engineId = "",
-    engineVersion = "",
-    engineVariant = "",
-    engineFactory = "",
-    evaluatorClass = "",
-    batch = "",
-    env = Map(),
-    dataSourceParams = "",
-    preparatorParams = "",
-    algorithmsParams = "",
-    servingParams = "",
-    evaluatorParams = "",
-    evaluatorResults = "",
-    evaluatorResultsHTML = "",
-    evaluatorResultsJSON = "")
-  */  
   @transient val engineInstances = Storage.getMetaDataEngineInstances
 
   def runTrain[EI, Q, P, A](
@@ -126,7 +104,7 @@ object CoreWorkflow {
       engineInstance: EngineInstance,
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
       params: WorkflowParams = WorkflowParams()) {
-    logger.info("Starting spark context")
+    logger.debug("Starting SparkContext")
     val mode = "training"
     WorkflowUtils.checkUpgrade(mode)
 
@@ -135,46 +113,43 @@ object CoreWorkflow {
       env,
       params.sparkEnv,
       mode.capitalize)
-   
-    val models: Seq[Any] = engine.train(
-      sc = sc, 
-      engineParams = engineParams,
-      engineInstanceId = engineInstance.id,
-      params = params
-    )
 
-    val instanceId = Storage.getMetaDataEngineInstances
-   
-    logger.info("Inserting persistent model")
-    Storage.getModelDataModels.insert(Model(
-      id = engineInstance.id,
-      models = KryoInjection(models)))
+    try {
 
-    logger.info("Updating engine instance")
-    val engineInstances = Storage.getMetaDataEngineInstances
-    engineInstances.update(engineInstance.copy(
-      status = "COMPLETED",
-      endTime = DateTime.now
-      ))
+      val models: Seq[Any] = engine.train(
+        sc = sc,
+        engineParams = engineParams,
+        engineInstanceId = engineInstance.id,
+        params = params
+      )
 
-    logger.info("Stopping spark context")
-    sc.stop()
+      val instanceId = Storage.getMetaDataEngineInstances
 
-    logger.info("Training completed.")
+      logger.info("Inserting persistent model")
+      Storage.getModelDataModels.insert(Model(
+        id = engineInstance.id,
+        models = KryoInjection(models)))
 
-    /*
-    if (params.stopAfterRead)
-      logger.info(
-        "Training has stopped after reading from data source and is " +
-        "incomplete.")
-    else if (params.stopAfterPrepare)
-      logger.info(
-        "Training has stopped after data preparation and is incomplete.")
-    else
-      logger.info("Your engine has been trained successfully.")
-    */
+      logger.info("Updating engine instance")
+      val engineInstances = Storage.getMetaDataEngineInstances
+      engineInstances.update(engineInstance.copy(
+        status = "COMPLETED",
+        endTime = DateTime.now
+        ))
+
+      logger.info("Training completed successfully.")
+    } catch {
+      case e @(
+          _: StopAfterReadInterruption |
+          _: StopAfterPrepareInterruption) => {
+        logger.info(s"Training interrupted by $e.")
+      }
+    } finally {
+      logger.debug("Stopping SparkContext")
+      sc.stop()
+    }
   }
-  
+
   def runEval[EI, Q, P, A, ER <: AnyRef](
       engine: BaseEngine[EI, Q, P, A],
       engineParams: EngineParams,
@@ -192,7 +167,7 @@ object CoreWorkflow {
     logger.info("Start spark context")
 
     val mode = "evaluation"
-    
+
     val sc = WorkflowContext(
       params.batch,
       env,
@@ -204,7 +179,7 @@ object CoreWorkflow {
     val evalDataSet: Seq[(EI, RDD[(Q, P, A)])] = engine.eval(sc, engineParams)
 
     val evalResult: ER = evaluator.evaluateBase(sc, evalDataSet)
-  
+
     logger.info(s"EvalResult: $evalResult")
 
     val (evalResultHTML, evalResultJSON) = evalResult match {
@@ -216,7 +191,7 @@ object CoreWorkflow {
           ("", "")
       }
     }
-    
+
     val evaluatedEI = evalEngineInstance.copy(
       status = "EVALCOMPLETED",
       endTime = DateTime.now,
@@ -264,7 +239,7 @@ object CoreWorkflow {
       env,
       params)
   }
-  
+
   def runEvaluation[EI, Q, P, A, R](
       engine: BaseEngine[EI, Q, P, A],
       engineParamsList: Seq[EngineParams],
@@ -273,7 +248,7 @@ object CoreWorkflow {
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
       params: WorkflowParams = WorkflowParams()) {
     logger.info("CoreWorkflow.runEvaluation")
-  
+
     logger.info("Start spark context")
 
     val mode = "evaluation"
@@ -305,7 +280,7 @@ object CoreWorkflow {
       algorithmsParams = write(bestEngineParams.algorithmParamsList),
       servingParams = write(bestEngineParams.servingParams)
     )
-    
+
     logger.info(s"Insert evaluation result")
     engineInstances.update(evaledEI)
 

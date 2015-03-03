@@ -6,13 +6,15 @@ Start with building your *<%= engine_name %>* engine.
 ```
 $ pio build
 ```
-This command should take few minutes for the first time; all subsequent builds should be less than a minute. You can also run it with --verbose to see all log messages.
+This command should take few minutes for the first time; all subsequent builds
+should be less than a minute. You can also run it with --verbose to see all log
+messages.
 
 Upon successful build, you should see a console message similar to the
 following.
 
 ```
-2014-11-21 16:37:25,817 INFO  tools.Console$ - Your engine is ready for training.
+[INFO] [Console$] Your engine is ready for training.
 ```
 
 ### Training the Predictive Model
@@ -27,7 +29,7 @@ When your engine is trained successfully, you should see a console message
 similar to the following.
 
 ```
-2014-11-21 16:33:17,528 INFO  workflow.CoreWorkflow$ - Your engine has been trained successfully.
+[INFO] [CoreWorkflow$] Training completed successfully.
 ```
 
 ### Deploying the Engine

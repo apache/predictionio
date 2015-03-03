@@ -1,0 +1,343 @@
+---
+title: Quick Start - Complimentary Purchase Engine Template
+---
+
+## Overview
+
+This engine template recomends the complimentary items which most user frequently buy at the same time together with one or more items in the query.
+
+## Usage
+
+### Event Data Requirements
+
+By default, the template requires the following events to be collected:
+
+- user 'buy' item events
+
+INFO: A correct eventTime should be used in order for engine to determine if the items being bought are in the same 'basket'.
+
+NOTE: You can customize to use other event.
+
+#### Input Query:
+
+- set of items
+- num of recomended items per condition
+
+#### Output PredictedResult:
+
+- array of condition and top n recommended items given the condition. The engine will use each combination of the query items as condition.
+
+## Install PredictionIO
+
+<%= partial 'shared/quickstart/install' %>
+
+## Create a Sample App
+
+<%= partial 'shared/quickstart/create_app' %>
+
+## Create a new Engine from an Engine Template
+
+<%= partial 'shared/quickstart/create_engine', locals: { engine_name: 'MyComplimentaryPurchase', template_name: 'Complimentary Purchase Engine Template', template_repo: 'template-scala-parallel-complimentarypurchase' } %>
+
+## Collecting Data
+
+Next, let's collect training data for this Engine. By default,
+ Complimentary Purchase Engine Template supports the following entities: **user**, **item**. A user buys an item.
+
+Note that the engine requires correct buy event time being used in order to determine if the items being bought are in the same 'basket', which is configured by the 'basketWindow' parameter. Using an unreal event time for the buy events will cause an incorrect model. If you use SDK, the current time is used as event time by default.
+
+WARNING: In particular, make sure correct event time is specified if you import data in batch (or not in real time). If the event time is omitted, the SDK will use **current time** as event time which is not the actual time of the buy event in this case!
+
+<%= partial 'shared/quickstart/install_sdk' %>
+
+The following is sample code of using different SDKs to import events of user-buy-item.
+
+<div class="tabs">
+  <div data-tab="Python SDK" data-lang="python">
+```python
+import predictionio
+
+client = predictionio.EventClient(
+  access_key=<ACCESS KEY>,
+  url=<URL OF EVENTSERVER>,
+  threads=5,
+  qsize=500
+)
+
+# A user buys an item (use current time as event time)
+client.create_event(
+  event="buy",
+  entity_type="user",
+  entity_id=<USER ID>,
+  target_entity_type="item",
+  target_entity_id=<ITEM ID>
+)
+
+# A user buys an item (explicitly specify event time)
+client.create_event(
+  event="buy",
+  entity_type="user",
+  entity_id=<USER ID>,
+  target_entity_type="item",
+  target_entity_id=<ITEM ID>,
+  event_time=<EVENT_TIME>
+)
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+
+```php
+<?php
+require_once("vendor/autoload.php");
+use predictionio\EventClient;
+
+$client = new EventClient(<ACCESS KEY>, <URL OF EVENTSERVER>);
+
+// A user buys an item (use current time as event time)
+$client->createEvent(array(
+  'event' => 'buy',
+  'entityType' => 'user',
+  'entityId' => <USER ID>,
+  'targetEntityType' => 'item',
+  'targetEntityId' => <ITEM ID>
+));
+
+// A user buys an item (explicitly specify event time)
+$client->createEvent(array(
+  'event' => 'buy',
+  'entityType' => 'user',
+  'entityId' => <USER ID>,
+  'targetEntityType' => 'item',
+  'targetEntityId' => <ITEM ID>,
+  'eventTime' => <EVENT_TIME>
+));
+
+?>
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+
+```ruby
+# Create a client object.
+client = PredictionIO::EventClient.new(<ACCESS KEY>, <URL OF EVENTSERVER>)
+
+# A user buys an item (use current time as event time)
+client.create_event(
+  'buy',
+  'user',
+  <USER ID>, {
+    'targetEntityType' => 'item',
+    'targetEntityId' => <ITEM ID>
+  }
+)
+
+# A user buys an item (explicitly specify event time)
+client.create_event(
+  'buy',
+  'user',
+  <USER ID>, {
+    'targetEntityType' => 'item',
+    'targetEntityId' => <ITEM ID>,
+    'eventTime' => <EVENT_TIME>
+  }
+)
+
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+
+```java
+import io.prediction.Event;
+import io.prediction.EventClient;
+
+import com.google.common.collect.ImmutableList;
+
+EventClient client = new EventClient(<ACCESS KEY>, <URL OF EVENTSERVER>);
+
+// A user buys an item (use current time as event time)
+Event buyEvent = new Event()
+    .event("buy")
+    .entityType("user")
+    .entityId(<USER_ID>)
+    .targetEntityType("item")
+    .targetEntityId(<ITEM_ID>)
+client.createEvent(buyEvent);
+
+// A user buys an item (explicitly specify event time)
+Event buyEvent = new Event()
+    .event("buy")
+    .entityType("user")
+    .entityId(<USER_ID>)
+    .targetEntityType("item")
+    .targetEntityId(<ITEM_ID>)
+    .eventTime(<EVENT_TIME>)
+client.createEvent(buyEvent);
+
+```
+  </div>
+  <div data-tab="REST API" data-lang="json">
+```
+# A user buys an item
+
+curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "buy",
+  "entityType" : "user"
+  "entityId" : <USER ID>,
+  "targetEntityType" : "item",
+  "targetEntityId" : <ITEM ID>,
+  "eventTime" : <TIME OF THIS EVENT>
+}'
+
+```
+  </div>
+</div>
+
+## Import Sample Data
+
+For demonstration purpose, a python script is provided to import sample data. The script generates some frequent item sets (prefix with "s"), some other random items (prefix with "i") and a few popular items (prefix with "p"). Then each user (with user ID "u1" to "u10") performs 5 buy transactions (buy events are within 10 seconds in each transcation). In each transcation, the user may or may not buy some random items, always buy one of the popular items and buy 2 or more items in one of the frequent item sets.
+
+NOTE: You need to install Python SDK to run the import script. Please follow [Python SDK README](https://github.com/PredictionIO/PredictionIO-Python-SDK) to install.
+
+First, make sure you are under the `MyComplimentaryPurchase` directory. Execute the following to import the data (Replace the value of access_key parameter with your **Access Key**):
+
+```
+$ python data/import_eventserver.py --access_key 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
+```
+
+You should see the following output:
+
+```
+...
+User u10 buys item i20 at 2014-10-19 15:42:35.618000-07:53
+User u10 buys item i5 at 2014-10-19 15:42:45.618000-07:53
+User u10 buys item p3 at 2014-10-19 15:42:55.618000-07:53
+User u10 buys item s2i3 at 2014-10-19 15:43:05.618000-07:53
+User u10 buys item s2i1 at 2014-10-19 15:43:15.618000-07:53
+225 events are imported.
+```
+
+WARNING: If you see error **TypeError: __init__() got an unexpected keyword argument 'access_key'**,
+please update the Python SDK to the latest version.
+
+## Deploy the Engine as a Service
+
+<%= partial 'shared/quickstart/deploy_enginejson', locals: { engine_name: 'MyComplimentaryPurchase' } %>
+
+<%= partial 'shared/quickstart/deploy', locals: { engine_name: 'MyComplimentaryPurchase' } %>
+
+## Using the Engine
+
+Now, You can query the engine. For example, return top 3 items which are frequently bought with item "s2i1". You can sending this JSON '{ "items" : ["s2i1"], "num" : 3 }' to the deployed engine. The engine will return a JSON with the recommeded items.
+
+If you include one or more items in the query, the engine will use each combination of the query items as condition, and return recommended items if there is any for this condition. For example, if you query items are ["A", "B"], then the engine will use ["A"], ["B"], and ["A", "B"] as condition and try to find top n recommended items for each combination.
+
+You can simply send a query by making a HTTP request or through the `EngineClient` of an SDK:
+
+<div class="tabs">
+  <div data-tab="Python SDK" data-lang="python">
+```python
+import predictionio
+engine_client = predictionio.EngineClient(url="http://localhost:8000")
+print engine_client.send_query({
+  "items" : ["s2i1"],
+  "num" : 3
+})
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+```php
+<?php
+require_once("vendor/autoload.php");
+use predictionio\EngineClient;
+
+$client = new EngineClient('http://localhost:8000');
+
+$response = $client->sendQuery(array(
+  'items' => array('s2i1'),
+  'num' => 3
+));
+
+print_r($response);
+
+?>
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+
+```ruby
+# Create client object.
+client = PredictionIO::EngineClient.new('http://localhost:8000')
+
+# Query PredictionIO.
+response = client.send_query(
+  'items' => ['s2i1'],
+  'num' => 3
+)
+
+puts response
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+
+```java
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
+import com.google.gson.JsonObject;
+
+import io.prediction.EngineClient;
+
+// create client object
+EngineClient engineClient = new EngineClient("http://localhost:8000");
+
+// query
+
+JsonObject response = engineClient.sendQuery(ImmutableMap.<String, Object>of(
+  "items", ImmutableList.of("s2i1"),
+  "num", 3
+));
+```
+  </div>
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -H "Content-Type: application/json" \
+-d '{
+  "items" : ["s2i1"],
+  "num" : 3
+}' \
+http://localhost:8000/queries.json
+
+```
+  </div>
+</div>
+
+The followgin is the JSON output example. The `cond` field is one of the combination of query items used as condition to determine other frequently bought items with this condition, followed by top items. If there are multiple conditions with recommended items found, the `rules` array will contain mutliple elements, and each correspond to the condition.
+
+```
+{
+  "rules":[
+    {
+      "cond":["s2i1"],
+      "itemScores":[
+        {
+          "item":"s2i2",
+          "support":0.2,
+          "confidence":0.9090909090909091,
+          "lift":3.787878787878788
+        },
+        {
+          "item":"s2i3",
+          "support":0.14,
+          "confidence":0.6363636363636364,
+          "lift":3.535353535353535
+        }
+      ]
+    }
+  ]
+}
+```
+
+*MyComplimentaryPurchase* is now running.
+
+<%= partial 'shared/quickstart/production' %>

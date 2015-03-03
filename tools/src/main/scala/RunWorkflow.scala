@@ -81,7 +81,8 @@ object RunWorkflow extends Logging {
         }
       }
 
-    val workMode = ca.metricsClass.map(_ => "Evaluation").getOrElse("Training")
+    val workMode =
+      ca.common.evaluation.map(_ => "Evaluation").getOrElse("Training")
 
     val engineLocation = Seq(
       sys.env("PIO_FS_ENGINESDIR"),
@@ -125,11 +126,11 @@ object RunWorkflow extends Logging {
         mainJar,
         "--env",
         pioEnvVars,
-        "--engineId",
+        "--engine-id",
         em.id,
-        "--engineVersion",
+        "--engine-version",
         em.version,
-        "--engineVariant",
+        "--engine-variant",
         (if (deployMode == "cluster")
           hdfs.makeQualified(new Path(
             (engineLocation :+ variantJson.getName).mkString(Path.SEPARATOR))).
@@ -149,18 +150,11 @@ object RunWorkflow extends Logging {
       (if (ca.common.stopAfterRead) Seq("--stop-after-read") else Seq()) ++
       (if (ca.common.stopAfterPrepare)
         Seq("--stop-after-prepare") else Seq()) ++
-      ca.metricsClass.map(x => Seq("--metricsClass", x)).
+      ca.common.evaluation.map(x => Seq("--evaluation-class", x)).
         getOrElse(Seq()) ++
-      (if (ca.common.batch != "") Seq("--batch", ca.common.batch) else Seq()) ++ Seq(
-      "--jsonBasePath", ca.paramsPath) ++ defaults.flatMap { _ match {
-        case (key, (path, default)) =>
-          path.map(p => Seq(s"--$key", p)).getOrElse {
-          if (hdfs.exists(new Path(ca.paramsPath + Path.SEPARATOR + default)))
-            Seq(s"--$key", default)
-          else
-            Seq()
-        }
-      }}
+      ca.common.engineParamsGenerator.map(x => Seq("--engine-params-generator-class", x)).
+        getOrElse(Seq()) ++
+      (if (ca.common.batch != "") Seq("--batch", ca.common.batch) else Seq())
     info(s"Submission command: ${sparkSubmit.mkString(" ")}")
     Process(sparkSubmit, None, "SPARK_YARN_USER_ENV" -> pioEnvVars).!
   }

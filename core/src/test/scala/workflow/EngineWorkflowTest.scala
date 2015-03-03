@@ -22,6 +22,8 @@ import org.scalatest.Suite
 
 class EngineWorkflowTrainSuite extends FunSuite with SharedSparkContext {
   import io.prediction.controller.Engine0._
+  val defaultWorkflowParams: WorkflowParams = WorkflowParams()
+
   test("Parallel DS/P/Algos") {
     val models = EngineWorkflow.train(
       sc,
@@ -30,7 +32,9 @@ class EngineWorkflowTrainSuite extends FunSuite with SharedSparkContext {
       Seq(
         new PAlgo0(2),
         new PAlgo1(3),
-        new PAlgo0(4)))
+        new PAlgo0(4)),
+      defaultWorkflowParams
+    )
 
     val pd = ProcessedData(1, TrainingData(0))
 
@@ -46,7 +50,9 @@ class EngineWorkflowTrainSuite extends FunSuite with SharedSparkContext {
       Seq(
         new LAlgo0(2),
         new LAlgo1(3),
-        new LAlgo0(4)))
+        new LAlgo0(4)),
+      defaultWorkflowParams
+    )
     
     val pd = ProcessedData(1, TrainingData(0))
 
@@ -70,12 +76,83 @@ class EngineWorkflowTrainSuite extends FunSuite with SharedSparkContext {
       Seq(
         new NAlgo0(2),
         new NAlgo1(3),
-        new NAlgo0(4)))
+        new NAlgo0(4)),
+      defaultWorkflowParams
+    )
 
     val pd = ProcessedData(1, TrainingData(0))
     
     models should contain theSameElementsAs Seq(
       NAlgo0.Model(2, pd), NAlgo1.Model(3, pd), NAlgo0.Model(4, pd))
+  }
+  
+  test("Parallel DS/P/Algos Stop-After-Read") {
+    val workflowParams = defaultWorkflowParams.copy(
+      stopAfterRead = true)
+
+    an [StopAfterReadInterruption] should be thrownBy EngineWorkflow.train(
+      sc,
+      new PDataSource0(0),
+      new PPreparator0(1),
+      Seq(
+        new PAlgo0(2),
+        new PAlgo1(3),
+        new PAlgo0(4)),
+      workflowParams
+    )
+  }
+  
+  test("Parallel DS/P/Algos Stop-After-Prepare") {
+    val workflowParams = defaultWorkflowParams.copy(
+      stopAfterPrepare = true)
+
+    an [StopAfterPrepareInterruption] should be thrownBy EngineWorkflow.train(
+      sc,
+      new PDataSource0(0),
+      new PPreparator0(1),
+      Seq(
+        new PAlgo0(2),
+        new PAlgo1(3),
+        new PAlgo0(4)),
+      workflowParams
+    )
+  }
+  
+  test("Parallel DS/P/Algos Dirty TrainingData") {
+    val workflowParams = defaultWorkflowParams.copy(
+      skipSanityCheck = false)
+
+    an [AssertionError] should be thrownBy EngineWorkflow.train(
+      sc,
+      new PDataSource3(0, error = true),
+      new PPreparator0(1),
+      Seq(
+        new PAlgo0(2),
+        new PAlgo1(3),
+        new PAlgo0(4)),
+      workflowParams
+    )
+  }
+  
+  test("Parallel DS/P/Algos Dirty TrainingData But Skip Check") {
+    val workflowParams = defaultWorkflowParams.copy(
+      skipSanityCheck = true)
+
+    val models = EngineWorkflow.train(
+      sc,
+      new PDataSource3(0, error = true),
+      new PPreparator0(1),
+      Seq(
+        new PAlgo0(2),
+        new PAlgo1(3),
+        new PAlgo0(4)),
+      workflowParams
+    )
+    
+  val pd = ProcessedData(1, TrainingData(0, error = true))
+
+    models should contain theSameElementsAs Seq(
+      PAlgo0.Model(2, pd), PAlgo1.Model(3, pd), PAlgo0.Model(4, pd))
   }
 }
 

@@ -16,13 +16,15 @@
 package io.prediction.workflow
 
 import io.prediction.controller.EmptyParams
+import io.prediction.controller.Engine
 import io.prediction.controller.EngineParams
+import io.prediction.controller.EngineParamsGenerator
 import io.prediction.controller.IEngineFactory
-import io.prediction.controller.Evaluator
+import io.prediction.controller.Evaluation
 import io.prediction.controller.Params
 import io.prediction.controller.Utils
+import io.prediction.controller.Workflow
 import io.prediction.controller.WorkflowParams
-import io.prediction.controller.Engine
 import io.prediction.core.Doer
 import io.prediction.core.BaseEvaluator
 import io.prediction.core.BaseEngine
@@ -55,9 +57,8 @@ object CreateWorkflow extends Logging {
     engineVariant: String = "",
     engineFactory: String = "",
     engineParamsKey: String = "",
-    evaluatorClass: Option[String] = None,
-    evaluatorParamsJsonPath: Option[String] = None,
-    jsonBasePath: String = "",
+    evaluationClass: Option[String] = None,
+    engineParamsGeneratorClass: Option[String] = None,
     env: Option[String] = None,
     skipSanityCheck: Boolean = false,
     stopAfterRead: Boolean = false,
@@ -93,30 +94,26 @@ object CreateWorkflow extends Logging {
         sys.exit(1)
     }
   }
-    
+
   val parser = new scopt.OptionParser[WorkflowConfig]("CreateWorkflow") {
     opt[String]("batch") action { (x, c) =>
       c.copy(batch = x)
     } text("Batch label of the workflow run.")
-    opt[String]("engineId") required() action { (x, c) =>
+    opt[String]("engine-id") required() action { (x, c) =>
       c.copy(engineId = x)
     } text("Engine's ID.")
-    opt[String]("engineVersion") required() action { (x, c) =>
+    opt[String]("engine-version") required() action { (x, c) =>
       c.copy(engineVersion = x)
     } text("Engine's version.")
-    opt[String]("engineVariant") required() action { (x, c) =>
+    opt[String]("engine-variant") required() action { (x, c) =>
       c.copy(engineVariant = x)
     } text("Engine variant JSON.")
-    opt[String]("evaluatorClass") action { (x, c) =>
-      c.copy(evaluatorClass = Some(x))
+    opt[String]("evaluation-class") action { (x, c) =>
+      c.copy(evaluationClass = Some(x))
     } text("Class name of the run's evaluator.")
-    // TODO(yipjustin): Change "mp" to something else.
-    opt[String]("mp") action { (x, c) =>
-      c.copy(evaluatorParamsJsonPath = Some(x))
+    opt[String]("engine-params-generator-class") action { (x, c) =>
+      c.copy(engineParamsGeneratorClass = Some(x))
     } text("Path to evaluator parameters")
-    opt[String]("jsonBasePath") action { (x, c) =>
-      c.copy(jsonBasePath = x)
-    } text("Base path to prepend to all parameters JSON files.")
     opt[String]("env") action { (x, c) =>
       c.copy(env = Some(x))
     } text("Comma-separated list of environmental variables (in 'FOO=BAR' " +
@@ -152,9 +149,6 @@ object CreateWorkflow extends Logging {
       c.copy(logFile = Some(x))
     }
   }
-
-  
-
 
   def main(args: Array[String]): Unit = {
     val wfcOpt = parser.parse(args, WorkflowConfig())
@@ -194,36 +188,26 @@ object CreateWorkflow extends Logging {
 
     val engine: BaseEngine[_, _, _, _] = engineFactoryObj()
 
-    val evaluator = wfc.evaluatorClass.map { mc => //mc => null
+    val evaluation = wfc.evaluationClass.map { ec =>
       try {
-        Class.forName(mc)
-          .asInstanceOf[Class[BaseEvaluator[_, _, _, _, _ <: AnyRef]]]
+        WorkflowUtils.getEvaluation(ec, getClass.getClassLoader)._2
       } catch {
-        case e: ClassNotFoundException =>
-          error("Unable to obtain evaluator class object ${mc}: " +
-            s"${e.getMessage}. Aborting workflow.")
+        case e @ (_: ClassNotFoundException | _: NoSuchMethodException) =>
+          error(s"Unable to obtain evaluation ${ec}. Aborting workflow.", e)
           sys.exit(1)
       }
     }
-    
 
-    val evaluatorParams = wfc.evaluatorParamsJsonPath.map(p =>
-      if (evaluator.isEmpty)
-        EmptyParams()
-      else
-        WorkflowUtils.extractParams(
-          engineLanguage,
-          stringFromFile(wfc.jsonBasePath, p),
-          evaluator.get)
-    ) getOrElse EmptyParams()
-
-    /*
-    val evaluatorInstance = evaluator
-      .map(m => Doer(m, evaluatorParams))
-      .getOrElse(null)
-    */
-    val evaluatorInstance: Option[BaseEvaluator[_, _, _, _, _ <: AnyRef]] = evaluator
-      .map(m => Doer(m, evaluatorParams))
+    val engineParamsGenerator = wfc.engineParamsGeneratorClass.map { epg =>
+      try {
+        WorkflowUtils.getEngineParamsGenerator(epg, getClass.getClassLoader)._2
+      } catch {
+        case e @ (_: ClassNotFoundException | _: NoSuchMethodException) =>
+          error(s"Unable to obtain engine parameters generator ${epg}. " +
+            "Aborting workflow.", e)
+          sys.exit(1)
+      }
+    }
 
     val pioEnvVars = wfc.env.map(e =>
       e.split(',').flatMap(p =>
@@ -234,8 +218,7 @@ object CreateWorkflow extends Logging {
       ).toMap
     ).getOrElse(Map())
 
-
-    if (evaluatorInstance.isEmpty) {
+    if (evaluation.isEmpty) {
       // Evaluator Not Specified. Do training.
       if (!engine.isInstanceOf[Engine[_,_,_,_,_,_]]) {
         throw new NoSuchMethodException(s"Engine $engine is not trainable")
@@ -258,14 +241,14 @@ object CreateWorkflow extends Logging {
         engineVersion = wfc.engineVersion,
         engineVariant = variantId,
         engineFactory = engineFactory,
-        evaluatorClass = wfc.evaluatorClass.getOrElse(""),
+        evaluatorClass = wfc.evaluationClass.getOrElse(""),
         batch = (if (wfc.batch == "") engineFactory else wfc.batch),
         env = pioEnvVars,
         dataSourceParams = write(engineParams.dataSourceParams),
         preparatorParams = write(engineParams.preparatorParams),
         algorithmsParams = write(engineParams.algorithmParamsList),
         servingParams = write(engineParams.servingParams),
-        evaluatorParams = write(evaluatorParams),
+        evaluatorParams = "",
         evaluatorResults = "",
         evaluatorResultsHTML = "",
         evaluatorResultsJSON = "")
@@ -284,58 +267,8 @@ object CreateWorkflow extends Logging {
         engine = trainableEngine,
         engineParams = engineParams,
         engineInstance = engineInstance.copy(id = engineInstanceId))
-
     } else {
-      // Evaluator Not Specified. Do training.
-        
-      throw new NotImplementedError(
-        s"Please use 'pio run' for Evaluation")
-
-      val engineParams = if (wfc.engineParamsKey == "") {
-        engine.jValueToEngineParams(variantJson)
-      } else {
-        engineFactoryObj.engineParams(wfc.engineParamsKey)
-      }
-
-      val engineInstance = EngineInstance(
-        id = "",
-        status = "INIT",
-        startTime = DateTime.now,
-        endTime = DateTime.now,
-        engineId = wfc.engineId,
-        engineVersion = wfc.engineVersion,
-        engineVariant = variantId,
-        engineFactory = engineFactory,
-        evaluatorClass = wfc.evaluatorClass.getOrElse(""),
-        batch = (if (wfc.batch == "") engineFactory else wfc.batch),
-        env = pioEnvVars,
-        dataSourceParams = write(engineParams.dataSourceParams),
-        preparatorParams = write(engineParams.preparatorParams),
-        algorithmsParams = write(engineParams.algorithmParamsList),
-        servingParams = write(engineParams.servingParams),
-        evaluatorParams = write(evaluatorParams),
-        evaluatorResults = "",
-        evaluatorResultsHTML = "",
-        evaluatorResultsJSON = "")
-
-      val engineInstanceId = Storage.getMetaDataEngineInstances.insert(
-        engineInstance)
-
-      CoreWorkflow.runEvalTypeless(
-        env = pioEnvVars,
-        params = WorkflowParams(
-          verbose = wfc.verbosity,
-          batch = (if (wfc.batch == "") engineFactory else wfc.batch),
-          skipSanityCheck = wfc.skipSanityCheck,
-          stopAfterRead = wfc.stopAfterRead,
-          stopAfterPrepare = wfc.stopAfterPrepare),
-        engine = engine,
-        engineParams = engineParams,
-        engineInstance = engineInstance.copy(id = engineInstanceId),
-        evaluator = evaluatorInstance.get,
-        evaluatorParams = evaluatorParams
-      )
+      Workflow.runEvaluation(evaluation.get, engineParamsGenerator.get)
     }
-
   }
 }
