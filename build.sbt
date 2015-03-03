@@ -30,7 +30,7 @@ scalacOptions in (ThisBuild, Test) ++= Seq("-Yrangepos")
 
 fork in (ThisBuild, run) := true
 
-javacOptions in ThisBuild ++= Seq("-source", "1.7", "-target", "1.7",
+javacOptions in (ThisBuild, compile) ++= Seq("-source", "1.7", "-target", "1.7",
   "-Xlint:deprecation", "-Xlint:unchecked")
 
 elasticsearchVersion in ThisBuild := "1.3.2"
@@ -58,7 +58,9 @@ lazy val root = project in file(".") aggregate(
   tools,
   e2)
 
-lazy val common = (project in file("common"))
+lazy val common = (project in file("common")).
+  settings(sonatypeSettings: _*).
+  settings(unmanagedClasspath in Test += conf)
 
 lazy val core = (project in file("core")).
   dependsOn(data).
@@ -79,7 +81,7 @@ lazy val tools = (project in file("tools")).
   enablePlugins(SbtTwirl).
   settings(unmanagedClasspath in Test += conf)
 
-lazy val e2 = (project in file("e2")).settings(sonatypeSettings: _*).
+lazy val e2 = (project in file("e2")).
   settings(sonatypeSettings: _*).
   settings(unmanagedClasspath in Test += conf)
 
@@ -124,6 +126,7 @@ scalacOptions in (ScalaUnidoc, unidoc) ++= Seq(
   "-doc-root-content",
   "docs/scaladoc/rootdoc.txt")
 
+/*
 javacOptions in (JavaUnidoc, unidoc) := Seq(
   "-windowtitle",
   "PredictionIO Javadoc " + version.value,
@@ -134,6 +137,7 @@ javacOptions in (JavaUnidoc, unidoc) := Seq(
   "docs/javadoc/javadoc-overview.html",
   "-noqualifier",
   "java.lang")
+*/
 
 lazy val pioUnidoc = taskKey[Unit]("Builds PredictionIO Scaladoc and Javadoc")
 
