@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Convenience script for starting all default dependent services in a single
+# Convenience script for stopping all default dependent services in a single
 # node scenario.
 
 # Figure out where PredictionIO is installed

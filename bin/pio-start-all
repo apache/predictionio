@@ -41,7 +41,7 @@ else
   # Kill everything for cleanliness
   echo "Cannot start HBase. Aborting..."
   sleep 3
-  $FWDIR/bin/stopall
+  $FWDIR/bin/pio-stop-all
   exit 1
 fi
 
