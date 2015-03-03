@@ -49,4 +49,4 @@ fi
 echo "Waiting 10 seconds for HBase to fully initialize..."
 sleep 10
 echo "Starting PredictionIO Event Server..."
-$FWDIR/bin/pio-daemon $FWDIR/eventserver.pid eventserver
+$FWDIR/bin/pio-daemon $FWDIR/eventserver.pid eventserver --ip 0.0.0.0

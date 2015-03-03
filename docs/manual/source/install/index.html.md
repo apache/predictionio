@@ -9,12 +9,13 @@ This is a hassle-free way to get a well-configured PredictionIO server quickly.
 
 ## Method 2: Quick Install
 
-On Linux / Mac OS X, PredictionIO can now be installed with a single command:<br />
+On Linux / Mac OS X, PredictionIO can now be installed with a single command:
+<br />
 `$ bash -c "$(curl -s https://install.prediction.io/install.sh)"`
 
-INFO: The install script will start Elasticsearch and HBase as background processes. If you restart your machine, you need to manually start ElasticSearch and HBase in order to use PredictionIO. Please see [Using PredictionIO FAQ](/resources/faq/#using-predictionio).
-
-The above script will complete the rest of the instructions on this page for you and you can proceed to the [Choosing an Engine Template](/start/templategallery).
+The above script will complete the rest of the instructions on this page for you
+and you can proceed to the [Choosing an Engine
+Template](/start/templategallery).
 
 ## Method 3: Manual Install
 
@@ -43,7 +44,7 @@ Choose your platform below:
 
 * [Installing PredictionIO on Linux / Mac OS X](install-linux.html)
 * [Installing PredictionIO from Source Code](install-sourcecode.html)
-* [Installing PredictionIO with Vagrant(VirtualBox)](install-vagrant.html)
+* [Installing PredictionIO with Vagrant (VirtualBox)](install-vagrant.html)
 * [Installing PredictionIO with Terminal.com Snap](https://www.terminal.com/snapshot/f444bfb7538dfc596485374f56167ec6f79cbc16f793f013ad120067070eb81a)
 
 
@@ -70,6 +71,8 @@ Elasticsearch. See more [here](/resources/upgrade/).**
 
 ## Method 4: Terminal.com
 
-Public snaps are available on our Terminal.com [page](https://www.terminal.com/user/predictionio).
+Public snaps are available on our Terminal.com
+[page](https://www.terminal.com/user/predictionio).
 
-Instance type **must be** set to *medium* or higher for PredictionIO to function correctly. 
+Instance type **must be** set to *medium* or higher for PredictionIO to function
+correctly.
