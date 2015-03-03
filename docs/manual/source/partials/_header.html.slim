@@ -3,7 +3,8 @@ header#header
     iframe src="/github/?user=PredictionIO&repo=PredictionIO&type=watch&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="110" height="20"
     iframe src="/github/?user=PredictionIO&repo=PredictionIO&type=fork&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="95" height="20"
   = link_to '<i class="fa fa-bars"></i>', '/', id: 'active-navigation'
-  = link_to 'PredictionIO', 'http://prediction.io/', class: 'logo hide-text'
+  = link_to 'http://prediction.io/', class: 'logo' do
+    = image_tag 'logos/header.png', alt: 'PredictionIO'
   .group
     = partial 'nav/header'
     = link_to '<i class="fa fa-arrow-circle-o-down"></i> Download', '/install/', class: 'button-download'

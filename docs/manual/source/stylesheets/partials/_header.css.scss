@@ -8,9 +8,7 @@
 
   .logo {
     width: 200px;
-    height: 22px;
     display: block;
-    background-image: url(/images/logos/header.png);
     margin: 8px 0 0 25px;
     float: left;
   }
@@ -20,7 +18,7 @@
     float: right;
     display: none;
     margin: 0 25px 0 0;
-    @include large {
+    @include x-large {
       display: block;
     }
   }
@@ -33,5 +31,3 @@
     margin-top: 5px;
   }
 }
-
-
