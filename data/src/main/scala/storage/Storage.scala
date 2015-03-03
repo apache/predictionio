@@ -276,7 +276,7 @@ object Storage extends Logging {
 
   if (errors > 0) {
     error(s"There were $errors configuration errors. Exiting.")
-    System.exit(errors)
+    sys.exit(errors)
   }
 }
 
