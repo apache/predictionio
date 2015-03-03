@@ -39,6 +39,7 @@ import grizzled.slf4j.Logger
   * @tparam ER Evaluation result class.
   * @group Evaluator
   */
+@deprecated("Use Evaluation instead.", "0.9.0")
 abstract class Evaluator[EI, Q, P, A, EU: ClassTag, ES, ER <: AnyRef : ClassTag]
   extends BaseEvaluator[EI, Q, P, A, ER] {
   type EX = Int
@@ -67,7 +68,7 @@ abstract class Evaluator[EI, Q, P, A, EU: ClassTag, ES, ER <: AnyRef : ClassTag]
       .glom()
       .map { a => {
         val sorted: Seq[(EI, ES)] = a.sortBy(_._1).map(e => (e._2, e._3))
-        evaluateAll(sorted) 
+        evaluateAll(sorted)
       }}
 
     logger.info(s"Evaluator completed.")
@@ -106,6 +107,7 @@ abstract class Evaluator[EI, Q, P, A, EU: ClassTag, ES, ER <: AnyRef : ClassTag]
   * methods. These results are rendered through dashboard.
   * @group Evaluator
   */
+@deprecated("Use Evaluation instead.", "0.9.0")
 trait NiceRendering {
   /** HTML portion of the rendered evaluator results. */
   def toHTML(): String
@@ -119,6 +121,7 @@ trait NiceRendering {
   *
   * @group Evaluator
   */
+@deprecated("Use Evaluation instead.", "0.9.0")
 class MeanSquareError extends Evaluator[AnyRef,
     AnyRef, Double, Double, (Double, Double), String, String] {
   def evaluateUnit(q: AnyRef, p: Double, a: Double): (Double, Double) = (p, a)

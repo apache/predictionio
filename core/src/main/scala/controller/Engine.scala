@@ -83,7 +83,7 @@ class Engine[TD, EI, PD, Q, P, A](
     val algorithmClassMap: Map[String, Class[_ <: BaseAlgorithm[PD, _, Q, P]]],
     val servingClassMap: Map[String, Class[_ <: BaseServing[Q, P]]])
   extends BaseEngine[EI, Q, P, A] {
-  
+
   implicit lazy val formats = Utils.json4sDefaultFormats +
     new NameParamsSerializer
 
@@ -123,10 +123,10 @@ class Engine[TD, EI, PD, Q, P, A](
       algorithmClassMap,
       servingClassMap)
   }
-  
+
   // Return persistentable models from trained model
   def train(
-      sc: SparkContext, 
+      sc: SparkContext,
       engineParams: EngineParams,
       engineInstanceId: String = "",
       params: WorkflowParams = WorkflowParams()): Seq[Any] = {
@@ -135,7 +135,7 @@ class Engine[TD, EI, PD, Q, P, A](
 
     val (preparatorName, preparatorParams) = engineParams.preparatorParams
     val preparator = Doer(preparatorClassMap(preparatorName), preparatorParams)
- 
+
     val algoParamsList = engineParams.algorithmParamsList
 
     val algorithms = algoParamsList.map { case (algoName, algoParams) =>
@@ -146,7 +146,7 @@ class Engine[TD, EI, PD, Q, P, A](
       sc, dataSource, preparator, algorithms, params)
 
     val algoCount = algorithms.size
-    val algoTuples: Seq[(String, Params, BaseAlgorithm[_, _, _, _], Any)] = 
+    val algoTuples: Seq[(String, Params, BaseAlgorithm[_, _, _, _], Any)] =
     (0 until algoCount).map { ax => {
       //val (name, params) = algoParamsList(ax)
       val (name, params) = algoParamsList(ax)
@@ -154,8 +154,8 @@ class Engine[TD, EI, PD, Q, P, A](
     }}
 
     makeSerializableModels(
-      sc, 
-      engineInstanceId = engineInstanceId, 
+      sc,
+      engineInstanceId = engineInstanceId,
       algoTuples = algoTuples)
   }
 
@@ -168,7 +168,7 @@ class Engine[TD, EI, PD, Q, P, A](
     engineInstanceId: String,
     persistedModels: Seq[Any],
     params: WorkflowParams = WorkflowParams()): Seq[Any] = {
-      
+
     val algoParamsList = engineParams.algorithmParamsList
     val algorithms = algoParamsList.map { case (algoName, algoParams) =>
       Doer(algorithmClassMap(algoName), algoParams)
@@ -179,7 +179,7 @@ class Engine[TD, EI, PD, Q, P, A](
       logger.info("Some persisted models are Unit, need to re-train.")
       val (dataSourceName, dataSourceParams) = engineParams.dataSourceParams
       val dataSource = Doer(dataSourceClassMap(dataSourceName), dataSourceParams)
-    
+
       val (preparatorName, preparatorParams) = engineParams.preparatorParams
       val preparator = Doer(preparatorClassMap(preparatorName), preparatorParams)
 
@@ -253,7 +253,7 @@ class Engine[TD, EI, PD, Q, P, A](
   ): Seq[Any] = {
 
     logger.info(s"engineInstanceId=$engineInstanceId")
-  
+
     algoTuples
     .zipWithIndex
     .map { case ((name, params, algo, model), ax) =>
@@ -269,10 +269,10 @@ class Engine[TD, EI, PD, Q, P, A](
   : Seq[(EI, RDD[(Q, P, A)])] = {
     val (dataSourceName, dataSourceParams) = engineParams.dataSourceParams
     val dataSource = Doer(dataSourceClassMap(dataSourceName), dataSourceParams)
-    
+
     val (preparatorName, preparatorParams) = engineParams.preparatorParams
     val preparator = Doer(preparatorClassMap(preparatorName), preparatorParams)
- 
+
     val algoParamsList = engineParams.algorithmParamsList
 
     val algorithms = algoParamsList.map { case (algoName, algoParams) => {
@@ -296,10 +296,10 @@ class Engine[TD, EI, PD, Q, P, A](
 
     val (servingName, servingParams) = engineParams.servingParams
     val serving = Doer(servingClassMap(servingName), servingParams)
-    
+
     EngineWorkflow.eval(sc, dataSource, preparator, algorithms, serving)
   }
- 
+
   override
   def jValueToEngineParams(variantJson: JValue): EngineParams = {
     val engineLanguage = EngineLanguage.Scala
@@ -367,7 +367,7 @@ class Engine[TD, EI, PD, Q, P, A](
   : EngineParams = {
     implicit val formats = DefaultFormats
     val engineLanguage = EngineLanguage.Scala
-    
+
     val dataSourceParamsWithName: (String, Params) = {
       val (name, params) =
         read[(String, JValue)](engineInstance.dataSourceParams)
@@ -397,7 +397,7 @@ class Engine[TD, EI, PD, Q, P, A](
         preparatorClassMap(name))
       (name, extractedParams)
     }
-    
+
     val algorithmsParamsWithNames =
       read[Seq[(String, JValue)]](engineInstance.algorithmsParams).map {
         case (algoName, params) =>
@@ -516,8 +516,13 @@ class EngineParams(
   }
 }
 
+/** Companion object for creating [[EngineParams]] instances.
+  *
+  * @group Engine
+  */
 object EngineParams {
-  /** Create EngineParams
+  /** Create EngineParams.
+    *
     * @param dataSourceName Data Source name
     * @param dataSourceParams Data Source parameters
     * @param preparatorName Preparator name
@@ -525,7 +530,6 @@ object EngineParams {
     * @param algorithmParamsList List of algorithm name-parameter pairs.
     * @param servingName Serving name
     * @param servingParams Serving parameters
-    * @group Engine
     */
   def apply(
     dataSourceName: String = "",
@@ -593,20 +597,27 @@ trait IEngineFactory {
   def engineParams(key: String): EngineParams = EngineParams()
 }
 
+/** Defines a deployment that contains an engine.
+  *
+  * @group Engine
+  */
 trait Deployment extends IEngineFactory {
   protected[this] var _engine: BaseEngine[_, _, _, _] = _
   protected[this] var engineSet: Boolean = false
 
+  /** Returns the [[Engine]] contained in this [[Deployment]]. */
   def apply(): BaseEngine[_, _, _, _] = {
     assert(engineSet, "Engine not set")
     _engine
   }
 
+  /** Returns the [[Engine]] contained in this [[Deployment]]. */
   def engine: BaseEngine[_, _, _, _] = {
     assert(engineSet, "Engine not set")
     _engine
   }
 
+  /** Sets the [[Engine]] for this [[Deployment]]. */
   def engine_=[EI, Q, P, A](engine: BaseEngine[EI, Q, P, A]) {
     assert(!engineSet, "Engine can be set at most once")
     _engine = engine
@@ -614,22 +625,33 @@ trait Deployment extends IEngineFactory {
   }
 }
 
+/** Defines an evaluation that contains an engine and a metric.
+  *
+  * Implementations of this trait can be supplied to "pio eval" as the first
+  * argument.
+  *
+  * @group Evaluation
+  */
 trait Evaluation extends Deployment {
   protected[this] var _metric: Metric[_, _, _, _, _] = _
   protected[this] var metricSet: Boolean = false
-  
+
+  /** Returns the [[Metric]] contained in this [[Evaluation]]. */
   def metric: Metric[_, _, _, _, _] = {
     assert(metricSet, "Metric not set")
     _metric
   }
 
-  // Engine Metric
+  /** Returns both the [[Engine]] and [[Metric]] contained in this
+    * [[Evaluation]].
+    */
   def engineMetric: (BaseEngine[_, _, _, _], Metric[_, _, _, _, _]) = {
     assert(engineSet, "Engine not set")
     assert(metricSet, "Metric not set")
     (_engine, _metric)
   }
 
+  /** Sets both the [[Engine]] and [[Metric]] for this [[Evaluation]]. */
   def engineMetric_=[EI, Q, P, A](
     engineMetric: (BaseEngine[EI, Q, P, A], Metric[EI, Q, P, A, _])) {
     assert(!engineSet, "Engine can be set at most once")
@@ -641,15 +663,24 @@ trait Evaluation extends Deployment {
   }
 }
 
+/** Defines an engine parameters generator.
+  *
+  * Implementations of this trait can be supplied to "pio eval" as the second
+  * argument.
+  *
+  * @group Evaluation
+  */
 trait EngineParamsGenerator {
   protected[this] var epList: Seq[EngineParams] = _
   protected[this] var epListSet: Boolean = false
 
+  /** Returns the list of [[EngineParams]] of this [[EngineParamsGenerator]]. */
   def engineParamsList: Seq[EngineParams] = {
     assert(epListSet, "EngineParamsList not set")
     epList
   }
 
+  /** Sets the list of [[EngineParams]] of this [[EngineParamsGenerator]]. */
   def engineParamsList_=(l: Seq[EngineParams]) {
     assert(!epListSet, "EngineParamsList can bet set at most once")
     epList = Seq(l:_*)

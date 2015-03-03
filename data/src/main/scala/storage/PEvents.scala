@@ -15,6 +15,8 @@
 
 package io.prediction.data.storage
 
+import io.prediction.annotation.Experimental
+
 import org.joda.time.DateTime
 
 import org.apache.spark.SparkContext
@@ -91,10 +93,11 @@ trait PEvents extends Serializable {
     required: Option[Seq[String]] = None)
     (sc: SparkContext): RDD[(String, PropertyMap)]
 
-  /** @experimental
+  /** :: Experimental ::
     * Extract EntityMap[A] from events for the entityType
     * NOTE: it is local EntityMap[A]
     */
+  @Experimental
   def extractEntityMap[A: ClassTag](
     appId: Int,
     entityType: String,
@@ -103,13 +106,14 @@ trait PEvents extends Serializable {
     required: Option[Seq[String]] = None)
     (sc: SparkContext)(extract: DataMap => A): EntityMap[A]
 
-  /** @experimental
+  /** :: Experimental ::
     * Write events to database
     *
     * @param events RDD of Event
     * @param appId the app ID
     * @param sc Spark Context
     */
+  @Experimental
   def write(events: RDD[Event], appId: Int)(sc: SparkContext): Unit
 
 }

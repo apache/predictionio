@@ -14,11 +14,16 @@
   */
 package io.prediction.data.storage
 
+import io.prediction.annotation.Experimental
+
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
-/* @experimental */
+/**
+ * :: Experimental ::
+ */
+@Experimental
 class EntityIdIxMap(val idToIx: BiMap[String, Long]) extends Serializable {
 
   val ixToId: BiMap[Long, String] = idToIx.inverse

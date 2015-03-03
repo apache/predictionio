@@ -3,3 +3,8 @@ This is the API documentation of PredictionIO.
 If you are building a prediction engine, the most interesting package would be
 [[io.prediction.controller]]. If your prediction engine uses Event Store, you
 may also want to look at [[io.prediction.data.storage]].
+
+Classes and methods marked with <span class="experimental badge" style="float:
+none;">Experimental</span> are user-facing features which have not been
+officially adopted by the PredictionIO project. These are subject to change or
+removal in minor releases.
