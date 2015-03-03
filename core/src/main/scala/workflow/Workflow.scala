@@ -107,7 +107,7 @@ object CoreWorkflow {
     logger.info("Starting spark context")
     val mode = "training"
     WorkflowUtils.checkUpgrade(mode)
-      
+
     val sc = WorkflowContext(
       params.batch,
       env,
@@ -115,16 +115,16 @@ object CoreWorkflow {
       mode.capitalize)
 
     try {
-  
+
       val models: Seq[Any] = engine.train(
-        sc = sc, 
+        sc = sc,
         engineParams = engineParams,
         engineInstanceId = engineInstance.id,
         params = params
       )
 
       val instanceId = Storage.getMetaDataEngineInstances
-   
+
       logger.info("Inserting persistent model")
       Storage.getModelDataModels.insert(Model(
         id = engineInstance.id,
@@ -136,11 +136,11 @@ object CoreWorkflow {
         status = "COMPLETED",
         endTime = DateTime.now
         ))
-    
-      logger.info("Training completed.")
+
+      logger.info("Training completed successfully.")
     } catch {
       case e @(
-          _: StopAfterReadInterruption | 
+          _: StopAfterReadInterruption |
           _: StopAfterPrepareInterruption) => {
         logger.info(s"Training interrupted by $e.")
       }
@@ -149,7 +149,7 @@ object CoreWorkflow {
       sc.stop()
     }
   }
-  
+
   def runEval[EI, Q, P, A, ER <: AnyRef](
       engine: BaseEngine[EI, Q, P, A],
       engineParams: EngineParams,
@@ -167,7 +167,7 @@ object CoreWorkflow {
     logger.info("Start spark context")
 
     val mode = "evaluation"
-    
+
     val sc = WorkflowContext(
       params.batch,
       env,
@@ -179,7 +179,7 @@ object CoreWorkflow {
     val evalDataSet: Seq[(EI, RDD[(Q, P, A)])] = engine.eval(sc, engineParams)
 
     val evalResult: ER = evaluator.evaluateBase(sc, evalDataSet)
-  
+
     logger.info(s"EvalResult: $evalResult")
 
     val (evalResultHTML, evalResultJSON) = evalResult match {
@@ -191,7 +191,7 @@ object CoreWorkflow {
           ("", "")
       }
     }
-    
+
     val evaluatedEI = evalEngineInstance.copy(
       status = "EVALCOMPLETED",
       endTime = DateTime.now,
@@ -239,7 +239,7 @@ object CoreWorkflow {
       env,
       params)
   }
-  
+
   def runEvaluation[EI, Q, P, A, R](
       engine: BaseEngine[EI, Q, P, A],
       engineParamsList: Seq[EngineParams],
@@ -248,7 +248,7 @@ object CoreWorkflow {
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
       params: WorkflowParams = WorkflowParams()) {
     logger.info("CoreWorkflow.runEvaluation")
-  
+
     logger.info("Start spark context")
 
     val mode = "evaluation"
@@ -280,7 +280,7 @@ object CoreWorkflow {
       algorithmsParams = write(bestEngineParams.algorithmParamsList),
       servingParams = write(bestEngineParams.servingParams)
     )
-    
+
     logger.info(s"Insert evaluation result")
     engineInstances.update(evaledEI)
 
