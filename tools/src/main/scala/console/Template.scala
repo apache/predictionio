@@ -26,8 +26,7 @@ case class TemplateArgs(
   repository: String = "",
   name: Option[String] = None,
   packageName: Option[String] = None,
-  email: Option[String] = None,
-  indexUrl: String = "https://engines.prediction.io/engines.json")
+  email: Option[String] = None)
 
 case class GitHubTag(
   name: String,
@@ -145,15 +144,11 @@ object Template extends Logging {
   }
 
   def meta(repo: String, name: String, org: String) = {
-    val data = Map(
-      "repo" -> repo,
-      "name" -> name,
-      "org" -> org)
     try {
       httpOptionalProxy(
-        s"http://templates.prediction.io/$repo/$org/$name").asString
+        s"http://meta.prediction.io/templates/$repo/$org/$name").asString
     } catch {
-      case e: Throwable => warn("Template metadata unavailable.")
+      case e: Throwable => debug("Template metadata unavailable.")
     }
   }
 

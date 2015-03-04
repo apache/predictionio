@@ -516,9 +516,6 @@ object Console extends Logging {
               },
               opt[String]("email") action { (x, c) =>
                 c.copy(template = c.template.copy(email = Some(x)))
-              },
-              opt[String]("index-url") action { (x, c) =>
-                c.copy(template = c.template.copy(indexUrl = x))
               }
             ),
           cmd("list").
