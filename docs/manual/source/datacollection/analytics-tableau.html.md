@@ -25,10 +25,6 @@ PredictionIO supports exporting your events to [Apache
 Parquet](http://parquet.incubator.apache.org/), a columnar storage format that
 allows you to query quickly.
 
-INFO: The following instructions assumes the availability of the `pio export`
-command, which is available since PredictionIO 0.8.7-SNAPSHOT and can be
-accessed if you build your own binaries from the latest source code.
-
 Let's export the data we imported in [Recommendation Engine Template Quick
 Start](/templates/recommendation/quickstart/#import-sample-data), and assume the
 App ID is 1.

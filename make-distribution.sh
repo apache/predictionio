@@ -30,7 +30,6 @@ cd $FWDIR
 rm -rf $DISTDIR
 mkdir -p $DISTDIR/bin
 mkdir -p $DISTDIR/conf
-mkdir -p $DISTDIR/examples
 mkdir -p $DISTDIR/lib
 mkdir -p $DISTDIR/project
 mkdir -p $DISTDIR/sbt
@@ -41,7 +40,6 @@ cp $FWDIR/project/build.properties $DISTDIR/project
 cp $FWDIR/sbt/sbt $DISTDIR/sbt
 cp $FWDIR/sbt/sbt-launch-lib.bash $DISTDIR/sbt
 cp $FWDIR/assembly/*assembly*jar $DISTDIR/lib
-cp -r $FWDIR/examples/scala* $DISTDIR/examples
 
 rm -f $DISTDIR/lib/*javadoc.jar
 rm -f $DISTDIR/lib/*sources.jar
