@@ -15,6 +15,6 @@ title: Release Notes and News
 - [CloudFormation deployment](/../production/deploy-cloudformation/) available. 
 
 ### Release Notes
-PredictionIO v0.9 | [Release Note](https://predictionio.atlassian.net/projects/PDIO/versions/13400)
+PredictionIO v0.9 | [Release Note](https://predictionio.atlassian.net/jira/secure/ReleaseNote.jspa?projectId=10000&version=13400)
 
 PredictionIO v0.8.6 | [Release Note](https://predictionio.atlassian.net/jira/secure/ReleaseNote.jspa?projectId=10000&version=13300)
