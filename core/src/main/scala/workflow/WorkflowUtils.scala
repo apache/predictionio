@@ -400,7 +400,7 @@ class UpgradeCheckRunner(
       val upgradeData = Source.fromURL(url)
     } catch {
       case e: FileNotFoundException => {
-        warn(s"Update metainfo not found. $url")
+        debug(s"Update metainfo not found. $url")
       }
     }
     // TODO: Implement upgrade logic

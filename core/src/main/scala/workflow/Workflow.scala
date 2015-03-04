@@ -106,7 +106,7 @@ object CoreWorkflow {
       params: WorkflowParams = WorkflowParams()) {
     logger.debug("Starting SparkContext")
     val mode = "training"
-    WorkflowUtils.checkUpgrade(mode)
+    WorkflowUtils.checkUpgrade(mode, engineInstance.engineFactory)
 
     val sc = WorkflowContext(
       params.batch,
@@ -174,7 +174,7 @@ object CoreWorkflow {
       params.sparkEnv,
       mode.capitalize)
 
-    WorkflowUtils.checkUpgrade(mode)
+    WorkflowUtils.checkUpgrade(mode, engineInstance.engineFactory)
 
     val evalDataSet: Seq[(EI, RDD[(Q, P, A)])] = engine.eval(sc, engineParams)
 
@@ -258,7 +258,7 @@ object CoreWorkflow {
       params.sparkEnv,
       mode.capitalize)
 
-    WorkflowUtils.checkUpgrade(mode)
+    WorkflowUtils.checkUpgrade(mode, engineInstance.engineFactory)
 
     val (bestEngineParams, bestScore) = EvaluationWorkflow.runEvaluation(
       sc,
