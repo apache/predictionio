@@ -251,6 +251,9 @@ mv elasticsearch-$ELASTICSEARCH_VERSION $elasticsearch_dir
 echo "Updating: $elasticsearch_dir/config/elasticsearch.yml"
 echo 'network.host: 127.0.0.1' >> $elasticsearch_dir/config/elasticsearch.yml
 
+echo "Updating: $pio_dir/conf/pio-env.sh"
+echo "PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME=$elasticsearch_dir" >> $pio_dir/conf/pio-env.sh
+
 echo -e "\033[1;32mElasticsearch setup done!\033[0m"
 
 # HBase
@@ -279,6 +282,9 @@ EOT
 
 echo "Updating: $hbase_dir/conf/hbase-env.sh to include $JAVA_HOME"
 $SED_CMD "s|# export JAVA_HOME=/usr/java/jdk1.6.0/|export JAVA_HOME=$JAVA_HOME|" $hbase_dir/conf/hbase-env.sh
+
+echo "Updating: $pio_dir/conf/pio-env.sh"
+echo "PIO_STORAGE_SOURCES_HBASE_HOME=$hbase_dir" >> $pio_dir/conf/pio-env.sh
 
 echo -e "\033[1;32mHBase setup done!\033[0m"
 
