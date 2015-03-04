@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright 2014 TappingStone, Inc.
+# Copyright 2015 TappingStone, Inc.
 #
 # This script will install PredictionIO onto your computer!
 #
