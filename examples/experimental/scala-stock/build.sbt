@@ -7,8 +7,8 @@ name := "example-scala-stock"
 organization := "io.prediction"
 
 libraryDependencies ++= Seq(
-  "io.prediction"     %% "core"           % "0.9.0" % "provided",
-  "io.prediction"     %% "engines"        % "0.9.0" % "provided",
+  "io.prediction"     %% "core"           % "0.9.1-SNAPSHOT" % "provided",
+  "io.prediction"     %% "engines"        % "0.9.1-SNAPSHOT" % "provided",
   "com.github.scopt"  %% "scopt"          % "3.2.0",
   "commons-io"         % "commons-io"     % "2.4",
   "org.apache.commons" % "commons-math3"  % "3.3",
