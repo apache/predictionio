@@ -8,7 +8,7 @@ software:
 * Apache Hadoop 2.4.0 (required only if YARN and HDFS are needed)
 * Apache HBase 0.98.6
 * Apache Spark 1.2.0 for Hadoop 2.4
-* Elasticsearch 1.3.0
+* Elasticsearch 1.4.0
 
 This section explains how they are used in PredictionIO.
 

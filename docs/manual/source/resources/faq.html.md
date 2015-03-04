@@ -75,7 +75,8 @@ Please see **How to start HBase** below.
 
 ### Q: How to start ElasticSearch?
 
-If you used the [install script](/install/install-linux/#quick-install) to install PredictionIO, the ElasticSearch is installed at `~/PredictionIO/vendors/elasticsearch-x.y.z/` where x.y.z is the version number (currently it's 1.4.2). To start it, run:
+If you used the [install script](/install/install-linux/#quick-install) to install PredictionIO, the ElasticSearch is installed at `~/PredictionIO/vendors/elasticsearch-x.y.z/` where x.y.z is the 
+version number (currently it's 1.4.4). To start it, run:
 
 ```
 $ ~/PredictionIO/vendors/elasticsearch-x.y.z/bin/elasticsearch

@@ -27,7 +27,7 @@ technologies that power PredictionIO.
 * Apache Hadoop 2.4.0 (required only if YARN and HDFS are needed)
 * Apache HBase 0.98.6
 * Apache Spark 1.2.0 for Hadoop 2.4
-* Elasticsearch 1.3.0
+* Elasticsearch 1.4.0
 * Java SE Development Kit 7
 
 If you are running on a single machine, we recommend a minimum of 2GB memory.
