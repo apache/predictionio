@@ -1,0 +1,101 @@
+<!--
+Copyright 2015 TappingStone, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<scalastyle>
+    <name>Scalastyle standard configuration</name>
+    <check level="error" class="org.scalastyle.file.FileTabChecker"
+           enabled="true"/>
+
+    <check level="error" class="org.scalastyle.file.HeaderMatchesChecker"
+           enabled="true">
+        <parameters>
+            <parameter name="header"><![CDATA[/** Copyright 2015 TappingStone, Inc.
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  *     http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */]]></parameter>
+        </parameters>
+    </check>
+    <check level="error"
+           class="org.scalastyle.scalariform.SpacesAfterPlusChecker"
+           enabled="true"/>
+    <check level="error"
+           class="org.scalastyle.scalariform.SpacesBeforePlusChecker"
+           enabled="true"/>
+    <check level="error" class="org.scalastyle.file.FileLineLengthChecker"
+           enabled="true">
+        <parameters>
+            <parameter name="maxLineLength"><![CDATA[100]]></parameter>
+            <parameter name="tabSize"><![CDATA[2]]></parameter>
+            <parameter name="ignoreImports">true</parameter>
+        </parameters>
+    </check>
+    <check level="error" class="org.scalastyle.scalariform.ClassNamesChecker"
+           enabled="true">
+        <parameters>
+            <parameter name="regex"><![CDATA[[A-Z][A-Za-z]*]]></parameter>
+        </parameters>
+    </check>
+    <check level="error" class="org.scalastyle.scalariform.ObjectNamesChecker"
+           enabled="true">
+        <parameters>
+            <parameter name="regex"><![CDATA[[A-Z][A-Za-z]*]]></parameter>
+        </parameters>
+    </check>
+    <check level="error"
+           class="org.scalastyle.scalariform.PackageObjectNamesChecker"
+           enabled="true">
+        <parameters>
+            <parameter name="regex"><![CDATA[^[a-z][A-Za-z]*$]]></parameter>
+        </parameters>
+    </check>
+    <check level="error"
+           class="org.scalastyle.scalariform.ParameterNumberChecker"
+           enabled="true">
+        <parameters>
+            <parameter name="maxParameters"><![CDATA[10]]></parameter>
+        </parameters>
+    </check>
+    <check level="error" class="org.scalastyle.scalariform.UppercaseLChecker"
+           enabled="true"/>
+    <check level="error" class="org.scalastyle.scalariform.IfBraceChecker"
+           enabled="true">
+        <parameters>
+            <parameter name="singleLineAllowed"><![CDATA[true]]></parameter>
+            <parameter name="doubleLineAllowed"><![CDATA[true]]></parameter>
+        </parameters>
+    </check>
+    <check level="error" class="org.scalastyle.file.NewLineAtEofChecker"
+           enabled="true"/>
+    <check level="error"
+           class="org.scalastyle.scalariform.SpaceAfterCommentStartChecker"
+           enabled="true"/>
+    <check enabled="true"
+           class="org.scalastyle.scalariform.ImportGroupingChecker"
+           level="error"/>
+    <check enabled="true"
+           class="org.scalastyle.scalariform.PublicMethodsHaveTypeChecker"
+           level="error"/>
+</scalastyle>
