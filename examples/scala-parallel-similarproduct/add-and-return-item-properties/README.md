@@ -3,16 +3,16 @@
 ---
 
 This small how-to explains how to add user defined properties to items returned by PredictionIO engine.
-This how-to is based on the [Similar Product Engine](/templates/similarproduct/quickstart/).
+This how-to is based on the [Similar Product Engine](http://docs.prediction.io/templates/similarproduct/quickstart/).
 To use this how-to you need to be familiar with scala programming language.
-In this how-to we also suppose you was able to set up and run `Similar Product Engine` (see their [quick start guide](/templates/similarproduct/quickstart/)).
+In this how-to we also suppose you was able to set up and run `Similar Product Engine` (see their [quick start guide](http://docs.prediction.io/templates/similarproduct/quickstart/)).
 
 A full end-to-end example can be found on
-[GitHub](https://github.com/PredictionIO/PredictionIO/tree/master/examples/scala-video-base-with-data).
+[GitHub](https://github.com/PredictionIO/PredictionIO/tree/develop/examples/scala-parallel-similarproduct/add-and-return-item-properties).
 
 ## THE TASK
 
-Suppose you would like to use [Similar Product Engine](/templates/similarproduct/quickstart/) 
+Suppose you would like to use [Similar Product Engine](http://docs.prediction.io/templates/similarproduct/quickstart/) 
 for suggesting your users the videos they can also like. The `Similar Product Engine` will answer to you 
 with list of IDs for such videos. So, for example `REST` response from the engine right now 
 looks like the one below
@@ -53,7 +53,7 @@ for your case should look similar to the posted below
 
 ### The Main Idea
 
-Recall [the DASE Architecture](/start/engines/), a PredictionIO engine has
+Recall [the DASE Architecture](http://docs.prediction.io/templates/similarproduct/dase/), a PredictionIO engine has
 4 main components: `Data Source`, `Data Preparator`, `Algorithm`, and `Serving`
 components. To achieve your goal, you will need provide the information about video to engine 
 (using sdk), and then let this information to pass from `Data Source` through all the engine
@@ -163,7 +163,7 @@ See resulting code below
 val combined = standard.flatten // Array of ItemScore
   .groupBy(_.item) // groupBy item id
   .mapValues(itemScores => (itemScores.map(_.score).reduce(_ + _), itemScores(0))) //Add tuple (score, ItemScore) instead of just score value
-  .toArray // array of (item id, score)
+  .toArray // array of (itemId, (score, ItemScore))
   .sortBy(_._2._1)(Ordering.Double.reverse) //Order by score value
   .take(query.num)
   .map { case (k, (d, is)) =>  is.copy(score = d)} //Create resulting ItemScore with proper score value
@@ -213,4 +213,4 @@ curl -H "Content-Type: application/json" -d '{ "items": ["i1", "i3"], "num": 10}
 ```
 
 A full end-to-end example can be found on
-[GitHub](https://github.com/PredictionIO/PredictionIO/tree/master/examples/scala-video-base-with-data).
+[GitHub](https://github.com/PredictionIO/PredictionIO/tree/develop/examples/scala-parallel-similarproduct/add-and-return-item-properties).
