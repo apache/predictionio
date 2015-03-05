@@ -17,9 +17,7 @@ package io.prediction.tools.dashboard
 
 import io.prediction.data.storage.Storage
 
-import akka.actor.Actor
-import akka.actor.ActorSystem
-import akka.actor.Props
+import akka.actor.{ActorContext, Actor, ActorSystem, Props}
 import akka.io.IO
 import akka.pattern.ask
 import akka.util.Timeout
@@ -65,8 +63,8 @@ object Dashboard extends Logging {
 class DashboardActor(
     val dc: DashboardConfig)
   extends Actor with DashboardService {
-  def actorRefFactory = context
-  def receive = runRoute(dashboardRoute)
+  def actorRefFactory: ActorContext = context
+  def receive: Actor.Receive = runRoute(dashboardRoute)
 }
 
 trait DashboardService extends HttpService {

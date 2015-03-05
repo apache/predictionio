@@ -119,7 +119,7 @@ case class UpgradeArgs(
 object Console extends Logging {
   def main(args: Array[String]): Unit = {
     val parser = new scopt.OptionParser[ConsoleArgs]("pio") {
-      override def showUsageOnError = false
+      override def showUsageOnError: Boolean = false
       head("PredictionIO Command Line Interface Console", BuildInfo.version)
       help("")
       note("Note that it is possible to supply pass-through arguments at\n" +
@@ -149,26 +149,29 @@ object Console extends Logging {
       opt[File]("variant") abbr("v") action { (x, c) =>
         c.copy(common = c.common.copy(variantJson = x))
       } validate { x =>
-        if (x.exists)
+        if (x.exists) {
           success
-        else
+        } else {
           failure(s"${x.getCanonicalPath} does not exist.")
+        }
       } text("Path to an engine variant JSON file. Default: engine.json")
       opt[File]("manifest") abbr("m") action { (x, c) =>
         c.copy(common = c.common.copy(manifestJson = x))
       } validate { x =>
-        if (x.exists)
+        if (x.exists) {
           success
-        else
+        } else {
           failure(s"${x.getCanonicalPath} does not exist.")
+        }
       } text("Path to an engine manifest JSON file. Default: manifest.json")
       opt[File]("sbt") action { (x, c) =>
         c.copy(build = c.build.copy(sbt = Some(x)))
       } validate { x =>
-        if (x.exists)
+        if (x.exists) {
           success
-        else
+        } else {
           failure(s"${x.getCanonicalPath} does not exist.")
+        }
       } text("Path to sbt. Default: sbt")
       opt[Unit]("verbose") action { (x, c) =>
         c.copy(common = c.common.copy(verbose = true))
@@ -552,16 +555,17 @@ object Console extends Logging {
 
     val separatorIndex = args.indexWhere(_ == "--")
     val (consoleArgs, theRest) =
-      if (separatorIndex == -1)
+      if (separatorIndex == -1) {
         (args, Array[String]())
-      else
+      } else {
         args.splitAt(separatorIndex)
+      }
     val allPassThroughArgs = theRest.drop(1)
     val secondSepIdx = allPassThroughArgs.indexWhere(_ == "--")
     val (sparkPassThroughArgs, driverPassThroughArgs) =
-      if (secondSepIdx == -1)
+      if (secondSepIdx == -1) {
         (allPassThroughArgs, Array[String]())
-      else {
+      } else {
         val t = allPassThroughArgs.splitAt(secondSepIdx)
         (t._1, t._2.drop(1))
       }
@@ -642,7 +646,7 @@ object Console extends Logging {
     }
   }
 
-  def help(commands: Seq[String] = Seq()) = {
+  def help(commands: Seq[String] = Seq()): String = {
     if (commands.isEmpty) {
       mainHelp
     } else {
@@ -694,8 +698,9 @@ object Console extends Logging {
     val finalJarFiles = if (sys.env.contains("HADOOP_CONF_DIR") && !ca.build.uberJar) {
       info("Also copying PredictionIO core assembly.")
       jarFiles :+ coreAssembly(ca.common.pioHome.get)
-    } else
+    } else {
       jarFiles
+    }
     RegisterEngine.registerEngine(
       ca.common.manifestJson,
       finalJarFiles,
@@ -750,7 +755,7 @@ object Console extends Logging {
         engineInstances.getLatestCompleted(em.id, em.version, variantId)
       }
       engineInstance map { r =>
-        //undeploy(ca)
+        // undeploy(ca)
         RunServer.runServer(
           ca,
           coreAssembly(ca.common.pioHome.get),
@@ -838,10 +843,11 @@ object Console extends Logging {
     info(s"Using command '${sbt}' at the current working directory to build.")
     info("If the path above is incorrect, this process will fail.")
     val asm =
-      if (ca.build.sbtAssemblyPackageDependency)
+      if (ca.build.sbtAssemblyPackageDependency) {
         " assemblyPackageDependency"
-      else
+      } else {
         ""
+      }
     val clean = if (ca.build.sbtClean) " clean" else ""
     val buildCmd = s"${sbt} ${ca.build.sbtExtra.getOrElse("")}${clean} " +
       (if (ca.build.uberJar) "assembly" else s"package${asm}")
@@ -861,12 +867,13 @@ object Console extends Logging {
     info(s"Going to run: ${buildCmd}")
     try {
       val r =
-        if (ca.common.verbose)
-        buildCmd.!(ProcessLogger(line => info(line), line => error(line)))
-        else
-        buildCmd.!(ProcessLogger(
-          line => outputSbtError(line),
-          line => outputSbtError(line)))
+        if (ca.common.verbose) {
+          buildCmd.!(ProcessLogger(line => info(line), line => error(line)))
+        } else {
+          buildCmd.!(ProcessLogger(
+            line => outputSbtError(line),
+            line => outputSbtError(line)))
+        }
       if (r != 0) {
         error(s"Return code of previous step is ${r}. Aborting.")
         sys.exit(1)
@@ -892,8 +899,12 @@ object Console extends Logging {
     jarFiles foreach { f => info(s"Found JAR: ${f.getName}") }
     val allJarFiles = jarFiles.map(_.getCanonicalPath)
     val cmd = s"${getSparkHome(ca.common.sparkHome)}/bin/spark-submit --jars " +
-      s"${allJarFiles.mkString(",")} " + (if (extraFiles.size > 0)
-        s"--files ${extraFiles.mkString(",")} " else "") +
+      s"${allJarFiles.mkString(",")} " +
+      (if (extraFiles.size > 0) {
+        s"--files ${extraFiles.mkString(",")} "
+      } else {
+        ""
+      }) +
       "--class " +
       s"${ca.mainClass.get} ${ca.common.sparkPassThrough.mkString(" ")} " +
       coreAssembly(ca.common.pioHome.get) + " " +
@@ -984,10 +995,11 @@ object Console extends Logging {
   def coreAssembly(pioHome: String): File = {
     val core = s"pio-assembly-${BuildInfo.version}.jar"
     val coreDir =
-      if (new File(pioHome + File.separator + "RELEASE").exists)
+      if (new File(pioHome + File.separator + "RELEASE").exists) {
         new File(pioHome + File.separator + "lib")
-      else
+      } else {
         new File(pioHome + File.separator + "assembly")
+      }
     val coreFile = new File(coreDir, core)
     if (coreFile.exists) {
       coreFile
@@ -1091,7 +1103,7 @@ object Console extends Logging {
     if (targetFiles.size > 0) targetFiles else libFiles
   }
 
-  def jarFilesForScalaFilter(jars: Array[File]) =
+  def jarFilesForScalaFilter(jars: Array[File]): Array[File] =
     jars.filterNot { f =>
       f.getName.toLowerCase.endsWith("-javadoc.jar") ||
       f.getName.toLowerCase.endsWith("-sources.jar")

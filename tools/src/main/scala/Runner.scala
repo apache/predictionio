@@ -51,10 +51,11 @@ object Runner extends Logging {
     val driverClassPathIndex =
       ca.common.sparkPassThrough.indexOf("--driver-class-path")
     val driverClassPathPrefix =
-      if (driverClassPathIndex != -1)
+      if (driverClassPathIndex != -1) {
         Seq(ca.common.sparkPassThrough(driverClassPathIndex + 1))
-      else
+      } else {
         Seq()
+      }
     val extraClasspaths =
       driverClassPathPrefix ++ WorkflowUtils.thirdPartyClasspaths
 
@@ -63,23 +64,27 @@ object Runner extends Logging {
     val sparkSubmitCommand =
       Seq(Seq(sparkHome, "bin", "spark-submit").mkString(File.separator))
 
-    val sparkSubmitFiles = if (extraFiles.size > 0)
+    val sparkSubmitFiles = if (extraFiles.size > 0) {
       Seq("--files", extraFiles.mkString(","))
-    else
+    } else {
       Seq("")
+    }
 
-    val sparkSubmitExtraClasspaths = if (extraClasspaths.size > 0)
+    val sparkSubmitExtraClasspaths = if (extraClasspaths.size > 0) {
       Seq("--driver-class-path", extraClasspaths.mkString(":"))
-    else
+    } else {
       Seq("")
+    }
 
-    val sparkSubmitKryo = if (ca.common.sparkKryo) Seq(
-      "--conf",
-      "spark.serializer=org.apache.spark.serializer.KryoSerializer")
-    else
+    val sparkSubmitKryo = if (ca.common.sparkKryo) {
+      Seq(
+        "--conf",
+        "spark.serializer=org.apache.spark.serializer.KryoSerializer")
+    } else {
       Seq("")
+    }
 
-    val verbose = if (ca.common.verbose) Seq("--verbose") else Seq()
+    val verbose = if (ca.common.verbose) { Seq("--verbose") } else { Seq() }
 
     val sparkSubmit = Seq(
       sparkSubmitCommand,
