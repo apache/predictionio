@@ -15,7 +15,7 @@ On Linux / Mac OS X, PredictionIO can now be installed with a single command:
 
 The above script will complete the rest of the instructions on this page for you
 and you can proceed to the [Choosing an Engine
-Template](/start/templategallery).
+Template](http://templates.prediction.io).
 
 ## Method 3: Manual Install
 
