@@ -1,8 +1,8 @@
 # Similar Product Template without sending '$set' events for users
 
-This example engine is based on Similar Product Template version v0.1.2 and is modified to get rid of sending '$set' events for users.
-'$set' events are redundant in this case because entities with type 'user' don't contain any properties.
-So, we just simplify the template.
+In some cases, if you don't need to keep track the user ID being created/deleted or user properties changes with events, then you can simplify the template as described in this example to get rid of sending '$set' events for users. The user Id can be extracted from the user-to-item events (eg. view events). You can find the complete source code in src/ directory.
+
+This example engine is based on Similar Product Template version v0.1.2.
 
 ## Documentation
 
@@ -14,9 +14,9 @@ There you can find several steps that we have done to modify original Similar Pr
 
 ### Changes to import_eventserver.py
 
-Remove the following code that generates '$set' events for entities with type 'user'
+For importing sample data, you can remove the following code that generates '$set' events for entities with type 'user'
 
-```
+```python
   for user_id in user_ids:
     print "Set user", user_id
     client.create_event(
@@ -31,7 +31,7 @@ Remove the following code that generates '$set' events for entities with type 'u
 
 Remove the following code
 
-```
+```scala
     // create a RDD of (entityID, User)
     val usersRDD: RDD[(String, User)] = eventsDb.aggregateProperties(
       appId = dsp.appId,
@@ -52,7 +52,7 @@ Remove the following code
 
 Modify class 'TrainingData' that should looks like the following code:
 
-```
+```scala
 class TrainingData(
   val items: RDD[(String, Item)],
   val viewEvents: RDD[ViewEvent]
@@ -99,16 +99,16 @@ class PreparedData(
 
 Remove the following code:
 
-```
+```scala
     require(!data.users.take(1).isEmpty,
       s"users in PreparedData cannot be empty." +
       " Please check if DataSource generates TrainingData" +
       " and Preprator generates PreparedData correctly.")
 ```
 
-and modify the line where 'userStringIntMap' value is defined. It should looks like the following code:
+and modify the line where 'userStringIntMap' value is defined to extract the user ID from the viewEvents and create user String ID to Int Index BiMap. It should look like the following code:
 
-```
+```scala
 val userStringIntMap = BiMap.stringInt(data.viewEvents.map(_.user))
 ```
 
