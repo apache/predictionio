@@ -32,19 +32,19 @@ NOTE: You can customize what the "conversion" event is. It's "buy" item event by
 
 - score
 
-## Install PredictionIO
+## 1. Install and Run PredictionIO
 
 <%= partial 'shared/quickstart/install' %>
 
-## Create a Sample App
-
-<%= partial 'shared/quickstart/create_app' %>
-
-## Create a new Engine from an Engine Template
+## 2. Create a new Engine from an Engine Template
 
 <%= partial 'shared/quickstart/create_engine', locals: { engine_name: 'MyLeadScoring', template_name: 'Lead Scoring Engine Template', template_repo: 'template-scala-parallel-leadscoring' } %>
 
-## Collecting Data
+## 3. Generate an App ID and Access Key
+
+<%= partial 'shared/quickstart/create_app' %>
+
+## 4a. Collecting Data
 
 Next, let's collect training data for this Engine. By default,
  Lead Scoring Engine Template supports the following entities: **user**, **page**, and **item**. An user views a page, and buys an item.
@@ -247,15 +247,18 @@ curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
   </div>
 </div>
 
-## Import Sample Data
+## 4b. Import Sample Data
 
-For demonstration purpose, a python script is provided to import sample data. The sample data includes 50 sessions of events. In each session, a randomly selected user (with user ID "u1" to "u10") lands on a page (randomly selected from example.com/page1 to example.com/page20) with referrerId (randomly selected from referrer1.com to referrer10.com) and browser information. The user may view more pages, and may or may not buy an item (with item ID "i1" to "i50").
+<%= partial 'shared/quickstart/import_sample_data' %>
+
+A Python import script `import_eventserver.py` is provided to import sample data. The sample data includes 50 sessions of events. In each session, a randomly selected user (with user ID "u1" to "u10") lands on a page (randomly selected from example.com/page1 to example.com/page20) with referrerId (randomly selected from referrer1.com to referrer10.com) and browser information. The user may view more pages, and may or may not buy an item (with item ID "i1" to "i50").
 
 NOTE: You need to install Python SDK to run the import script. Please follow [Python SDK README](https://github.com/PredictionIO/PredictionIO-Python-SDK) to install.
 
 First, make sure you are under the `MyLeadScoring` directory. Execute the following to import the data (Replace the value of access_key parameter with your **Access Key**):
 
 ```
+$ cd MyLeadScoring
 $ python data/import_eventserver.py --access_key 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
 ```
 
@@ -275,13 +278,13 @@ User u5 buys item i5
 WARNING: If you see error **TypeError: __init__() got an unexpected keyword argument 'access_key'**,
 please update the Python SDK to the latest version.
 
-## Deploy the Engine as a Service
+## 5. Deploy the Engine as a Service
 
 <%= partial 'shared/quickstart/deploy_enginejson', locals: { engine_name: 'MyLeadScoring' } %>
 
 <%= partial 'shared/quickstart/deploy', locals: { engine_name: 'MyLeadScoring' } %>
 
-## Using the Engine
+## 6. Use the Engine
 
 Now, You can retrieve the results. When a user lands on your page "example.com/page9", with referrer "referrer10.com" and browser "Firefox", you can get the predicted lead score by sending this JSON '{ "landingPageId" : "example.com/page9", "referrerId" : "referrer10.com", "browser": "Firefox" }' to the deployed engine. The engine will return a JSON with the score
 
