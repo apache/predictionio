@@ -303,6 +303,7 @@ $SED_CMD "s|# export JAVA_HOME=/usr/java/jdk1.6.0/|export JAVA_HOME=$JAVA_HOME|"
 
 echo "Updating: $pio_dir/conf/pio-env.sh"
 echo "PIO_STORAGE_SOURCES_HBASE_HOME=$hbase_dir" >> $pio_dir/conf/pio-env.sh
+$SED_CMD "s|HBASE_CONF_DIR=\$PIO_HOME/conf|HBASE_CONF_DIR=$hbase_dir/conf|" $pio_dir/conf/pio-env.sh
 
 echo -e "\033[1;32mHBase setup done!\033[0m"
 
