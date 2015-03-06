@@ -67,6 +67,11 @@ Follow instructions below to modify existing engine templates to be compatible w
     }
     ```
 
+    You need to add the following import for your algorithm as well if it is not there:
+
+    ```scala
+    import org.apache.spark.SparkContext
+    ```
 
 2. Modify the file `build.sbt` in your template directory to use `pioVersion.value` as the version of io.prediction.core dependency:
 
