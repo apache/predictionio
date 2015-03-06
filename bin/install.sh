@@ -322,7 +322,7 @@ echo "--------------------------------------------------------------------------
 echo -e "\033[1;32mInstallation of PredictionIO $PIO_VERSION complete!\033[0m"
 echo -e "\033[1;33mIMPORTANT: You still have to start PredictionIO and dependencies manually:\033[0m"
 echo -e "Run: '\033[1mpio-start-all\033[0m'"
-echo -e "Check the status with: '\033pio status\033[0m'"
+echo -e "Check the status with: '\033[1mpio status\033[0m'"
 echo -e "Use: '\033[1mpio [train|deploy|...]\033[0m' commands"
 echo -e "Please report any problems to: \033[1;34msupport@prediction.io\033[0m"
 echo -e "\033[1;34mDocumentation at: http://docs.prediction.io\033[0m"
