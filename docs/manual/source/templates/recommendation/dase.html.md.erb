@@ -225,7 +225,7 @@ i.e. `ALS.train`, is used to train a predictive model.
 
 
 ```scala
-  def train(data: PreparedData): ALSModel = {
+  def train(sc: SparkContext, data: PreparedData): ALSModel = {
     ...
     // Convert user and item String IDs to Int index for MLlib
     val userStringIntMap = BiMap.stringInt(data.ratings.map(_.user))
