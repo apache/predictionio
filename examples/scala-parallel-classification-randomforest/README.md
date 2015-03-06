@@ -74,7 +74,7 @@ In the engine.json, removed “naive” algorithm and  added “randomforest” 
  ```scala
  val gendersMap = Map("Male" -> 0.0, "Female" -> 1.0)
  val educationMap = Map("No School" -> 0.0,"High School" -> 1.0,"College" -> 2.0)
- ```scala
+ ```
 Then encoded the categorical features values using map.
 ```scala
  LabeledPoint(properties.get[Double]("plan"),
@@ -84,7 +84,7 @@ Then encoded the categorical features values using map.
               educationMap(properties.get[String]("education"))
             ))
           )
-```scala
+```
 
 2) Added gendersMap and educationMap to the TrainingData class
 ```scala
@@ -93,21 +93,21 @@ class TrainingData(
   val gendersMap: Map[String,Double],
   val educationMap: Map[String,Double]
 ) extends Serializable
-```scala
+```
 readTraining returns below:
 ```scala
 	 new TrainingData(labeledPoints,
    	     gendersMap,
         educationMap)
 
-```scala
+```
 
 ### Changes to Engine.scala
 
 In the Engine.scala, replaced “naive” algorithm with “randomforest” algorithm
 ```scala
  Map("randomforest" -> classOf[RandomForestAlgorithm]),
-```scala
+```
 Updated Query.sclaa to include attributes
 ```scala
 class Query(
@@ -115,7 +115,7 @@ class Query(
  val  age: Int,
  val  education: String
 ) extends Serializable
-```scala
+```
 ### Changes to Preparator.scala
 
 added attributes to PreparedData
@@ -125,11 +125,11 @@ added attributes to PreparedData
   val gendersMap: Map[String,Double],
   val educationMap: Map[String,Double]
 ) extends Serializable
-```scala
+```
 ```scala
 new PreparedData(trainingData.labeledPoints,trainingData.gendersMap,trainingData.educationMap)
 
-```scala
+```
 
 
 ### Created RandomForestAlgorithm.scala
@@ -141,7 +141,7 @@ class PIORandomForestModel(
   val educationMap: Map[String, Double],
   val randomForestModel: RandomForestModel
 ) extends Serializable
-```scala
+```
 train method returns new model class
 ```scala
  new PIORandomForestModel(
@@ -149,7 +149,7 @@ train method returns new model class
     educationMap = data.educationMap,
     randomForestModel = m
    )
-```scala
+```
 
 Predict method implementation
 ```scala
@@ -163,7 +163,7 @@ Predict method implementation
     new PredictedResult(label)
   }
 
-```scala
+```
 
 
 ### Sample Request
