@@ -118,6 +118,11 @@ export JAVA_HOME=`/usr/libexec/java_home -v 1.7`
 
 ### Start PredictionIO and Dependent Services
 
+WARNING: Due to a bug in 0.9.0, you must replace `HBASE_CONF_DIR` in
+`conf/pio-env.sh` with the absolute path of HBase in order to use
+`bin/pio-start-all`, e.g. `HBASE_CONF_DIR=/home/abc/hbase-0.98.6-hadoop2` in the
+example above.
+
 Simply do `bin/pio-start-all` and you should see something similar to the
 following:
 
