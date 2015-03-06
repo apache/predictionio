@@ -480,10 +480,22 @@ $ curl -H "Content-Type: application/json" \
 -d '{ "user": "u1", "num": 4 }' \
 http://localhost:8000/queries.json
 
-{"itemScores":[{"item":"i4","score":0.006009267718658978},{"item":"i33","score":0.005999267822052033},{"item":"i14","score":0.005261309429391667},{"item":"i3","score":0.003007015026561692}]}
 ```
   </div>
 </div>
+
+The following is sample JSON response:
+
+```
+{
+  "itemScores":[
+    {"item":"i4","score":0.006009267718658978},
+    {"item":"i33","score":0.005999267822052033},
+    {"item":"i14","score":0.005261309429391667},
+    {"item":"i3","score":0.003007015026561692}
+  ]
+}
+```
 
 *MyECommerceRecommendation* is now running.
 

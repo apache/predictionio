@@ -426,10 +426,15 @@ JsonObject response = engineClient.sendQuery(ImmutableMap.<String, Object>of(
 ```bash
 $ curl -H "Content-Type: application/json" -d '{ "features": [2, 0, 0] }' http://localhost:8000/queries.json
 
-{"label":0.0}
 ```
   </div>
 </div>
+
+The following is sample JSON response:
+
+```
+{"label":0.0}
+```
 
 Similarly, to predict the label (i.e. *plan* in this case) of a user with
 attr0=4, attr1=3 and attr2=8, you send this JSON `{ "features": [4, 3, 8] }` to

@@ -92,10 +92,15 @@ JsonObject response = engineClient.sendQuery(ImmutableMap.<String, Object>of(
 ```
 $ curl -H "Content-Type: application/json" -d '{ "q": "foo" }' http://localhost:8000/queries.json
 
-{"p":"0-foo"}
 ```
   </div>
 </div>
+
+The following is sample JSON response:
+
+```
+{"p":"0-foo"}
+```
 
 *MyNewEngine* is now running. You can start modifying it to build your new engine!
 

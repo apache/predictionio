@@ -18,8 +18,6 @@ You can, therefore, recommend products to visitors without knowing a long histor
 You can also use this template to build the popular feature of Amazon: **"Customers Who Viewed This Item Also Viewed..."** quickly.
 Help your customers explore more products that they like, sell more products.
 
-INFO: This template contains more advanced features. If you are first time PredictionIO or Spark MLlib user, you may want to go through the [Recommendation Template](/templates/recommendation/quickstart) first. Of course, if you are adventurous, feel free to continue.
-
 ## Usage
 
 Input Query:
@@ -362,10 +360,22 @@ $ curl -H "Content-Type: application/json" \
 -d '{ "items": ["i1"], "num": 4 }' \
 http://localhost:8000/queries.json
 
-{"itemScores":[{"item":"i43","score":0.7071067811865475},{"item":"i21","score":0.7071067811865475},{"item":"i46","score":0.5773502691896258},{"item":"i8","score":0.5773502691896258}]}
 ```
   </div>
 </div>
+
+The following is sample JSON response:
+
+```
+{
+  "itemScores":[
+    {"item":"i43","score":0.7071067811865475},
+    {"item":"i21","score":0.7071067811865475},
+    {"item":"i46","score":0.5773502691896258},
+    {"item":"i8","score":0.5773502691896258}
+  ]
+}
+```
 
 *MySimilarProduct* is now running.
 
