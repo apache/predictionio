@@ -3,6 +3,7 @@ package org.template.classification
 import io.prediction.controller.P2LAlgorithm
 import io.prediction.controller.Params
 
+import org.apache.spark.SparkContext
 import org.apache.spark.mllib.tree.RandomForest // CHANGED
 import org.apache.spark.mllib.tree.model.RandomForestModel // CHANGED
 import org.apache.spark.mllib.linalg.Vectors
@@ -23,7 +24,8 @@ class RandomForestAlgorithm(val ap: RandomForestAlgorithmParams) // CHANGED
   extends P2LAlgorithm[PreparedData, RandomForestModel, // CHANGED
   Query, PredictedResult] {
 
-  def train(data: PreparedData): RandomForestModel = { // CHANGED
+  // CHANGED
+  def train(sc: SparkContext, data: PreparedData): RandomForestModel = {
     // CHANGED
     // Empty categoricalFeaturesInfo indicates all features are continuous.
     val categoricalFeaturesInfo = Map[Int, Int]()
