@@ -18,8 +18,26 @@ abstract class BaseEngine[EI, Q, P, A] extends Serializable {
     engineInstanceId: String,
     params: WorkflowParams): Seq[Any]
 
-  def eval(sc: SparkContext, engineParams: EngineParams)
+  def eval(
+    sc: SparkContext, 
+    engineParams: EngineParams,
+    params: WorkflowParams
+  )
   : Seq[(EI, RDD[(Q, P, A)])]
+
+  /** Can subclass this method to optimize the case where multiple evaluation is
+    * called (during tuning, for example). By default, it call [[eval]] for each
+    * element in the engine params list.
+    */
+  def batchEval(
+    sc: SparkContext, 
+    engineParamsList: Seq[EngineParams],
+    params: WorkflowParams)
+  : Seq[(EngineParams, Seq[(EI, RDD[(Q, P, A)])])] = {
+    engineParamsList.map { engineParams => 
+      (engineParams, eval(sc, engineParams, params))
+    }
+  }
 
   def jValueToEngineParams(variantJson: JValue): EngineParams = {
     throw new NotImplementedError("json to EngineParams is not implemented.")

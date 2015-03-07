@@ -252,7 +252,7 @@ extends FunSuite with Inside with SharedSparkContext {
     val pd = ProcessedData(1, TrainingData(0))
     val model0 = PAlgo2.Model(2, pd)
 
-    val evalDataSet = engine.eval(sc, engineParams)
+    val evalDataSet = engine.eval(sc, engineParams, WorkflowParams())
 
     evalDataSet should have size en
 

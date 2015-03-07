@@ -26,16 +26,6 @@ import io.prediction.controller.Params
 import io.prediction.controller.Utils
 import io.prediction.controller.NiceRendering
 import io.prediction.controller.SanityCheck
-/*
-import io.prediction.controller.java.LJavaDataSource
-import io.prediction.controller.java.LJavaPreparator
-import io.prediction.controller.java.LJavaAlgorithm
-import io.prediction.controller.java.LJavaServing
-import io.prediction.controller.java.JavaEvaluator
-import io.prediction.controller.java.JavaUtils
-import io.prediction.controller.java.JavaEngine
-import io.prediction.controller.java.PJavaAlgorithm
-*/
 import io.prediction.controller.WorkflowParams
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseDataSource
@@ -75,19 +65,13 @@ import org.json4s.native.Serialization.write
 
 object EvaluationWorkflow {
   @transient lazy val logger = Logger[this.type]
-  @transient val engineInstances = Storage.getMetaDataEngineInstances
-
   def runEvaluation[EI, Q, P, A, R](
       sc: SparkContext,
       engine: BaseEngine[EI, Q, P, A],
       engineParamsList: Seq[EngineParams],
       evaluator: BaseEvaluator[EI, Q, P, A, R],
       params: WorkflowParams): R = {
-    val engineEvalDataSet = engineParamsList.map { engineParams => 
-      val evalDataSet: Seq[(EI, RDD[(Q, P, A)])] = engine.eval(sc, engineParams)
-      (engineParams, evalDataSet)
-    }
-
+    val engineEvalDataSet = engine.batchEval(sc, engineParamsList, params)
     evaluator.evaluateBase(sc, engineEvalDataSet, params)
   }
 }

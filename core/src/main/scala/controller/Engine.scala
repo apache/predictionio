@@ -21,7 +21,6 @@ import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseServing
 import io.prediction.core.Doer
 import io.prediction.core.BaseEngine
-//import io.prediction.workflow.EngineWorkflow
 import io.prediction.workflow.CreateWorkflow
 import io.prediction.workflow.WorkflowUtils
 import io.prediction.workflow.EngineLanguage
@@ -171,7 +170,6 @@ class Engine[TD, EI, PD, Q, P, A](
     engineParams: EngineParams,
     engineInstanceId: String,
     persistedModels: Seq[Any],
-    //params: WorkflowParams = WorkflowParams()): Seq[Any] = {
     params: WorkflowParams): Seq[Any] = {
 
     val algoParamsList = engineParams.algorithmParamsList
@@ -257,8 +255,7 @@ class Engine[TD, EI, PD, Q, P, A](
     sc: SparkContext,
     engineInstanceId: String,
     // AlgoName, Algo, Model
-    algoTuples: Seq[(String, Params, BaseAlgorithm[_, _, _, _], Any)]//,
-    //params: WorkflowParams
+    algoTuples: Seq[(String, Params, BaseAlgorithm[_, _, _, _], Any)]
   ): Seq[Any] = {
 
     logger.info(s"engineInstanceId=$engineInstanceId")
@@ -274,7 +271,10 @@ class Engine[TD, EI, PD, Q, P, A](
     }
   }
 
-  def eval(sc: SparkContext, engineParams: EngineParams)
+  def eval(
+    sc: SparkContext, 
+    engineParams: EngineParams,
+    params: WorkflowParams)
   : Seq[(EI, RDD[(Q, P, A)])] = {
     val (dataSourceName, dataSourceParams) = engineParams.dataSourceParams
     val dataSource = Doer(dataSourceClassMap(dataSourceName), dataSourceParams)
@@ -318,7 +318,6 @@ class Engine[TD, EI, PD, Q, P, A](
       WorkflowUtils.getParamsFromJsonByFieldAndClass(
         variantJson,
         "datasource",
-        //engine.dataSourceClassMap,
         dataSourceClassMap,
         engineLanguage)
     logger.info(s"Datasource params: ${dataSourceParams}")
@@ -328,7 +327,6 @@ class Engine[TD, EI, PD, Q, P, A](
       WorkflowUtils.getParamsFromJsonByFieldAndClass(
         variantJson,
         "preparator",
-        //engine.preparatorClassMap,
         preparatorClassMap,
         engineLanguage)
     logger.info(s"Preparator params: ${preparatorParams}")
@@ -347,7 +345,6 @@ class Engine[TD, EI, PD, Q, P, A](
               WorkflowUtils.extractParams(
                 engineLanguage,
                 compact(render(eap.params)),
-                //engine.algorithmClassMap(eap.name))
                 algorithmClassMap(eap.name))
             )
           }
@@ -360,7 +357,6 @@ class Engine[TD, EI, PD, Q, P, A](
       WorkflowUtils.getParamsFromJsonByFieldAndClass(
         variantJson,
         "serving",
-        //engine.servingClassMap,
         servingClassMap,
         engineLanguage)
     logger.info(s"Serving params: ${servingParams}")

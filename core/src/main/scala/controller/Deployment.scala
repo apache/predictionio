@@ -61,6 +61,7 @@ trait Deployment extends IEngineFactory {
   }
 
   /** Returns the [[Engine]] contained in this [[Deployment]]. */
+  private [prediction] 
   def engine: BaseEngine[_, _, _, _] = {
     assert(engineSet, "Engine not set")
     _engine

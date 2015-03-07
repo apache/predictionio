@@ -26,16 +26,6 @@ import io.prediction.controller.Params
 import io.prediction.controller.Utils
 import io.prediction.controller.NiceRendering
 import io.prediction.controller.SanityCheck
-/*
-import io.prediction.controller.java.LJavaDataSource
-import io.prediction.controller.java.LJavaPreparator
-import io.prediction.controller.java.LJavaAlgorithm
-import io.prediction.controller.java.LJavaServing
-import io.prediction.controller.java.JavaEvaluator
-import io.prediction.controller.java.JavaUtils
-import io.prediction.controller.java.JavaEngine
-import io.prediction.controller.java.PJavaAlgorithm
-*/
 import io.prediction.controller.WorkflowParams
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseDataSource
@@ -44,7 +34,6 @@ import io.prediction.core.BasePreparator
 import io.prediction.core.BaseServing
 import io.prediction.core.BaseEngine
 import io.prediction.core.Doer
-//import io.prediction.core.LModelAlgorithm
 import io.prediction.data.storage.EngineInstance
 import io.prediction.data.storage.EngineInstances
 import io.prediction.data.storage.Model
@@ -132,12 +121,10 @@ object CoreWorkflow {
     }
   }
 
-  // FIXME(yipjustin): Take a Evaluator instead of Metric.
   def runEvaluation[EI, Q, P, A, R](
       engine: BaseEngine[EI, Q, P, A],
       engineParamsList: Seq[EngineParams],
       engineInstance: EngineInstance,
-      //metric: Metric[EI, Q, P, A, R],
       evaluator: BaseEvaluator[EI, Q, P, A, R],
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
       params: WorkflowParams = WorkflowParams()) {
@@ -159,7 +146,6 @@ object CoreWorkflow {
       engine,
       engineParamsList,
       evaluator,
-      //metric,
       params)
 
     implicit lazy val formats = Utils.json4sDefaultFormats +
@@ -169,12 +155,7 @@ object CoreWorkflow {
     val evaledEI = engineInstance.copy(
       status = "EVALCOMPLETED",
       endTime = DateTime.now,
-      //evaluatorResults = bestScore.toString,
-      evaluatorResults = evalResult.toString//,
-      //dataSourceParams = write(bestEngineParams.dataSourceParams),
-      //preparatorParams = write(bestEngineParams.preparatorParams),
-      //algorithmsParams = write(bestEngineParams.algorithmParamsList),
-      //servingParams = write(bestEngineParams.servingParams)
+      evaluatorResults = evalResult.toString
     )
 
     logger.info(s"Insert evaluation result")
@@ -183,12 +164,7 @@ object CoreWorkflow {
     logger.debug("Stop spark context")
     sc.stop()
 
-    logger.info(s"evalResult: $evalResult")
-
-    //val bestEpJson = writePretty(bestEngineParams)
-
-    //logger.info(s"Optimal score: $bestScore")
-    //logger.info(s"Optimal engine params: $bestEpJson")
+    logger.info(s"Evaluation Result: $evalResult")
 
     logger.info("CoreWorkflow.runEvaluation completed.")
   }

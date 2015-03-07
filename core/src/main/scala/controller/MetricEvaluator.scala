@@ -42,6 +42,7 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import org.json4s._
 import org.json4s.native.Serialization.write
+import org.json4s.native.Serialization.writePretty
 import scala.collection.JavaConversions._
 import scala.language.existentials
 import scala.reflect.ClassTag
@@ -50,10 +51,23 @@ import scala.reflect.Manifest
 case class MetricEvaluatorResult[R](
   val bestScore: R,
   val bestEngineParams: EngineParams,
-  val engineParamsScores: Seq[(EngineParams, R)])
+  val engineParamsScores: Seq[(EngineParams, R)]) {
+  
+  override def toString: String = {
+    implicit lazy val formats = Utils.json4sDefaultFormats +
+      new NameParamsSerializer
+    
+    val bestEPStr = writePretty(bestEngineParams)
+
+    s"""MetricEvaluatorResult:
+       |  # engine params evaluated: ${engineParamsScores.size}
+       |  best score: ${bestScore}
+       |  best engine param: ${bestEPStr}
+       |""".stripMargin
+  }
+}
 
 class MetricEvaluator[EI, Q, P, A, R](
-  //val metrics: Seq[Metric[EI, Q, P, A, _]])
   val metric: Metric[EI, Q, P, A, R])
   extends BaseEvaluator[EI, Q, P, A, MetricEvaluatorResult[R]] {
   @transient lazy val logger = Logger[this.type]
@@ -71,19 +85,6 @@ class MetricEvaluator[EI, Q, P, A, R](
       (engineParams, metricResult)
     }
 
-    /*
-    val evalResultList: Seq[(EngineParams, R)] = engineParamsList
-    .zipWithIndex
-    .map { case (engineParams, idx) => {
-      val evalDataSet: Seq[(EI, RDD[(Q, P, A)])] = engine.eval(sc, engineParams)
-
-      val metricResult: R = tuningEvaluator.evaluateBase(sc, evalDataSet)
-
-
-      (engineParams, metricResult)
-    }}
-    */
-   
     implicit lazy val formats = Utils.json4sDefaultFormats +
       new NameParamsSerializer
 
@@ -97,10 +98,6 @@ class MetricEvaluator[EI, Q, P, A, R](
     val (bestEngineParams, bestScore) = evalResultList.reduce(
       (x, y) => (if (metric.compare(x._2, y._2) >= 0) x else y))
 
-    logger.info("EvaluationWorkflow.runTuning completed.")
-    //(bestEngineParams, bestScore)
-
-    //MetricEvaluatorResult(s"Best Result: $bestScore")
     MetricEvaluatorResult(
       bestScore = bestScore,
       bestEngineParams = bestEngineParams,

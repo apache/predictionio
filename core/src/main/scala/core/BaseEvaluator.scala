@@ -22,13 +22,12 @@ import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
-abstract class BaseEvaluator[-EI, Q, P, A, ER]
+abstract class BaseEvaluator[EI, Q, P, A, ER]
   extends AbstractDoer {
 
   def evaluateBase(
     sc: SparkContext,
     engineEvalDataSet: Seq[(EngineParams, Seq[(EI, RDD[(Q, P, A)])])],
     params: WorkflowParams): ER
-  //def evaluateBase(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])]): ER
 }
 

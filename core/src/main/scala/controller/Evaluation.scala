@@ -55,17 +55,35 @@ import grizzled.slf4j.Logger
   * @group Evaluation
   */
 trait Evaluation extends Deployment {
+  protected [this] var _evaluatorSet: Boolean = false
   protected [this] var _evaluator: BaseEvaluator[_, _, _, _, _] = _
-  protected [this] var evaluatorSet: Boolean = false
 
+  private [prediction] 
   def evaluator: BaseEvaluator[_, _, _, _, _] = {
-    assert(evaluatorSet, "Evaluator not set")
+    assert(_evaluatorSet, "Evaluator not set")
     _evaluator
+  }
+  
+  private [prediction] 
+  def engineEvaluator
+  : (BaseEngine[_, _, _, _], BaseEvaluator[_, _, _, _, _]) = {
+    assert(_evaluatorSet, "Evaluator not set")
+    (engine, _evaluator)
+  }
+
+  /** Sets both the [[Engine]] and [[Evaluator]] for this [[Evaluation]]. */
+  def engineEvaluator_=[EI, Q, P, A](
+    engineEvaluator: (BaseEngine[EI, Q, P, A], BaseEvaluator[EI, Q, P, A, _])) {
+    assert(!_evaluatorSet, "Evaluator can be set at most once")
+    engine = engineEvaluator._1
+    _evaluator = engineEvaluator._2
+    _evaluatorSet = true
   }
 
   /** Returns both the [[Engine]] and [[Metric]] contained in this
     * [[Evaluation]].
     */
+  private [prediction] 
   def engineMetric: (BaseEngine[_, _, _, _], Metric[_, _, _, _, _]) = {
     throw new NotImplementedError("You should not call this")
     (engine, null.asInstanceOf[Metric[_,_,_,_,_]])
@@ -74,25 +92,8 @@ trait Evaluation extends Deployment {
   /** Sets both the [[Engine]] and [[Metric]] for this [[Evaluation]]. */
   def engineMetric_=[EI, Q, P, A](
     engineMetric: (BaseEngine[EI, Q, P, A], Metric[EI, Q, P, A, _])) {
-    assert(!evaluatorSet, "Evaluator can be set at most once")
-    //_engine = engineMetric._1
-    engine = engineMetric._1
-    _evaluator = new MetricEvaluator(engineMetric._2)
-    evaluatorSet = true
+    val e: BaseEvaluator[EI, Q, P, A, _] = new MetricEvaluator(engineMetric._2)
+    engineEvaluator = (engineMetric._1, e)
   }
 
-  def engineEvaluator
-  : (BaseEngine[_, _, _, _], BaseEvaluator[_, _, _, _, _]) = {
-    assert(evaluatorSet, "Evaluator not set")
-    (engine, _evaluator)
-  }
-
-  def engineEvaluator_=[EI, Q, P, A](
-    engineEvaluator: (BaseEngine[EI, Q, P, A], BaseEvaluator[EI, Q, P, A, _])) {
-    assert(!evaluatorSet, "Evaluator can be set at most once")
-    engine = engineEvaluator._1
-    _evaluator = engineEvaluator._2
-    evaluatorSet = true
-  }
 }
-

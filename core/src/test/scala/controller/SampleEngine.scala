@@ -412,7 +412,7 @@ extends BaseEngine[
     engineInstanceId: String = "",
     params: WorkflowParams = WorkflowParams()): Seq[Any] = Seq[Any]()
 
-  def eval(sc: SparkContext, engineParams: EngineParams)
+  def eval(sc: SparkContext, engineParams: EngineParams, params: WorkflowParams)
   : Seq[(Engine1.EvalInfo, 
       RDD[(Engine1.Query, Engine1.Prediction, Engine1.Actual)])] = {
     val dsp = engineParams.dataSourceParams._2.asInstanceOf[Engine1.DSP]
