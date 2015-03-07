@@ -1,0 +1,24 @@
+{
+  "id": "default",
+  "description": "Default settings",
+  "engineFactory": "org.template.ecommercerecommendation.ECommerceRecommendationEngine",
+  "datasource": {
+    "params" : {
+      "appId": 12
+    }
+  },
+  "algorithms": [
+    {
+      "name": "als",
+      "params": {
+        "appId": 12,
+        "unseenOnly": true,
+        "seenEvents": ["buy", "view"],
+        "rank": 10,
+        "numIterations" : 20,
+        "lambda": 0.01,
+        "seed": 3
+      }
+    }
+  ]
+}
