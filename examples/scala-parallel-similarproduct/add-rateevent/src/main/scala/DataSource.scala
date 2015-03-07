@@ -74,7 +74,7 @@ class DataSource(val dsp: DataSourceParams)
             case "rate" => RateEvent(
               user = event.entityId,
               item = event.targetEntityId.get,
-              t = event.eventTime.getMillis)
+              rating = event.properties.get[Double]("rating")
             case _ => throw new Exception(s"Unexpected event ${event} is read.")
           }
         } catch {
@@ -99,7 +99,7 @@ case class User()
 
 case class Item(categories: Option[List[String]])
 
-case class RateEvent(user: String, item: String, t: Long)
+case class RateEvent(user: String, item: String, rating: Double)
 
 class TrainingData(
   val users: RDD[(String, User)],
