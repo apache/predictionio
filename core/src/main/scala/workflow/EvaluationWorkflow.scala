@@ -77,49 +77,17 @@ object EvaluationWorkflow {
   @transient lazy val logger = Logger[this.type]
   @transient val engineInstances = Storage.getMetaDataEngineInstances
 
-  class TuningEvaluator[EI, Q, P, A, R](metric: Metric[EI, Q, P, A, R])
-  extends BaseEvaluator[EI, Q, P, A, R] {
-    def evaluateBase(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])])
-    : R = {
-      metric.calculate(sc, evalDataSet)
-    }
-  }
-
   def runEvaluation[EI, Q, P, A, R](
       sc: SparkContext,
       engine: BaseEngine[EI, Q, P, A],
       engineParamsList: Seq[EngineParams],
-      metric: Metric[EI, Q, P, A, R],
-      params: WorkflowParams = WorkflowParams()): (EngineParams, R) = {
-    logger.info("EvaluationWorkflow.runTuning completed.")
-
-    val tuningEvaluator = new TuningEvaluator(metric)
-
-    val evalResultList: Seq[(EngineParams, R)] = engineParamsList
-    .zipWithIndex
-    .map { case (engineParams, idx) => {
+      evaluator: BaseEvaluator[EI, Q, P, A, R],
+      params: WorkflowParams): R = {
+    val engineEvalDataSet = engineParamsList.map { engineParams => 
       val evalDataSet: Seq[(EI, RDD[(Q, P, A)])] = engine.eval(sc, engineParams)
+      (engineParams, evalDataSet)
+    }
 
-      val metricResult: R = tuningEvaluator.evaluateBase(sc, evalDataSet)
-
-
-      (engineParams, metricResult)
-    }}
-   
-    implicit lazy val formats = Utils.json4sDefaultFormats +
-      new NameParamsSerializer
-
-    evalResultList.zipWithIndex.foreach { case ((ep, r), idx) => {
-      logger.info(s"Iteration $idx")
-      logger.info(s"EngineParams: ${write(ep)}")
-      logger.info(s"Result: $r")
-    }}
-
-    // use max. take implicit from Metric.
-    val (bestEngineParams, bestScore) = evalResultList.reduce(
-      (x, y) => (if (metric.compare(x._2, y._2) >= 0) x else y))
-
-    logger.info("EvaluationWorkflow.runTuning completed.")
-    (bestEngineParams, bestScore)
+    evaluator.evaluateBase(sc, engineEvalDataSet, params)
   }
 }

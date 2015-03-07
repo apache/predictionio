@@ -137,7 +137,8 @@ object CoreWorkflow {
       engine: BaseEngine[EI, Q, P, A],
       engineParamsList: Seq[EngineParams],
       engineInstance: EngineInstance,
-      metric: Metric[EI, Q, P, A, R],
+      //metric: Metric[EI, Q, P, A, R],
+      evaluator: BaseEvaluator[EI, Q, P, A, R],
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
       params: WorkflowParams = WorkflowParams()) {
     logger.info("CoreWorkflow.runEvaluation")
@@ -152,12 +153,13 @@ object CoreWorkflow {
       mode.capitalize)
 
     WorkflowUtils.checkUpgrade(mode, engineInstance.engineFactory)
-
-    val (bestEngineParams, bestScore) = EvaluationWorkflow.runEvaluation(
+    
+    val evalResult = EvaluationWorkflow.runEvaluation(
       sc,
       engine,
       engineParamsList,
-      metric,
+      evaluator,
+      //metric,
       params)
 
     implicit lazy val formats = Utils.json4sDefaultFormats +
@@ -167,11 +169,12 @@ object CoreWorkflow {
     val evaledEI = engineInstance.copy(
       status = "EVALCOMPLETED",
       endTime = DateTime.now,
-      evaluatorResults = bestScore.toString,
-      dataSourceParams = write(bestEngineParams.dataSourceParams),
-      preparatorParams = write(bestEngineParams.preparatorParams),
-      algorithmsParams = write(bestEngineParams.algorithmParamsList),
-      servingParams = write(bestEngineParams.servingParams)
+      //evaluatorResults = bestScore.toString,
+      evaluatorResults = evalResult.toString//,
+      //dataSourceParams = write(bestEngineParams.dataSourceParams),
+      //preparatorParams = write(bestEngineParams.preparatorParams),
+      //algorithmsParams = write(bestEngineParams.algorithmParamsList),
+      //servingParams = write(bestEngineParams.servingParams)
     )
 
     logger.info(s"Insert evaluation result")
@@ -180,10 +183,12 @@ object CoreWorkflow {
     logger.debug("Stop spark context")
     sc.stop()
 
-    val bestEpJson = writePretty(bestEngineParams)
+    logger.info(s"evalResult: $evalResult")
 
-    logger.info(s"Optimal score: $bestScore")
-    logger.info(s"Optimal engine params: $bestEpJson")
+    //val bestEpJson = writePretty(bestEngineParams)
+
+    //logger.info(s"Optimal score: $bestScore")
+    //logger.info(s"Optimal engine params: $bestEpJson")
 
     logger.info("CoreWorkflow.runEvaluation completed.")
   }

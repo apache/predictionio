@@ -30,16 +30,17 @@ class EvaluationWorkflowDevSuite extends FunSuite with SharedSparkContext {
     val ep3 = EngineParams(dataSourceParams = Engine1.DSP(-0.2))
     val engineParamsList = Seq(ep0, ep1, ep2, ep3)
 
-    val metric = new Metric0()
+    val evaluator = new MetricEvaluator(new Metric0())
 
-    val (bestEngineParams, bestScore) = EvaluationWorkflow.runEvaluation(
+    val result = EvaluationWorkflow.runEvaluation(
       sc,
       engine,
       engineParamsList,
-      metric) 
-  
-    bestEngineParams shouldBe ep1
-    bestScore shouldBe 0.3
+      evaluator,
+      WorkflowParams())
+
+    result.bestScore shouldBe 0.3
+    result.bestEngineParams shouldBe ep1
   }
 
   test("Evaluation return best engine params, complex result type") {
@@ -50,15 +51,16 @@ class EvaluationWorkflowDevSuite extends FunSuite with SharedSparkContext {
     val ep3 = EngineParams(dataSourceParams = Engine1.DSP(-0.2))
     val engineParamsList = Seq(ep0, ep1, ep2, ep3)
 
-    val metric = new Metric1()
+    val evaluator = new MetricEvaluator(new Metric1())
 
-    val (bestEngineParams, bestScore) = EvaluationWorkflow.runEvaluation(
+    val result = EvaluationWorkflow.runEvaluation(
       sc,
       engine,
       engineParamsList,
-      metric) 
+      evaluator,
+      WorkflowParams())
   
-    bestEngineParams shouldBe ep1
-    bestScore shouldBe Metric1.Result(0, 0.3)
+    result.bestScore shouldBe Metric1.Result(0, 0.3)
+    result.bestEngineParams shouldBe ep1
   }
 }
