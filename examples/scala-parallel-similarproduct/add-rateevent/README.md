@@ -12,9 +12,18 @@ Please refer to http://docs.prediction.io/templates/similarproduct/quickstart/
 
 ## Development Notes
 
-### Changes to Preparator.scala
+### Changes to DataSource.scala
 
-1) "rateEventsRDD" is initialized by filtering events of type "rate" from Events database.
+1) class "Rating" is created.
+```
+case class Rating(
+  user: String,
+  item: String,
+  rating: Double
+)
+```
+
+2) "rateEventsRDD" is initialized by filtering events of type "rate" from Events database as shown below.
 
 ```
    val rateEventsRDD: RDD[RateEvent] = eventsDb.find(
@@ -24,7 +33,10 @@ Please refer to http://docs.prediction.io/templates/similarproduct/quickstart/
        
    val rateEvent = try {
         event.event match {
-        case "rate" => RateEvent(...
+        case "rate" => RateEvent(
+        user = event.entityId,
+        item = event.targetEntityId.get,
+        rating = event.properties.get[Double]("rating")...
 ```
 
 
@@ -55,8 +67,8 @@ Please refer to http://docs.prediction.io/templates/similarproduct/quickstart/
 
 ```
    def train(sc:SparkContext ,data: PreparedData): ALSModel = {
-   require(!data.rateEvents.take(1).isEmpty,
-   s"rateEvents in PreparedData cannot be empty." +
+    require(!data.rateEvents.take(1).isEmpty,
+    s"rateEvents in PreparedData cannot be empty." +
 ```
 
 2) MlibRatings are initialized from rateEvents.
@@ -86,9 +98,9 @@ Please refer to http://docs.prediction.io/templates/similarproduct/quickstart/
 
 ```
    class TrainingData(
-   val users: RDD[(String, User)],
-   val items: RDD[(String, Item)],
-   val rateEvents: RDD[RateEvent]
+    val users: RDD[(String, User)],
+    val items: RDD[(String, Item)],
+    val rateEvents: RDD[RateEvent]
  )
 ```
 
