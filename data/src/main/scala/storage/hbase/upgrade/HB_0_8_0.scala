@@ -1,3 +1,18 @@
+/** Copyright 2015 TappingStone, Inc.
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  *     http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+
 package io.prediction.data.storage.hbase.upgrade
 
 import io.prediction.data.storage.Event
@@ -33,7 +48,7 @@ object HB_0_8_0 {
     val tableName = TableName.valueOf(namespace, "events")
     val table = connection.getTable(tableName)
     val start = PartialRowKey(appId)
-    val stop = PartialRowKey(appId+1)
+    val stop = PartialRowKey(appId + 1)
     val scan = new Scan(start.toBytes, stop.toBytes)
     val scanner = table.getScanner(scan)
     table.close()
@@ -111,7 +126,7 @@ object HB_0_8_0 {
     val rowKey = RowKey(result.getRow())
 
     val eBytes = Bytes.toBytes("e")
-    //val e = result.getFamilyMap(eBytes)
+    // val e = result.getFamilyMap(eBytes)
 
     def getStringCol(col: String): String = {
       val r = result.getValue(eBytes, colNames(col))
@@ -125,10 +140,11 @@ object HB_0_8_0 {
 
     def getOptStringCol(col: String): Option[String] = {
       val r = result.getValue(eBytes, colNames(col))
-      if (r == null)
+      if (r == null) {
         None
-      else
+      } else {
         Some(Bytes.toString(r))
+      }
     }
 
     def getTimestamp(col: String): Long = {

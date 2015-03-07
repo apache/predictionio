@@ -31,12 +31,7 @@ import org.apache.hadoop.hbase.NamespaceDescriptor
 import org.apache.hadoop.hbase.HTableDescriptor
 import org.apache.hadoop.hbase.HColumnDescriptor
 import org.apache.hadoop.hbase.TableName
-import org.apache.hadoop.hbase.client.HTable
-import org.apache.hadoop.hbase.client.Put
-import org.apache.hadoop.hbase.client.Get
-import org.apache.hadoop.hbase.client.Delete
-import org.apache.hadoop.hbase.client.Result
-import org.apache.hadoop.hbase.client.Scan
+import org.apache.hadoop.hbase.client._
 
 import scala.collection.JavaConversions._
 
@@ -46,12 +41,12 @@ import scala.concurrent.ExecutionContext
 class HBLEvents(val client: HBClient, val namespace: String)
   extends LEvents with Logging {
 
-  //implicit val formats = DefaultFormats + new EventJson4sSupport.DBSerializer
+  // implicit val formats = DefaultFormats + new EventJson4sSupport.DBSerializer
 
   def resultToEvent(result: Result, appId: Int): Event =
     HBEventsUtil.resultToEvent(result, appId)
 
-  def getTable(appId: Int) = client.connection.getTable(
+  def getTable(appId: Int): HTableInterface = client.connection.getTable(
     HBEventsUtil.tableName(namespace, appId))
 
   override
@@ -99,7 +94,7 @@ class HBLEvents(val client: HBClient, val namespace: String)
   }
 
   override
-  def close() = {
+  def close(): Unit = {
     client.admin.close()
     client.connection.close()
   }
@@ -114,9 +109,9 @@ class HBLEvents(val client: HBClient, val namespace: String)
       table.flushCommits()
       table.close()
       Right(rowKey.toString)
-    }/*.recover {
-      case e: Exception => Left(StorageError(e.toString))
-    }*/
+    }/* .recover {
+       case e: Exception => Left(StorageError(e.toString))
+    } */
   }
 
 

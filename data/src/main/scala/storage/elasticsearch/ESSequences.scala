@@ -43,9 +43,9 @@ class ESSequences(client: Client, index: String) extends Logging {
   val indices = client.admin.indices
   val indexExistResponse = indices.prepareExists(index).get
   if (!indexExistResponse.isExists) {
-    //val settingsJson =
-    //  ("number_of_shards" -> 1) ~
-    //  ("auto_expand_replicas" -> "0-all")
+    // val settingsJson =
+    //   ("number_of_shards" -> 1) ~
+    //   ("auto_expand_replicas" -> "0-all")
     indices.prepareCreate(index).get
   }
   val typeExistResponse = indices.prepareTypesExists(index).setTypes(estype).get

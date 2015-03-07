@@ -29,7 +29,7 @@ import java.io.FileOutputStream
 class LocalFSModels(f: File, prefix: String)
   extends Models with Logging {
 
-  def insert(i: Model) = {
+  def insert(i: Model): Unit = {
     try {
       val fos = new FileOutputStream(new File(f, s"${prefix}${i.id}"))
       fos.write(i.models)
@@ -39,7 +39,7 @@ class LocalFSModels(f: File, prefix: String)
     }
   }
 
-  def get(id: String) = {
+  def get(id: String): Option[Model] = {
     try {
       Some(Model(
         id = id,
@@ -52,7 +52,7 @@ class LocalFSModels(f: File, prefix: String)
     }
   }
 
-  def delete(id: String) = {
+  def delete(id: String): Unit = {
     val m = new File(f, s"${prefix}${id}")
     if (!m.delete) error(s"Unable to delete ${m.getCanonicalPath}!")
   }
