@@ -15,8 +15,8 @@ abstract class BaseEngine[EI, Q, P, A] extends Serializable {
   def train(
     sc: SparkContext, 
     engineParams: EngineParams,
-    engineInstanceId: String = "",
-    params: WorkflowParams = WorkflowParams()): Seq[Any]
+    engineInstanceId: String,
+    params: WorkflowParams): Seq[Any]
 
   def eval(sc: SparkContext, engineParams: EngineParams)
   : Seq[(EI, RDD[(Q, P, A)])]

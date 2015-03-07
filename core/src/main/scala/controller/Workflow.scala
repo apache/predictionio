@@ -67,6 +67,7 @@ object Workflow {
   // This is an undocumented way of using evaluator. Still experimental.
   // evaluatorParams is used to write into EngineInstance, will be shown in
   // dashboard.
+  /*
   def runEval[EI, Q, P, A, ER <: AnyRef](
       engine: BaseEngine[EI, Q, P, A],
       engineParams: EngineParams,
@@ -109,6 +110,7 @@ object Workflow {
       env = env,
       params = params)
   }
+  */
 
   def runEvaluation(
       evaluation: Evaluation,

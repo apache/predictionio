@@ -28,9 +28,11 @@ trait Params extends Serializable {}
   *
   * @group General
   */
+/*
 trait ParamsWithAppId extends Serializable {
   val appId: Int
 }
+*/
 
 /** A concrete implementation of [[Params]] representing empty parameters.
   *

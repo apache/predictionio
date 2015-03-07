@@ -20,9 +20,10 @@ import io.prediction.controller.EmptyParams
 import io.prediction.controller.Engine
 import io.prediction.controller.PAlgorithm
 import io.prediction.controller.Params
-import io.prediction.controller.ParamsWithAppId
+//import io.prediction.controller.ParamsWithAppId
 import io.prediction.controller.WithPrId
 import io.prediction.controller.Utils
+import io.prediction.controller.WorkflowParams
 import io.prediction.controller.java.LJavaAlgorithm
 import io.prediction.controller.java.LJavaServing
 import io.prediction.controller.java.PJavaAlgorithm
@@ -220,7 +221,9 @@ object CreateServer extends Logging {
       sparkContext,
       engineParams,
       engineInstance.id,
-      modelsFromEngineInstance)
+      modelsFromEngineInstance,
+      params = WorkflowParams()
+    )
 
     val algorithms = engineParams.algorithmParamsList.map { case (n, p) =>
       Doer(engine.algorithmClassMap(n), p)

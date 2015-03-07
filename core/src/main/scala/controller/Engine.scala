@@ -21,14 +21,17 @@ import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseServing
 import io.prediction.core.Doer
 import io.prediction.core.BaseEngine
-import io.prediction.workflow.EngineWorkflow
+//import io.prediction.workflow.EngineWorkflow
 import io.prediction.workflow.CreateWorkflow
 import io.prediction.workflow.WorkflowUtils
 import io.prediction.workflow.EngineLanguage
 import io.prediction.workflow.PersistentModelManifest
 import io.prediction.workflow.SparkWorkflowUtils
+import io.prediction.workflow.StopAfterReadInterruption
+import io.prediction.workflow.StopAfterPrepareInterruption
 import io.prediction.data.storage.EngineInstance
 import _root_.java.util.NoSuchElementException
+import io.prediction.data.storage.StorageClientException
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -128,8 +131,8 @@ class Engine[TD, EI, PD, Q, P, A](
   def train(
       sc: SparkContext,
       engineParams: EngineParams,
-      engineInstanceId: String = "",
-      params: WorkflowParams = WorkflowParams()): Seq[Any] = {
+      engineInstanceId: String,
+      params: WorkflowParams): Seq[Any] = {
     val (dataSourceName, dataSourceParams) = engineParams.dataSourceParams
     val dataSource = Doer(dataSourceClassMap(dataSourceName), dataSourceParams)
 
@@ -142,7 +145,7 @@ class Engine[TD, EI, PD, Q, P, A](
       Doer(algorithmClassMap(algoName), algoParams)
     }
 
-    val models = EngineWorkflow.train(
+    val models = Engine.train(
       sc, dataSource, preparator, algorithms, params)
 
     val algoCount = algorithms.size
@@ -168,7 +171,8 @@ class Engine[TD, EI, PD, Q, P, A](
     engineParams: EngineParams,
     engineInstanceId: String,
     persistedModels: Seq[Any],
-    params: WorkflowParams = WorkflowParams()): Seq[Any] = {
+    //params: WorkflowParams = WorkflowParams()): Seq[Any] = {
+    params: WorkflowParams): Seq[Any] = {
 
     val algoParamsList = engineParams.algorithmParamsList
     val algorithms = algoParamsList.map { case (algoName, algoParams) =>
@@ -199,7 +203,11 @@ class Engine[TD, EI, PD, Q, P, A](
       persistedModels
     }
 
-    models.zip(algorithms).zip(algoParamsList).zipWithIndex.map {
+    models
+    .zip(algorithms)
+    .zip(algoParamsList)
+    .zipWithIndex
+    .map {
       case (((model, algo), (algoName, algoParams)), ax) => {
         model match {
           case modelManifest: PersistentModelManifest => {
@@ -225,7 +233,7 @@ class Engine[TD, EI, PD, Q, P, A](
                 m
             }
           }
-        }
+        }  // model match
       }
     }
   }
@@ -298,7 +306,7 @@ class Engine[TD, EI, PD, Q, P, A](
     val (servingName, servingParams) = engineParams.servingParams
     val serving = Doer(servingClassMap(servingName), servingParams)
 
-    EngineWorkflow.eval(sc, dataSource, preparator, algorithms, serving)
+    Engine.eval(sc, dataSource, preparator, algorithms, serving)
   }
 
   override
@@ -432,6 +440,12 @@ class Engine[TD, EI, PD, Q, P, A](
 }
 
 object Engine {
+  type EX = Int
+  type AX = Int
+  type QX = Long
+
+  @transient lazy val logger = Logger[this.type]
+
   class DataSourceMap[TD, EI, Q, A](
     val m: Map[String, Class[_ <: BaseDataSource[TD, EI, Q, A]]]) {
     def this(c: Class[_ <: BaseDataSource[TD, EI, Q, A]]) = this(Map("" -> c))
@@ -484,6 +498,183 @@ object Engine {
       algorithmClassMap,
       servingMap.m
     )
+
+  def train[TD, PD, Q](
+      sc: SparkContext,
+      dataSource: BaseDataSource[TD, _, Q, _],
+      preparator: BasePreparator[TD, PD],
+      algorithmList: Seq[BaseAlgorithm[PD, _, Q, _]],
+      params: WorkflowParams
+    ): Seq[Any] = {
+    logger.info("EngineWorkflow.train")
+    logger.info(s"DataSource: $dataSource")
+    logger.info(s"Preparator: $preparator")
+    logger.info(s"AlgorithmList: $algorithmList")
+
+    if (params.skipSanityCheck)
+      logger.info("Data sanity check is off.")
+    else
+      logger.info("Data santiy check is on.")
+
+    val td = try {
+      dataSource.readTrainingBase(sc)
+    } catch {
+      case e: StorageClientException =>
+        logger.error(s"Error occured reading from data source. (Reason: " +
+          e.getMessage + ") Please see the log for debugging details.", e)
+        sys.exit(1)
+    }
+
+    if (!params.skipSanityCheck) {
+      td match {
+        case sanityCheckable: SanityCheck => {
+          logger.info(s"${td.getClass.getName} supports data sanity" +
+            " check. Performing check.")
+          sanityCheckable.sanityCheck()
+        }
+        case _ => {
+          logger.info(s"${td.getClass.getName} does not support" +
+            " data sanity check. Skipping check.")
+        }
+      }
+    }
+
+    if (params.stopAfterRead) {
+      logger.info("Stopping here because --stop-after-read is set.")
+      throw StopAfterReadInterruption()
+    }
+
+    val pd = preparator.prepareBase(sc, td)
+
+    if (!params.skipSanityCheck) {
+      pd match {
+        case sanityCheckable: SanityCheck => {
+          logger.info(s"${pd.getClass.getName} supports data sanity" +
+            " check. Performing check.")
+          sanityCheckable.sanityCheck()
+        }
+        case _ => {
+          logger.info(s"${pd.getClass.getName} does not support" +
+            " data sanity check. Skipping check.")
+        }
+      }
+    }
+
+    if (params.stopAfterPrepare) {
+      logger.info("Stopping here because --stop-after-prepare is set.")
+      throw StopAfterPrepareInterruption()
+    }
+
+    val models: Seq[Any] = algorithmList.map(_.trainBase(sc, pd))
+
+    if (!params.skipSanityCheck) {
+      models.foreach { model => {
+        model match {
+          case sanityCheckable: SanityCheck => {
+            logger.info(s"${model.getClass.getName} supports data sanity" +
+              " check. Performing check.")
+            sanityCheckable.sanityCheck()
+          }
+          case _ => {
+            logger.info(s"${model.getClass.getName} does not support" +
+              " data sanity check. Skipping check.")
+          }
+        }
+      }}
+    }
+
+    logger.info("EngineWorkflow.train completed")
+    models
+  }
+
+  def eval[TD, PD, Q, P, A, EI](
+      sc: SparkContext,
+      dataSource: BaseDataSource[TD, EI, Q, A],
+      preparator: BasePreparator[TD, PD],
+      algorithmList: Seq[BaseAlgorithm[PD, _, Q, P]],
+      serving: BaseServing[Q, P]): Seq[(EI, RDD[(Q, P, A)])] = {
+    logger.info(s"DataSource: $dataSource")
+    logger.info(s"Preparator: $preparator")
+    logger.info(s"AlgorithmList: $algorithmList")
+    logger.info(s"Serving: $serving")
+
+    val algoMap: Map[AX, BaseAlgorithm[PD, _, Q, P]] = algorithmList
+      .zipWithIndex
+      .map(_.swap)
+      .toMap
+    val algoCount = algoMap.size
+
+    val evalTupleMap: Map[EX, (TD, EI, RDD[(Q, A)])] = dataSource
+      .readEvalBase(sc)
+      .zipWithIndex
+      .map(_.swap)
+      .toMap
+
+    val evalCount = evalTupleMap.size
+
+    val evalTrainMap: Map[EX, TD] = evalTupleMap.mapValues(_._1)
+    val evalInfoMap: Map[EX, EI] = evalTupleMap.mapValues(_._2)
+    val evalQAsMap: Map[EX, RDD[(QX, (Q, A))]] = evalTupleMap
+      .mapValues(_._3)
+      .mapValues{ _.zipWithUniqueId().map(_.swap) }
+
+    val preparedMap: Map[EX, PD] = evalTrainMap.mapValues { td => {
+      preparator.prepareBase(sc, td)
+    }}
+
+    val algoModelsMap: Map[EX, Map[AX, Any]] = preparedMap.mapValues { pd => {
+      algoMap.mapValues(_.trainBase(sc,pd))
+    }}
+
+    val algoPredictsMap: Map[EX, RDD[(QX, Seq[P])]] = (0 until evalCount)
+    .map { ex => {
+      val modelMap: Map[AX, Any] = algoModelsMap(ex)
+
+      val qs: RDD[(QX, Q)] = evalQAsMap(ex).mapValues(_._1)
+
+      val algoPredicts: Seq[RDD[(QX, (AX, P))]] = (0 until algoCount)
+      .map { ax => {
+        val algo = algoMap(ax)
+        val model = modelMap(ax)
+        val rawPredicts: RDD[(QX, P)] = algo.batchPredictBase(sc, model, qs)
+        val predicts: RDD[(QX, (AX, P))] = rawPredicts.map { case (qx, p) => {
+          (qx, (ax, p))
+        }}
+        predicts
+      }}
+
+      val unionAlgoPredicts: RDD[(QX, Seq[P])] = sc.union(algoPredicts)
+      .groupByKey
+      .mapValues { ps => {
+        assert (ps.size == algoCount, "Must have same length as algoCount")
+        // TODO. Check size == algoCount
+        ps.toSeq.sortBy(_._1).map(_._2)
+      }}
+
+      (ex, unionAlgoPredicts)
+    }}
+    .toMap
+
+    val servingQPAMap: Map[EX, RDD[(Q, P, A)]] = algoPredictsMap
+    .map { case (ex, psMap) => {
+      val qasMap: RDD[(QX, (Q, A))] = evalQAsMap(ex)
+      val qpsaMap: RDD[(QX, Q, Seq[P], A)] = psMap.join(qasMap)
+      .map { case (qx, t) => (qx, t._2._1, t._1, t._2._2) }
+
+      val qpaMap: RDD[(Q, P, A)] = qpsaMap.map {
+        case (qx, q, ps, a) => (q, serving.serveBase(q, ps), a)
+      }
+      (ex, qpaMap)
+    }}
+
+    (0 until evalCount).map { ex => {
+      (evalInfoMap(ex), servingQPAMap(ex))
+    }}
+    .toSeq
+  }
+
+
+
 
 
 }

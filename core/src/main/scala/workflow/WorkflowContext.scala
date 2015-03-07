@@ -44,6 +44,7 @@ import io.prediction.core.BasePreparator
 import io.prediction.core.BaseServing
 import io.prediction.core.BaseEngine
 import io.prediction.core.Doer
+//import io.prediction.core.LModelAlgorithm
 import io.prediction.data.storage.EngineInstance
 import io.prediction.data.storage.EngineInstances
 import io.prediction.data.storage.Model
@@ -58,6 +59,8 @@ import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.json4s._
 import org.json4s.native.Serialization.write
+import org.json4s.native.Serialization.writePretty
+
 
 import scala.collection.JavaConversions._
 import scala.language.existentials
@@ -70,56 +73,26 @@ import java.io.FileInputStream
 import java.io.ObjectInputStream
 import java.lang.{ Iterable => JIterable }
 import java.util.{ HashMap => JHashMap, Map => JMap }
-import org.json4s._
-import org.json4s.native.Serialization.write
 
-object EvaluationWorkflow {
-  @transient lazy val logger = Logger[this.type]
-  @transient val engineInstances = Storage.getMetaDataEngineInstances
-
-  class TuningEvaluator[EI, Q, P, A, R](metric: Metric[EI, Q, P, A, R])
-  extends BaseEvaluator[EI, Q, P, A, R] {
-    def evaluateBase(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])])
-    : R = {
-      metric.calculate(sc, evalDataSet)
-    }
-  }
-
-  def runEvaluation[EI, Q, P, A, R](
-      sc: SparkContext,
-      engine: BaseEngine[EI, Q, P, A],
-      engineParamsList: Seq[EngineParams],
-      metric: Metric[EI, Q, P, A, R],
-      params: WorkflowParams = WorkflowParams()): (EngineParams, R) = {
-    logger.info("EvaluationWorkflow.runTuning completed.")
-
-    val tuningEvaluator = new TuningEvaluator(metric)
-
-    val evalResultList: Seq[(EngineParams, R)] = engineParamsList
-    .zipWithIndex
-    .map { case (engineParams, idx) => {
-      val evalDataSet: Seq[(EI, RDD[(Q, P, A)])] = engine.eval(sc, engineParams)
-
-      val metricResult: R = tuningEvaluator.evaluateBase(sc, evalDataSet)
-
-
-      (engineParams, metricResult)
-    }}
-   
-    implicit lazy val formats = Utils.json4sDefaultFormats +
-      new NameParamsSerializer
-
-    evalResultList.zipWithIndex.foreach { case ((ep, r), idx) => {
-      logger.info(s"Iteration $idx")
-      logger.info(s"EngineParams: ${write(ep)}")
-      logger.info(s"Result: $r")
-    }}
-
-    // use max. take implicit from Metric.
-    val (bestEngineParams, bestScore) = evalResultList.reduce(
-      (x, y) => (if (metric.compare(x._2, y._2) >= 0) x else y))
-
-    logger.info("EvaluationWorkflow.runTuning completed.")
-    (bestEngineParams, bestScore)
+// FIXME: move to better location.
+object WorkflowContext extends Logging {
+  def apply(
+      batch: String = "",
+      executorEnv: Map[String, String] = Map(),
+      sparkEnv: Map[String, String] = Map(),
+      mode: String = ""
+    ): SparkContext = {
+    val conf = new SparkConf()
+    val prefix = if (mode == "") "PredictionIO" else s"PredictionIO ${mode}"
+    conf.setAppName(s"${prefix}: ${batch}")
+    debug(s"Executor environment received: ${executorEnv}")
+    executorEnv.map(kv => conf.setExecutorEnv(kv._1, kv._2))
+    debug(s"SparkConf executor environment: ${conf.getExecutorEnv}")
+    debug(s"Application environment received: ${sparkEnv}")
+    conf.setAll(sparkEnv)
+    val sparkConfString = conf.getAll.toSeq
+    debug(s"SparkConf environment: $sparkConfString")
+    new SparkContext(conf)
   }
 }
+
