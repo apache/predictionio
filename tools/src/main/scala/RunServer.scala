@@ -43,26 +43,29 @@ object RunServer extends Logging {
     val driverClassPathIndex =
       ca.common.sparkPassThrough.indexOf("--driver-class-path")
     val driverClassPathPrefix =
-      if (driverClassPathIndex != -1)
+      if (driverClassPathIndex != -1) {
         Seq(ca.common.sparkPassThrough(driverClassPathIndex + 1))
-      else
+      } else {
         Seq()
+      }
     val extraClasspaths =
       driverClassPathPrefix ++ WorkflowUtils.thirdPartyClasspaths
 
     val deployModeIndex =
       ca.common.sparkPassThrough.indexOf("--deploy-mode")
-    val deployMode = if (deployModeIndex != -1)
+    val deployMode = if (deployModeIndex != -1) {
       ca.common.sparkPassThrough(deployModeIndex + 1)
-    else
+    } else {
       "client"
+    }
 
     val mainJar =
       if (ca.build.uberJar) {
-        if (deployMode == "cluster")
+        if (deployMode == "cluster") {
           em.files.filter(_.startsWith("hdfs")).head
-        else
+        } else {
           em.files.filterNot(_.startsWith("hdfs")).head
+        }
       } else {
         if (deployMode == "cluster") {
           em.files.filter(_.contains("pio-assembly")).head
@@ -82,20 +85,23 @@ object RunServer extends Logging {
       (if (!ca.build.uberJar) {
         Seq("--jars", em.files.mkString(","))
       } else Seq()) ++
-      (if (extraFiles.size > 0)
+      (if (extraFiles.size > 0) {
         Seq("--files", extraFiles.mkString(","))
-      else
-        Seq()) ++
-      (if (extraClasspaths.size > 0)
+      } else {
+        Seq()
+      }) ++
+      (if (extraClasspaths.size > 0) {
         Seq("--driver-class-path", extraClasspaths.mkString(":"))
-      else
-        Seq()) ++
-      (if (ca.common.sparkKryo)
+      } else {
+        Seq()
+      }) ++
+      (if (ca.common.sparkKryo) {
         Seq(
           "--conf",
           "spark.serializer=org.apache.spark.serializer.KryoSerializer")
-      else
-        Seq()) ++
+      } else {
+        Seq()
+      }) ++
       Seq(
         mainJar,
         "--engineInstanceId",
@@ -108,8 +114,11 @@ object RunServer extends Logging {
         ca.eventServer.ip,
         "--event-server-port",
         ca.eventServer.port.toString) ++
-      (if (ca.accessKey.accessKey != "")
-        Seq("--accesskey", ca.accessKey.accessKey) else Seq()) ++
+      (if (ca.accessKey.accessKey != "") {
+        Seq("--accesskey", ca.accessKey.accessKey)
+      } else {
+        Seq()
+      }) ++
       (if (ca.eventServer.enabled) Seq("--feedback") else Seq()) ++
       (if (ca.common.batch != "") Seq("--batch", ca.common.batch) else Seq()) ++
       (if (ca.common.verbose) Seq("--verbose") else Seq()) ++

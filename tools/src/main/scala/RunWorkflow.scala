@@ -51,28 +51,31 @@ object RunWorkflow extends Logging {
     val driverClassPathIndex =
       ca.common.sparkPassThrough.indexOf("--driver-class-path")
     val driverClassPathPrefix =
-      if (driverClassPathIndex != -1)
+      if (driverClassPathIndex != -1) {
         Seq(ca.common.sparkPassThrough(driverClassPathIndex + 1))
-      else
+      } else {
         Seq()
+      }
     val extraClasspaths =
       driverClassPathPrefix ++ WorkflowUtils.thirdPartyClasspaths
 
     val deployModeIndex =
       ca.common.sparkPassThrough.indexOf("--deploy-mode")
-    val deployMode = if (deployModeIndex != -1)
+    val deployMode = if (deployModeIndex != -1) {
       ca.common.sparkPassThrough(deployModeIndex + 1)
-    else
+    } else {
       "client"
+    }
 
     val extraFiles = WorkflowUtils.thirdPartyConfFiles
 
     val mainJar =
       if (ca.build.uberJar) {
-        if (deployMode == "cluster")
+        if (deployMode == "cluster") {
           em.files.filter(_.startsWith("hdfs")).head
-        else
+        } else {
           em.files.filterNot(_.startsWith("hdfs")).head
+        }
       } else {
         if (deployMode == "cluster") {
           em.files.filter(_.contains("pio-assembly")).head
@@ -108,20 +111,23 @@ object RunWorkflow extends Logging {
       (if (!ca.build.uberJar) {
         Seq("--jars", em.files.mkString(","))
       } else Seq()) ++
-      (if (extraFiles.size > 0)
+      (if (extraFiles.size > 0) {
         Seq("--files", extraFiles.mkString(","))
-      else
-        Seq()) ++
-      (if (extraClasspaths.size > 0)
+      } else {
+        Seq()
+      }) ++
+      (if (extraClasspaths.size > 0) {
         Seq("--driver-class-path", extraClasspaths.mkString(":"))
-      else
-        Seq()) ++
-      (if (ca.common.sparkKryo)
+      } else {
+        Seq()
+      }) ++
+      (if (ca.common.sparkKryo) {
         Seq(
           "--conf",
           "spark.serializer=org.apache.spark.serializer.KryoSerializer")
-      else
-        Seq()) ++
+      } else {
+        Seq()
+      }) ++
       Seq(
         mainJar,
         "--env",
@@ -131,12 +137,13 @@ object RunWorkflow extends Logging {
         "--engine-version",
         em.version,
         "--engine-variant",
-        (if (deployMode == "cluster")
+        (if (deployMode == "cluster") {
           hdfs.makeQualified(new Path(
             (engineLocation :+ variantJson.getName).mkString(Path.SEPARATOR))).
             toString
-        else
-          variantJson.getCanonicalPath),
+        } else {
+          variantJson.getCanonicalPath
+        }),
         "--verbosity",
         ca.common.verbosity.toString) ++
       ca.common.engineFactory.map(
@@ -148,8 +155,11 @@ object RunWorkflow extends Logging {
       (if (ca.common.verbose) Seq("--verbose") else Seq()) ++
       (if (ca.common.skipSanityCheck) Seq("--skip-sanity-check") else Seq()) ++
       (if (ca.common.stopAfterRead) Seq("--stop-after-read") else Seq()) ++
-      (if (ca.common.stopAfterPrepare)
-        Seq("--stop-after-prepare") else Seq()) ++
+      (if (ca.common.stopAfterPrepare) {
+        Seq("--stop-after-prepare")
+      } else {
+        Seq()
+      }) ++
       ca.common.evaluation.map(x => Seq("--evaluation-class", x)).
         getOrElse(Seq()) ++
       ca.common.engineParamsGenerator.map(x => Seq("--engine-params-generator-class", x)).
