@@ -61,10 +61,10 @@ object SerializerTest {
           appId = appId,
           prId = prId)
       }
-      /*case JObject(
-        JField("a", JInt(a)) ::
-        JField("b", JString(b)) ::
-        Nil) => new A(a.intValue,b)*/
+      /* case JObject(
+         JField("a", JInt(a)) ::
+         JField("b", JString(b)) ::
+         Nil) => new A(a.intValue,b) */
     },
     {
       case d: Event =>
@@ -86,15 +86,15 @@ object SerializerTest {
     test()
   }
 
-  def test() = {
+  def test(): Unit = {
     implicit val formats = DefaultFormats.lossless +
       new EventSeriliazer
 
     val j = parse("""{
       "a": 1, "b": "some"} """)
 
-    /*val w = read[A]("""{"b": 1,
-      "a": 1 } """)*/
+    /* val w = read[A]("""{"b": 1,
+       "a": 1 } """) */
     val w = read[Event]("""{
       "event" : "my_event",
       "entityId" : "my_entity_id",

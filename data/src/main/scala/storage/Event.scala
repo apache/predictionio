@@ -47,7 +47,7 @@ case class Event(
   val prId: Option[String] = None,
   val creationTime: DateTime = DateTime.now
 ) {
-  override def toString() = {
+  override def toString(): String = {
     s"Event(id=$eventId,event=$event,eType=$entityType,eId=$entityId," +
     s"tType=$targetEntityType,tId=$targetEntityId,p=$properties,t=$eventTime," +
     s"tags=$tags,pKey=$prId,ct=$creationTime)"
@@ -67,7 +67,7 @@ private[prediction] object EventValidation {
 
   def isSpecialEvents(name: String): Boolean = specialEvents.contains(name)
 
-  def validate(e: Event) = {
+  def validate(e: Event): Unit = {
 
     require(!e.event.isEmpty, "event must not be empty.")
     require(!e.entityType.isEmpty, "entityType must not be empty string.")
@@ -102,9 +102,9 @@ private[prediction] object EventValidation {
   val builtinEntityTypes: Set[String] = Set("pio_pr")
   val builtinProperties: Set[String] = Set()
 
-  def isBuiltinEntityTypes(name: String) = builtinEntityTypes.contains(name)
+  def isBuiltinEntityTypes(name: String): Boolean = builtinEntityTypes.contains(name)
 
-  def validateProperties(e: Event) = {
+  def validateProperties(e: Event): Unit = {
     e.properties.keySet.foreach { k =>
       require(!isReservedPrefix(k) || builtinProperties.contains(k),
         s"The property ${k} is not allowed. " +

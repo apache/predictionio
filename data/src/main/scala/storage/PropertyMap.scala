@@ -37,7 +37,7 @@ class PropertyMap(
 ) extends DataMap(fields) {
 
   override
-  def toString = s"PropertyMap(${fields}, ${firstUpdated}, ${lastUpdated})"
+  def toString: String = s"PropertyMap(${fields}, ${firstUpdated}, ${lastUpdated})"
 
   override
   def hashCode: Int =
