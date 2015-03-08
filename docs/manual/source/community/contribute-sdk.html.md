@@ -23,8 +23,14 @@ following rules.
 (http://docs.prediction.io/datacollection/eventapi/) for the details 
 on the fields of the JSON data object.
 
-- **Response**: status code `201` on success with a JSON result containing
-the event ID.
+- **Response**: 
+    + **Success**: status code `201` with a JSON result containing
+    the `eventId`.
+    + **Failure**: a JSON result containing a `message` field describing
+    the error.
+        * Status code `401`: invalid access key.
+        * Status code `400`: fail to parse the JSON request e.g. missing
+        required fields like `event`, or invalid `eventTime` format.
 
 Other convenient methods are just shortcut. They could simply build 
 the event's parameters and call the core request. `Event Client` should 
@@ -35,10 +41,10 @@ support the following 7 shorthand operations:
 
         ```json
         {
-            'event': '$set',
-            'entityType': 'user',
-            'entityId': <user_ID>,
-            'properties': <properties>
+            "event": "$set",
+            "entityType": "user",
+            "entityId": <user_ID>,
+            "properties": <properties>
         }
         ```
 
@@ -46,10 +52,10 @@ support the following 7 shorthand operations:
 
         ```json
         {
-            'event': '$unset',
-            'entityType': 'user',
-            'entityId': <user_ID>,
-            'properties': <properties>
+            "event": "$unset",
+            "entityType": "user",
+            "entityId": <user_ID>,
+            "properties": <properties>
         }
         ```
 
@@ -57,9 +63,9 @@ support the following 7 shorthand operations:
 
         ```json
         {
-            'event': '$delete',
-            'entityType': 'user',
-            'entityId': <user_ID>
+            "event": "$delete",
+            "entityType": "user",
+            "entityId": <user_ID>
         }
         ```
 
@@ -68,10 +74,10 @@ support the following 7 shorthand operations:
 
         ```json
         {
-            'event': '$set',
-            'entityType': 'item',
-            'entityId': <item_ID>,
-            'properties': <properties>
+            "event": "$set",
+            "entityType": "item",
+            "entityId": <item_ID>,
+            "properties": <properties>
         }
         ```
 
@@ -79,10 +85,10 @@ support the following 7 shorthand operations:
 
         ```json
         {
-            'event': '$unset',
-            'entityType': 'item',
-            'entityId': <item_ID>,
-            'properties': <properties>
+            "event": "$unset",
+            "entityType": "item",
+            "entityId": <item_ID>,
+            "properties": <properties>
         }
         ```
 
@@ -90,9 +96,9 @@ support the following 7 shorthand operations:
 
         ```json
         {
-            'event': '$delete',
-            'entityType': 'item',
-            'entityId': <item_ID>
+            "event": "$delete",
+            "entityType": "item",
+            "entityId": <item_ID>
         }
         ```
 
@@ -101,12 +107,12 @@ support the following 7 shorthand operations:
 
         ```json
         {
-            'event': <event_name>,
-            'entityType': 'user',
-            'entityId': <user_ID>,
-            'targetEntityType': 'item',
-            'targetEntityId': <item_ID>,
-            'properties': <properties>
+            "event": <event_name>,
+            "entityType": "user",
+            "entityId": <user_ID>,
+            "targetEntityType": "item",
+            "targetEntityId": <item_ID>,
+            "properties": <properties>
         }
         ```
 
@@ -126,9 +132,51 @@ results from PredictionIO's Engines. It has only a few rules on the
 request and response type.
 
 - **URL**: `<base URL>/queries.json` (e.g. http://localhost:8000/queries.json)
-- **Request**: `POST` + JSON data
-- **Response**: status code `200` on success with JSON result which
-format is defined by the PredictionIO's Serving component.
+
+- **Request**: `POST` + JSON data. For example,
+
+    ```json
+    {
+        "user": 1,
+        "num": 4
+    }
+    ```
+
+- **Response**:
+    + **Success**: status code `200` with a JSON result object. For example,
+
+        ```json
+        {
+            "itemScores": [
+                {
+                    "item": 39,
+                    "score": "6.177719297832409"
+                },
+                {
+                    "item": 79,
+                    "score": "5.931687319083594"
+                },
+                ...
+            ]
+        }
+        ```
+    + **Failure**: status code `400` e.g. fail to parse the query.
+
+The formats of JSON objects in both the request and response must be defined 
+by the PredictionIO's Engine and are different across applications. The above
+examples are taken from the Recommendation Engine template in which the query
+and prediction results are defined as following.
+
+```scala
+case class Query(
+  user: String,
+  num: Int
+) extends Serializable
+
+case class PredictedResult(
+  itemScores: Array[ItemScore]
+) extends Serializable
+```
 
 ## Testing Your SDK
 You can set up a local host PredictionIO environment to test your SDK.
