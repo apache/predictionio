@@ -50,3 +50,14 @@ A Laravel wrapper for PredictionIO v0.8.
 - Status: It works with PredictionIO v0.8 - Under active development
 
 
+### Swift SDK for PredictionIO
+
+URL: https://github.com/minhtule/PredictionIO-Swift-SDK
+
+A convenient API written in Swift, supporting iOS 7+/ OS X 10.9+ and Xcode 6.1. 
+
+- Core Author: Minh-Tu Le
+
+- Status: It works with PredictionIO v0.8.3 and above - Under active development
+
+
