@@ -1,0 +1,28 @@
+#edit-page {
+  background-color: $edit-page-background-color;
+  position: fixed;
+  right: 25px;
+  bottom: 0;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+
+  i {
+    font-size: 20px;
+    margin-right: 7px;
+    position: relative;
+    top: 1px;
+  }
+  p {
+    margin: 0;
+  }
+  a {
+    color: $edit-page-font-color;
+    &:hover {
+      text-decoration: none;
+    }
+    display: block;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 7px 15px 7px 15px;
+  }
+}

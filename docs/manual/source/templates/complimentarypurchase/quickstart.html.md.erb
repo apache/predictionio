@@ -27,19 +27,19 @@ NOTE: You can customize to use other event.
 
 - array of condition and top n recommended items given the condition. The engine will use each combination of the query items as condition.
 
-## Install PredictionIO
+## 1. Install and Run PredictionIO
 
 <%= partial 'shared/quickstart/install' %>
 
-## Create a Sample App
-
-<%= partial 'shared/quickstart/create_app' %>
-
-## Create a new Engine from an Engine Template
+## 2. Create a new Engine from an Engine Template
 
 <%= partial 'shared/quickstart/create_engine', locals: { engine_name: 'MyComplimentaryPurchase', template_name: 'Complimentary Purchase Engine Template', template_repo: 'template-scala-parallel-complimentarypurchase' } %>
 
-## Collecting Data
+## 3. Generate an App ID and Access Key
+
+<%= partial 'shared/quickstart/create_app' %>
+
+## 4a. Collecting Data
 
 Next, let's collect training data for this Engine. By default,
  Complimentary Purchase Engine Template supports the following entities: **user**, **item**. A user buys an item.
@@ -194,15 +194,18 @@ curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
   </div>
 </div>
 
-## Import Sample Data
+## 4b. Import Sample Data
 
-For demonstration purpose, a python script is provided to import sample data. The script generates some frequent item sets (prefix with "s"), some other random items (prefix with "i") and a few popular items (prefix with "p"). Then each user (with user ID "u1" to "u10") performs 5 buy transactions (buy events are within 10 seconds in each transcation). In each transcation, the user may or may not buy some random items, always buy one of the popular items and buy 2 or more items in one of the frequent item sets.
+<%= partial 'shared/quickstart/import_sample_data' %>
+
+A Python import script `import_eventserver.py` is provided to import sample data. The script generates some frequent item sets (prefix with "s"), some other random items (prefix with "i") and a few popular items (prefix with "p"). Then each user (with user ID "u1" to "u10") performs 5 buy transactions (buy events are within 10 seconds in each transcation). In each transcation, the user may or may not buy some random items, always buy one of the popular items and buy 2 or more items in one of the frequent item sets.
 
 NOTE: You need to install Python SDK to run the import script. Please follow [Python SDK README](https://github.com/PredictionIO/PredictionIO-Python-SDK) to install.
 
 First, make sure you are under the `MyComplimentaryPurchase` directory. Execute the following to import the data (Replace the value of access_key parameter with your **Access Key**):
 
 ```
+$ cd MyComplimentaryPurchase
 $ python data/import_eventserver.py --access_key 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
 ```
 
@@ -221,13 +224,13 @@ User u10 buys item s2i1 at 2014-10-19 15:43:15.618000-07:53
 WARNING: If you see error **TypeError: __init__() got an unexpected keyword argument 'access_key'**,
 please update the Python SDK to the latest version.
 
-## Deploy the Engine as a Service
+## 5. Deploy the Engine as a Service
 
 <%= partial 'shared/quickstart/deploy_enginejson', locals: { engine_name: 'MyComplimentaryPurchase' } %>
 
 <%= partial 'shared/quickstart/deploy', locals: { engine_name: 'MyComplimentaryPurchase' } %>
 
-## Using the Engine
+## 6. Use the Engine
 
 Now, You can query the engine. For example, return top 3 items which are frequently bought with item "s2i1". You can sending this JSON '{ "items" : ["s2i1"], "num" : 3 }' to the deployed engine. The engine will return a JSON with the recommeded items.
 
@@ -312,7 +315,7 @@ http://localhost:8000/queries.json
   </div>
 </div>
 
-The followgin is the JSON output example. The `cond` field is one of the combination of query items used as condition to determine other frequently bought items with this condition, followed by top items. If there are multiple conditions with recommended items found, the `rules` array will contain mutliple elements, and each correspond to the condition.
+The following is sample JSON response. The `cond` field is one of the combination of query items used as condition to determine other frequently bought items with this condition, followed by top items. If there are multiple conditions with recommended items found, the `rules` array will contain mutliple elements, and each correspond to the condition.
 
 ```
 {

@@ -23,7 +23,7 @@ production use based on this template.
 
 <%= partial 'shared/quickstart/create_app' %>
 
-## 4. Collecting Data
+## 4a. Collecting Data
 
 Next, let's collect some training data. By default,
 the Recommendation Engine Template supports 2 types of events: **rate** and
@@ -181,10 +181,9 @@ curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
   </div>
 </div>
 
-### Import Sample Data
+## 4b. Import Sample Data
 
-Although you can integrate your app with PredictionIO and collect training data in real-time,
-we are going to import a sample dataset with a Python script for demonstration purpose.
+<%= partial 'shared/quickstart/import_sample_data' %>
 
 Execute the following to get the sample movie dataset from MLlib repo:
 
@@ -203,6 +202,7 @@ Replace the value of access_key parameter by your
 **Access Key** and run:
 
 ```
+$ cd MyRecomendation
 $ python data/import_eventserver.py --access_key 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
 ```
 
@@ -289,10 +289,22 @@ JsonObject response = engineClient.sendQuery(ImmutableMap.<String, Object>of(
 ```
 $ curl -H "Content-Type: application/json" -d '{ "user": "1", "num": 4 }' http://localhost:8000/queries.json
 
-{"itemScores":[{"item":"22","score":4.072304374729956},{"item":"62","score":4.058482414005789},{"item":"75","score":4.046063009943821},{"item":"68","score":3.8153661512945325}]}
 ```
   </div>
 </div>
+
+The following is sample JSON response:
+
+```
+{
+  "itemScores":[
+    {"item":"22","score":4.072304374729956},
+    {"item":"62","score":4.058482414005789},
+    {"item":"75","score":4.046063009943821},
+    {"item":"68","score":3.8153661512945325}
+  ]
+}
+```
 
 Congratulations, *MyRecommendation* is now running!
 

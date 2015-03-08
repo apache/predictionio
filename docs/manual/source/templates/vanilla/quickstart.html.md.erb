@@ -8,33 +8,33 @@ The purpose of the Vanilla template is for developing new engine when you find o
 
 By default, it simply reads the "EVENT" involving "ENTITY_TYPE" and "TARGET_ENTITY_TYPE". The Algorithm counts the number of events and multiple it by the algorithm parameter and store it as Model. During serving, the Query is prefixed with the Model and return as PredictedsResult.
 
-## Install PredictionIO
+## 1. Install and Run PredictionIO
 
 <%= partial 'shared/quickstart/install' %>
 
-## Create a Sample App
-
-<%= partial 'shared/quickstart/create_app' %>
-
-## Create a new Engine from an Engine Template
+## 2. Create a new Engine from an Engine Template
 
 <%= partial 'shared/quickstart/create_engine', locals: { engine_name: 'MyNewEngine', template_name: 'Vanilla Engine Template', template_repo: 'template-scala-parallel-vanilla' } %>
 
-## Collecting Data
+## 3. Generate an App ID and Access Key
+
+<%= partial 'shared/quickstart/create_app' %>
+
+## 4a. Collecting Data
 
 As long as the appId is valid, this Vanilla Engine template does not require event data in your app in order to work.
 
-## Import Sample Data
+## 4b. Import Sample Data
 
 As long as the appId is valid, this Vanilla Engine template does not require event data in your app in order to work.
 
-## Deploy the Engine as a Service
+## 5. Deploy the Engine as a Service
 
 <%= partial 'shared/quickstart/deploy_enginejson', locals: { engine_name: 'MyNewEngine' } %>
 
 <%= partial 'shared/quickstart/deploy', locals: { engine_name: 'MyNewEngine' } %>
 
-## Using the Engine
+## 6. Use the Engine
 
 Now, You can try to retrieve predicted results. The engine accepts JSON query with the field 'q': `{ "q" : "foo" }`. A prefix is added to the query data and return as PredictedResult.
 
@@ -92,10 +92,15 @@ JsonObject response = engineClient.sendQuery(ImmutableMap.<String, Object>of(
 ```
 $ curl -H "Content-Type: application/json" -d '{ "q": "foo" }' http://localhost:8000/queries.json
 
-{"p":"0-foo"}
 ```
   </div>
 </div>
+
+The following is sample JSON response:
+
+```
+{"p":"0-foo"}
+```
 
 *MyNewEngine* is now running. You can start modifying it to build your new engine!
 

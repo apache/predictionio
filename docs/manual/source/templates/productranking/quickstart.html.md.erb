@@ -27,19 +27,19 @@ By default, this template takes the following data from Event Server as Training
 
 INFO: This template can easily be customized to consider more user events such as *buy*, *rate* and *like*.
 
-## Install PredictionIO
+## 1. Install and Run PredictionIO
 
 <%= partial 'shared/quickstart/install' %>
 
-## Create a Sample App
-
-<%= partial 'shared/quickstart/create_app' %>
-
-## Create a new Engine from an Engine Template
+## 2. Create a new Engine from an Engine Template
 
 <%= partial 'shared/quickstart/create_engine', locals: { engine_name: 'MyProductRanking', template_name: 'Product Ranking Engine Template', template_repo: 'template-scala-parallel-productranking' } %>
 
-## Collecting Data
+## 3. Generate an App ID and Access Key
+
+<%= partial 'shared/quickstart/create_app' %>
+
+## 4a. Collecting Data
 
 Next, let's collect some training data for the app of this Engine. By default,
 the Product Ranking Engine Template supports 2 types of entities: **user** and
@@ -233,15 +233,18 @@ curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
 
 The properties of the `user` and `item` can be set, unset, or delete by special events **$set**, **$unset** and **$delete**. Please refer to [Event API](/datacollection/eventapi/#note-about-properties) for more details of using these events.
 
-## Import Sample Data
+## 4b. Import Sample Data
 
-For demonstration purpose, a python script is provided to import sample data. It imports 10 users (with user ID "u1" to "u10") and 50 items (with item ID "i1" to "i50"). Each user then randomly view 10 items.
+<%= partial 'shared/quickstart/import_sample_data' %>
+
+A Python import script `import_eventserver.py` is provided to import sample data. It imports 10 users (with user ID "u1" to "u10") and 50 items (with item ID "i1" to "i50"). Each user then randomly view 10 items.
 
 NOTE: You need to install Python SDK to run the import script. Please follow [Python SDK README](https://github.com/PredictionIO/PredictionIO-Python-SDK) to install.
 
 First, make sure you are under the `MyProductRanking` directory. Execute the following to import the data (Replace the value of access_key parameter with your **Access Key**):
 
 ```
+$ cd MyProductRanking
 $ python data/import_eventserver.py --access_key 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
 ```
 
@@ -261,13 +264,13 @@ User u10 views item i7
 WARNING: If you see error **TypeError: __init__() got an unexpected keyword argument 'access_key'**,
 please update the Python SDK to the latest version.
 
-## Deploy the Engine as a Service
+## 5. Deploy the Engine as a Service
 
 <%= partial 'shared/quickstart/deploy_enginejson', locals: { engine_name: 'MyProductRanking' } %>
 
 <%= partial 'shared/quickstart/deploy', locals: { engine_name: 'MyProductRanking' } %>
 
-## Using the Engine
+## 6. Use the Engine
 
 Now, You can retrieve predicted results. To rank items with IDs "i1", "i3", "i10", "i2", "i5", "i31", "i9" for user "u2". You send this JSON `{ "user": "u2", "items": ["i1", "i3", "i10", "i2", "i5", "i31", "i9"] }` to the deployed engine and it will return a JSON of the ranked items. Simply send a query by making a HTTP request or through the `EngineClient` of an SDK:
 
@@ -338,10 +341,26 @@ $ curl -H "Content-Type: application/json" \
 -d '{ "user": "u2", "items": ["i1", "i3", "i10", "i2", "i5", "i31", "i9"]}' \
 http://localhost:8000/queries.json
 
-{"itemScores":[{"item":"i5","score":1.0038217983580324},{"item":"i3","score":0.00598658734782459},{"item":"i2","score":0.004048103059012265},{"item":"i9","score":-1.966935819737517E-4},{"item":"i1","score":-0.0016841195307744916},{"item":"i31","score":-0.0019770986240634503},{"item":"i10","score":-0.0031498317618844918}],"isOriginal":false}
 ```
   </div>
 </div>
+
+The following is sample JSON response:
+
+```
+{
+  "itemScores":[
+    {"item":"i5","score":1.0038217983580324},
+    {"item":"i3","score":0.00598658734782459},
+    {"item":"i2","score":0.004048103059012265},
+    {"item":"i9","score":-1.966935819737517E-4},
+    {"item":"i1","score":-0.0016841195307744916},
+    {"item":"i31","score":-0.0019770986240634503},
+    {"item":"i10","score":-0.0031498317618844918}
+  ],
+  "isOriginal":false
+}
+```
 
 *MyProductRanking* is now running.
 
