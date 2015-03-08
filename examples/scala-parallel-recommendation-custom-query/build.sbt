@@ -2,12 +2,12 @@ import AssemblyKeys._
 
 assemblySettings
 
-name := "template-scala-parallel-recommendation"
+name := "template-scala-parallel-recommendation-custom-query"
 
 organization := "io.prediction"
 
 libraryDependencies ++= Seq(
-  "io.prediction"    % "client"         % "0.8.3" % "provided" withSources() withJavadoc(),
-  "io.prediction"    %% "core"          % "0.8.6" % "provided",
-  "org.apache.spark" %% "spark-core"    % "1.2.0" % "provided",
-  "org.apache.spark" %% "spark-mllib"   % "1.2.0" % "provided")
+  "io.prediction"    % "client"         % "0.8.3" withSources() withJavadoc(),
+  "io.prediction"    %% "core"          % "0.8.6",
+  "org.apache.spark" %% "spark-core"    % "1.2.0",
+  "org.apache.spark" %% "spark-mllib"   % "1.2.0")
