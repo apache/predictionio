@@ -26,6 +26,7 @@ import io.prediction.controller.Params
 import io.prediction.controller.Utils
 import io.prediction.controller.NiceRendering
 import io.prediction.controller.SanityCheck
+/*
 import io.prediction.controller.java.LJavaDataSource
 import io.prediction.controller.java.LJavaPreparator
 import io.prediction.controller.java.LJavaAlgorithm
@@ -34,6 +35,7 @@ import io.prediction.controller.java.JavaEvaluator
 import io.prediction.controller.java.JavaUtils
 import io.prediction.controller.java.JavaEngine
 import io.prediction.controller.java.PJavaAlgorithm
+*/
 import io.prediction.controller.WorkflowParams
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseDataSource
@@ -42,7 +44,7 @@ import io.prediction.core.BasePreparator
 import io.prediction.core.BaseServing
 import io.prediction.core.BaseEngine
 import io.prediction.core.Doer
-//import io.prediction.core.LModelAlgorithm
+// import io.prediction.core.LModelAlgorithm
 import io.prediction.data.storage.EngineInstance
 import io.prediction.data.storage.EngineInstances
 import io.prediction.data.storage.Model
@@ -72,6 +74,7 @@ import java.io.ObjectInputStream
 import java.lang.{ Iterable => JIterable }
 import java.util.{ HashMap => JHashMap, Map => JMap }
 
+/*
 // FIXME: move to better location.
 object WorkflowContext extends Logging {
   def apply(
@@ -93,210 +96,7 @@ object WorkflowContext extends Logging {
     new SparkContext(conf)
   }
 }
-
-object CoreWorkflow {
-  @transient lazy val logger = Logger[this.type]
-  @transient val engineInstances = Storage.getMetaDataEngineInstances
-
-  def runTrain[EI, Q, P, A](
-      engine: BaseEngine[EI, Q, P, A],
-      engineParams: EngineParams,
-      engineInstance: EngineInstance,
-      env: Map[String, String] = WorkflowUtils.pioEnvVars,
-      params: WorkflowParams = WorkflowParams()) {
-    logger.debug("Starting SparkContext")
-    val mode = "training"
-    WorkflowUtils.checkUpgrade(mode, engineInstance.engineFactory)
-
-    val sc = WorkflowContext(
-      params.batch,
-      env,
-      params.sparkEnv,
-      mode.capitalize)
-
-    try {
-
-      val models: Seq[Any] = engine.train(
-        sc = sc,
-        engineParams = engineParams,
-        engineInstanceId = engineInstance.id,
-        params = params
-      )
-
-      val instanceId = Storage.getMetaDataEngineInstances
-
-      logger.info("Inserting persistent model")
-      Storage.getModelDataModels.insert(Model(
-        id = engineInstance.id,
-        models = KryoInjection(models)))
-
-      logger.info("Updating engine instance")
-      val engineInstances = Storage.getMetaDataEngineInstances
-      engineInstances.update(engineInstance.copy(
-        status = "COMPLETED",
-        endTime = DateTime.now
-        ))
-
-      logger.info("Training completed successfully.")
-    } catch {
-      case e @(
-          _: StopAfterReadInterruption |
-          _: StopAfterPrepareInterruption) => {
-        logger.info(s"Training interrupted by $e.")
-      }
-    } finally {
-      logger.debug("Stopping SparkContext")
-      sc.stop()
-    }
-  }
-
-  def runEval[EI, Q, P, A, ER <: AnyRef](
-      engine: BaseEngine[EI, Q, P, A],
-      engineParams: EngineParams,
-      engineInstance: EngineInstance,
-      evaluator: BaseEvaluator[EI, Q, P, A, ER],
-      evaluatorParams: Params,
-      env: Map[String, String] = WorkflowUtils.pioEnvVars,
-      params: WorkflowParams = WorkflowParams()) {
-
-    logger.info("CoreWorkflow.runEval")
-
-    val eiId = engineInstances.insert(engineInstance)
-    val evalEngineInstance = engineInstance.copy(id = eiId)
-
-    logger.info("Start spark context")
-
-    val mode = "evaluation"
-
-    val sc = WorkflowContext(
-      params.batch,
-      env,
-      params.sparkEnv,
-      mode.capitalize)
-
-    WorkflowUtils.checkUpgrade(mode, engineInstance.engineFactory)
-
-    val evalDataSet: Seq[(EI, RDD[(Q, P, A)])] = engine.eval(sc, engineParams)
-
-    val evalResult: ER = evaluator.evaluateBase(sc, evalDataSet)
-
-    logger.info(s"EvalResult: $evalResult")
-
-    val (evalResultHTML, evalResultJSON) = evalResult match {
-      case niceRenderingResult: NiceRendering => {
-        (niceRenderingResult.toHTML(), niceRenderingResult.toJSON())
-      }
-      case e: Any => {
-        logger.warn(s"${e.getClass.getName} is not a NiceRendering instance.")
-          ("", "")
-      }
-    }
-
-    val evaluatedEI = evalEngineInstance.copy(
-      status = "EVALCOMPLETED",
-      endTime = DateTime.now,
-      evaluatorResults = evalResult.toString,
-      evaluatorResultsHTML = evalResultHTML,
-      evaluatorResultsJSON = evalResultJSON
-    )
-
-    logger.info(s"Insert eval result")
-    engineInstances.update(evaluatedEI)
-
-
-    logger.info("Stop spark context")
-    sc.stop()
-
-    logger.info("CoreWorkflow.runEval completed.")
-  }
-
-  // TODO(yipjustin). Consider moving it to CreateWorkflow, since it is the only
-  // place calling this function. Better make it use-case specific.
-  // When engine and evaluator are instantiated direcly from CLI, the compiler has
-  // no way to know their actual type parameter during compile time. To rememdy
-  // this restriction, we have to let engine and evaluator to be casted to their
-  // own type parameters, and force cast their type during runtime.
-  // In particular, evaluator needs to be instantiated to keep scala compiler
-  // happy.
-  def runEvalTypeless[EI, Q, P, A, EEI, EQ, EP, EA, EER <: AnyRef](
-      engine: BaseEngine[EI, Q, P, A],
-      engineParams: EngineParams,
-      engineInstance: EngineInstance,
-      evaluator:  BaseEvaluator[EEI, EQ, EP, EA, EER],
-      evaluatorParams: Params,
-      env: Map[String, String] = WorkflowUtils.pioEnvVars,
-      params: WorkflowParams = WorkflowParams()) {
-
-    //val evaluator = Doer(evaluatorClass, evaluatorParams)
-    val typedEvaluator = evaluator.asInstanceOf[BaseEvaluator[EI, Q, P, A, EER]]
-
-    runEval[EI, Q, P, A, EER](
-      engine,
-      engineParams,
-      engineInstance,
-      typedEvaluator,
-      evaluatorParams,
-      env,
-      params)
-  }
-
-  def runEvaluation[EI, Q, P, A, R](
-      engine: BaseEngine[EI, Q, P, A],
-      engineParamsList: Seq[EngineParams],
-      engineInstance: EngineInstance,
-      metric: Metric[EI, Q, P, A, R],
-      env: Map[String, String] = WorkflowUtils.pioEnvVars,
-      params: WorkflowParams = WorkflowParams()) {
-    logger.info("CoreWorkflow.runEvaluation")
-
-    logger.info("Start spark context")
-
-    val mode = "evaluation"
-    val sc = WorkflowContext(
-      params.batch,
-      env,
-      params.sparkEnv,
-      mode.capitalize)
-
-    WorkflowUtils.checkUpgrade(mode, engineInstance.engineFactory)
-
-    val (bestEngineParams, bestScore) = EvaluationWorkflow.runEvaluation(
-      sc,
-      engine,
-      engineParamsList,
-      metric,
-      params)
-
-    implicit lazy val formats = Utils.json4sDefaultFormats +
-      new NameParamsSerializer
-
-    // TODO: Save best instance to EngineInstance
-    val evaledEI = engineInstance.copy(
-      status = "EVALCOMPLETED",
-      endTime = DateTime.now,
-      evaluatorResults = bestScore.toString,
-      dataSourceParams = write(bestEngineParams.dataSourceParams),
-      preparatorParams = write(bestEngineParams.preparatorParams),
-      algorithmsParams = write(bestEngineParams.algorithmParamsList),
-      servingParams = write(bestEngineParams.servingParams)
-    )
-
-    logger.info(s"Insert evaluation result")
-    engineInstances.update(evaledEI)
-
-
-    logger.info("Stop spark context")
-    sc.stop()
-
-    val bestEpJson = writePretty(bestEngineParams)
-
-    logger.info(s"Optimal score: $bestScore")
-    logger.info(s"Optimal engine params: $bestEpJson")
-
-    logger.info("CoreWorkflow.runEvaluation completed.")
-  }
-}
-
+*/
 
 /*
 Ideally, Java could also act as other scala base class. But the tricky part
@@ -309,6 +109,7 @@ base class. Hence, we have to sacrifices here, that all Doers calling
 JavaCoreWorkflow needs to be Java sub-doers.
 */
 
+/*
 object JavaCoreWorkflow {
   def noneIfNull[T](t: T): Option[T] = (if (t == null) None else Some(t))
 
@@ -336,3 +137,4 @@ object JavaCoreWorkflow {
     throw new NotImplementedError("JavaCoreWorkflow is deprecated as of 0.8.7.")
   }
 }
+*/

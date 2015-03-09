@@ -16,7 +16,7 @@
 package io.prediction.controller
 
 import io.prediction.core.BaseAlgorithm
-//import io.prediction.core.LModelAlgorithm
+// import io.prediction.core.LModelAlgorithm
 import io.prediction.core.WithBaseQuerySerializer
 import io.prediction.workflow.PersistentModelManifest
 
@@ -100,8 +100,8 @@ abstract class PAlgorithm[PD, M, Q : Manifest, P]
     }
   }
   
-  def isJava = false
-  //def isParallel = true
+  def isJava: Boolean = false
+  // def isParallel = true
 }
 
 /** Base class of a local algorithm.
@@ -180,8 +180,8 @@ abstract class LAlgorithm[PD, M : ClassTag, Q : Manifest, P]
     }
   }
   
-  def isJava = false
-  //def isParallel = true
+  def isJava: Boolean = false
+  // def isParallel = true
 }
 
 /** Base class of a parallel-to-local algorithm.
@@ -251,8 +251,8 @@ abstract class P2LAlgorithm[PD, M : ClassTag, Q : Manifest, P]
   }
   
   
-  def isJava = false
-  //def isParallel = true
+  def isJava: Boolean = false
+  // def isParallel = true
 }
 
 /** Implement in this trait to enable custom json4s serializer.

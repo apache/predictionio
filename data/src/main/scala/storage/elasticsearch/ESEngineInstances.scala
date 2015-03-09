@@ -98,13 +98,14 @@ class ESEngineInstances(client: Client, index: String)
     }
   }
 
-  def get(id: String) = {
+  def get(id: String): Option[EngineInstance] = {
     try {
       val response = client.prepareGet(index, estype, id).get
-      if (response.isExists)
+      if (response.isExists) {
         Some(read[EngineInstance](response.getSourceAsString))
-      else
+      } else {
         None
+      }
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)
@@ -112,7 +113,7 @@ class ESEngineInstances(client: Client, index: String)
     }
   }
 
-  def getAll() = {
+  def getAll(): Seq[EngineInstance] = {
     try {
       val builder = client.prepareSearch(index).setTypes(estype)
       ESUtils.getAll[EngineInstance](client, builder)
@@ -126,7 +127,7 @@ class ESEngineInstances(client: Client, index: String)
   def getCompleted(
       engineId: String,
       engineVersion: String,
-      engineVariant: String) = {
+      engineVariant: String): Seq[EngineInstance] = {
     try {
       val builder = client.prepareSearch(index).setTypes(estype).setPostFilter(
         andFilter(
@@ -146,13 +147,13 @@ class ESEngineInstances(client: Client, index: String)
   def getLatestCompleted(
       engineId: String,
       engineVersion: String,
-      engineVariant: String) =
+      engineVariant: String): Option[EngineInstance] =
     getCompleted(
       engineId,
       engineVersion,
       engineVariant).headOption
 
-  def getEvalCompleted() = {
+  def getEvalCompleted(): Seq[EngineInstance] = {
     try {
       val builder = client.prepareSearch(index).setTypes(estype).setPostFilter(
         termFilter("status", "EVALCOMPLETED")).
@@ -173,7 +174,7 @@ class ESEngineInstances(client: Client, index: String)
     }
   }
 
-  def delete(id: String) = {
+  def delete(id: String): Unit = {
     try {
       val response = client.prepareDelete(index, estype, id).get
     } catch {

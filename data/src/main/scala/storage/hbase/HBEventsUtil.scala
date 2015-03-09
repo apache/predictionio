@@ -48,7 +48,7 @@ object HBEventsUtil {
 
   implicit val formats = DefaultFormats
 
-  def tableName(namespace: String, appId: Int) = s"${namespace}:events_${appId}"
+  def tableName(namespace: String, appId: Int): String = s"${namespace}:events_${appId}"
 
   // column names for "e" column family
   val colNames: Map[String, Array[Byte]] = Map(
@@ -154,11 +154,11 @@ object HBEventsUtil {
     // use eventTime as HBase's cell timestamp
     val put = new Put(rowKey.toBytes, event.eventTime.getMillis)
 
-    def addStringToE(col: Array[Byte], v: String) = {
+    def addStringToE(col: Array[Byte], v: String): Put = {
       put.add(eBytes, col, Bytes.toBytes(v))
     }
 
-    def addLongToE(col: Array[Byte], v: Long) = {
+    def addLongToE(col: Array[Byte], v: Long): Put = {
       put.add(eBytes, col, Bytes.toBytes(v))
     }
 
@@ -203,7 +203,7 @@ object HBEventsUtil {
     val rowKey = RowKey(result.getRow())
 
     val eBytes = Bytes.toBytes("e")
-    //val e = result.getFamilyMap(eBytes)
+    // val e = result.getFamilyMap(eBytes)
 
     def getStringCol(col: String): String = {
       val r = result.getValue(eBytes, colNames(col))
@@ -227,10 +227,11 @@ object HBEventsUtil {
 
     def getOptStringCol(col: String): Option[String] = {
       val r = result.getValue(eBytes, colNames(col))
-      if (r == null)
+      if (r == null) {
         None
-      else
+      } else {
         Some(Bytes.toString(r))
+      }
     }
 
     def getTimestamp(col: String): Long = {
@@ -323,14 +324,14 @@ object HBEventsUtil {
 
     val eBytes = Bytes.toBytes("e")
 
-    def createBinaryFilter(col: String, value: Array[Byte]) = {
+    def createBinaryFilter(col: String, value: Array[Byte]): SingleColumnValueFilter = {
       val comp = new BinaryComparator(value)
       new SingleColumnValueFilter(
         eBytes, colNames(col), CompareOp.EQUAL, comp)
     }
 
     // skip the row if the column exists
-    def createSkipRowIfColumnExistFilter(col: String) = {
+    def createSkipRowIfColumnExistFilter(col: String): SkipFilter = {
       val comp = new BinaryComparator(colNames(col))
       val q = new QualifierFilter(CompareOp.NOT_EQUAL, comp)
       // filters an entire row if any of the Cell checks do not pass
@@ -360,8 +361,9 @@ object HBEventsUtil {
           eBytes, colNames("event"), CompareOp.EQUAL, compEvent)
         eventFilters.addFilter(filterEvent)
       }
-      if (!eventFilters.getFilters().isEmpty)
+      if (!eventFilters.getFilters().isEmpty) {
         filters.addFilter(eventFilters)
+      }
     }
 
     targetEntityType.foreach { tetOpt =>
@@ -394,8 +396,9 @@ object HBEventsUtil {
       }
     }
 
-    if (!filters.getFilters().isEmpty)
+    if (!filters.getFilters().isEmpty) {
       scan.setFilter(filters)
+    }
 
     scan
   }

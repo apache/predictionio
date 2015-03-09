@@ -55,9 +55,9 @@ class BiMap[K, V] private[prediction] (
 
   def size: Int = m.size
 
-  def take(n: Int) = BiMap(m.take(n))
+  def take(n: Int): BiMap[K, V] = BiMap(m.take(n))
 
-  override def toString = m.toString
+  override def toString: String = m.toString
 }
 
 object BiMap {
@@ -136,8 +136,8 @@ object BiMap {
     * @return a String to Double BiMap
     */
   def stringDouble(keys: Set[String]): BiMap[String, Double] = {
-    //val hm = HashMap(keys.toSeq.zipWithIndex.map(_.toDouble) : _*)
-    //new BiMap(hm)
+    // val hm = HashMap(keys.toSeq.zipWithIndex.map(_.toDouble) : _*)
+    // new BiMap(hm)
     stringDoubleImpl(keys.toSeq)
   }
 
@@ -148,8 +148,8 @@ object BiMap {
     * @return a String to Double BiMap
     */
   def stringDouble(keys: Array[String]): BiMap[String, Double] = {
-    //val hm = HashMap(keys.zipWithIndex.mapValues(_.toDouble) : _*)
-    //new BiMap(hm)
+    // val hm = HashMap(keys.zipWithIndex.mapValues(_.toDouble) : _*)
+    // new BiMap(hm)
     stringDoubleImpl(keys.toSeq)
   }
 

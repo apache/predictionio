@@ -28,7 +28,7 @@ import java.io.IOException
 class HDFSModels(fs: FileSystem, prefix: String)
   extends Models with Logging {
 
-  def insert(i: Model) = {
+  def insert(i: Model): Unit = {
     try {
       val fsdos = fs.create(new Path(s"${prefix}${i.id}"))
       fsdos.write(i.models)
@@ -38,7 +38,7 @@ class HDFSModels(fs: FileSystem, prefix: String)
     }
   }
 
-  def get(id: String) = {
+  def get(id: String): Option[Model] = {
     try {
       val p = new Path(s"${prefix}${id}")
       Some(Model(
@@ -51,9 +51,10 @@ class HDFSModels(fs: FileSystem, prefix: String)
     }
   }
 
-  def delete(id: String) = {
+  def delete(id: String): Unit = {
     val p = new Path(s"${prefix}${id}")
-    if (!fs.delete(p, false))
+    if (!fs.delete(p, false)) {
       error(s"Unable to delete ${fs.makeQualified(p).toString}!")
+    }
   }
 }

@@ -15,7 +15,6 @@ import _root_.java.lang.Thread
 import io.prediction.controller._
 import io.prediction.core._
 import io.prediction.workflow.SharedSparkContext
-//import io.prediction.workflow.WorkflowParams
 import grizzled.slf4j.{ Logger, Logging }
 
 
@@ -39,7 +38,10 @@ object TestEvaluator {
       Seq[Any]()
     }
 
-    def eval(sc: SparkContext, engineParams: EngineParams)
+    def eval(
+      sc: SparkContext, 
+      engineParams: EngineParams, 
+      params: WorkflowParams)
     : Seq[(EvalInfo, RDD[(Query, Prediction, Actual)])] = {
       (0 until en).map { ex => {
         val qpas = (0 until qn).map { qx => {
@@ -52,6 +54,7 @@ object TestEvaluator {
   
   }
 
+  /*
   class Evaluator0 extends Evaluator[EvalInfo, Query, Prediction, Actual,
       (Query, Prediction, Actual), 
       (EvalInfo, Seq[(Query, Prediction, Actual)]),
@@ -70,10 +73,11 @@ object TestEvaluator {
       input: Seq[(EvalInfo, (EvalInfo, Seq[(Query, Prediction, Actual)]))]) 
     = input
   }
+  */
+
 }
 
-
-
+/*
 class EvaluatorSuite
 extends FunSuite with Inside with SharedSparkContext {
   import io.prediction.controller.TestEvaluator._
@@ -101,3 +105,4 @@ extends FunSuite with Inside with SharedSparkContext {
     }}
   }
 }
+*/

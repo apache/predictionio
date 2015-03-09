@@ -79,10 +79,11 @@ object CreateWorkflow extends Logging {
       fs: FileSystem = hdfs): String = {
     try {
       val p =
-        if (basePath == "")
+        if (basePath == "") {
           new Path(filePath)
-        else
+        } else {
           new Path(basePath + Path.SEPARATOR + filePath)
+        }
       new String(ByteStreams.toByteArray(fs.open(p)).map(_.toChar))
     } catch {
       case e: java.io.IOException =>

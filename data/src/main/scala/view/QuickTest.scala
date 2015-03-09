@@ -31,7 +31,7 @@ import scala.language.implicitConversions
 class TestHBLEvents() {
   @transient lazy val eventsDb = Storage.getLEvents()
 
-  def run() = {
+  def run(): Unit = {
     val r = eventsDb
       .getByAppIdAndTimeAndEntity(
         1, None, None,
@@ -45,7 +45,7 @@ class TestSource(val appId: Int) {
   @transient lazy val batchView = new LBatchView(appId,
     None, None)
 
-  def run() = {
+  def run(): Unit = {
     println(batchView.events)
   }
 }
@@ -56,23 +56,23 @@ object QuickTest {
     val t = new TestHBLEvents()
     t.run()
 
-    //val ts = new TestSource(args(0).toInt)
-    //ts.run()
+    // val ts = new TestSource(args(0).toInt)
+    // ts.run()
   }
 }
 
 object TestEventTime {
   @transient lazy val batchView = new LBatchView(9, None, None)
 
-  //implicit def back2list(es: EventSeq) = es.events
+  // implicit def back2list(es: EventSeq) = es.events
 
   def main(args: Array[String]) {
     val e = batchView.events.filter(
       eventOpt = Some("rate"),
       startTimeOpt = Some(new DateTime(1998, 1, 1, 0, 0))
-      //untilTimeOpt = Some(new DateTime(1997, 1, 1, 0, 0))
+      // untilTimeOpt = Some(new DateTime(1997, 1, 1, 0, 0))
     )
-      //untilTimeOpt = Some(new DateTime(2000, 1, 1, 0, 0)))
+      // untilTimeOpt = Some(new DateTime(2000, 1, 1, 0, 0)))
 
     e.foreach { println }
     println()
@@ -84,7 +84,7 @@ object TestEventTime {
     println()
     println()
 
-    //val l: Seq[Event] = e
+    // val l: Seq[Event] = e
     val l = e.map { _.entityId }
     l.foreach { println }
   }

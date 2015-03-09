@@ -35,7 +35,7 @@ class ESEngineManifests(client: Client, index: String) extends EngineManifests
   private val estype = "engine_manifests"
   private def esid(id: String, version: String) = s"${id} ${version}"
 
-  def insert(engineManifest: EngineManifest) = {
+  def insert(engineManifest: EngineManifest): Unit = {
     val json = write(engineManifest)
     val response = client.prepareIndex(
       index,
@@ -44,14 +44,15 @@ class ESEngineManifests(client: Client, index: String) extends EngineManifests
       setSource(json).execute().actionGet()
   }
 
-  def get(id: String, version: String) = {
+  def get(id: String, version: String): Option[EngineManifest] = {
     try {
       val response = client.prepareGet(index, estype, esid(id, version)).
         execute().actionGet()
-      if (response.isExists)
+      if (response.isExists) {
         Some(read[EngineManifest](response.getSourceAsString))
-      else
+      } else {
         None
+      }
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)
@@ -59,7 +60,7 @@ class ESEngineManifests(client: Client, index: String) extends EngineManifests
     }
   }
 
-  def getAll() = {
+  def getAll(): Seq[EngineManifest] = {
     try {
       var builder = client.prepareSearch()
       ESUtils.getAll[EngineManifest](client, builder)
@@ -70,10 +71,10 @@ class ESEngineManifests(client: Client, index: String) extends EngineManifests
     }
   }
 
-  def update(engineManifest: EngineManifest, upsert: Boolean = false) =
+  def update(engineManifest: EngineManifest, upsert: Boolean = false): Unit =
     insert(engineManifest)
 
-  def delete(id: String, version: String) = {
+  def delete(id: String, version: String): Unit = {
     try {
       val response = client.prepareDelete(index, estype, esid(id, version)).
         execute().actionGet()

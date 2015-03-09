@@ -158,7 +158,7 @@ case class CategoricalNaiveBayesModel(
  * @param features Features of this data point
  */
 case class LabeledPoint(label: String, features: Array[String]) {
-  override def toString = {
+  override def toString: String = {
     val featuresString = features.mkString("[", ",", "]")
 
     s"($label, $featuresString)"

@@ -34,7 +34,9 @@ object MongoUtils {
     builder.result()
   }
 
-  def dbObjToMapOfString(dbObj: DBObject): Map[String, String] = dbObjToMap(dbObj) mapValues { _.asInstanceOf[String] }
+  def dbObjToMapOfString(dbObj: DBObject): Map[String, String] = dbObjToMap(dbObj) mapValues {
+    _.asInstanceOf[String]
+  }
   def dbObjToMapOfDouble(dbObj: DBObject): Map[String, Double] =
     dbObjToMap(dbObj) mapValues { _.asInstanceOf[Double] }
 
@@ -43,18 +45,20 @@ object MongoUtils {
       (l(0).asInstanceOf[T1], l(1).asInstanceOf[T2])
     })
 
-  def basicDBListToListOfTuple8[T1, T2, T3, T4, T5, T6, T7, T8](dbList: BasicDBList): Seq[(T1, T2, T3, T4, T5, T6, T7, T8)] =
-    dbList.map(_.asInstanceOf[BasicDBList]).map(l => {
-      (
-        l(0).asInstanceOf[T1],
-        l(1).asInstanceOf[T2],
-        l(2).asInstanceOf[T3],
-        l(3).asInstanceOf[T4],
-        l(4).asInstanceOf[T5],
-        l(5).asInstanceOf[T6],
-        l(6).asInstanceOf[T7],
-        l(7).asInstanceOf[T8])
-    })
+  def basicDBListToListOfTuple8[T1, T2, T3, T4, T5, T6, T7, T8](
+    dbList: BasicDBList): Seq[(T1, T2, T3, T4, T5, T6, T7, T8)] = {
+      dbList.map(_.asInstanceOf[BasicDBList]).map(l => {
+        (
+          l(0).asInstanceOf[T1],
+          l(1).asInstanceOf[T2],
+          l(2).asInstanceOf[T3],
+          l(3).asInstanceOf[T4],
+          l(4).asInstanceOf[T5],
+          l(5).asInstanceOf[T6],
+          l(6).asInstanceOf[T7],
+          l(7).asInstanceOf[T8])
+      })
+  }
 
   /** Converts MongoDBList to List of String. */
   def mongoDbListToListOfString(dbList: MongoDBList): List[String] = {
@@ -86,18 +90,23 @@ object MongoUtils {
    *  from attributes = Map("gender" -> "female", "member" -> "gold")
    *  to MongoDBObject("ca_gender" : "female", "ca_member" : "gold" )
    */
-  def attributesToMongoDBObject(attributes: Map[String, Any]) = {
+  def attributesToMongoDBObject(attributes: Map[String, Any]): MongoDBObject = {
     MongoDBObject((attributes map { case (k, v) => ("ca_" + k, v) }).toList)
   }
 
-  /** Extract custom attributes (with prefix "ca_") from DBObject, strip prefix and create Map[String, Any] */
+  /**
+   * Extract custom attributes (with prefix "ca_") from DBObject,
+   * strip prefix and create Map[String, Any]
+   */
   def getAttributesFromDBObject(dbObj: DBObject): Map[String, Any] = {
-    dbObj.filter { case (k, v) => (k.startsWith("ca_")) }.toList.map { case (k, v) => (k.stripPrefix("ca_"), v) }.toMap
+    dbObj.filter { case (k, v) => (k.startsWith("ca_")) }.toList.map {
+      case (k, v) => (k.stripPrefix("ca_"), v)
+    }.toMap
   }
 
   /**
    * Appends App ID to any ID.
    * Used for distinguishing different app's data within a single collection.
    */
-  def idWithAppid(appid: Int, id: String) = appid + "_" + id
+  def idWithAppid(appid: Int, id: String): String = appid + "_" + id
 }

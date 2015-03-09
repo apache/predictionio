@@ -39,7 +39,7 @@ import org.elasticsearch.index.query.QueryBuilders
 
 import org.json4s.DefaultFormats
 import org.json4s.native.Serialization.{ read, write }
-//import org.json4s.ext.JodaTimeSerializers
+// import org.json4s.ext.JodaTimeSerializers
 
 import scala.util.Try
 import scala.concurrent.Future
@@ -49,9 +49,9 @@ import scala.concurrent.ExecutionContext
 class ESLEvents(client: Client, index: String) extends LEvents with Logging {
 
   implicit val formats = DefaultFormats + new EventJson4sSupport.DBSerializer
-  //implicit val formats = DefaultFormats.lossless ++ JodaTimeSerializers.all
+  // implicit val formats = DefaultFormats.lossless ++ JodaTimeSerializers.all
 
-  def typeName = s"events"
+  def typeName: String = s"events"
 
   override
   def futureInsert(event: Event, appId: Int)(implicit ec: ExecutionContext):
@@ -80,10 +80,11 @@ class ESLEvents(client: Client, index: String) extends LEvents with Logging {
 
     response.future
       .map { r =>
-        if (r.isExists)
+        if (r.isExists) {
           Right(Some(read[Event](r.getSourceAsString)))
-        else
+        } else {
           Right(None)
+        }
       }.recover {
         case e: Exception => Left(StorageError(e.toString))
       }
@@ -138,10 +139,11 @@ class ESLEvents(client: Client, index: String) extends LEvents with Logging {
       .map { r =>
         val indexResponse = r.getIndex(index)
         val numFailures = indexResponse.getFailedShards()
-        if (numFailures != 0)
+        if (numFailures != 0) {
           Left(StorageError(s"Failed to delete ${numFailures} shards."))
-        else
+        } else {
           Right(())
+        }
       }.recover {
         case e: Exception => Left(StorageError(e.toString))
       }
@@ -152,10 +154,10 @@ class ESLEvents(client: Client, index: String) extends LEvents with Logging {
 
 
 class ESActionListener[T](val p: Promise[T]) extends ActionListener[T]{
-  override def onResponse(r: T) = {
+  override def onResponse(r: T): Unit = {
     p.success(r)
   }
-  override def onFailure(e: Throwable) = {
+  override def onFailure(e: Throwable): Unit = {
     p.failure(e)
   }
 }

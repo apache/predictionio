@@ -15,7 +15,7 @@
 
 package io.prediction.controller.java;
 
-import io.prediction.workflow.JavaCoreWorkflow;
+// import io.prediction.workflow.JavaCoreWorkflow;
 import io.prediction.controller.Engine
 import io.prediction.controller.EngineParams
 import io.prediction.controller.WorkflowParams
@@ -75,6 +75,7 @@ object JavaWorkflow {
       evaluatorParams: Params,
       params: WorkflowParams
     ) {
+    /*
     JavaCoreWorkflow.run(
       dataSourceClassMap = engine.dataSourceClassMap,
       dataSourceParams = engineParams.dataSourceParams,
@@ -88,5 +89,6 @@ object JavaWorkflow {
       evaluatorParams = evaluatorParams,
       params = params
     )
+    */
   }
 }

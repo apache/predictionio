@@ -40,7 +40,7 @@ private[prediction] object Utils {
    * Appends App ID to any ID.
    * Used for distinguishing different app's data within a single collection.
    */
-  def idWithAppid(appid: Int, id: String) = appid + "_" + id
+  def idWithAppid(appid: Int, id: String): String = appid + "_" + id
 
   def stringToDateTime(dt: String): DateTime =
     ISODateTimeFormat.dateTimeParser.parseDateTime(dt)

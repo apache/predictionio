@@ -59,7 +59,7 @@ class ESApps(client: Client, index: String) extends Apps with Logging {
       setSource(compact(render(json))).get
   }
 
-  def insert(app: App) = {
+  def insert(app: App): Option[Int] = {
     val id =
       if (app.id == 0) {
         var roll = seq.genNext("apps")
@@ -71,7 +71,7 @@ class ESApps(client: Client, index: String) extends Apps with Logging {
     if (update(realapp)) Some(id) else None
   }
 
-  def get(id: Int) = {
+  def get(id: Int): Option[App] = {
     try {
       val response = client.prepareGet(
         index,
@@ -86,15 +86,16 @@ class ESApps(client: Client, index: String) extends Apps with Logging {
     }
   }
 
-  def getByName(name: String) = {
+  def getByName(name: String): Option[App] = {
     try {
       val response = client.prepareSearch(index).setTypes(estype).
         setPostFilter(termFilter("name", name)).get
       val hits = response.getHits().hits()
-      if (hits.size > 0)
+      if (hits.size > 0) {
         Some(read[App](hits.head.getSourceAsString))
-      else
+      } else {
         None
+      }
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)
@@ -102,7 +103,7 @@ class ESApps(client: Client, index: String) extends Apps with Logging {
     }
   }
 
-  def getAll() = {
+  def getAll(): Seq[App] = {
     try {
       val builder = client.prepareSearch(index).setTypes(estype)
       ESUtils.getAll[App](client, builder)
@@ -113,7 +114,7 @@ class ESApps(client: Client, index: String) extends Apps with Logging {
     }
   }
 
-  def update(app: App) = {
+  def update(app: App): Boolean = {
     try {
       val response = client.prepareIndex(index, estype, app.id.toString).
         setSource(write(app)).get()
@@ -125,7 +126,7 @@ class ESApps(client: Client, index: String) extends Apps with Logging {
     }
   }
 
-  def delete(id: Int) = {
+  def delete(id: Int): Boolean = {
     try {
       client.prepareDelete(index, estype, id.toString).get
       true

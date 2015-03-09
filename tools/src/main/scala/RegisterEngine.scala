@@ -63,10 +63,11 @@ object RegisterEngine extends Logging {
     // Configure local FS or HDFS
     val conf = new Configuration
     val fss =
-      if (copyLocal)
+      if (copyLocal) {
         Seq(FileSystem.get(conf), FileSystem.getLocal(conf))
-      else
+      } else {
         Seq(FileSystem.get(conf))
+      }
     val enginesdir = sys.env.get("PIO_FS_ENGINESDIR") match {
       case Some(s) => s
       case None =>
@@ -85,14 +86,14 @@ object RegisterEngine extends Logging {
         val destFilePath =
           new Path(destDir.:+(f.getName).mkString(Path.SEPARATOR_CHAR + ""))
         val destPathString = fs.makeQualified(destFilePath).toString
-        //if (fs.exists(destFilePath) &&
-        //  f.length == fs.getFileStatus(destFilePath).getLen)
-        //  info(s"Skip copying ${f.toURI} because ${destPathString} exists " +
-        //    "and their file sizes are equal")
-        //else {
+        // if (fs.exists(destFilePath) &&
+        //   f.length == fs.getFileStatus(destFilePath).getLen)
+        //   info(s"Skip copying ${f.toURI} because ${destPathString} exists " +
+        //     "and their file sizes are equal")
+        // else {
         info(s"Copying ${f.toURI} to ${destPathString}")
         fs.copyFromLocalFile(new Path(f.toURI), destPath)
-        //}
+        // }
         destPathString
       }
     }

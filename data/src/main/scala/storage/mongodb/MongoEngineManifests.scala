@@ -33,7 +33,7 @@ class MongoEngineManifests(client: MongoClient, dbname: String)
     files = dbObj.as[Seq[String]]("files"),
     engineFactory = dbObj.as[String]("engineFactory"))
 
-  def insert(engineManifest: EngineManifest) = {
+  def insert(engineManifest: EngineManifest): Unit = {
     // required fields
     val obj = MongoDBObject(
       "_id" -> engineManifest.id,
@@ -49,13 +49,13 @@ class MongoEngineManifests(client: MongoClient, dbname: String)
     coll.insert(obj ++ optObj)
   }
 
-  def get(id: String, version: String) = coll.findOne(
+  def get(id: String, version: String): Option[EngineManifest] = coll.findOne(
     MongoDBObject("_id" -> id, "version" -> version)) map {
     dbObjToEngineManifest(_) }
 
-  def getAll() = coll.find().toSeq map { dbObjToEngineManifest(_) }
+  def getAll(): Seq[EngineManifest] = coll.find().toSeq map { dbObjToEngineManifest(_) }
 
-  def update(engineManifest: EngineManifest, upsert: Boolean = false) = {
+  def update(engineManifest: EngineManifest, upsert: Boolean = false): Unit = {
     val idObj = MongoDBObject("_id" -> engineManifest.id)
     val requiredObj = MongoDBObject(
       "version" -> engineManifest.version,
@@ -68,6 +68,6 @@ class MongoEngineManifests(client: MongoClient, dbname: String)
     coll.update(idObj, idObj ++ requiredObj ++ descriptionObj, upsert)
   }
 
-  def delete(id: String, version: String) =
+  def delete(id: String, version: String): Unit =
     coll.remove(MongoDBObject("_id" -> id, "version" -> version))
 }

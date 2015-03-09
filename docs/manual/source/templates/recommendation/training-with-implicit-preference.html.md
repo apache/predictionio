@@ -85,7 +85,7 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
 
   ...
 
-  def train(data: PreparedData): ALSModel = {
+  def train(sc: SparkContext, data: PreparedData): ALSModel = {
 
     ...
 
