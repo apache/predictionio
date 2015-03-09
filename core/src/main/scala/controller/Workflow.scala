@@ -25,7 +25,7 @@ import io.prediction.core.BaseEngine
 import io.prediction.core.Doer
 import io.prediction.workflow.WorkflowUtils
 import io.prediction.workflow.CoreWorkflow
-//import io.prediction.workflow.EvaluationWorkflow
+// import io.prediction.workflow.EvaluationWorkflow
 import io.prediction.workflow.NameParamsSerializer
 import scala.reflect.ClassTag
 import org.json4s._
@@ -120,7 +120,7 @@ object Workflow {
     runEvaluationTypeless(
       evaluation.engine,
       engineParamsGenerator.engineParamsList,
-      //evaluation.metric,
+      // evaluation.metric,
       evaluation.evaluator,
       env,
       params
@@ -130,14 +130,14 @@ object Workflow {
   def runEvaluationTypeless[EI, Q, P, A, EEI, EQ, EP, EA, ER](
       engine: BaseEngine[EI, Q, P, A],
       engineParamsList: Seq[EngineParams],
-      //metric: Metric[MEI, MQ, MP, MA, MR],
+      // metric: Metric[MEI, MQ, MP, MA, MR],
       evaluator: BaseEvaluator[EEI, EQ, EP, EA, ER],
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
       params: WorkflowParams = WorkflowParams()) {
     runEvaluation(
       engine,
       engineParamsList,
-      //metric.asInstanceOf[Metric[EI, Q, P, A, MR]],
+      // metric.asInstanceOf[Metric[EI, Q, P, A, MR]],
       evaluator.asInstanceOf[BaseEvaluator[EI, Q, P, A, ER]],
       env,
       params)
@@ -149,7 +149,7 @@ object Workflow {
   def runEvaluation[EI, Q, P, A, R](
       engine: BaseEngine[EI, Q, P, A],
       engineParamsList: Seq[EngineParams],
-      //metric: Metric[EI, Q, P, A, R],
+      // metric: Metric[EI, Q, P, A, R],
       evaluator: BaseEvaluator[EI, Q, P, A, R],
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
       params: WorkflowParams = WorkflowParams()) {
@@ -177,7 +177,7 @@ object Workflow {
       preparatorParams = write(engineParams.preparatorParams),
       algorithmsParams = write(engineParams.algorithmParamsList),
       servingParams = write(engineParams.servingParams),
-      //evaluatorParams = write(evaluatorParams),
+      // evaluatorParams = write(evaluatorParams),
       evaluatorParams = "",
       evaluatorResults = "",
       evaluatorResultsHTML = "",
@@ -187,7 +187,7 @@ object Workflow {
       engine = engine,
       engineParamsList = engineParamsList,
       engineInstance = engineInstance,
-      //metric = metric,
+      // metric = metric,
       evaluator = evaluator,
       env = env,
       params = params)

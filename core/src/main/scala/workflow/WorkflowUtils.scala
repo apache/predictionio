@@ -58,7 +58,7 @@ object WorkflowUtils extends Logging {
     * @throws NoSuchMethodException
     *         Thrown when engine factory's apply() method is not implemented.
     */
-  def getEngine(engine: String, cl: ClassLoader) = {
+  def getEngine(engine: String, cl: ClassLoader): (EngineLanguage.Value, IEngineFactory) = {
     val runtimeMirror = universe.runtimeMirror(cl)
     val engineModule = runtimeMirror.staticModule(engine)
     val engineObject = runtimeMirror.reflectModule(engineModule)
@@ -77,7 +77,8 @@ object WorkflowUtils extends Logging {
     }
   }
 
-  def getEngineParamsGenerator(epg: String, cl: ClassLoader) = {
+  def getEngineParamsGenerator(epg: String, cl: ClassLoader):
+    (EngineLanguage.Value, EngineParamsGenerator) = {
     val runtimeMirror = universe.runtimeMirror(cl)
     val epgModule = runtimeMirror.staticModule(epg)
     val epgObject = runtimeMirror.reflectModule(epgModule)
@@ -96,7 +97,7 @@ object WorkflowUtils extends Logging {
     }
   }
 
-  def getEvaluation(evaluation: String, cl: ClassLoader) = {
+  def getEvaluation(evaluation: String, cl: ClassLoader): (EngineLanguage.Value, Evaluation) = {
     val runtimeMirror = universe.runtimeMirror(cl)
     val evaluationModule = runtimeMirror.staticModule(evaluation)
     val evaluationObject = runtimeMirror.reflectModule(evaluationModule)
@@ -134,10 +135,11 @@ object WorkflowUtils extends Logging {
     implicit val f = formats
     val pClass = clazz.getConstructors.head.getParameterTypes
     if (pClass.size == 0) {
-      if (json != "")
+      if (json != "") {
         warn(s"Non-empty parameters supplied to ${clazz.getName}, but its " +
           "constructor does not accept any arguments. Stubbing with empty " +
           "parameters.")
+      }
       EmptyParams()
     } else {
       val apClass = pClass.head
@@ -273,7 +275,7 @@ object WorkflowUtils extends Logging {
     ).flatten
   }
 
-  def modifyLogging(verbose: Boolean) = {
+  def modifyLogging(verbose: Boolean): Unit = {
     val rootLoggerLevel = if (verbose) Level.TRACE else Level.INFO
     val chattyLoggerLevel = if (verbose) Level.INFO else Level.WARN
 
@@ -302,11 +304,13 @@ object WorkflowUtils extends Logging {
       sys.exit(1)
     }
 
-    if (nameOpt.isEmpty)
+    if (nameOpt.isEmpty) {
       info(s"No 'name' is found. Default empty String will be used.")
+    }
 
-    if (paramsOpt.isEmpty)
+    if (paramsOpt.isEmpty) {
       info(s"No 'params' is found. Default EmptyParams will be used.")
+    }
 
     NameParams(
       name = nameOpt.getOrElse(""),
@@ -392,10 +396,11 @@ class UpgradeCheckRunner(
   val versionsHost = "http://direct.prediction.io/"
 
   def run(): Unit = {
-    val url = if (engine == "")
+    val url = if (engine == "") {
       s"${versionsHost}${version}/${component}.json"
-    else
+    } else {
       s"${versionsHost}${version}/${component}/${engine}.json"
+    }
     try {
       val upgradeData = Source.fromURL(url)
     } catch {

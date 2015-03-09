@@ -55,7 +55,7 @@ abstract class LJavaAlgorithm[PD, M, Q, P]
     typeArgs(2).asInstanceOf[Class[Q]]
   }
 
-  override def isJava = true
+  override def isJava: Boolean = true
 }
 
 /** Base class of a parallel algorithm.
@@ -133,6 +133,6 @@ abstract class PJavaAlgorithm[PD, M, Q, P]
     typeArgs(2).asInstanceOf[Class[Q]]
   }
 
-  def isJava = true
-  override def isParallel = true
+  def isJava: Boolean = true
+  override def isParallel: Boolean = true
 }
