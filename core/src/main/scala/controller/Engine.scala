@@ -150,7 +150,7 @@ class Engine[TD, EI, PD, Q, P, A](
     val algoCount = algorithms.size
     val algoTuples: Seq[(String, Params, BaseAlgorithm[_, _, _, _], Any)] =
     (0 until algoCount).map { ax => {
-      //val (name, params) = algoParamsList(ax)
+      // val (name, params) = algoParamsList(ax)
       val (name, params) = algoParamsList(ax)
       (name, params, algorithms(ax), models(ax))
     }}
@@ -289,16 +289,17 @@ class Engine[TD, EI, PD, Q, P, A](
         Doer(algorithmClassMap(algoName), algoParams)
       } catch {
         case e: NoSuchElementException => {
-          if (algoName == "")
+          if (algoName == "") {
             logger.error("Empty algorithm name supplied but it could not " +
               "match with any algorithm in the engine's definition. " +
               "Existing algorithm name(s) are: " +
               s"${algorithmClassMap.keys.mkString(", ")}. Aborting.")
-          else
+          } else {
             logger.error(s"${algoName} cannot be found in the engine's " +
               "definition. Existing algorithm name(s) are: " +
               s"${algorithmClassMap.keys.mkString(", ")}. Aborting.")
-            sys.exit(1)
+          }
+          sys.exit(1)
         }
       }
     }}
@@ -488,7 +489,7 @@ object Engine {
     dataSourceMap: DataSourceMap[TD, EI, Q, A],
     preparatorMap: PreparatorMap[TD, PD],
     algorithmClassMap: Map[String, Class[_ <: BaseAlgorithm[PD, _, Q, P]]],
-    servingMap: ServingMap[Q, P]) = new Engine(
+    servingMap: ServingMap[Q, P]): Engine[TD, EI, PD, Q, P, A] = new Engine(
       dataSourceMap.m,
       preparatorMap.m,
       algorithmClassMap,
@@ -507,10 +508,11 @@ object Engine {
     logger.info(s"Preparator: $preparator")
     logger.info(s"AlgorithmList: $algorithmList")
 
-    if (params.skipSanityCheck)
+    if (params.skipSanityCheck) {
       logger.info("Data sanity check is off.")
-    else
+    } else {
       logger.info("Data santiy check is on.")
+    }
 
     val td = try {
       dataSource.readTrainingBase(sc)

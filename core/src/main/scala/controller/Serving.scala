@@ -62,7 +62,7 @@ class LFirstServing[Q, P] extends LServing[Q, P] {
   */
 object LFirstServing {
   /** Returns an instance of [[LFirstServing]]. */
-  def apply[Q, P](a: Class[_ <: BaseAlgorithm[_, _, Q, P]]) =
+  def apply[Q, P](a: Class[_ <: BaseAlgorithm[_, _, Q, P]]): Class[LFirstServing[Q, P]] =
     classOf[LFirstServing[Q, P]]
 }
 
@@ -85,6 +85,6 @@ class LAverageServing[Q] extends LServing[Q, Double] {
   */
 object LAverageServing {
   /** Returns an instance of [[LAverageServing]]. */
-  def apply[Q](a: Class[_ <: BaseAlgorithm[_, _, Q, _]]) =
+  def apply[Q](a: Class[_ <: BaseAlgorithm[_, _, Q, _]]): Class[LAverageServing[Q]] =
     classOf[LAverageServing[Q]]
 }

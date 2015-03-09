@@ -70,15 +70,15 @@ class LJavaIdentityPreparator[TD] extends LJavaPreparator[TD, TD] {
  */
 object LJavaIdentityPreparator {
   /** Produces an instance of {@link LJavaIdentityPreparator}. */
-  def apply[TD](ds: Class[_ <: LJavaDataSource[_, TD, _, _]]) =
+  def apply[TD](ds: Class[_ <: LJavaDataSource[_, TD, _, _]]): Class[LJavaIdentityPreparator[TD]] =
     classOf[LJavaIdentityPreparator[TD]]
 
   /**
    * Returns an instance of {@link LJavaIdentityPreparator} by taking a {@link
    * JavaEngineBuilder} as argument.
    */
-  def apply[TD, B <: JavaEngineBuilder[TD, _, TD, _, _, _]](b: B) =
-    classOf[LJavaIdentityPreparator[TD]]
+  def apply[TD, B <: JavaEngineBuilder[TD, _, TD, _, _, _]]
+    (b: B): Class[LJavaIdentityPreparator[TD]] = classOf[LJavaIdentityPreparator[TD]]
 
 }
 
@@ -122,7 +122,7 @@ class PJavaIdentityPreparator[TD] extends PJavaPreparator[TD, TD] {
  */
 object PJavaIdentityPreparator {
   /** Produces an instance of {@link PJavaIdentityPreparator}. */
-  def apply[TD](ds: Class[_ <: PJavaDataSource[_, TD, _, _]]) =
+  def apply[TD](ds: Class[_ <: PJavaDataSource[_, TD, _, _]]): Class[PJavaIdentityPreparator[TD]] =
     classOf[PJavaIdentityPreparator[TD]]
 
   /**
@@ -130,7 +130,7 @@ object PJavaIdentityPreparator {
    * PJavaEngineBuilder} as argument.
    */
   // TODO tom-chan add this back when the PJavaEngineBuilder is ready
-  /*def apply[TD, B <: PJavaEngineBuilder[TD, _, TD, _, _, _]](b: B) =
-    classOf[PJavaIdentityPreparator[TD]]*/
+  /* def apply[TD, B <: PJavaEngineBuilder[TD, _, TD, _, _, _]](b: B) =
+     classOf[PJavaIdentityPreparator[TD]] */
 
 }

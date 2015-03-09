@@ -20,7 +20,7 @@ import io.prediction.controller.EmptyParams
 import io.prediction.controller.Engine
 import io.prediction.controller.PAlgorithm
 import io.prediction.controller.Params
-//import io.prediction.controller.ParamsWithAppId
+// import io.prediction.controller.ParamsWithAppId
 import io.prediction.controller.WithPrId
 import io.prediction.controller.Utils
 import io.prediction.controller.WorkflowParams
@@ -35,15 +35,14 @@ import io.prediction.data.storage.EngineInstance
 import io.prediction.data.storage.EngineManifest
 import io.prediction.data.storage.Storage
 
-import akka.actor.{ Actor, ActorRef, ActorSystem, Kill, Props }
+import akka.actor._
 import akka.event.Logging
 import akka.io.IO
 import akka.pattern.ask
 import akka.util.Timeout
 import com.github.nscala_time.time.Imports.DateTime
 import com.google.gson.Gson
-import com.twitter.chill.KryoInjection
-import com.twitter.chill.ScalaKryoInstantiator
+import com.twitter.chill.{KryoBase, KryoInjection, ScalaKryoInstantiator}
 import grizzled.slf4j.Logging
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
@@ -75,7 +74,7 @@ import java.io.StringWriter
 import java.net.URLClassLoader
 
 class KryoInstantiator(classLoader: ClassLoader) extends ScalaKryoInstantiator {
-  override def newKryo = {
+  override def newKryo: KryoBase = {
     val kryo = super.newKryo
     kryo.setClassLoader(classLoader)
     kryo
@@ -255,7 +254,7 @@ object CreateServer extends Logging {
 class UpgradeActor(engineClass: String) extends Actor {
   val log = Logging(context.system, this)
   implicit val system = context.system
-  def receive = {
+  def receive: Actor.Receive = {
     case x: UpgradeCheck =>
       WorkflowUtils.checkUpgrade("deployment", engineClass)
   }
@@ -296,7 +295,7 @@ class MasterActor(
     }
   }
 
-  def receive = {
+  def receive: Actor.Receive = {
     case x: StartServer =>
       val actor = createServerActor(
         sc,
@@ -378,7 +377,7 @@ class MasterActor(
     CreateServer.createServerActorWithEngine(
       sc,
       engineInstance,
-      //engine,
+      // engine,
       deployableEngine,
       engineLanguage,
       manifest)
@@ -407,9 +406,9 @@ class ServerActor[Q, P](
   var avgServingSec: Double = 0.0
   var lastServingSec: Double = 0.0
 
-  def actorRefFactory = context
+  def actorRefFactory: ActorContext = context
 
-  def receive = runRoute(myRoute)
+  def receive: Actor.Receive = runRoute(myRoute)
 
   val feedbackEnabled = if (args.feedback) {
     if (args.accessKey.isEmpty) {
@@ -491,10 +490,11 @@ class ServerActor[Q, P](
                   alg.querySerializer, alg.queryManifest)
               }
               val predictions = algorithms.zipWithIndex.map { case (a, ai) =>
-                if (a.isJava)
+                if (a.isJava) {
                   a.predictBase(models(ai), javaQuery.get)
-                else
+                } else {
                   a.predictBase(models(ai), scalaQuery.get)
+                }
               }
               val r = if (serving.isInstanceOf[LJavaServing[Q, P]]) {
                 val prediction = serving.serveBase(javaQuery.get, predictions)
@@ -517,11 +517,12 @@ class ServerActor[Q, P](
                 */
               val result = if (feedbackEnabled) {
                 implicit val formats =
-                  if (!scalaAlgorithms.isEmpty)
+                  if (!scalaAlgorithms.isEmpty) {
                     scalaAlgorithms.head.querySerializer
-                  else
+                  } else {
                     Utils.json4sDefaultFormats
-                //val genPrId = Random.alphanumeric.take(64).mkString
+                  }
+                // val genPrId = Random.alphanumeric.take(64).mkString
                 def genPrId: String = Random.alphanumeric.take(64).mkString
                 val newPrId = if (r._2.isInstanceOf[WithPrId]) {
                   val org = r._2.asInstanceOf[WithPrId].prId
@@ -537,8 +538,7 @@ class ServerActor[Q, P](
                     Map()
                   }
                 val data = Map(
-                  //"appId" ->
-                  //  dataSourceParams.asInstanceOf[ParamsWithAppId].appId,
+                  // "appId" -> dataSourceParams.asInstanceOf[ParamsWithAppId].appId,
                   "event" -> "predict",
                   "eventTime" -> queryTime.toString(),
                   "entityType" -> "pio_pr", // prediction result
@@ -570,9 +570,11 @@ class ServerActor[Q, P](
                 // - if it is WithPrId,
                 //   then overwrite with new prId
                 // - if it is not WithPrId, no prId injection
-                if (r._2.isInstanceOf[WithPrId])
-                  r._1 merge parse(s"""{"prId" : "${newPrId}"}""")
-                else r._1
+                if (r._2.isInstanceOf[WithPrId]) {
+                  r._1 merge parse( s"""{"prId" : "${newPrId}"}""")
+                } else {
+                  r._1
+                }
               } else r._1
 
               // Bookkeeping

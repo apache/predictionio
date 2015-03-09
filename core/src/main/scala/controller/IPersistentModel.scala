@@ -115,7 +115,7 @@ trait IPersistentModelLoader[AP <: Params, M] {
   * @group Algorithm
   */
 trait IFSPersistentModel[AP <: Params] extends IPersistentModel[AP] {
-  def save(id: String, params: AP, sc: SparkContext) = {
+  def save(id: String, params: AP, sc: SparkContext): Boolean = {
     Utils.save(id, this)
     true
   }

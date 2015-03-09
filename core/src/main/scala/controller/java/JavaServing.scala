@@ -63,13 +63,13 @@ class LJavaFirstServing[Q, P] extends LJavaServing[Q, P] {
  */
 object LJavaFirstServing {
   /** Returns an instance of {@link LJavaFirstServing}. */
-  def apply[Q, P](a: Class[_ <: BaseAlgorithm[_, _, Q, P]]) =
+  def apply[Q, P](a: Class[_ <: BaseAlgorithm[_, _, Q, P]]): Class[LJavaFirstServing[Q, P]] =
     classOf[LJavaFirstServing[Q, P]]
 
   /**
    * Returns an instance of {@link LJavaFirstServing} by taking a {@link
    * JavaEngineBuilder} as argument.
    */
-  def apply[Q, P, B <: JavaEngineBuilder[_, _, _, Q, P, _]](b: B) =
+  def apply[Q, P, B <: JavaEngineBuilder[_, _, _, Q, P, _]](b: B): Class[LJavaFirstServing[Q, P]] =
     classOf[LJavaFirstServing[Q, P]]
 }
