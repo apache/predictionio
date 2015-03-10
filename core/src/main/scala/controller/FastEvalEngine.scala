@@ -182,6 +182,7 @@ object FastEvalEngineWorkflow  {
         prefix = new DataSourcePrefix(prefix))
 
     val algoResult: Map[EX, RDD[(QX, Seq[P])]] = dataSourceResult
+    .par
     .map { case (ex, (td, ei, iqaRDD)) => {
       val modelsMap: Map[AX, Any] = algoModelsMap(ex)
       val qs: RDD[(QX, Q)] = iqaRDD.mapValues(_._1)
@@ -211,6 +212,7 @@ object FastEvalEngineWorkflow  {
       }}
       (ex, unionAlgoPredicts)
     }}
+    .seq
     .toMap
     
     algoResult

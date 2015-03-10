@@ -80,10 +80,12 @@ class MetricEvaluator[EI, Q, P, A, R](
 
     val evalResultList: Seq[(EngineParams, R)] = engineEvalDataSet
     .zipWithIndex
+    .par
     .map { case ((engineParams, evalDataSet), idx) => 
       val metricResult: R = metric.calculate(sc, evalDataSet)
       (engineParams, metricResult)
     }
+    .seq
 
     implicit lazy val formats = Utils.json4sDefaultFormats +
       new NameParamsSerializer
