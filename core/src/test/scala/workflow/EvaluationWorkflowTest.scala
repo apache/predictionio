@@ -20,7 +20,7 @@ import grizzled.slf4j.{ Logger, Logging }
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Suite
 
-class EvaluationWorkflowDevSuite extends FunSuite with SharedSparkContext {
+class EvaluationWorkflowSuite extends FunSuite with SharedSparkContext {
   import io.prediction.controller.Engine1._
   test("Evaluation return best engine params, simple result type: Double") {
     val engine = new Engine1()

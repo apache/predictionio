@@ -91,6 +91,27 @@ object Engine0 {
     }
   }
   
+  object PDataSource4 {
+    class Params(val id: Int, val en: Int = 0, val qn: Int = 0) 
+      extends PIOParams
+  }
+  
+  class PDataSource4(params: PDataSource4.Params)
+  extends PDataSource[TrainingData, EvalInfo, Query, Actual] {
+    val id = params.id
+    def readTraining(sc: SparkContext): TrainingData = TrainingData(id)
+    
+    override
+    def readEval(sc: SparkContext)
+    : Seq[(TrainingData, EvalInfo, RDD[(Query, Actual)])] = {
+      (0 until params.en).map { ex => {
+        val qaSeq: Seq[(Query, Actual)] = (0 until params.qn).map { qx => {
+          (Query(id, ex=ex, qx=qx), Actual(id, ex, qx))
+        }}
+        (TrainingData(id), EvalInfo(id), sc.parallelize(qaSeq))
+      }}
+    }
+  }
   
   class LDataSource0(id: Int, en: Int = 0, qn: Int = 0) 
     extends LDataSource[TrainingData, EvalInfo, Query, Actual] {
