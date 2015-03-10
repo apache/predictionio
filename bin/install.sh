@@ -223,7 +223,7 @@ echo -e "\033[1;36mStarting PredictionIO setup in:\033[0m $pio_dir"
 cd $TEMP_DIR
 if [[ ! -e $PIO_FILE ]]; then
   echo "Downloading PredictionIO..."
-  curl -O http://download.prediction.io/$PIO_FILE
+  curl -O https://d8k1yxp8elc6b.cloudfront.net/$PIO_FILE
 fi
 tar zxf $PIO_FILE
 rm -rf $pio_dir
