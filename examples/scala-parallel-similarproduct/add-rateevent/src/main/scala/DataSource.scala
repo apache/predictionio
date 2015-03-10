@@ -61,25 +61,26 @@ class DataSource(val dsp: DataSourceParams)
     }.cache()
 
     // get all "user" "rate" "item" events
-    val rateEventsRDD: RDD[RateEvent] = eventsDb.find(
+    val rateEventsRDD: RDD[RateEvent] = eventsDb.find( //MODIFIED
       appId = dsp.appId,
       entityType = Some("user"),
-      eventNames = Some(List("rate")),
+      eventNames = Some(List("rate")), //MODIFIED
       // targetEntityType is optional field of an event.
       targetEntityType = Some(Some("item")))(sc)
       // eventsDb.find() returns RDD[Event]
       .map { event =>
         val rateEvent = try {
           event.event match {
-            case "rate" => RateEvent(
+            case "rate" => RateEvent( //MODIFIED
               user = event.entityId,
               item = event.targetEntityId.get,
-              rating = event.properties.get[Double]("rating")
+              rating = event.properties.get[Double]("rating"), // ADDED
+              t = event.eventTime.getMillis)
             case _ => throw new Exception(s"Unexpected event ${event} is read.")
           }
         } catch {
           case e: Exception => {
-            logger.error(s"Cannot convert ${event} to RateEvent." +
+            logger.error(s"Cannot convert ${event} to RateEvent." + //MODIFIED
               s" Exception: ${e}.")
             throw e
           }
@@ -99,7 +100,7 @@ case class User()
 
 case class Item(categories: Option[List[String]])
 
-case class RateEvent(user: String, item: String, rating: Double)
+case class RateEvent(user: String, item: String, rating: Double, t: Long)
 
 class TrainingData(
   val users: RDD[(String, User)],

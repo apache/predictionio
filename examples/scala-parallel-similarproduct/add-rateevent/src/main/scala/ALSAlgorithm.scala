@@ -81,15 +81,24 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
           logger.info(s"Couldn't convert nonexistent item ID ${r.item}"
             + " to Int index.")
 
-        ((uindex, iindex), 1)
+        ((uindex, iindex), (r.rating,r.t)) //MODIFIED
       }.filter { case ((u, i), v) =>
         // keep events with valid user and item index
         (u != -1) && (i != -1)
       }
-      .map { case ((u, i), v) =>
-        // MLlibRating requires integer index for user and item
-        MLlibRating(u, i, v)
+      .reduceByKey { case (v1, v2) => // MODIFIED
+        // if a user may rate same item with different value at different times,
+        // use the latest value for this case.
+        // Can remove this reduceByKey() if no need to support this case.
+        val (rating1, t1) = v1
+        val (rating2, t2) = v2
+        // keep the latest value
+        if (t1 > t2) v1 else v2
       }
+      .map { case ((u, i), (rating, t)) => // MODIFIED
+        // MLlibRating requires integer index for user and item
+        MLlibRating(u, i, rating) // MODIFIED
+      }.cache()
 
     // MLLib ALS cannot handle empty training data.
     require(!mllibRatings.take(1).isEmpty,

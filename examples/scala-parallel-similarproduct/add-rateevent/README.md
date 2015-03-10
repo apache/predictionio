@@ -19,7 +19,8 @@ Please refer to http://docs.prediction.io/templates/similarproduct/quickstart/
 case class Rating(
   user: String,
   item: String,
-  rating: Double
+  rating: Double,
+  t:Long
 )
 ```
 
@@ -38,8 +39,6 @@ case class Rating(
         item = event.targetEntityId.get,
         rating = event.properties.get[Double]("rating")...
 ```
-
-
 
 ### Changes to Preparator.scala
 
@@ -94,7 +93,30 @@ case class Rating(
    val rateEventsRDD: RDD[RateEvent] = eventsDb.find(...)
 ```
 
-5) Add "rateEvent"  to class "TrainingData".
+5) if a user may rate same item with different value at different times,use the latest value for this case.
+
+```
+    .reduceByKey { case (v1, v2) => // MODIFIED
+       // if a user may rate same item with different value at different times,
+       // use the latest value for this case.
+       // Can remove this reduceByKey() if no need to support this case.
+       val (rating1, t1) = v1
+       val (rating2, t2) = v2
+       // keep the latest value
+       if (t1 > t2) v1 else v2
+      }
+```
+
+6) persist  mlibRating.
+```
+   .map { case ((u, i), (rating, t)) => // MODIFIED
+         // MLlibRating requires integer index for user and item
+         MLlibRating(u, i, rating) // MODIFIED
+        }.cache()
+```
+
+
+7) Add "rateEvent"  to class "TrainingData".
 
 ```
    class TrainingData(
@@ -104,7 +126,7 @@ case class Rating(
  )
 ```
 
-6) Add "rateEvent"  to object "TrainingData".
+8) Add "rateEvent"  to object "TrainingData".
 
 ```
    new TrainingData(
