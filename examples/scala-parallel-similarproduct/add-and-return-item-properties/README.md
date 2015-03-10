@@ -3,7 +3,7 @@
 ---
 
 This small how-to explains how to add user defined properties to items returned by PredictionIO engine.
-This how-to is based on the [Similar Product Engine](http://docs.prediction.io/templates/similarproduct/quickstart/).
+This how-to is based on the [Similar Product Engine](http://docs.prediction.io/templates/similarproduct/quickstart/) version v0.1.0
 To use this how-to you need to be familiar with scala programming language.
 In this how-to we also suppose you was able to set up and run `Similar Product Engine` (see their [quick start guide](http://docs.prediction.io/templates/similarproduct/quickstart/)).
 
@@ -12,9 +12,9 @@ A full end-to-end example can be found on
 
 ## THE TASK
 
-Suppose you would like to use [Similar Product Engine](http://docs.prediction.io/templates/similarproduct/quickstart/) 
-for suggesting your users the videos they can also like. The `Similar Product Engine` will answer to you 
-with list of IDs for such videos. So, for example `REST` response from the engine right now 
+Suppose you would like to use [Similar Product Engine](http://docs.prediction.io/templates/similarproduct/quickstart/)
+for suggesting your users the videos they can also like. The `Similar Product Engine` will answer to you
+with list of IDs for such videos. So, for example `REST` response from the engine right now
 looks like the one below
 ```json
 {"itemScores":[
@@ -47,7 +47,7 @@ for your case should look similar to the posted below
 		"score":1.1153550716504106
 	}
 ]}
-``` 
+```
 
 ## SO, HOW TO?
 
@@ -55,7 +55,7 @@ for your case should look similar to the posted below
 
 Recall [the DASE Architecture](http://docs.prediction.io/templates/similarproduct/dase/), a PredictionIO engine has
 4 main components: `Data Source`, `Data Preparator`, `Algorithm`, and `Serving`
-components. To achieve your goal, you will need provide the information about video to engine 
+components. To achieve your goal, you will need provide the information about video to engine
 (using sdk), and then let this information to pass from `Data Source` through all the engine
 to the `Serving` component where the engine will send required information back to your application.
 
@@ -101,9 +101,9 @@ case class ItemScore(
 ) extends Serializable
 ```
 Engine will return class `PredictedResult` which contains property `itemScores: Array[ItemScore]`.
-So, since your result items are of class`ItemScore`, you need modify this class too. 
+So, since your result items are of class`ItemScore`, you need modify this class too.
 In our example after modification you will have something similar to below
-```scala 
+```scala
 case class ItemScore(
 	item: String,
 	title: String,
@@ -157,7 +157,7 @@ and [50](https://github.com/PredictionIO/PredictionIO/blob/develop/examples/scal
 The idea is to pass not only the `score` property, but whole `ItemScore` object when counting final scores on lines 44...49 to save all the data.
 To achieve this task, one may create tuple of `(score, item-score-object)` instead of passing just the `score` value
 and then recreate `ItemScore` object on line 50 with counted `score` value by using the `copy` method.
-Since all items with the same IDes represent the same object, we can just take `itemScores(0)` for our purposes. 
+Since all items with the same IDes represent the same object, we can just take `itemScores(0)` for our purposes.
 See resulting code below
 ```scala
 val combined = standard.flatten // Array of ItemScore

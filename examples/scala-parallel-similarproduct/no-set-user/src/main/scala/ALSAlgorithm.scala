@@ -86,6 +86,7 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
         // MLlibRating requires integer index for user and item
         MLlibRating(u, i, v)
       }
+      .cache()
 
     // MLLib ALS cannot handle empty training data.
     require(!mllibRatings.take(1).isEmpty,
