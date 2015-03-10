@@ -111,9 +111,9 @@ case class EventOp (
       ).getOrElse(Set())
 
       val combinedFields = deleteEntity.map { delete =>
-        if (delete.t >= set.t)
+        if (delete.t >= set.t) {
           None
-        else {
+        } else {
           val deleteKeys: Set[String] = set.fields
             .filter { case (k, PropTime(kv, t)) =>
               (delete.t >= t)

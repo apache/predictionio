@@ -32,7 +32,7 @@ import akka.event.Logging
 import akka.pattern.ask
 import akka.util.Timeout
 
-import org.json4s.DefaultFormats
+import org.json4s.{Formats, DefaultFormats}
 import org.json4s.ext.JodaTimeSerializers
 import org.json4s.native.JsonMethods.parse
 
@@ -49,7 +49,7 @@ import spray.routing._
 import spray.routing.authentication.Authentication
 import spray.routing.Directives._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.collection.mutable.{ HashMap => MHashMap }
 import scala.collection.mutable
 
@@ -117,7 +117,7 @@ class EventServiceActor(
     val stats: Boolean) extends HttpServiceActor {
 
   object Json4sProtocol extends Json4sSupport {
-    implicit def json4sFormats = DefaultFormats +
+    implicit def json4sFormats: Formats = DefaultFormats +
       new EventJson4sSupport.APISerializer ++
       JodaTimeSerializers.all
   }
@@ -128,7 +128,7 @@ class EventServiceActor(
 
   // we use the enclosing ActorContext's or ActorSystem's dispatcher for our
   // Futures
-  implicit def executionContext = actorRefFactory.dispatcher
+  implicit def executionContext: ExecutionContext = actorRefFactory.dispatcher
   implicit val timeout = Timeout(5, TimeUnit.SECONDS)
 
   // for better message response
@@ -241,8 +241,9 @@ class EventServiceActor(
                     case Right(id) =>
                       (StatusCodes.Created, Map("eventId" -> s"${id}"))
                   }
-                  if (stats)
+                  if (stats) {
                     statsActorRef ! Bookkeeping(appId, result._1, event)
+                  }
                   result
                 }
                 data
@@ -300,11 +301,12 @@ class EventServiceActor(
                             (StatusCodes.InternalServerError,
                               Map("message" -> message))
                           case Right(eventIter) =>
-                            if (eventIter.hasNext)
+                            if (eventIter.hasNext) {
                               (StatusCodes.OK, eventIter.toArray)
-                            else
+                            } else {
                               (StatusCodes.NotFound,
                                 Map("message" -> "Not Found"))
+                            }
                         }
                       }
                     data
@@ -324,24 +326,25 @@ class EventServiceActor(
         handleRejections(rejectionHandler) {
           authenticate(withAccessKey) { appId =>
             respondWithMediaType(MediaTypes.`application/json`) {
-              if (stats)
+              if (stats) {
                 complete {
                   statsActorRef ? GetStats(appId) map {
                     _.asInstanceOf[Map[String, StatsSnapshot]]
                   }
                 }
-              else
+              } else {
                 complete(
                   StatusCodes.NotFound,
                   parse("""{"message": "To see stats, launch Event Server """ +
                     """with --stats argument."}"""))
+              }
             }
           }
         }
       }  // stats.json get
     }
 
-  def receive = runRoute(route)
+  def receive: Actor.Receive = runRoute(route)
 
 }
 
@@ -379,7 +382,7 @@ class StatsActor extends Actor {
     longLiveStats.update(appId, statusCode, event)
   }
 
-  def receive = {
+  def receive: Actor.Receive = {
     case Bookkeeping(appId, statusCode, event) =>
       bookkeeping(appId, statusCode, event)
     case GetStats(appId) => sender() ! Map(
@@ -406,7 +409,7 @@ class EventServerActor(
     "EventServiceActor")
   implicit val system = context.system
 
-  def receive = {
+  def receive: Actor.Receive = {
     case StartServer(host, portNum) => {
       IO(Http) ! Http.Bind(child, interface = host, port = portNum)
     }
@@ -422,7 +425,7 @@ case class EventServerConfig(
   stats: Boolean = false)
 
 object EventServer {
-  def createEventServer(config: EventServerConfig) = {
+  def createEventServer(config: EventServerConfig): Unit = {
     implicit val system = ActorSystem("EventServerSystem")
 
     val eventClient = Storage.getLEvents()

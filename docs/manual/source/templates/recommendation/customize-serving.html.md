@@ -9,7 +9,7 @@ currently in stock from the list of recommendation.
 This section is based on the [Recommendation Engine Template](/templates/recommendation/quickstart/).
 
 A full end-to-end example can be found on
-[GitHub](https://github.com/PredictionIO/PredictionIO/tree/master/examples/scala-parallel-recommendation-custom-serving).
+[GitHub](https://github.com/PredictionIO/PredictionIO/tree/develop/examples/scala-parallel-recommendation/custom-serving).
 
 <!--
 This section demonstrates how to add a custom filtering logic to exclude a list
@@ -218,3 +218,5 @@ $ pio deploy
 ```
 
 You can change the `filepath` value without re-building the code next time.
+
+#### [Next: Filter Recommended Items by Blacklist in Query](blacklist-items.html)

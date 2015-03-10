@@ -2,7 +2,7 @@
 
 In some cases, if you don't need to keep track the user ID being created/deleted or user properties changes with events, then you can simplify the template as described in this example to get rid of sending '$set' events for users. The user Id can be extracted from the user-to-item events (eg. view events). You can find the complete source code in src/ directory.
 
-This example engine is based on Similar Product Template version v0.1.2.
+This example engine is based on Similar Product Template version v0.1.3.
 
 ## Documentation
 

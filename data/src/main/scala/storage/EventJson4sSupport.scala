@@ -56,21 +56,21 @@ private[prediction] object EventJson4sSupport {
 
         // disable tags from API for now.
         val tags = List()
-      //val tags = fields.getOpt[Seq[String]]("tags").getOrElse(List())
+      // val tags = fields.getOpt[Seq[String]]("tags").getOrElse(List())
 
         val prId = fields.getOpt[String]("prId")
 
         // don't allow user set creationTime from API for now.
         val creationTime = currentTime
-      //val creationTime = fields.getOpt[String]("creationTime")
-      //  .map{ s =>
-      //    try {
-      //      DataUtils.stringToDateTime(s)
-      //    } catch {
-      //      case _: Exception =>
-      //        throw new MappingException(s"Fail to extract creationTime ${s}")
-      //    }
-      //  }.getOrElse(currentTime)
+      // val creationTime = fields.getOpt[String]("creationTime")
+      //   .map{ s =>
+      //     try {
+      //       DataUtils.stringToDateTime(s)
+      //     } catch {
+      //       case _: Exception =>
+      //         throw new MappingException(s"Fail to extract creationTime ${s}")
+      //     }
+      //   }.getOrElse(currentTime)
 
 
         val newEvent = Event(
@@ -108,7 +108,7 @@ private[prediction] object EventJson4sSupport {
         JField("properties", d.properties.toJObject) ::
         JField("eventTime", JString(DataUtils.dateTimeToString(d.eventTime))) ::
         // disable tags from API for now
-        //JField("tags", JArray(d.tags.toList.map(JString(_)))) ::
+        // JField("tags", JArray(d.tags.toList.map(JString(_)))) ::
         // disable tags from API for now
         JField("prId",
           d.prId.map(JString(_)).getOrElse(JNothing)) ::

@@ -67,7 +67,7 @@ class MongoEngineInstances(client: MongoClient, dbname: String)
       dbObjToEngineInstance(_)
     }
 
-  def getAll() = {
+  def getAll(): Seq[EngineInstance] = {
     engineInstanceColl.find().map {
       dbObjToEngineInstance(_)
     }.toSeq
@@ -76,7 +76,7 @@ class MongoEngineInstances(client: MongoClient, dbname: String)
   def getCompleted(
       engineId: String,
       engineVersion: String,
-      engineVariant: String) = {
+      engineVariant: String): Seq[EngineInstance] = {
     engineInstanceColl.find(
       MongoDBObject(
         "status" -> "COMPLETED",
@@ -91,12 +91,12 @@ class MongoEngineInstances(client: MongoClient, dbname: String)
   def getLatestCompleted(
       engineId: String,
       engineVersion: String,
-      engineVariant: String) = getCompleted(
+      engineVariant: String): Option[EngineInstance] = getCompleted(
       engineId,
       engineVersion,
       engineVariant).headOption
 
-  def getEvalCompleted() = {
+  def getEvalCompleted(): Seq[EngineInstance] = {
     engineInstanceColl.find(MongoDBObject("status" -> "EVALCOMPLETED")).sort(
       MongoDBObject("startTime" -> -1)).map {
         dbObjToEngineInstance(_)

@@ -22,8 +22,8 @@ import  io.prediction.data.storage.hbase
 import  io.prediction.data.storage.StorageClientConfig
 import  io.prediction.data.storage.Storage
 
-//import io.prediction.data.storage.elasticsearch.ESStorageClient
-//import io.prediction.data.storage.hbase.HBStorageClient
+// import io.prediction.data.storage.elasticsearch.ESStorageClient
+// import io.prediction.data.storage.hbase.HBStorageClient
 
 import io.prediction.data.storage.elasticsearch.ESLEvents
 import io.prediction.data.storage.hbase.HBLEvents
@@ -65,14 +65,15 @@ object TestLEvents {
 
   def testESLEvents() {
 
-    /*val config = StorageClientConfig(Seq("localhost"), Seq(9300))
-    val storageClient = new ESStorageClient(config)
-    val client = storageClient.client
-    val eventConnector = storageClient.eventClient*/
-    val eventConnector = Storage.getDataObject[LEvents]("predictionio_events_es").asInstanceOf[ESLEvents]
+    /* val config = StorageClientConfig(Seq("localhost"), Seq(9300))
+       val storageClient = new ESStorageClient(config)
+       val client = storageClient.client
+       val eventConnector = storageClient.eventClient */
+    val eventConnector = Storage.getDataObject[LEvents]("predictionio_events_es").
+      asInstanceOf[ESLEvents]
     implicit val formats = eventConnector.formats
 
-    //client.prepareGet("testindex", "events", "Abcdef").get()
+    // client.prepareGet("testindex", "events", "Abcdef").get()
 
     val x = write(e)
     println(x)
@@ -100,7 +101,7 @@ object TestLEvents {
     println(i3)
 
     // force refresh index for testing, else get may not have result
-    //client.admin().indices().prepareRefresh("testindex").get()
+    // client.admin().indices().prepareRefresh("testindex").get()
 
     val all = eventConnector.getByAppId(4)
     println(all.right.map{ x =>
@@ -112,17 +113,17 @@ object TestLEvents {
     println(delAll)
     val all2 = eventConnector.getByAppId(4)
     println(all2)
-    //client.close()
+    // client.close()
   }
 
-  def testHBLEvents() = {
+  def testHBLEvents(): Unit = {
 
     println("testHBLEvents")
 
-    /*val config = StorageClientConfig(Seq("localhost"), Seq(9300))
-    val storageClient = new HBStorageClient(config)
-    val client = storageClient.client
-    val eventConnector = storageClient.eventClient*/
+   /* val config = StorageClientConfig(Seq("localhost"), Seq(9300))
+      val storageClient = new HBStorageClient(config)
+      val client = storageClient.client
+      val eventConnector = storageClient.eventClient */
     val storageClient = new hbase.StorageClient(StorageClientConfig(
       hosts = Seq("localhost"),
       ports = Seq(1234)))

@@ -69,16 +69,18 @@ private[prediction] object LEventAggregator {
     (p, e) => {
       e.event match {
         case "$set" => {
-          if (p == None)
+          if (p == None) {
             Some(e.properties)
-          else
+          } else {
             p.map(_ ++ e.properties)
+          }
         }
         case "$unset" => {
-          if (p == None)
+          if (p == None) {
             None
-          else
+          } else {
             p.map(_ -- e.properties.keySet)
+          }
         }
         case "$delete" => None
         case _ => p // do nothing for others

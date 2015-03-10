@@ -185,7 +185,7 @@ for training a predictive model. PredictionIO will store this model and
 algorithm, i.e. `NaiveBayes.train`, is used to train a predictive model.
 
 ```scala
-def train(data: PreparedData): NaiveBayesModel = {
+def train(sc: SparkContext, data: PreparedData): NaiveBayesModel = {
     NaiveBayes.train(data.labeledPoints, ap.lambda)
 }
 ```

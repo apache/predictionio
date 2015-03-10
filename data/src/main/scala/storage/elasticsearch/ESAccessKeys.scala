@@ -60,13 +60,13 @@ class ESAccessKeys(client: Client, index: String)
       setSource(compact(render(json))).get
   }
 
-  def insert(accessKey: AccessKey) = {
+  def insert(accessKey: AccessKey): Option[String] = {
     val generatedkey = Random.alphanumeric.take(64).mkString
     val realaccesskey = accessKey.copy(key = generatedkey)
     if (update(realaccesskey)) Some(generatedkey) else None
   }
 
-  def get(key: String) = {
+  def get(key: String): Option[AccessKey] = {
     try {
       val response = client.prepareGet(
         index,
@@ -81,7 +81,7 @@ class ESAccessKeys(client: Client, index: String)
     }
   }
 
-  def getAll() = {
+  def getAll(): Seq[AccessKey] = {
     try {
       val builder = client.prepareSearch(index).setTypes(estype)
       ESUtils.getAll[AccessKey](client, builder)
@@ -92,7 +92,7 @@ class ESAccessKeys(client: Client, index: String)
     }
   }
 
-  def getByAppid(appid: Int) = {
+  def getByAppid(appid: Int): Seq[AccessKey] = {
     try {
       val builder = client.prepareSearch(index).setTypes(estype).
         setPostFilter(termFilter("appid", appid))
@@ -104,7 +104,7 @@ class ESAccessKeys(client: Client, index: String)
     }
   }
 
-  def update(accessKey: AccessKey) = {
+  def update(accessKey: AccessKey): Boolean = {
     try {
       val response = client.prepareIndex(index, estype, accessKey.key).
         setSource(write(accessKey)).get()
@@ -116,7 +116,7 @@ class ESAccessKeys(client: Client, index: String)
     }
   }
 
-  def delete(key: String) = {
+  def delete(key: String): Boolean = {
     try {
       client.prepareDelete(index, estype, key).get
       true

@@ -46,9 +46,10 @@ class DataMap (
     *
     * @param name The property name
     */
-  def require(name: String) = {
-    if (!fields.contains(name))
+  def require(name: String): Unit = {
+    if (!fields.contains(name)) {
       throw new DataMapException(s"The field ${name} is required.")
+    }
   }
 
   /** Check if this DataMap contains a specific property.
@@ -96,7 +97,7 @@ class DataMap (
     * @param default The default property value of type T
     * @return Return the property value of type T
     */
-  def getOrElse[T: Manifest](name: String, default: T) = {
+  def getOrElse[T: Manifest](name: String, default: T): T = {
     getOpt[T](name).getOrElse(default)
   }
 
@@ -106,7 +107,7 @@ class DataMap (
     * @param that Right hand side DataMap
     * @return A new DataMap
     */
-  def ++ (that: DataMap) = DataMap(this.fields ++ that.fields)
+  def ++ (that: DataMap): DataMap = DataMap(this.fields ++ that.fields)
 
   /** Creates a new DataMap from this DataMap by removing all elements of
     * another collection.
@@ -114,20 +115,20 @@ class DataMap (
     * @param that A collection containing the removed property names
     * @return A new DataMap
     */
-  def -- (that: GenTraversableOnce[String]) =
+  def -- (that: GenTraversableOnce[String]): DataMap =
     DataMap(this.fields -- that)
 
   /** Tests whether the DataMap is empty.
     *
     * @return true if the DataMap is empty, false otherwise.
     */
-  def isEmpty = fields.isEmpty
+  def isEmpty: Boolean = fields.isEmpty
 
   /** Collects all property names of this DataMap in a set.
     *
     * @return a set containing all property names of this DataMap.
     */
-  def keySet = this.fields.keySet
+  def keySet: Set[String] = this.fields.keySet
 
   /** Converts this DataMap to a List.
     *
@@ -170,17 +171,18 @@ object DataMap {
     * @param fields a Map of String to JValue
     * @return a new DataMap initialized by fields
     */
-  def apply(fields: Map[String, JValue]) = new DataMap(fields)
+  def apply(fields: Map[String, JValue]): DataMap = new DataMap(fields)
 
   /** Create an DataMap from a JObject
     * @param jObj JObject
     * @return a new DataMap initialized by a JObject
     */
   def apply(jObj: JObject): DataMap = {
-    if (jObj == null)
+    if (jObj == null) {
       apply()
-    else
+    } else {
       new DataMap(jObj.obj.toMap)
+    }
   }
 
   /** Create an DataMap from a JSON String

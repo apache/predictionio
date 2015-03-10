@@ -107,8 +107,9 @@ object Storage extends Logging {
     }
   }
 
-  if (repositoryKeys.size == 0)
+  if (repositoryKeys.size == 0) {
     warn("There is no properly configured repository.")
+  }
 
   private val requiredRepositories = Seq(MetaDataRepository)
 

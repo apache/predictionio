@@ -18,7 +18,7 @@ A sample black list file containing the items to be excluded is provided in
 `./data/sample_not_train_data.txt`.
 
 A full end-to-end example can be found on
-[GitHub](https://github.com/PredictionIO/PredictionIO/tree/master/examples/scala-parallel-recommendation-custom-preparator).
+[GitHub](https://github.com/PredictionIO/PredictionIO/tree/develop/examples/scala-parallel-recommendation/custom-prepartor).
 
 ## The Data Preparator Component
 
