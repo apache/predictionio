@@ -20,7 +20,7 @@ Event Server listens to port 7070 by default. You can change the port with the [
 For further information, please read:
 
 * [Event Server Overview](/datacollection/)
-* [Collecting Data with REST/SDKs](datacollection/eventapi)
+* [Collecting Data with REST/SDKs](/datacollection/eventapi)
 
 ## Sending Query
 
