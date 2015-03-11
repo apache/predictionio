@@ -2,6 +2,105 @@
 title: Hyperparameter Tuning
 ---
 
+
+A PredictionIO engine is governed by a set of parameters, these parameters
+determines which algorithm is used as well as the parameter for the algorithm.
+It naturally raises a question of how to choose the best set of parameters.
+The evaluation module facilitates user to *tune* the engine to obtain the best
+parameter set.
+
+## Quick Start
+
+We demonstrate the evaluation with [the classification template]
+(/templates/classification/quickstart/).
+The classification template uses naive bayesian algorithm that has a smoothing
+parameter. We evaluate the prediction quality against different parameter value
+to find the best one.
+
+### Edit the AppId
+
+Edit MyClassification/src/main/scala/***Evaluation.scala*** to specify the 
+*appId* you used to import the data.
+
+```scala
+object EngineParamsList extends EngineParamsGenerator {
+  ...
+  private[this] val baseEP = EngineParams(
+    dataSourceParams = DataSourceParams(appId = <YOUR_APP_ID>, evalK = Some(5)))
+  ...
+}
+```
+
+### Building and run the evaluation
+To run evaluation, the command `pio eval` is used. It takes to
+mandatory parameter, 
+1. the `Evaluation` object, it tells PredictionIO the engine and metric we use
+   for the evaluation; and 
+2. the `EngineParamsGenerator`, it contains a list of engine params to test
+   against. 
+The following command kickstarts the evaluation 
+workflow for the classification template.
+
+```
+$ pio build
+...
+$ pio eval org.template.classification.PrecisionEvaluation \
+    org.template.classification.EngineParamsList 
+```
+
+You will see the following output:
+
+```
+...
+[INFO] [CoreWorkflow$] CoreWorkflow.runEvaluation
+...
+[INFO] [EvaluationWorkflow$] Iteration 0
+[INFO] [EvaluationWorkflow$] EngineParams: {"dataSourceParams":{"":{"appId":18,"evalK":5}},"preparatorParams":{"":{}},"algorithmParamsList":[{"naive":{"lambda":10.0}}],"servingParams":{"":{}}}
+[INFO] [EvaluationWorkflow$] Result: 0.9281045751633987
+[INFO] [EvaluationWorkflow$] Iteration 1
+[INFO] [EvaluationWorkflow$] EngineParams: {"dataSourceParams":{"":{"appId":18,"evalK":5}},"preparatorParams":{"":{}},"algorithmParamsList":[{"naive":{"lambda":100.0}}],"servingParams":{"":{}}}
+[INFO] [EvaluationWorkflow$] Result: 0.9150326797385621
+[INFO] [EvaluationWorkflow$] Iteration 2
+[INFO] [EvaluationWorkflow$] EngineParams: {"dataSourceParams":{"":{"appId":18,"evalK":5}},"preparatorParams":{"":{}},"algorithmParamsList":[{"naive":{"lambda":1000.0}}],"servingParams":{"":{}}}
+[INFO] [EvaluationWorkflow$] Result: 0.4444444444444444
+...
+[INFO] [CoreWorkflow$] Stop spark context
+[INFO] [CoreWorkflow$] Optimal score: 0.9281045751633987
+[INFO] [CoreWorkflow$] Optimal engine params: {
+  "dataSourceParams":{
+    "":{
+      "appId":18,
+      "evalK":5
+    }
+  },
+  "preparatorParams":{
+    "":{
+      
+    }
+  },
+  "algorithmParamsList":[
+    {
+      "naive":{
+        "lambda":10.0
+      }
+    }
+  ],
+  "servingParams":{
+    "":{
+      
+    }
+  }
+}
+...
+```
+
+The console prints out the evaluation metric score of each engine params, and
+finally pretty print the optimal engine params.
+Amongst the 3 engine params we evaluate, *lambda = 10.0* yields the highest 
+precision score of 0.9281. 
+
+## Detailed Explanation
+
 An engine often depends on a number of parameters, for example, naive bayesian
 classification algorithm has a smoothing parameter to make the model more
 adaptive to unseen data. Comparing with parameters which are *learnt* by the
@@ -216,42 +315,20 @@ construct the list of engine params we want to evaluation by
 adding or replacing the controller parameter. Lines 13 to 16 generate 3 engine
 parameters, each has a different smoothing parameters.
 
+
+
 ## Running the Evaluation
 
-It remains to run the evaluation. The command `pio eval` is used. It takes to
-mandatory parameter, 1. the `Evaluation` object, and 2. the
-`EngineParamsGenerator`. The following command kickstarts the evaluation 
-workflow for the classification template.
+It remains to run the evaluation. Let's recap the quick start section above.
+The `pio eval` command kick starts the evaluation, and the result can be seen
+from the console.
 
-### Building
 ```
 $ pio build
-```
-
-### Running the evaluation
-
-```
+...
 $ pio eval org.template.classification.PrecisionEvaluation \
     org.template.classification.EngineParamsList 
-```
-
-You will see the following output:
-
-```
 ...
-[INFO] [CoreWorkflow$] CoreWorkflow.runEvaluation
-...
-[INFO] [EvaluationWorkflow$] Iteration 0
-[INFO] [EvaluationWorkflow$] EngineParams: {"dataSourceParams":{"":{"appId":18,"evalK":5}},"preparatorParams":{"":{}},"algorithmParamsList":[{"naive":{"lambda":10.0}}],"servingParams":{"":{}}}
-[INFO] [EvaluationWorkflow$] Result: 0.9281045751633987
-[INFO] [EvaluationWorkflow$] Iteration 1
-[INFO] [EvaluationWorkflow$] EngineParams: {"dataSourceParams":{"":{"appId":18,"evalK":5}},"preparatorParams":{"":{}},"algorithmParamsList":[{"naive":{"lambda":100.0}}],"servingParams":{"":{}}}
-[INFO] [EvaluationWorkflow$] Result: 0.9150326797385621
-[INFO] [EvaluationWorkflow$] Iteration 2
-[INFO] [EvaluationWorkflow$] EngineParams: {"dataSourceParams":{"":{"appId":18,"evalK":5}},"preparatorParams":{"":{}},"algorithmParamsList":[{"naive":{"lambda":1000.0}}],"servingParams":{"":{}}}
-[INFO] [EvaluationWorkflow$] Result: 0.4444444444444444
-...
-[INFO] [CoreWorkflow$] Stop spark context
 [INFO] [CoreWorkflow$] Optimal score: 0.9281045751633987
 [INFO] [CoreWorkflow$] Optimal engine params: {
   "dataSourceParams":{
@@ -278,13 +355,7 @@ You will see the following output:
     }
   }
 }
-...
 ```
-
-The console prints out the evaluation metric score of each engine params, and
-finally pretty print the optimal engine params.
-Amongst the 3 engine params we evaluate, *lambda = 10.0* yields the highest 
-precision score of 0.9281. 
 
 
 ## Notes
