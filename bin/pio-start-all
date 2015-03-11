@@ -25,7 +25,15 @@ export PIO_HOME="$(cd `dirname $0`/..; pwd)"
 # Elasticsearch
 echo "Starting Elasticsearch..."
 if [ -n "$PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME" ]; then
-  $PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME/bin/elasticsearch -d -p $PIO_HOME/es.pid
+  JPS=`jps`
+  if [[ $JPS =~ "Elasticsearch" ]]; then
+    echo "Elasticsearch is already running. Please use pio-stop-all to try stopping it first."
+    echo "Note: If you started Elasticsearch manually, you will need to kill it manually."
+    echo "Aborting..."
+    exit 1
+  else
+    $PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME/bin/elasticsearch -d -p $PIO_HOME/es.pid
+  fi
 else
   echo "Please set PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME in conf/pio-env.sh, or in your environment."
   echo "Cannot start Elasticsearch. Aborting..."
