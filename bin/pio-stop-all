@@ -18,13 +18,13 @@
 # node scenario.
 
 # Figure out where PredictionIO is installed
-FWDIR="$(cd `dirname $0`/..; pwd)"
+export PIO_HOME="$(cd `dirname $0`/..; pwd)"
 
-. $FWDIR/bin/load-pio-env.sh
+. $PIO_HOME/bin/load-pio-env.sh
 
 # PredictionIO Event Server
 echo "Stopping PredictionIO Event Server..."
-PIDFILE=$FWDIR/eventserver.pid
+PIDFILE=$PIO_HOME/eventserver.pid
 if [ -e $PIDFILE ]; then
   cat $PIDFILE | xargs kill
   rm $PIDFILE
@@ -38,7 +38,7 @@ fi
 
 # Elasticsearch
 echo "Stopping Elasticsearch..."
-PIDFILE=$FWDIR/es.pid
+PIDFILE=$PIO_HOME/es.pid
 if [ -e $PIDFILE ]; then
   cat $PIDFILE | xargs kill
   rm $PIDFILE
