@@ -93,9 +93,6 @@ limitations under the License.
            class="org.scalastyle.scalariform.SpaceAfterCommentStartChecker"
            enabled="true"/>
     <check enabled="true"
-           class="org.scalastyle.scalariform.ImportGroupingChecker"
-           level="error"/>
-    <check enabled="true"
            class="org.scalastyle.scalariform.PublicMethodsHaveTypeChecker"
            level="error"/>
 </scalastyle>
