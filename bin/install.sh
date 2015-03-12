@@ -251,6 +251,9 @@ mkdir $vendors_dir
 
 # Spark
 echo -e "\033[1;36mStarting Spark setup in:\033[0m $spark_dir"
+if [[ -e spark-$SPARK_VERSION-bin-hadoop2.4.tgz ]]; then
+  rm spark-$SPARK_VERSION-bin-hadoop2.4.tgz
+fi
 if [[ ! -e spark-$SPARK_VERSION-bin-hadoop2.4.tgz ]]; then
   echo "Downloading Spark..."
   curl -O http://d3kbcqa49mib13.cloudfront.net/spark-$SPARK_VERSION-bin-hadoop2.4.tgz
@@ -266,6 +269,9 @@ echo -e "\033[1;32mSpark setup done!\033[0m"
 
 # Elasticsearch
 echo -e "\033[1;36mStarting Elasticsearch setup in:\033[0m $elasticsearch_dir"
+if [[ -e elasticsearch-$ELASTICSEARCH_VERSION.tar.gz ]]; then
+  rm elasticsearch-$ELASTICSEARCH_VERSION.tar.gz
+fi
 if [[ ! -e elasticsearch-$ELASTICSEARCH_VERSION.tar.gz ]]; then
   echo "Downloading Elasticsearch..."
   curl -O https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-$ELASTICSEARCH_VERSION.tar.gz
@@ -284,6 +290,9 @@ echo -e "\033[1;32mElasticsearch setup done!\033[0m"
 
 # HBase
 echo -e "\033[1;36mStarting HBase setup in:\033[0m $hbase_dir"
+if [[ -e hbase-$HBASE_VERSION-hadoop2-bin.tar.gz ]]; then
+  rm hbase-$HBASE_VERSION-hadoop2-bin.tar.gz
+fi
 if [[ ! -e hbase-$HBASE_VERSION-hadoop2-bin.tar.gz ]]; then
   echo "Downloading HBase..."
   curl -O http://archive.apache.org/dist/hbase/hbase-$HBASE_VERSION/hbase-$HBASE_VERSION-hadoop2-bin.tar.gz
