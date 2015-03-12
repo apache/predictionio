@@ -224,9 +224,7 @@ cd $TEMP_DIR
 
 # delete existing tmp file before download again
 if [[ -e  $PIO_FILE ]]; then
-  if confirm "Delete existing temporary file?"; then
-    rm $PIO_FILE
-  fi
+  rm $PIO_FILE
 fi
 
 if [[ ! -e $PIO_FILE ]]; then
