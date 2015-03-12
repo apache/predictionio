@@ -65,7 +65,6 @@ trait Evaluation extends Deployment {
     _evaluator
   }
   
-  private [prediction] 
   def engineEvaluator
   : (BaseEngine[_, _, _, _], BaseEvaluator[_, _, _, _, _]) = {
     assert(_evaluatorSet, "Evaluator not set")
@@ -86,39 +85,21 @@ trait Evaluation extends Deployment {
   /** Returns both the [[Engine]] and [[Metric]] contained in this
     * [[Evaluation]].
     */
-  private [prediction] 
   def engineMetric: (BaseEngine[_, _, _, _], Metric[_, _, _, _, _]) = {
     throw new NotImplementedError("This method is to keep the compiler happy")
   }
 
-  /** Sets both the [[Engine]] and [[Metric]] for this [[Evaluation]]. */
+  /** Sets both the [[Engine]], [[Metric]], and a list of auxilary [[Metric]]
+    * for this [[Evaluation]]. */
   def engineMetric_=[EI, Q, P, A](
-    engineMetric: (BaseEngine[EI, Q, P, A], Metric[EI, Q, P, A, _])) {
+    engineMetric: (
+      BaseEngine[EI, Q, P, A], 
+      Metric[EI, Q, P, A, _],
+      Seq[Metric[EI, Q, P, A, _]])) {
     //val e: BaseEvaluator[EI, Q, P, A, R <: BaseEvaluatorResult] = 
     //  new MetricEvaluator(engineMetric._2)
     engineEvaluator = (
       engineMetric._1, 
-      new MetricEvaluator(engineMetric._2))
-  }
-
-  /** Returns both the [[Engine]] and [[Metric]] contained in this
-    * [[Evaluation]].
-    *
-    */
-  private [prediction] 
-  def engineMetrics: (BaseEngine[_, _, _, _], Metric[_, _, _, _, _]) = {
-    throw new NotImplementedError("This method is to keep the compiler happy")
-  }
-
-  /** Sets the [[Engine]], [[Metric]], and Seq([[Metric]])) 
-    * for this [[Evaluation]]. */
-  def engineMetrics_=[EI, Q, P, A](
-    engineMetrics: (
-      BaseEngine[EI, Q, P, A], 
-      Metric[EI, Q, P, A, _], 
-      Seq[Metric[EI, Q, P, A, _]])) {
-    engineEvaluator = (
-      engineMetrics._1,
-      new MetricEvaluator(engineMetrics._2, engineMetrics._3))
+      new MetricEvaluator(engineMetric._2, engineMetric._3))
   }
 }
