@@ -48,6 +48,7 @@ import scala.collection.JavaConversions._
 import scala.language.existentials
 import scala.reflect.ClassTag
 import scala.reflect.Manifest
+import scala.collection.mutable.StringBuilder
 
 case class MetricScores[R](
   val score: R, 
@@ -84,11 +85,20 @@ extends BaseEvaluatorResult {
     
     val bestEPStr = writePretty(bestEngineParams)
 
-    s"""MetricEvaluatorResult:
-       |  # engine params evaluated: ${engineParamsScores.size}
-       |  best score: ${bestScore}
-       |  best engine param: ${bestEPStr}
-       |""".stripMargin
+    val strings = (
+      Seq(
+        "MetricEvaluatorResult:",
+        s"  # engine params evaluated: ${engineParamsScores.size}") ++
+      Seq(
+        "Optimal Engine Params:",
+        s"  $bestEPStr",
+        "Metrics:",
+        s"  $metricHeader: ${bestScore.score}") ++
+      otherMetricHeaders.zip(bestScore.otherScores).map { 
+        case (h, s) => s"  $h: $s"
+      })
+
+    strings.mkString("\n")
   }
 }
 
