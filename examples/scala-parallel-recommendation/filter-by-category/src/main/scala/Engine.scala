@@ -6,7 +6,7 @@ import io.prediction.controller.Engine
 case class Query(
   user: String,
   num: Int,
-  category: String
+  categories: Array[String]
 ) extends Serializable
 
 case class PredictedResult(

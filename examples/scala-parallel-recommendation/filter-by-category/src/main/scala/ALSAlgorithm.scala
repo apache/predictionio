@@ -7,7 +7,9 @@ import io.prediction.data.storage.BiMap
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import org.apache.spark.mllib.recommendation.{Rating => MLlibRating, CategoriesALSModels, ALS, ALSModel}
+import org.apache.spark.mllib.recommendation.ALS
+import org.apache.spark.mllib.recommendation.{Rating => MLlibRating}
+import org.apache.spark.mllib.recommendation.ALSModel
 
 import grizzled.slf4j.Logger
 
@@ -18,11 +20,11 @@ case class ALSAlgorithmParams(
   seed: Option[Long]) extends Params
 
 class ALSAlgorithm(val ap: ALSAlgorithmParams)
-  extends PAlgorithm[PreparedData, CategoriesALSModels, Query, PredictedResult] {
+  extends PAlgorithm[PreparedData, ALSModel, Query, PredictedResult] {
 
   @transient lazy val logger = Logger[this.type]
 
-  def train(sc: SparkContext, data: PreparedData): CategoriesALSModels = {
+  def train(sc: SparkContext, data: PreparedData): ALSModel = {
     // MLLib ALS cannot handle empty training data.
     require(data.ratings.take(1).nonEmpty,
       s"RDD[Rating] in PreparedData cannot be empty." +
@@ -61,49 +63,39 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
     val categories = data.items.flatMap(_.categories).distinct().collect().toSet
 
     val categoriesMap = categories.map { category =>
-      val itemIds = data.items
+      category -> data.items
         .filter(_.categories.contains(category))
         .map(item => itemStringIntMap(item.id))
         .collect()
         .toSet
-
-      val itemFeatures = m.productFeatures.filter {
-        case (id, features) => itemIds.contains(id)
-      }
-
-      category -> new ALSModel(
-        rank = m.rank,
-        userFeatures = m.userFeatures,
-        productFeatures = itemFeatures
-      )
     }.toMap
 
-    new CategoriesALSModels(
-      modelsMap = categoriesMap,
+    new ALSModel(
+      rank = m.rank,
+      userFeatures = m.userFeatures,
+      productFeatures = m.productFeatures,
       userStringIntMap = userStringIntMap,
-      itemStringIntMap = itemStringIntMap
-    )
+      itemStringIntMap = itemStringIntMap,
+      categoryItemsMap = categoriesMap)
   }
 
-  def predict(models: CategoriesALSModels, query: Query): PredictedResult = {
-    models.modelsMap.get(query.category).map { model =>
-      // Convert String ID to Int index for Mllib
-      models.userStringIntMap.get(query.user).map { userInt =>
-        // create inverse view of itemStringIntMap
-        val itemIntStringMap = models.itemStringIntMap.inverse
-        // recommendProducts() returns Array[MLlibRating], which uses item Int
-        // index. Convert it to String ID for returning PredictedResult
-        val itemScores = model.recommendProducts(userInt, query.num)
-          .map (r => ItemScore(itemIntStringMap(r.product), r.rating))
-        PredictedResult(itemScores)
-      }.getOrElse{
-        logger.info(s"No prediction for unknown user ${query.user}.")
-        PredictedResult(Array.empty)
+  def predict(model: ALSModel, query: Query): PredictedResult = {
+    // Convert String ID to Int index for Mllib
+    model.userStringIntMap.get(query.user).map { userInt =>
+      // create inverse view of itemStringIntMap
+      val itemIntStringMap = model.itemStringIntMap.inverse
+      // Find items on query category
+      val categoriesItems = query.categories.map { category =>
+        model.categoryItemsMap.getOrElse(category, Set.empty)
       }
-    }
-    .getOrElse {
-      logger.info(s"No prediction for unknown category ${query.category}.")
-      PredictedResult(Array.empty)
+      // recommendProductsFromCategory() returns Array[MLlibRating], which uses item Int
+      // index. Convert it to String ID for returning PredictedResult
+      val itemScores = model.recommendProductsFromCategory(userInt, query.num, categoriesItems)
+        .map (r => ItemScore(itemIntStringMap(r.product), r.rating))
+      new PredictedResult(itemScores)
+    }.getOrElse{
+      logger.info(s"No prediction for unknown user ${query.user}.")
+      new PredictedResult(Array.empty)
     }
   }
 }

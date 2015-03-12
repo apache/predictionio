@@ -1,7 +1,7 @@
 # Recommendation Template With Filtering by Category
 
 This engine template is based on the Recommendation Template version v0.1.2. It's modified so that each item has a set
-of categories, queries include a `category` field and results only include items in the given category.
+of categories, queries include a `categories` field and results only include items in any of the specified categories.
 
 ## Documentation
 
@@ -37,7 +37,7 @@ Added `category` field to the `Query` class:
 case class Query(
   user: String,
   num: Int,
-  category: String
+  categories: Array[String]
 ) extends Serializable
 ```
 
@@ -104,59 +104,38 @@ class PreparedData(
 
 ### Changes to ALSModel.scala
 
-* Introduce `CategoriesALSModels` class. This class maintains a reference to an `ALSModel` for each different category.
-It also maintains a reference to `userStringIntMap` and `itemStringIntMap`, which are used when predicting queries of
-any category:
+* Added `categoryItemsMap` field to ALSModel class
 
 ```scala
-class CategoriesALSModels(
-    val modelsMap: Map[String, ALSModel],
+class ALSModel(
+    override val rank: Int,
+    override val userFeatures: RDD[(Int, Array[Double])],
+    override val productFeatures: RDD[(Int, Array[Double])],
     val userStringIntMap: BiMap[String, Int],
-    val itemStringIntMap: BiMap[String, Int])
-  extends IPersistentModel[ALSAlgorithmParams] {
-  def save(id: String, params: ALSAlgorithmParams, sc: SparkContext): Boolean = {
-    sc.parallelize(modelsMap.keys.toSeq)
-      .saveAsObjectFile(s"/tmp/${id}/mapKeys")
-    sc.parallelize(Seq(userStringIntMap))
-      .saveAsObjectFile(s"/tmp/${id}/userStringIntMap")
-    sc.parallelize(Seq(itemStringIntMap))
-      .saveAsObjectFile(s"/tmp/${id}/itemStringIntMap")
+    val itemStringIntMap: BiMap[String, Int],
+    val categoryItemsMap: Map[String, Set[Int]])
+```
 
-    modelsMap.foreach {
-      case (category, model) =>
-        model.save(s"${id}-${category}", params, sc)
+* Added a function that recommends products whose ID is in a list of sets
+
+```scala
+  def recommendProductsFromCategory(user: Int, num: Int, categoryItems: Array[Set[Int]]) = {
+    val filteredProductFeatures = productFeatures
+      .filter { case (id, _) => categoryItems.exists(_.contains(id)) }
+    recommend(userFeatures.lookup(user).head, filteredProductFeatures, num)
+      .map(t => Rating(user, t._1, t._2))
+  }
+
+  private def recommend(
+      recommendToFeatures: Array[Double],
+      recommendableFeatures: RDD[(Int, Array[Double])],
+      num: Int): Array[(Int, Double)] = {
+    val recommendToVector = new DoubleMatrix(recommendToFeatures)
+    val scored = recommendableFeatures.map { case (id,features) =>
+      (id, recommendToVector.dot(new DoubleMatrix(features)))
     }
-    true
+    scored.top(num)(Ordering.by(_._2))
   }
-
-  override def toString = {
-    s"categories: [${modelsMap.size}]" +
-    s"(${modelsMap.keys.take(2)}...})" +
-    s" userStringIntMap: [${userStringIntMap.size}]" +
-    s"(${userStringIntMap.take(2)}...)" +
-    s" itemStringIntMap: [${itemStringIntMap.size}]" +
-    s"(${itemStringIntMap.take(2)}...)"
-  }
-}
-
-object CategoriesALSModels
-  extends IPersistentModelLoader[ALSAlgorithmParams, CategoriesALSModels] {
-  def apply(id: String, params: ALSAlgorithmParams, sc: Option[SparkContext]) = {
-    val keys = sc.get
-      .objectFile[String](s"/tmp/${id}/mapKeys").collect().toList
-
-    val modelMap = keys.map { category =>
-      category -> ALSModel.apply(s"${id}-${category}", params, sc)
-    }.toMap
-
-    val userStringIntMap = sc.get
-      .objectFile[BiMap[String, Int]](s"/tmp/${id}/userStringIntMap").first
-    val itemStringIntMap = sc.get
-      .objectFile[BiMap[String, Int]](s"/tmp/${id}/itemStringIntMap").first
-
-    new CategoriesALSModels(modelMap, userStringIntMap, itemStringIntMap)
-  }
-}
 ```
 
 ### Changes to ALSAlgorithm.scala
@@ -169,65 +148,32 @@ object CategoriesALSModels
     ...
 ```
 
-* Create an ALS model for each category
+* Find set of items of each category
 
 ```scala
     ...
     val categoriesMap = categories.map { category =>
-      val itemIds = data.items
+      category -> data.items
         .filter(_.categories.contains(category))
         .map(item => itemStringIntMap(item.id))
         .collect()
         .toSet
-
-      val itemFeatures = m.productFeatures.filter {
-        case (id, features) => itemIds.contains(id)
-      }
-
-      category -> new ALSModel(
-        rank = m.rank,
-        userFeatures = m.userFeatures,
-        productFeatures = itemFeatures
-      )
     }.toMap
     ...
 ```
 
-* Create a `CategoriesALSModels` object:
+* Find list of sets of items on which we are interested, use new `recommendProductsFromCategory` function:
 
 ```scala
-    ...
-    new CategoriesALSModels(
-      modelsMap = categoriesMap,
-      userStringIntMap = userStringIntMap,
-      itemStringIntMap = itemStringIntMap
-    )
-```
-
-* Select model based on the query category, return an empty result if the category does not exist:
-
-```scala
-  def predict(models: CategoriesALSModels, query: Query): PredictedResult = {
-    models.modelsMap.get(query.category).map { model =>
-      // Convert String ID to Int index for Mllib
-      models.userStringIntMap.get(query.user).map { userInt =>
-        // create inverse view of itemStringIntMap
-        val itemIntStringMap = models.itemStringIntMap.inverse
-        // recommendProducts() returns Array[MLlibRating], which uses item Int
-        // index. Convert it to String ID for returning PredictedResult
-        val itemScores = model.recommendProducts(userInt, query.num)
-          .map (r => ItemScore(itemIntStringMap(r.product), r.rating))
-        PredictedResult(itemScores)
-      }.getOrElse{
-        logger.info(s"No prediction for unknown user ${query.user}.")
-        PredictedResult(Array.empty)
+      ...
+      val categoriesItems = query.categories.map { category =>
+        model.categoryItemsMap.getOrElse(category, Set.empty)
       }
-    }
-    .getOrElse {
-      logger.info(s"No prediction for unknown category ${query.category}.")
-      PredictedResult(Array.empty)
-    }
-  }
+      // recommendProductsFromCategory() returns Array[MLlibRating], which uses item Int
+      // index. Convert it to String ID for returning PredictedResult
+      val itemScores = model.recommendProductsFromCategory(userInt, query.num, categoriesItems)
+        .map (r => ItemScore(itemIntStringMap(r.product), r.rating))
+      ...
 ```
 
 ### Example Request
@@ -235,5 +181,5 @@ object CategoriesALSModels
 The script `data/send_query.py` has been modified to represent the updated query structure:
 
 ```python
-print engine_client.send_query({"user": "1", "num": 4, "category": "action"})
+print engine_client.send_query({"user": "1", "num": 4, "categories": ["action", "western"]})
 ```
