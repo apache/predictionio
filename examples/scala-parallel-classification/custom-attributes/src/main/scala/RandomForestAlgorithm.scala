@@ -55,7 +55,12 @@ class RandomForestAlgorithm(val ap: RandomForestAlgorithmParams) // CHANGED
     val gendersMap = model.gendersMap
     val educationMap = model.educationMap
     val randomForestModel = model.randomForestModel
-    val label = randomForestModel.predict(Vectors.dense(Array(gendersMap(query.gender),query.age.toDouble,educationMap(query.education))))
+    val label = randomForestModel.predict(
+      Vectors.dense(Array(
+        gendersMap(query.gender),
+        query.age.toDouble,
+        educationMap(query.education))
+      ))
     new PredictedResult(label)
   }
 

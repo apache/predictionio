@@ -1,6 +1,6 @@
-# Classification Engine Template using Random Forest Algorithm
+# Classification Engine Template with Custom Attributes and Random Forest Algorithm
 
-This example engine is based on Classification Tempplate version v0.1.1 and is modified to use Random Forest algorithm.
+This example engine is based on Classification Tempplate version v0.1.1 and is modified to use Random Forest algorithm and demonstrates how to use custom attributes for classification.
 
 ## Classification template
 
@@ -119,7 +119,7 @@ class Query(
 ### Changes to Preparator.scala
 
 added attributes to PreparedData
-```scala	
+```scala
 	class PreparedData(
  		 val labeledPoints: RDD[LabeledPoint],
   val gendersMap: Map[String,Double],
