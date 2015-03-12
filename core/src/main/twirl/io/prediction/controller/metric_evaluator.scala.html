@@ -1,0 +1,94 @@
+<html>
+  <head>
+    <script type='text/javascript' src='https://www.google.com/jsapi'></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script>
+      google.load('visualization', '1', {packages:['table', 'corechart',]});
+    </script>
+  </head>
+  <body>
+    <h1>Metric Evaluator</h1>
+    <div id='debug'></div>
+    <div id='table'>
+      <h3>Evaluated Engine Params List</h3>
+    </div>
+    <pre id='engineParams'></div>
+    <script type='text/javascript'>
+      google.setOnLoadCallback(load);
+
+      //var url =  'http://localhost:9000/engine_instances/ky01Q-glQheNE_s885JTSg/local_evaluator_results.json';
+      var url = 'evaluator_results.json';
+      var rawData;
+      var metricHeader;
+      var otherMetricHeaders;
+      var engineParamsScores;
+      var table;
+      var dataTable;
+
+      function load() {
+        rawData = JSON.parse(
+            jQuery.ajax({
+              url: url,
+              dataType: 'json',
+              async: false,
+              }).responseText);
+
+        metricHeader = rawData['metricHeader'];
+        otherMetricHeaders = rawData['otherMetricHeaders'];
+        engineParamsScores = rawData['engineParamsScores'];
+
+        drawTable();
+      }
+
+      function tableSelectHandler() {
+        var selection = table.getSelection();
+        if (selection.length > 0) {
+          var row = selection[0].row;
+          var idx = dataTable.getValue(row, 0);
+          var engineParams = engineParamsScores[idx]._1;
+
+          document.getElementById('engineParams').innerHTML = JSON.stringify(
+            engineParams, null, 2);
+        } else {
+          document.getElementById('engineParams').innerHTML = "";
+        }
+      }
+
+      function drawTable() {
+        var tableDiv = document.createElement('div');
+        document.getElementById('table').appendChild(tableDiv);
+
+
+        var dataArray = [];
+
+        var headers = ['Index', 'Best', metricHeader].concat(otherMetricHeaders);
+        dataArray.push(headers);
+
+        for (epIdx = 0; epIdx < engineParamsScores.length; epIdx++) {
+          var epScore = engineParamsScores[epIdx];
+          var isBest = (epIdx == rawData.bestIdx ? "*" : "");
+          dataArray.push([epIdx, isBest, epScore._2.score].concat(epScore._2.otherScores));
+        }
+
+        dataTable = google.visualization.arrayToDataTable(dataArray, false);
+
+        // formatter
+        var numberFormatter = new google.visualization.NumberFormat({fractionDigits: 4});
+
+        for (colIdx = 1; colIdx < dataTable.getNumberOfColumns(); colIdx++) {
+          if (dataTable.getColumnType(colIdx) == "number") {
+            numberFormatter.format(dataTable, colIdx);
+          }
+        }
+
+        table = new google.visualization.Table(tableDiv);
+
+        // select handler
+        google.visualization.events.addListener(table, 'select', tableSelectHandler);
+
+        table.draw(dataTable);
+      }
+
+    </script>
+  </body>
+</html>

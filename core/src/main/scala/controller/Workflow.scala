@@ -32,6 +32,7 @@ import org.json4s._
 import org.json4s.native.Serialization.write
 import io.prediction.data.storage.EngineInstance
 import com.github.nscala_time.time.Imports.DateTime
+import io.prediction.core.BaseEvaluatorResult
 
 /** Workflow parameters.
   *
@@ -127,7 +128,8 @@ object Workflow {
     )
   }
 
-  def runEvaluationTypeless[EI, Q, P, A, EEI, EQ, EP, EA, ER](
+  def runEvaluationTypeless[
+      EI, Q, P, A, EEI, EQ, EP, EA, ER <: BaseEvaluatorResult](
       engine: BaseEngine[EI, Q, P, A],
       engineParamsList: Seq[EngineParams],
       // metric: Metric[MEI, MQ, MP, MA, MR],
@@ -146,7 +148,7 @@ object Workflow {
 
   /** :: Experimental :: */
   @Experimental
-  def runEvaluation[EI, Q, P, A, R](
+  def runEvaluation[EI, Q, P, A, R <: BaseEvaluatorResult](
       engine: BaseEngine[EI, Q, P, A],
       engineParamsList: Seq[EngineParams],
       // metric: Metric[EI, Q, P, A, R],

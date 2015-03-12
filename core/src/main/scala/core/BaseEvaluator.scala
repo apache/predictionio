@@ -22,12 +22,21 @@ import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
-abstract class BaseEvaluator[EI, Q, P, A, ER]
+abstract class BaseEvaluator[EI, Q, P, A, ER <: BaseEvaluatorResult]
   extends AbstractDoer {
-
   def evaluateBase(
     sc: SparkContext,
     engineEvalDataSet: Seq[(EngineParams, Seq[(EI, RDD[(Q, P, A)])])],
     params: WorkflowParams): ER
 }
 
+trait BaseEvaluatorResult extends Serializable {
+  /* A short description of the result. */
+  def toOneLiner(): String = ""
+  
+  /** HTML portion of the rendered evaluator results. */
+  def toHTML(): String = ""
+  
+  /** JSON portion of the rendered evaluator results. */
+  def toJSON(): String = ""
+}

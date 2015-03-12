@@ -67,7 +67,7 @@ class DashboardActor(
   def receive: Actor.Receive = runRoute(dashboardRoute)
 }
 
-trait DashboardService extends HttpService {
+trait DashboardService extends HttpService with CORSSupport {
   val dc: DashboardConfig
   val engineInstances = Storage.getMetaDataEngineInstances
   val pioEnvVars = sys.env.filter(kv => kv._1.startsWith("PIO_"))
@@ -172,6 +172,19 @@ trait DashboardService extends HttpService {
               complete(i.evaluatorResultsJSON)
             } getOrElse {
               complete(StatusCodes.NotFound)
+            }
+          }
+        }
+      } ~
+      cors {
+        path("local_evaluator_results.json") {
+          get {
+            respondWithMediaType(`application/json`) {
+              engineInstances.get(instanceId).map { i =>
+                complete(i.evaluatorResultsJSON)
+              } getOrElse {
+                complete(StatusCodes.NotFound)
+              }
             }
           }
         }

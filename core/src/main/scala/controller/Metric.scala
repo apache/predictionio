@@ -73,3 +73,46 @@ extends Metric[EI, Q, P, A, Double] {
     (r.map(_._1).sum / r.map(_._2).sum)
   }
 }
+
+/** Returns the global average of the non-None score returned by the calculate
+  * method.
+  *
+  * @tparam EI Evaluation information
+  * @tparam Q Query
+  * @tparam P Predicted result
+  * @tparam A Actual result
+  *
+  * @group Evaluation
+  */
+abstract class OptionAverageMetric[EI, Q, P, A]
+extends Metric[EI, Q, P, A, Double] {
+  /** Implement this method to return a score that will be used for averaging
+    * across all QPA tuples.
+    */
+  def calculate(q: Q, p: P, a: A): Option[Double]
+
+  def calculate(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])])
+  : Double = {
+    // TODO(yipjustin): Parallelize
+    val r: Seq[(Double, Long)] = evalDataSet
+    .par
+    .map { case (_, qpaRDD) =>
+      val scores: RDD[Double]  = qpaRDD
+      .map { case (q, p, a) => calculate(q, p, a) }
+      .filter(!_.isEmpty)
+      .map(_.get)
+
+      // TODO: reduce and count are actions. Make them async.
+      (scores.reduce(_ + _), scores.count)
+    }
+    .seq
+
+    val c = r.map(_._2).sum
+    if (c > 0) {
+      (r.map(_._1).sum / r.map(_._2).sum)
+    } else {
+      Double.NegativeInfinity
+    }
+  }
+}
+

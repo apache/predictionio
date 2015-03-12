@@ -43,6 +43,7 @@ object JavaWorkflow {
     engineParams: EngineParams,
     params: WorkflowParams
   ) {
+  /*
     runEngine(
       engine = engine,
       engineParams = engineParams,
@@ -50,6 +51,7 @@ object JavaWorkflow {
       evaluatorParams = null,
       params = params
     )
+  */
   }
 
   /** Creates a workflow that runs an engine.
@@ -67,6 +69,7 @@ object JavaWorkflow {
     * @param evaluatorParams Evaluator parameters.
     * @param params Workflow parameters.
     */
+  /*
   def runEngine[EI, TD, PD, Q, P, A, ER <: AnyRef](
       engine: Engine[TD, EI, PD, Q, P, A],
       engineParams: EngineParams,
@@ -75,6 +78,7 @@ object JavaWorkflow {
       evaluatorParams: Params,
       params: WorkflowParams
     ) {
+  */
     /*
     JavaCoreWorkflow.run(
       dataSourceClassMap = engine.dataSourceClassMap,
@@ -90,5 +94,5 @@ object JavaWorkflow {
       params = params
     )
     */
-  }
+  //}
 }
