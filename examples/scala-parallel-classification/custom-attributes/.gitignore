@@ -1,0 +1,4 @@
+data/*.txt
+manifest.json
+pio.log
+target/
