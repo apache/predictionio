@@ -20,6 +20,7 @@ import io.prediction.core.BasePreparator
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseServing
 import io.prediction.core.BaseEvaluator
+import io.prediction.core.BaseEvaluatorResult
 import io.prediction.core.Doer
 import io.prediction.core.BaseEngine
 // import io.prediction.workflow.EngineWorkflow
@@ -56,10 +57,10 @@ import grizzled.slf4j.Logger
   */
 trait Evaluation extends Deployment {
   protected [this] var _evaluatorSet: Boolean = false
-  protected [this] var _evaluator: BaseEvaluator[_, _, _, _, _] = _
+  protected [this] var _evaluator: BaseEvaluator[_, _, _, _, _ <: BaseEvaluatorResult] = _
 
   private [prediction] 
-  def evaluator: BaseEvaluator[_, _, _, _, _] = {
+  def evaluator: BaseEvaluator[_, _, _, _, _ <: BaseEvaluatorResult] = {
     assert(_evaluatorSet, "Evaluator not set")
     _evaluator
   }
@@ -72,8 +73,10 @@ trait Evaluation extends Deployment {
   }
 
   /** Sets both the [[Engine]] and [[Evaluator]] for this [[Evaluation]]. */
-  def engineEvaluator_=[EI, Q, P, A](
-    engineEvaluator: (BaseEngine[EI, Q, P, A], BaseEvaluator[EI, Q, P, A, _])) {
+  def engineEvaluator_=[EI, Q, P, A, R <: BaseEvaluatorResult](
+    engineEvaluator: (
+      BaseEngine[EI, Q, P, A], 
+      BaseEvaluator[EI, Q, P, A, R])) {
     assert(!_evaluatorSet, "Evaluator can be set at most once")
     engine = engineEvaluator._1
     _evaluator = engineEvaluator._2
@@ -85,15 +88,37 @@ trait Evaluation extends Deployment {
     */
   private [prediction] 
   def engineMetric: (BaseEngine[_, _, _, _], Metric[_, _, _, _, _]) = {
-    throw new NotImplementedError("You should not call this")
-    (engine, null.asInstanceOf[Metric[_,_,_,_,_]])
+    throw new NotImplementedError("This method is to keep the compiler happy")
   }
 
   /** Sets both the [[Engine]] and [[Metric]] for this [[Evaluation]]. */
   def engineMetric_=[EI, Q, P, A](
     engineMetric: (BaseEngine[EI, Q, P, A], Metric[EI, Q, P, A, _])) {
-    val e: BaseEvaluator[EI, Q, P, A, _] = new MetricEvaluator(engineMetric._2)
-    engineEvaluator = (engineMetric._1, e)
+    //val e: BaseEvaluator[EI, Q, P, A, R <: BaseEvaluatorResult] = 
+    //  new MetricEvaluator(engineMetric._2)
+    engineEvaluator = (
+      engineMetric._1, 
+      new MetricEvaluator(engineMetric._2))
   }
 
+  /** Returns both the [[Engine]] and [[Metric]] contained in this
+    * [[Evaluation]].
+    *
+    */
+  private [prediction] 
+  def engineMetrics: (BaseEngine[_, _, _, _], Metric[_, _, _, _, _]) = {
+    throw new NotImplementedError("This method is to keep the compiler happy")
+  }
+
+  /** Sets the [[Engine]], [[Metric]], and Seq([[Metric]])) 
+    * for this [[Evaluation]]. */
+  def engineMetrics_=[EI, Q, P, A](
+    engineMetrics: (
+      BaseEngine[EI, Q, P, A], 
+      Metric[EI, Q, P, A, _], 
+      Seq[Metric[EI, Q, P, A, _]])) {
+    engineEvaluator = (
+      engineMetrics._1,
+      new MetricEvaluator(engineMetrics._2, engineMetrics._3))
+  }
 }

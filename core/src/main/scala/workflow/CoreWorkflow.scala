@@ -30,6 +30,7 @@ import io.prediction.controller.WorkflowParams
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseDataSource
 import io.prediction.core.BaseEvaluator
+import io.prediction.core.BaseEvaluatorResult
 import io.prediction.core.BasePreparator
 import io.prediction.core.BaseServing
 import io.prediction.core.BaseEngine
@@ -121,7 +122,7 @@ object CoreWorkflow {
     }
   }
 
-  def runEvaluation[EI, Q, P, A, R](
+  def runEvaluation[EI, Q, P, A, R <: BaseEvaluatorResult](
       engine: BaseEngine[EI, Q, P, A],
       engineParamsList: Seq[EngineParams],
       engineInstance: EngineInstance,
@@ -141,7 +142,7 @@ object CoreWorkflow {
 
     WorkflowUtils.checkUpgrade(mode, engineInstance.engineFactory)
     
-    val evalResult = EvaluationWorkflow.runEvaluation(
+    val evalResult: BaseEvaluatorResult = EvaluationWorkflow.runEvaluation(
       sc,
       engine,
       engineParamsList,
@@ -151,11 +152,16 @@ object CoreWorkflow {
     implicit lazy val formats = Utils.json4sDefaultFormats +
       new NameParamsSerializer
 
-    // TODO: Save best instance to EngineInstance
+    val engineInstanceId = Storage.getMetaDataEngineInstances.insert(
+      engineInstance)
+
     val evaledEI = engineInstance.copy(
       status = "EVALCOMPLETED",
+      id = engineInstanceId,
       endTime = DateTime.now,
-      evaluatorResults = evalResult.toString
+      evaluatorResults = evalResult.toOneLiner,
+      evaluatorResultsHTML = evalResult.toHTML,
+      evaluatorResultsJSON = evalResult.toJSON
     )
 
     logger.info(s"Insert evaluation result")

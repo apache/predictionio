@@ -30,6 +30,7 @@ import io.prediction.controller.WorkflowParams
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseDataSource
 import io.prediction.core.BaseEvaluator
+import io.prediction.core.BaseEvaluatorResult
 import io.prediction.core.BasePreparator
 import io.prediction.core.BaseServing
 import io.prediction.core.BaseEngine
@@ -65,12 +66,13 @@ import org.json4s.native.Serialization.write
 
 object EvaluationWorkflow {
   @transient lazy val logger = Logger[this.type]
-  def runEvaluation[EI, Q, P, A, R](
+  def runEvaluation[EI, Q, P, A, R <: BaseEvaluatorResult](
       sc: SparkContext,
       engine: BaseEngine[EI, Q, P, A],
       engineParamsList: Seq[EngineParams],
       evaluator: BaseEvaluator[EI, Q, P, A, R],
-      params: WorkflowParams): R = {
+      params: WorkflowParams)
+    : BaseEvaluatorResult = {
     val engineEvalDataSet = engine.batchEval(sc, engineParamsList, params)
     evaluator.evaluateBase(sc, engineEvalDataSet, params)
   }
