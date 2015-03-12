@@ -1,14 +1,14 @@
 ---
-title: DASE Components Explained (Complimentary Purchase)
+title: DASE Components Explained (Complementary Purchase)
 ---
 
-<%= partial 'shared/dase/dase', locals: { template_name: 'Complimentary Purchase Engine Template' } %>
+<%= partial 'shared/dase/dase', locals: { template_name: 'Complementary Purchase Engine Template' } %>
 
 ## The Engine Design
 
-As you can see from the Quick Start, *MyComplimentaryPurchase* takes a JSON prediction
+As you can see from the Quick Start, *MyComplementaryPurchase* takes a JSON prediction
 query, e.g. `{ "items" : ["s2i1"], "num" : 3 }`, and return a JSON predicted result.
-In MyComplimentaryPurchase/src/main/scala/***Engine.scala***, the `Query` case class
+In MyComplementaryPurchase/src/main/scala/***Engine.scala***, the `Query` case class
 defines the format of such **query**:
 
 ```scala
@@ -57,12 +57,12 @@ case class ItemScore(
 ) extends Serializable
 ```
 
-Finally, `ComplimentaryPurchaseEngine` is the *Engine Factory* that defines the
+Finally, `ComplementaryPurchaseEngine` is the *Engine Factory* that defines the
 components this engine will use: Data Source, Data Preparator, Algorithm(s) and
 Serving components.
 
 ```scala
-object ComplimentaryPurchaseEngine extends IEngineFactory {
+object ComplementaryPurchaseEngine extends IEngineFactory {
   def apply() = {
     new Engine(
       classOf[DataSource],
@@ -73,7 +73,7 @@ object ComplimentaryPurchaseEngine extends IEngineFactory {
 }
 ```
 
-Each DASE component of the `ComplimentaryPurchaseEngine` will be explained below.
+Each DASE component of the `ComplementaryPurchaseEngine` will be explained below.
 
 ## Data
 
@@ -82,7 +82,7 @@ from the data store and prepare them for Algorithm.
 
 ### Data Source
 
-In MyComplimentaryPurchase/src/main/scala/***DataSource.scala***, the `readTraining`
+In MyComplementaryPurchase/src/main/scala/***DataSource.scala***, the `readTraining`
 method of class `DataSource` reads and selects data from the *Event Store*
 (data store of the *Event Server*). It returns `TrainingData`.
 
@@ -125,7 +125,7 @@ class DataSource(val dsp: DataSourceParams)
 }
 ```
 
-PredictionIO automatically loads the parameters of *datasource* specified in MyComplimentaryPurchase/***engine.json***, including *appId*, to `dsp`.
+PredictionIO automatically loads the parameters of *datasource* specified in MyComplementaryPurchase/***engine.json***, including *appId*, to `dsp`.
 
 In ***engine.json***:
 
@@ -143,7 +143,7 @@ In ***engine.json***:
 
 In `readTraining()`, `Storage.getPEvents()` returns a data access object which you could use to access data that is collected by PredictionIO Event Server.
 
-This Complimentary Purchase Engine Template requires "buy" events.
+This Complementary Purchase Engine Template requires "buy" events.
 
 `eventsDb.find(...)` specifies the events that you want to read. In this case, "user buy item" events are read and then each is mapped to a `BuyEvent` object.
 
@@ -167,7 +167,7 @@ NOTE: You could modify the DataSource to read other event other than the default
 
 ### Data Preparator
 
-In MyComplimentaryPurchase/src/main/scala/***Preparator.scala***, the `prepare` method
+In MyComplementaryPurchase/src/main/scala/***Preparator.scala***, the `prepare` method
 of class `Preparator` takes `TrainingData` as its input and performs any
 necessary feature selection and data processing tasks. At the end, it returns
 `PreparedData` which should contain the data *Algorithm* needs.
@@ -194,7 +194,7 @@ PredictionIO passes the returned `PreparedData` object to Algorithm's `train` fu
 
 ## Algorithm
 
-In MyComplimentaryPurchase/src/main/scala/***ALSAlgorithm.scala***, the two methods of
+In MyComplementaryPurchase/src/main/scala/***ALSAlgorithm.scala***, the two methods of
 the algorithm class are `train` and `predict`. `train` is responsible for
 training the predictive model; `predict` is
 responsible for using this model to make prediction.
@@ -228,7 +228,7 @@ Parameter description:
 - **maxNumRulesPerCond**: Maximum number of rules generated per condition and stored in the model. By default, the top rules are sorted by *lift* score.
 
 The values of these parameters can be specified in *algorithms* of
-MyComplimentaryPurchase/***engine.json***:
+MyComplementaryPurchase/***engine.json***:
 
 ```
 {
@@ -363,7 +363,7 @@ responsible for combining multiple predicted results into one if you have more
 than one predictive model. *Serving* then returns the final predicted result.
 PredictionIO will convert it to a JSON response automatically.
 
-In MyComplimentaryPurchase/src/main/scala/***Serving.scala***,
+In MyComplementaryPurchase/src/main/scala/***Serving.scala***,
 
 ```scala
 class Serving
@@ -384,4 +384,4 @@ When you send a JSON query to http://localhost:8000/queries.json,
 `Seq[PredictedResult]`.
 
 NOTE: An engine can train multiple models if you specify more than one Algorithm
-component in `object ComplimentaryPurchaseEngine` inside ***Engine.scala*** and  the corresponding parameters in ***engine.json***. Since only one `Algorithm` is implemented by default, this `Seq` contains one element.
+component in `object ComplementaryPurchaseEngine` inside ***Engine.scala*** and  the corresponding parameters in ***engine.json***. Since only one `Algorithm` is implemented by default, this `Seq` contains one element.
