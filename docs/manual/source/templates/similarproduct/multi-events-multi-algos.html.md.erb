@@ -236,6 +236,7 @@ class LikeAlgorithm(ap: ALSAlgorithmParams) extends ALSAlgorithm(ap) {
         // MLlibRating requires integer index for user and item
         MLlibRating(u, i, r)
       }
+      .cache()
 
     // MLLib ALS cannot handle empty training data.
     require(!mllibRatings.take(1).isEmpty,

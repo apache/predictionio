@@ -11,6 +11,27 @@ your specific needs.
 We are going to show you how to create your own recommendation engine for
 production use based on this template.
 
+## Usage
+
+### Event Data Requirements
+
+By default, the template requires the following events to be collected:
+
+- user 'rate' item events
+- user 'buy' item events
+
+NOTE: You can customize to use other event.
+
+### Input Query
+
+- user ID
+- num of recomended items
+
+### Output PredictedResult
+
+- a ranked list of recommended itemIDs
+
+
 ## 1. Install and Run PredictionIO
 
 <%= partial 'shared/quickstart/install' %>

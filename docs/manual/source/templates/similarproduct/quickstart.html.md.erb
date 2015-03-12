@@ -20,7 +20,18 @@ Help your customers explore more products that they like, sell more products.
 
 ## Usage
 
-Input Query:
+### Event Data Requirements
+
+By default, this template takes the following data from Event Server as Training Data:
+
+- User *$set* events
+- Item *$set* events with *categories* properties
+- Users' *view* item events
+
+INFO: This template can easily be customized to consider more user events such as *buy*, *rate* and *like*.
+You can offer features like "Customers Who Bought This Item Also Bought....".
+
+### Input Query
 
 - List of ItemIDs, which are the targeted products
 - N (number of items to be recommended)
@@ -31,20 +42,9 @@ Input Query:
 The template also supports black-list and white-list. If a white-list is provided, the engine will include only those products in the recommendation.
 Likewise, if a black-list is provided, the engine will exclude those products in the recommendation.
 
-Output PredictedResult:
+### Output PredictedResult
 
 - a ranked list of recommended itemIDs
-
-### Predictive Model Training
-
-By default, this template takes the following data from Event Server as Training Data:
-
-- Users' *view* events
-- Items' *categories* properties
-
-INFO: This template can easily be customized to consider more user events such as *buy*, *rate* and *like*.
-You can offer features like "Customers Who Bought This Item Also Bought....".
-
 
 ## 1. Install and Run PredictionIO
 
