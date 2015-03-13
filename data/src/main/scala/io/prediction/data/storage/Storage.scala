@@ -231,6 +231,7 @@ object Storage extends Logging {
     println("  Verifying Meta Data Backend")
     getMetaDataEngineManifests()
     getMetaDataEngineInstances()
+    getMetaDataEvaluationInstances()
     getMetaDataApps()
     getMetaDataAccessKeys()
     println("  Verifying Model Data Backend")
@@ -253,6 +254,9 @@ object Storage extends Logging {
 
   private[prediction] def getMetaDataEngineInstances(): EngineInstances =
     getDataObject[EngineInstances](MetaDataRepository)
+
+  private[prediction] def getMetaDataEvaluationInstances(): EvaluationInstances =
+    getDataObject[EvaluationInstances](MetaDataRepository)
 
   private[prediction] def getMetaDataApps(): Apps =
     getDataObject[Apps](MetaDataRepository)

@@ -15,60 +15,29 @@
 
 package io.prediction.workflow
 
-import io.prediction.controller.EmptyParams
-import io.prediction.controller.Engine
+import com.github.nscala_time.time.Imports.DateTime
+import com.twitter.chill.KryoInjection
+import grizzled.slf4j.Logger
 import io.prediction.controller.EngineParams
-import io.prediction.controller.IPersistentModel
-import io.prediction.controller.LAlgorithm
-import io.prediction.controller.PAlgorithm
-import io.prediction.controller.Metric
-import io.prediction.controller.Params
-import io.prediction.controller.Utils
-import io.prediction.controller.NiceRendering
-import io.prediction.controller.SanityCheck
 import io.prediction.controller.WorkflowParams
-import io.prediction.core.BaseAlgorithm
-import io.prediction.core.BaseDataSource
+import io.prediction.core.BaseEngine
 import io.prediction.core.BaseEvaluator
 import io.prediction.core.BaseEvaluatorResult
-import io.prediction.core.BasePreparator
-import io.prediction.core.BaseServing
-import io.prediction.core.BaseEngine
-import io.prediction.core.Doer
 import io.prediction.data.storage.EngineInstance
-import io.prediction.data.storage.EngineInstances
+import io.prediction.data.storage.EvaluationInstance
 import io.prediction.data.storage.Model
 import io.prediction.data.storage.Storage
 
-import com.github.nscala_time.time.Imports.DateTime
-import com.twitter.chill.KryoInjection
-import grizzled.slf4j.{ Logger, Logging }
-import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-import org.apache.spark.SparkConf
-import org.apache.spark.rdd.RDD
-import org.json4s._
-import org.json4s.native.Serialization.write
-import org.json4s.native.Serialization.writePretty
-
-
-import scala.collection.JavaConversions._
 import scala.language.existentials
-import scala.reflect.ClassTag
-import scala.reflect.Manifest
 
-import java.io.FileOutputStream
-import java.io.ObjectOutputStream
-import java.io.FileInputStream
-import java.io.ObjectInputStream
-import java.lang.{ Iterable => JIterable }
-import java.util.{ HashMap => JHashMap, Map => JMap }
-
-
-// CoreWorkflow handles PredictionIO metadata and environment variables.
+/** CoreWorkflow handles PredictionIO metadata and environment variables of
+  * training and evaluation.
+  */
 object CoreWorkflow {
   @transient lazy val logger = Logger[this.type]
-  @transient val engineInstances = Storage.getMetaDataEngineInstances
+  @transient lazy val engineInstances = Storage.getMetaDataEngineInstances
+  @transient lazy val evaluationInstances =
+    Storage.getMetaDataEvaluationInstances()
 
   def runTrain[EI, Q, P, A](
       engine: BaseEngine[EI, Q, P, A],
@@ -125,54 +94,56 @@ object CoreWorkflow {
   def runEvaluation[EI, Q, P, A, R <: BaseEvaluatorResult](
       engine: BaseEngine[EI, Q, P, A],
       engineParamsList: Seq[EngineParams],
-      engineInstance: EngineInstance,
       evaluator: BaseEvaluator[EI, Q, P, A, R],
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
       params: WorkflowParams = WorkflowParams()) {
-    logger.info("CoreWorkflow.runEvaluation")
-
-    logger.debug("Start spark context")
+    logger.info("runEvaluation started")
+    logger.debug("Start SparkContext")
 
     val mode = "evaluation"
+
+    WorkflowUtils.checkUpgrade(mode, engine.getClass.getName)
+
     val sc = WorkflowContext(
       params.batch,
       env,
       params.sparkEnv,
       mode.capitalize)
+    val initialEvaluationInstance = EvaluationInstance(
+      engineFactory = engine.getClass.getName,
+      evaluatorClass = evaluator.getClass.getName,
+      batch = params.batch,
+      env = env,
+      sparkConf = params.sparkEnv
+    )
+    val evaluationInstanceId = evaluationInstances.insert(initialEvaluationInstance)
 
-    WorkflowUtils.checkUpgrade(mode, engineInstance.engineFactory)
-    
-    val evalResult: BaseEvaluatorResult = EvaluationWorkflow.runEvaluation(
+    logger.info(s"Starting evaluation instance ID: ${evaluationInstanceId}")
+
+    val evaluatorResult: BaseEvaluatorResult = EvaluationWorkflow.runEvaluation(
       sc,
       engine,
       engineParamsList,
       evaluator,
       params)
-
-    implicit lazy val formats = Utils.json4sDefaultFormats +
-      new NameParamsSerializer
-
-    val engineInstanceId = Storage.getMetaDataEngineInstances.insert(
-      engineInstance)
-
-    val evaledEI = engineInstance.copy(
+    val evaluatedEvaluationInstance = initialEvaluationInstance.copy(
       status = "EVALCOMPLETED",
-      id = engineInstanceId,
+      id = evaluationInstanceId,
       endTime = DateTime.now,
-      evaluatorResults = evalResult.toOneLiner,
-      evaluatorResultsHTML = evalResult.toHTML,
-      evaluatorResultsJSON = evalResult.toJSON
+      evaluatorResults = evaluatorResult.toOneLiner,
+      evaluatorResultsHTML = evaluatorResult.toHTML,
+      evaluatorResultsJSON = evaluatorResult.toJSON
     )
 
-    logger.info(s"Insert evaluation result")
-    engineInstances.update(evaledEI)
+    logger.info(s"Updating evaluation instance with result: $evaluatorResult")
 
-    logger.debug("Stop spark context")
+    evaluationInstances.update(evaluatedEvaluationInstance)
+
+    logger.debug("Stop SparkContext")
+
     sc.stop()
 
-    logger.info(s"Evaluation Result: $evalResult")
-
-    logger.info("CoreWorkflow.runEvaluation completed.")
+    logger.info("runEvaluation completed")
   }
 }
 

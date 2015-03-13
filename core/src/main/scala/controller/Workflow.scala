@@ -145,7 +145,6 @@ object Workflow {
       params)
   }
 
-
   /** :: Experimental :: */
   @Experimental
   def runEvaluation[EI, Q, P, A, R <: BaseEvaluatorResult](
@@ -155,41 +154,9 @@ object Workflow {
       evaluator: BaseEvaluator[EI, Q, P, A, R],
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
       params: WorkflowParams = WorkflowParams()) {
-
-    implicit lazy val formats = Utils.json4sDefaultFormats +
-      new NameParamsSerializer
-
-    // FIXME: Save with best output
-    val engineParams = engineParamsList.head
-
-    val engineInstance = EngineInstance(
-      id = "",
-      status = "INIT",
-      startTime = DateTime.now,
-      endTime = DateTime.now,
-      engineId = "",
-      engineVersion = "",
-      engineVariant = "",
-      engineFactory = engine.getClass.getName,
-      evaluatorClass = evaluator.getClass.getName,
-      batch = params.batch,
-      env = env,
-      sparkConf = params.sparkEnv,
-      dataSourceParams = write(engineParams.dataSourceParams),
-      preparatorParams = write(engineParams.preparatorParams),
-      algorithmsParams = write(engineParams.algorithmParamsList),
-      servingParams = write(engineParams.servingParams),
-      // evaluatorParams = write(evaluatorParams),
-      evaluatorParams = "",
-      evaluatorResults = "",
-      evaluatorResultsHTML = "",
-      evaluatorResultsJSON = "")
-
     CoreWorkflow.runEvaluation(
       engine = engine,
       engineParamsList = engineParamsList,
-      engineInstance = engineInstance,
-      // metric = metric,
       evaluator = evaluator,
       env = env,
       params = params)
