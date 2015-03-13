@@ -1,11 +1,11 @@
-@import io.prediction.data.storage.EngineInstance
+@import io.prediction.data.storage.EvaluationInstance
 @import io.prediction.tools.dashboard.DashboardConfig
 @import org.joda.time.DateTime
 @import org.joda.time.format.DateTimeFormat
 @(dc: DashboardConfig,
   dashboardStartTime: DateTime,
   env: Map[String, String],
-  evalCompletedInstances: Seq[EngineInstance])
+  completedInstances: Seq[EvaluationInstance])
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -55,48 +55,33 @@
       <h2>Completed Evaluations</h2>
       <table class="table table-bordered table-striped">
         <tr>
-          <th>ID</th>
+          <th></th>
+          <th>Evaluator Result (One-liner)</th>
+          <th>Engine Factory Class</th>
+          <th>Evaluator Class</th>
           <th>Start Time</th>
           <th>End Time</th>
           <th>Batch</th>
-          <th>Engine ID</th>
-          <th>Engine Version</th>
-          <th>Evaluator Class</th>
-          <th>View Evaluator Results As</th>
         </tr>
-        @for(i <- evalCompletedInstances) {
+        @for(i <- completedInstances) {
         <tr>
-          <td>@{i.id}</td>
-          <td>@{DateTimeFormat.forStyle("MM").print(i.startTime)}</td>
-          <td>@{DateTimeFormat.forStyle("MM").print(i.endTime)}</td>
-          <td>@{i.batch}</td>
-          <td>@{i.engineId}</td>
-          <td>@{i.engineVersion}</td>
           <td>
-            <script type="text/javascript">document.write(shorternClassName("@{i.evaluatorClass}"));</script>
+            <div>
+              <a href="/engine_instances/@{i.id}/evaluator_results.html" class="btn btn-primary">HTML</a>
+            </div>
           </td>
           <td>
             <div>@{i.evaluatorResults}</div>
-            <div> 
-              <a href="/engine_instances/@{i.id}/evaluator_results.html" class="btn btn-primary">HTML</a>
-              <a href="/engine_instances/@{i.id}/evaluator_results.txt" class="btn btn-success">Plain Text</a>
-            </div>
           </td>
-        </tr>
-        <tr>
-          <td colspan="8">
-            <span class="glyphicon glyphicon-chevron-down" data-toggle="collapse" data-target="#@{i.id}"></span>
-            <div id="@{i.id}" class="collapse">
-              <table class="table table-bordered table-striped">
-                <tr><th>Component</th><th>Parameters</th></tr>
-                <tr><th>Data Source</th><td><pre><script type="text/javascript">document.write(syntaxHighlight(JSON.parse('@Html(i.dataSourceParams)')));</script></pre></td></tr>
-                <tr><th>Preparator</th><td><pre><script type="text/javascript">document.write(syntaxHighlight(JSON.parse('@Html(i.preparatorParams)')));</script></pre></td></tr>
-                <tr><th>Algorithms</th><td><pre><script type="text/javascript">document.write(syntaxHighlight(JSON.parse('@Html(i.algorithmsParams)')));</script></pre></td></tr>
-                <tr><th>Serving</th><td><pre><script type="text/javascript">document.write(syntaxHighlight(JSON.parse('@Html(i.servingParams)')));</script></pre></td></tr>
-                <tr><th>Evaluator</th><td><pre><script type="text/javascript">document.write(syntaxHighlight(JSON.parse('@Html(i.evaluatorParams)')));</script></pre></td></tr>
-              </table>
-            </div>
+          <td>
+            <span title="@{i.engineFactory}"><script type="text/javascript">document.write(shorternClassName("@{i.engineFactory}"));</script></span>
           </td>
+          <td>
+            <span title="@{i.evaluatorClass}"><script type="text/javascript">document.write(shorternClassName("@{i.evaluatorClass}"));</script></span>
+          </td>
+          <td>@{DateTimeFormat.forStyle("MM").print(i.startTime)}</td>
+          <td>@{DateTimeFormat.forStyle("MM").print(i.endTime)}</td>
+          <td>@{i.batch}</td>
         </tr>
         }
       </table>

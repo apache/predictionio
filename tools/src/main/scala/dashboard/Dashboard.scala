@@ -69,7 +69,7 @@ class DashboardActor(
 
 trait DashboardService extends HttpService with CORSSupport {
   val dc: DashboardConfig
-  val engineInstances = Storage.getMetaDataEngineInstances
+  val evaluationInstances = Storage.getMetaDataEvaluationInstances
   val pioEnvVars = sys.env.filter(kv => kv._1.startsWith("PIO_"))
   val serverStartTime = DateTime.now
   val dashboardRoute =
@@ -77,76 +77,21 @@ trait DashboardService extends HttpService with CORSSupport {
       get {
         respondWithMediaType(`text/html`) {
           complete {
-            val evalCompletedInstances = engineInstances.getEvalCompleted
+            val completedInstances = evaluationInstances.getCompleted
             html.index(
               dc,
               serverStartTime,
               pioEnvVars,
-              evalCompletedInstances).toString
+              completedInstances).toString
           }
         }
       }
     } ~
     pathPrefix("engine_instances" / Segment) { instanceId =>
-      path("data_source_params.json") {
-        get {
-          respondWithMediaType(`application/json`) {
-            engineInstances.get(instanceId).map { i =>
-              complete(i.dataSourceParams)
-            } getOrElse {
-              complete(StatusCodes.NotFound)
-            }
-          }
-        }
-      } ~
-      path("preparator_params.json") {
-        get {
-          respondWithMediaType(`application/json`) {
-            engineInstances.get(instanceId).map { i =>
-              complete(i.preparatorParams)
-            } getOrElse {
-              complete(StatusCodes.NotFound)
-            }
-          }
-        }
-      } ~
-      path("algorithms_params.json") {
-        get {
-          respondWithMediaType(`application/json`) {
-            engineInstances.get(instanceId).map { i =>
-              complete(i.algorithmsParams)
-            } getOrElse {
-              complete(StatusCodes.NotFound)
-            }
-          }
-        }
-      } ~
-      path("serving_params.json") {
-        get {
-          respondWithMediaType(`application/json`) {
-            engineInstances.get(instanceId).map { i =>
-              complete(i.servingParams)
-            } getOrElse {
-              complete(StatusCodes.NotFound)
-            }
-          }
-        }
-      } ~
-      path("evaluator_params.json") {
-        get {
-          respondWithMediaType(`application/json`) {
-            engineInstances.get(instanceId).map { i =>
-              complete(i.evaluatorParams)
-            } getOrElse {
-              complete(StatusCodes.NotFound)
-            }
-          }
-        }
-      } ~
       path("evaluator_results.txt") {
         get {
           respondWithMediaType(`text/plain`) {
-            engineInstances.get(instanceId).map { i =>
+            evaluationInstances.get(instanceId).map { i =>
               complete(i.evaluatorResults)
             } getOrElse {
               complete(StatusCodes.NotFound)
@@ -157,7 +102,7 @@ trait DashboardService extends HttpService with CORSSupport {
       path("evaluator_results.html") {
         get {
           respondWithMediaType(`text/html`) {
-            engineInstances.get(instanceId).map { i =>
+            evaluationInstances.get(instanceId).map { i =>
               complete(i.evaluatorResultsHTML)
             } getOrElse {
               complete(StatusCodes.NotFound)
@@ -168,7 +113,7 @@ trait DashboardService extends HttpService with CORSSupport {
       path("evaluator_results.json") {
         get {
           respondWithMediaType(`application/json`) {
-            engineInstances.get(instanceId).map { i =>
+            evaluationInstances.get(instanceId).map { i =>
               complete(i.evaluatorResultsJSON)
             } getOrElse {
               complete(StatusCodes.NotFound)
@@ -180,7 +125,7 @@ trait DashboardService extends HttpService with CORSSupport {
         path("local_evaluator_results.json") {
           get {
             respondWithMediaType(`application/json`) {
-              engineInstances.get(instanceId).map { i =>
+              evaluationInstances.get(instanceId).map { i =>
                 complete(i.evaluatorResultsJSON)
               } getOrElse {
                 complete(StatusCodes.NotFound)
