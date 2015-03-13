@@ -39,7 +39,7 @@ class EvaluationWorkflowSuite extends FunSuite with SharedSparkContext {
       evaluator,
       WorkflowParams())
 
-    result.bestScore shouldBe 0.3
+    result.bestScore.score shouldBe 0.3
     result.bestEngineParams shouldBe ep1
   }
 
@@ -60,7 +60,7 @@ class EvaluationWorkflowSuite extends FunSuite with SharedSparkContext {
       evaluator,
       WorkflowParams())
   
-    result.bestScore shouldBe Metric1.Result(0, 0.3)
+    result.bestScore.score shouldBe Metric1.Result(0, 0.3)
     result.bestEngineParams shouldBe ep1
   }
 }

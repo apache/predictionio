@@ -54,8 +54,6 @@ case class MetricScores[R](
   val score: R, 
   val otherScores: Seq[Any])
 
-
-// Type is google data type
 case class MetricEvaluatorResult[R](
   val bestScore: MetricScores[R],
   val bestEngineParams: EngineParams,

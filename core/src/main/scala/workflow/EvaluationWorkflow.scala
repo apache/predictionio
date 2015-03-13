@@ -72,7 +72,7 @@ object EvaluationWorkflow {
       engineParamsList: Seq[EngineParams],
       evaluator: BaseEvaluator[EI, Q, P, A, R],
       params: WorkflowParams)
-    : BaseEvaluatorResult = {
+    : R = {
     val engineEvalDataSet = engine.batchEval(sc, engineParamsList, params)
     evaluator.evaluateBase(sc, engineEvalDataSet, params)
   }
