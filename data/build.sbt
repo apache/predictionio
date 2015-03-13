@@ -40,7 +40,7 @@ libraryDependencies ++= Seq(
   "org.elasticsearch"       % "elasticsearch"  % elasticsearchVersion.value,
   "org.json4s"             %% "json4s-native"  % json4sVersion.value,
   "org.json4s"             %% "json4s-ext"     % json4sVersion.value,
-  "org.mongodb"            %% "casbah"         % "2.7.2",
+  "org.mongodb"            %% "casbah"         % "2.7.2" pomOnly(),
   "org.scalatest"          %% "scalatest"      % "2.1.6" % "test",
   "org.slf4j"               % "slf4j-log4j12"  % "1.7.7",
   "org.spark-project.akka" %% "akka-actor"     % "2.3.4-spark",
