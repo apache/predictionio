@@ -27,8 +27,8 @@ import org.json4s._
  * @param status Status of this instance.
  * @param startTime Start time of this instance.
  * @param endTime End time of this instance.
- * @param engineFactory Engine factory class name of this instance.
- * @param evaluatorClass Evaluator class name of this instance.
+ * @param evaluationClass Evaluation class name of this instance.
+ * @param engineParamsGeneratorClass Engine parameters generator class name of this instance.
  * @param batch Batch label of this instance.
  * @param env The environment in which this instance was created.
  * @param evaluatorResults Results of the evaluator.
@@ -40,8 +40,8 @@ private[prediction] case class EvaluationInstance(
   status: String = "",
   startTime: DateTime = DateTime.now,
   endTime: DateTime = DateTime.now,
-  engineFactory: String = "",
-  evaluatorClass: String = "",
+  evaluationClass: String = "",
+  engineParamsGeneratorClass: String = "",
   batch: String = "",
   env: Map[String, String] = Map(),
   sparkConf: Map[String, String] = Map(),
@@ -88,23 +88,20 @@ class EvaluationInstanceSerializer extends CustomSerializer[EvaluationInstance](
             i.copy(startTime = Utils.stringToDateTime(startTime))
           case JField("endTime", JString(endTime)) =>
             i.copy(endTime = Utils.stringToDateTime(endTime))
-          case JField("engineFactory", JString(engineFactory)) =>
-            i.copy(engineFactory = engineFactory)
-          case JField("metricsClass", JString(evaluatorClass)) =>
-            i.copy(evaluatorClass = evaluatorClass)
+          case JField("evaluationClass", JString(evaluationClass)) =>
+            i.copy(evaluationClass = evaluationClass)
+          case JField("engineParamsGeneratorClass", JString(engineParamsGeneratorClass)) =>
+            i.copy(engineParamsGeneratorClass = engineParamsGeneratorClass)
           case JField("batch", JString(batch)) => i.copy(batch = batch)
           case JField("env", env) =>
             i.copy(env = Extraction.extract[Map[String, String]](env))
           case JField("sparkConf", sparkConf) =>
             i.copy(sparkConf = Extraction.extract[Map[String, String]](sparkConf))
-          case JField("multipleMetricsResults",
-          JString(evaluatorResults)) =>
+          case JField("evaluatorResults", JString(evaluatorResults)) =>
             i.copy(evaluatorResults = evaluatorResults)
-          case JField("multipleMetricsResultsHTML",
-          JString(evaluatorResultsHTML)) =>
+          case JField("evaluatorResultsHTML", JString(evaluatorResultsHTML)) =>
             i.copy(evaluatorResultsHTML = evaluatorResultsHTML)
-          case JField("multipleMetricsResultsJSON",
-          JString(evaluatorResultsJSON)) =>
+          case JField("evaluatorResultsJSON", JString(evaluatorResultsJSON)) =>
             i.copy(evaluatorResultsJSON = evaluatorResultsJSON)
           case _ => i
         }
@@ -116,17 +113,14 @@ class EvaluationInstanceSerializer extends CustomSerializer[EvaluationInstance](
           JField("status", JString(i.status)) ::
           JField("startTime", JString(i.startTime.toString)) ::
           JField("endTime", JString(i.endTime.toString)) ::
-          JField("engineFactory", JString(i.engineFactory)) ::
-          JField("metricsClass", JString(i.evaluatorClass)) ::
+          JField("evaluationClass", JString(i.evaluationClass)) ::
+          JField("engineParamsGeneratorClass", JString(i.engineParamsGeneratorClass)) ::
           JField("batch", JString(i.batch)) ::
           JField("env", Extraction.decompose(i.env)(DefaultFormats)) ::
           JField("sparkConf", Extraction.decompose(i.sparkConf)(DefaultFormats)) ::
-          JField("multipleMetricsResults",
-            JString(i.evaluatorResults)) ::
-          JField("multipleMetricsResultsHTML",
-            JString(i.evaluatorResultsHTML)) ::
-          JField("multipleMetricsResultsJSON",
-            JString(i.evaluatorResultsJSON)) ::
+          JField("evaluatorResults", JString(i.evaluatorResults)) ::
+          JField("evaluatorResultsHTML", JString(i.evaluatorResultsHTML)) ::
+          JField("evaluatorResultsJSON", JString(i.evaluatorResultsJSON)) ::
           Nil
       )
   }

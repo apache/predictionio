@@ -94,6 +94,7 @@ object CoreWorkflow {
   def runEvaluation[EI, Q, P, A, R <: BaseEvaluatorResult](
       engine: BaseEngine[EI, Q, P, A],
       engineParamsList: Seq[EngineParams],
+      evaluationInstance: EvaluationInstance,
       evaluator: BaseEvaluator[EI, Q, P, A, R],
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
       params: WorkflowParams = WorkflowParams()) {
@@ -109,16 +110,9 @@ object CoreWorkflow {
       env,
       params.sparkEnv,
       mode.capitalize)
-    val initialEvaluationInstance = EvaluationInstance(
-      engineFactory = engine.getClass.getName,
-      evaluatorClass = evaluator.getClass.getName,
-      batch = params.batch,
-      env = env,
-      sparkConf = params.sparkEnv
-    )
-    val evaluationInstanceId = evaluationInstances.insert(initialEvaluationInstance)
+    val evaluationInstanceId = evaluationInstances.insert(evaluationInstance)
 
-    logger.info(s"Starting evaluation instance ID: ${evaluationInstanceId}")
+    logger.info(s"Starting evaluation instance ID: $evaluationInstanceId")
 
     val evaluatorResult: BaseEvaluatorResult = EvaluationWorkflow.runEvaluation(
       sc,
@@ -126,7 +120,7 @@ object CoreWorkflow {
       engineParamsList,
       evaluator,
       params)
-    val evaluatedEvaluationInstance = initialEvaluationInstance.copy(
+    val evaluatedEvaluationInstance = evaluationInstance.copy(
       status = "EVALCOMPLETED",
       id = evaluationInstanceId,
       endTime = DateTime.now,

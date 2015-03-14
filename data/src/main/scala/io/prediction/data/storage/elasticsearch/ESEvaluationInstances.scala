@@ -46,9 +46,9 @@ class ESEvaluationInstances(client: Client, index: String)
           ("status" -> ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
           ("startTime" -> ("type" -> "date")) ~
           ("endTime" -> ("type" -> "date")) ~
-          ("engineFactory" ->
+          ("evaluationClass" ->
             ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
-          ("evaluatorClass" ->
+          ("engineParamsGeneratorClass" ->
             ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
           ("batch" ->
             ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
@@ -123,7 +123,7 @@ class ESEvaluationInstances(client: Client, index: String)
 
   def delete(id: String): Unit = {
     try {
-      val response = client.prepareDelete(index, estype, id).get
+      client.prepareDelete(index, estype, id).get
     } catch {
       case e: ElasticsearchException => error(e.getMessage)
     }

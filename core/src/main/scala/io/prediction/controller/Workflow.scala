@@ -16,23 +16,12 @@
 package io.prediction.controller
 
 import io.prediction.annotation.Experimental
-import io.prediction.core.BaseAlgorithm
-import io.prediction.core.BaseDataSource
-import io.prediction.core.BaseEvaluator
-import io.prediction.core.BasePreparator
-import io.prediction.core.BaseServing
 import io.prediction.core.BaseEngine
-import io.prediction.core.Doer
-import io.prediction.workflow.WorkflowUtils
-import io.prediction.workflow.CoreWorkflow
-// import io.prediction.workflow.EvaluationWorkflow
-import io.prediction.workflow.NameParamsSerializer
-import scala.reflect.ClassTag
-import org.json4s._
-import org.json4s.native.Serialization.write
-import io.prediction.data.storage.EngineInstance
-import com.github.nscala_time.time.Imports.DateTime
+import io.prediction.core.BaseEvaluator
 import io.prediction.core.BaseEvaluatorResult
+import io.prediction.data.storage.EvaluationInstance
+import io.prediction.workflow.CoreWorkflow
+import io.prediction.workflow.WorkflowUtils
 
 /** Workflow parameters.
   *
@@ -117,14 +106,15 @@ object Workflow {
       evaluation: Evaluation,
       engineParamsGenerator: EngineParamsGenerator,
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
+      evaluationInstance: EvaluationInstance = EvaluationInstance(),
       params: WorkflowParams = WorkflowParams()) {
     runEvaluationTypeless(
-      evaluation.engine,
-      engineParamsGenerator.engineParamsList,
-      // evaluation.metric,
-      evaluation.evaluator,
-      env,
-      params
+      engine = evaluation.engine,
+      engineParamsList = engineParamsGenerator.engineParamsList,
+      evaluationInstance = evaluationInstance,
+      evaluator = evaluation.evaluator,
+      env = env,
+      params = params
     )
   }
 
@@ -132,17 +122,17 @@ object Workflow {
       EI, Q, P, A, EEI, EQ, EP, EA, ER <: BaseEvaluatorResult](
       engine: BaseEngine[EI, Q, P, A],
       engineParamsList: Seq[EngineParams],
-      // metric: Metric[MEI, MQ, MP, MA, MR],
+      evaluationInstance: EvaluationInstance,
       evaluator: BaseEvaluator[EEI, EQ, EP, EA, ER],
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
       params: WorkflowParams = WorkflowParams()) {
     runEvaluation(
-      engine,
-      engineParamsList,
-      // metric.asInstanceOf[Metric[EI, Q, P, A, MR]],
-      evaluator.asInstanceOf[BaseEvaluator[EI, Q, P, A, ER]],
-      env,
-      params)
+      engine = engine,
+      engineParamsList = engineParamsList,
+      evaluationInstance = evaluationInstance,
+      evaluator = evaluator.asInstanceOf[BaseEvaluator[EI, Q, P, A, ER]],
+      env = env,
+      params = params)
   }
 
   /** :: Experimental :: */
@@ -150,13 +140,14 @@ object Workflow {
   def runEvaluation[EI, Q, P, A, R <: BaseEvaluatorResult](
       engine: BaseEngine[EI, Q, P, A],
       engineParamsList: Seq[EngineParams],
-      // metric: Metric[EI, Q, P, A, R],
+      evaluationInstance: EvaluationInstance,
       evaluator: BaseEvaluator[EI, Q, P, A, R],
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
       params: WorkflowParams = WorkflowParams()) {
     CoreWorkflow.runEvaluation(
       engine = engine,
       engineParamsList = engineParamsList,
+      evaluationInstance = evaluationInstance,
       evaluator = evaluator,
       env = env,
       params = params)

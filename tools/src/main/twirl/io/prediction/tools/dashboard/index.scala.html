@@ -57,8 +57,8 @@
         <tr>
           <th></th>
           <th>Evaluator Result (One-liner)</th>
-          <th>Engine Factory Class</th>
-          <th>Evaluator Class</th>
+          <th>Evaluation Class</th>
+          <th>Engine Parameters Generator Class</th>
           <th>Start Time</th>
           <th>End Time</th>
           <th>Batch</th>
@@ -74,10 +74,10 @@
             <div>@{i.evaluatorResults}</div>
           </td>
           <td>
-            <span title="@{i.engineFactory}"><script type="text/javascript">document.write(shorternClassName("@{i.engineFactory}"));</script></span>
+            <span title="@{i.evaluationClass}"><script type="text/javascript">document.write(shorternClassName("@{i.evaluationClass}"));</script></span>
           </td>
           <td>
-            <span title="@{i.evaluatorClass}"><script type="text/javascript">document.write(shorternClassName("@{i.evaluatorClass}"));</script></span>
+            <span title="@{i.engineParamsGeneratorClass}"><script type="text/javascript">document.write(shorternClassName("@{i.engineParamsGeneratorClass}"));</script></span>
           </td>
           <td>@{DateTimeFormat.forStyle("MM").print(i.startTime)}</td>
           <td>@{DateTimeFormat.forStyle("MM").print(i.endTime)}</td>

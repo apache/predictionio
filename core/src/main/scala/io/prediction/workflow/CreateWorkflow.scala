@@ -15,31 +15,23 @@
 
 package io.prediction.workflow
 
-import io.prediction.controller.EmptyParams
-import io.prediction.controller.Engine
-import io.prediction.controller.EngineParams
-import io.prediction.controller.EngineParamsGenerator
-import io.prediction.controller.IEngineFactory
-import io.prediction.controller.Evaluation
-import io.prediction.controller.Params
-import io.prediction.controller.Utils
-import io.prediction.controller.Workflow
-import io.prediction.controller.WorkflowParams
-import io.prediction.core.Doer
-import io.prediction.core.BaseEvaluator
-import io.prediction.core.BaseEngine
-import io.prediction.data.storage.EngineInstance
-import io.prediction.data.storage.Storage
-
 import com.github.nscala_time.time.Imports._
 import com.google.common.io.ByteStreams
 import grizzled.slf4j.Logging
+import io.prediction.controller.Engine
+import io.prediction.controller.Utils
+import io.prediction.controller.Workflow
+import io.prediction.controller.WorkflowParams
+import io.prediction.core.BaseEngine
+import io.prediction.data.storage.EngineInstance
+import io.prediction.data.storage.EvaluationInstance
+import io.prediction.data.storage.Storage
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 import org.json4s._
 import org.json4s.native.JsonMethods._
-import org.json4s.native.Serialization.{ read, write }
+import org.json4s.native.Serialization.write
 
 import scala.language.existentials
 
@@ -270,9 +262,17 @@ object CreateWorkflow extends Logging {
         engineParams = engineParams,
         engineInstance = engineInstance.copy(id = engineInstanceId))
     } else {
+      val evaluationInstance = EvaluationInstance(
+        evaluationClass = wfc.evaluationClass.get,
+        engineParamsGeneratorClass = wfc.engineParamsGeneratorClass.get,
+        batch = wfc.batch,
+        env = pioEnvVars,
+        sparkConf = workflowParams.sparkEnv
+      )
       Workflow.runEvaluation(
         evaluation = evaluation.get,
         engineParamsGenerator = engineParamsGenerator.get,
+        evaluationInstance = evaluationInstance,
         params = workflowParams)
     }
   }
