@@ -44,7 +44,7 @@ workflow for the classification template.
 ```
 $ pio build
 ...
-$ pio eval org.template.classification.PrecisionEvaluation \
+$ pio eval org.template.classification.AccuracyEvaluation \
     org.template.classification.EngineParamsList 
 ```
 
@@ -52,24 +52,24 @@ You will see the following output:
 
 ```
 ...
-[INFO] [CoreWorkflow$] CoreWorkflow.runEvaluation
+[INFO] [CoreWorkflow$] runEvaluation started
 ...
-[INFO] [EvaluationWorkflow$] Iteration 0
-[INFO] [EvaluationWorkflow$] EngineParams: {"dataSourceParams":{"":{"appId":18,"evalK":5}},"preparatorParams":{"":{}},"algorithmParamsList":[{"naive":{"lambda":10.0}}],"servingParams":{"":{}}}
-[INFO] [EvaluationWorkflow$] Result: 0.9281045751633987
-[INFO] [EvaluationWorkflow$] Iteration 1
-[INFO] [EvaluationWorkflow$] EngineParams: {"dataSourceParams":{"":{"appId":18,"evalK":5}},"preparatorParams":{"":{}},"algorithmParamsList":[{"naive":{"lambda":100.0}}],"servingParams":{"":{}}}
-[INFO] [EvaluationWorkflow$] Result: 0.9150326797385621
-[INFO] [EvaluationWorkflow$] Iteration 2
-[INFO] [EvaluationWorkflow$] EngineParams: {"dataSourceParams":{"":{"appId":18,"evalK":5}},"preparatorParams":{"":{}},"algorithmParamsList":[{"naive":{"lambda":1000.0}}],"servingParams":{"":{}}}
-[INFO] [EvaluationWorkflow$] Result: 0.4444444444444444
-...
-[INFO] [CoreWorkflow$] Stop spark context
-[INFO] [CoreWorkflow$] Optimal score: 0.9281045751633987
-[INFO] [CoreWorkflow$] Optimal engine params: {
+[INFO] [MetricEvaluator] Iteration 0
+[INFO] [MetricEvaluator] EngineParams: {"dataSourceParams":{"":{"appId":19,"evalK":5}},"preparatorParams":{"":{}},"algorithmParamsList":[{"naive":{"lambda":10.0}}],"servingParams":{"":{}}}
+[INFO] [MetricEvaluator] Result: MetricScores(0.9281045751633987,List())
+[INFO] [MetricEvaluator] Iteration 1
+[INFO] [MetricEvaluator] EngineParams: {"dataSourceParams":{"":{"appId":19,"evalK":5}},"preparatorParams":{"":{}},"algorithmParamsList":[{"naive":{"lambda":100.0}}],"servingParams":{"":{}}}
+[INFO] [MetricEvaluator] Result: MetricScores(0.9150326797385621,List())
+[INFO] [MetricEvaluator] Iteration 2
+[INFO] [MetricEvaluator] EngineParams: {"dataSourceParams":{"":{"appId":19,"evalK":5}},"preparatorParams":{"":{}},"algorithmParamsList":[{"naive":{"lambda":1000.0}}],"servingParams":{"":{}}}
+[INFO] [MetricEvaluator] Result: MetricScores(0.4444444444444444,List())
+[INFO] [CoreWorkflow$] Updating evaluation instance with result: MetricEvaluatorResult:
+  # engine params evaluated: 3
+Optimal Engine Params:
+  {
   "dataSourceParams":{
     "":{
-      "appId":18,
+      "appId":19,
       "evalK":5
     }
   },
@@ -91,13 +91,15 @@ You will see the following output:
     }
   }
 }
-...
+Metrics:
+  org.template.classification.Accuracy: 0.9281045751633987
+[INFO] [CoreWorkflow$] runEvaluation completed
 ```
 
 The console prints out the evaluation metric score of each engine params, and
 finally pretty print the optimal engine params.
 Amongst the 3 engine params we evaluate, *lambda = 10.0* yields the highest 
-precision score of 0.9281. 
+accuracy score of ~0.9281.
 
 ## Detailed Explanation
 
@@ -254,19 +256,18 @@ For each point in the validation set, we construct the `Query` and
 ## Evaluation Metrics
 
 We define a `Metric` which gives a *score* to engine params, the higher the
-score, the better the engine params is. In the classification template, we use
-the [*Precision* score](http://en.wikipedia.org/wiki/Precision_and_recall),
-which measure the portion of correct prediction among all data points.
+score, the better the engine params is. 
+In this template, we use accuray score which measures
+the portion of correct prediction among all data points.
 
 In MyClassification/src/main/scala/**Evaluation.scala**, the class
-`Precision` implements the *precision* score. 
+`Accuracy` implements the *accuracy* score. 
 It extends a base helper class `AverageMetric` which calculates the average
 score overall *(Query, PredictionResult, ActualResult)* tuple.
 
 ```scala
-case class Precision 
-  extends AverageMetric[
-      EmptyEvaluationInfo, Query, PredictedResult, ActualResult] {
+case class Accuracy
+  extends AverageMetric[EmptyEvaluationInfo, Query, PredictedResult, ActualResult] {
   def calculate(query: Query, predicted: PredictedResult, actual: ActualResult)
   : Double = (if (predicted.label == actual.label) 1.0 else 0.0)
 }
@@ -276,8 +277,8 @@ Then, implement a `Evaluation` object to define the engine and metric
 used in this evaluation.
 
 ```scala
-object PrecisionEvaluation extends Evaluation {
-  engineMetric = (ClassificationEngine(), new Precision())
+object AccuracyEvaluation extends Evaluation {
+  engineMetric = (ClassificationEngine(), new Accuracy())
 }
 ```
 
@@ -326,14 +327,32 @@ from the console.
 ```
 $ pio build
 ...
-$ pio eval org.template.classification.PrecisionEvaluation \
+$ pio eval org.template.classification.AccuracyEvaluation \
     org.template.classification.EngineParamsList 
+```
+
+You will see the following output:
+
+```
 ...
-[INFO] [CoreWorkflow$] Optimal score: 0.9281045751633987
-[INFO] [CoreWorkflow$] Optimal engine params: {
+[INFO] [CoreWorkflow$] runEvaluation started
+...
+[INFO] [MetricEvaluator] Iteration 0
+[INFO] [MetricEvaluator] EngineParams: {"dataSourceParams":{"":{"appId":19,"evalK":5}},"preparatorParams":{"":{}},"algorithmParamsList":[{"naive":{"lambda":10.0}}],"servingParams":{"":{}}}
+[INFO] [MetricEvaluator] Result: MetricScores(0.9281045751633987,List())
+[INFO] [MetricEvaluator] Iteration 1
+[INFO] [MetricEvaluator] EngineParams: {"dataSourceParams":{"":{"appId":19,"evalK":5}},"preparatorParams":{"":{}},"algorithmParamsList":[{"naive":{"lambda":100.0}}],"servingParams":{"":{}}}
+[INFO] [MetricEvaluator] Result: MetricScores(0.9150326797385621,List())
+[INFO] [MetricEvaluator] Iteration 2
+[INFO] [MetricEvaluator] EngineParams: {"dataSourceParams":{"":{"appId":19,"evalK":5}},"preparatorParams":{"":{}},"algorithmParamsList":[{"naive":{"lambda":1000.0}}],"servingParams":{"":{}}}
+[INFO] [MetricEvaluator] Result: MetricScores(0.4444444444444444,List())
+[INFO] [CoreWorkflow$] Updating evaluation instance with result: MetricEvaluatorResult:
+  # engine params evaluated: 3
+Optimal Engine Params:
+  {
   "dataSourceParams":{
     "":{
-      "appId":18,
+      "appId":19,
       "evalK":5
     }
   },
@@ -355,8 +374,10 @@ $ pio eval org.template.classification.PrecisionEvaluation \
     }
   }
 }
+Metrics:
+  org.template.classification.Accuracy: 0.9281045751633987
+[INFO] [CoreWorkflow$] runEvaluation completed
 ```
-
 
 ## Notes
 

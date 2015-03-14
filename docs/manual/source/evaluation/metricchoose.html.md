@@ -8,8 +8,8 @@ the optimal engine parameter defined by a `Metric`.
 We have skimmmed through the process of choosing the right `Metric` in previous
 sections.
 
-This secion discusses the evaluation metric in detail, we will cover various
-metrics for classification problems. 
+This secion discusses basic evaluation metrics commonly used for 
+classificatino problems.
 If you are more interested in knowing how to *implement* a custom metric, please
 skip to [the next section](/evaluation/metricbuild/).
 
