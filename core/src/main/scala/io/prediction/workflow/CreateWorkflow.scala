@@ -218,7 +218,6 @@ object CreateWorkflow extends Logging {
     val customSparkConf = WorkflowUtils.extractSparkConf(variantJson)
     val workflowParams = WorkflowParams(
       verbose = wfc.verbosity,
-      batch = (if (wfc.batch == "") engineFactory else wfc.batch),
       skipSanityCheck = wfc.skipSanityCheck,
       stopAfterRead = wfc.stopAfterRead,
       stopAfterPrepare = wfc.stopAfterPrepare,
