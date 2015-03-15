@@ -42,7 +42,8 @@ class Serving
         itemScores.headOption.flatMap(_.creationYear)
       }
       .toArray // array of (item id, score, creationYear)
-      .sortBy(_._2._2)(Ordering.Option[Int].reverse)
+      // HOWTO: Here resulting set could be sorted by field from qeury
+      .sortBy{ case (_, (_, year)) ⇒ year }(Ordering.Option[Int].reverse)
       .take(query.num)
       .map { case (item,(score, year)) => ItemScore(item, score, year) }
 

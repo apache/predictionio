@@ -8,6 +8,7 @@ case class Query(user: String, num: Int, creationYear: Option[Int] = None)
 
 case class PredictedResult(itemScores: Array[ItemScore]) extends Serializable
 
+// HOWTO: added movie creation year to predicted result.
 case class ItemScore(item: String, score: Double, creationYear: Option[Int])
   extends Serializable
 

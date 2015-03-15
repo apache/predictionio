@@ -32,11 +32,12 @@ class DataSource(val dsp: DataSourceParams)
     val eventsDb = Storage.getPEvents()
 
     // create a RDD of (entityID, Item)
+    // HOWTO: collecting items(movies)
     val itemsRDD = eventsDb.aggregateProperties(
       appId = dsp.appId,
       entityType = "item"
-    )(sc).flatMap { case (entityId, properties) =>
-      ItemMarshaller.unmarshall(properties).map(entityId -> _)
+    )(sc).flatMap { case (entityId, properties) ⇒
+      ItemMarshaller.unmarshall(properties).map(entityId → _)
     }
 
     // get all user rate events
@@ -48,13 +49,13 @@ class DataSource(val dsp: DataSourceParams)
       targetEntityType = Some(Some(EntityType)))(sc)
 
     // collect ratings
-    val ratingsRDD = rateEventsRDD.flatMap { event =>
+    val ratingsRDD = rateEventsRDD.flatMap { event ⇒
       try {
         (event.event match {
           case "rate" => event.properties.getOpt[Double]("rating")
-          case _ => None
+          case _ ⇒ None
         }).map(Rating(event.entityId, event.targetEntityId.get, _))
-      } catch { case e: Exception =>
+      } catch { case e: Exception ⇒
         logger.error(s"Cannot convert ${event} to Rating. Exception: ${e}.")
         throw e
       }
@@ -65,6 +66,7 @@ class DataSource(val dsp: DataSourceParams)
 }
 
 object ItemMarshaller {
+  // HOWTO: implemented unmarshaller to collect properties for filtering.
   def unmarshall(properties: DataMap): Option[Item] =
     Some(Item(properties.getOpt[Int](Item.Fields.CreationYear)))
 }

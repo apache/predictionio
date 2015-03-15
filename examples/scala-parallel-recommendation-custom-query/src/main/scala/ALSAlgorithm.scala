@@ -34,7 +34,7 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
     val itemStringIntMap = BiMap.stringInt(data.items.keys)
     val userStringIntMap = BiMap.stringInt(data.ratings.map(_.user))
 
-    // collect Item as Map and convert ID to Int index
+    // HOWTO: collect Item as Map and convert ID to Int index
     val items: Map[Int, Item] = data.items.map { case (id, item) =>
       (itemStringIntMap(id), item)
     }.collectAsMap.toMap
@@ -88,6 +88,7 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
        .collect()
     }
 
+    // HOWTO: filter predicted results by query.
     val filteredScores = filterItems(indexScores, model.items, query)
 
     implicit val ord = Ordering.by[(Int, Double), Double](_._2)
@@ -136,6 +137,9 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
     if (n1n2 == 0) 0 else (d / n1n2)
   }
 
+  // HOWTO: actual filter of predicted movie results.
+  // filter selects all movies
+  // that were made after the year specified in the query
   private def filterItems(selectedScores: Array[(Int, Double)],
                           items: Map[Int, Item],
                           query: Query) =
