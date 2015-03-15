@@ -17,7 +17,7 @@ $ sbt/sbt "data/run-main io.prediction.data.api.Run"
 ### Very simple test
 
 ```
-$ data/test.sh <appId>
+$ data/test.sh <appAccessKey>
 ```
 
 ### Unit test (Very minimal)
