@@ -76,23 +76,24 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
 
   def predict(model: ALSModel, query: Query): PredictedResult = {
     val queryFeatures =
-      model.items.filter { case (ixd, item) => filterItem(item, query) }
-        .keys.flatMap { iId => model.productFeatures.lookup(iId).headOption }
+      model.items.keys.flatMap(model.productFeatures.lookup(_).headOption)
 
     val indexScores = if (queryFeatures.isEmpty) {
       logger.info(s"No productFeatures found for query ${query}.")
       Array[(Int, Double)]()
     } else {
-      model.productFeatures.mapValues { f =>
-        queryFeatures.map { qf => cosine(qf, f) }.reduce(_ + _)
+      model.productFeatures.mapValues { f ⇒
+        queryFeatures.map(cosine(_, f)).reduce(_ + _)
       }.filter(_._2 > 0) // keep items with score > 0
        .collect()
     }
 
-    implicit val ord = Ordering.by[(Int, Double), Double](_._2)
-    val topScores = getTopN(indexScores, query.num).toArray
+    val filteredScores = filterItems(indexScores, model.items, query)
 
-    val itemScores = topScores.map { case (i, s) =>
+    implicit val ord = Ordering.by[(Int, Double), Double](_._2)
+    val topScores = getTopN(filteredScores, query.num).toArray
+
+    val itemScores = topScores.map { case (i, s) ⇒
       new ItemScore(item = model.itemIntStringMap(i), score = s,
         creationYear = model.items(i).creationYear)
     }
@@ -135,7 +136,11 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
     if (n1n2 == 0) 0 else (d / n1n2)
   }
 
-  private def filterItem(item: Item, query: Query) = item.creationYear
-    .map(icr => query.creationYear.forall(icr >= _))
-    .getOrElse(true)
+  private def filterItems(selectedScores: Array[(Int, Double)],
+                          items: Map[Int, Item],
+                          query: Query) =
+    selectedScores.view.filter { case (iId, _) ⇒
+      items(iId).creationYear.map(icr => query.creationYear.forall(icr >= _))
+        .getOrElse(true)
+    }
 }
