@@ -7,7 +7,6 @@ import io.prediction.EngineClient
 import io.prediction.EventClient
 import io.prediction.Event
 
-import scala.collection.parallel.ParIterable
 import scala.io.Source
 import scala.collection.JavaConverters._
 
@@ -16,11 +15,10 @@ object ImportDataScript extends App {
   override def main(args: Array[String]): Unit = {
     val accessKey = if (args.length == 0) {
       /*throw new IllegalArgumentException(
-        "access key should be passed to import client")*/
+        "access key should be passed")*/
       "FrfaVivp1rhFTFVB0RN2jTvTIe5QwirkEk8IcWiVBtCvw65EddgSa3aKKxwKpguo"
     } else args(0)
 
-    //val accessKey = args(0)
     val engineUrl = if (args.length > 1) args(1) else "http://localhost:7070"
     implicit val client = new EventClient(accessKey, engineUrl)
     println(s"imported ${importMovies.size} movies")
@@ -29,11 +27,11 @@ object ImportDataScript extends App {
   }
 
   /**
-   * imports ivents to the pio server.
+   * imports events to the pio server.
    * @return the events id list.
    */
   def importRateEvents(implicit client: EventClient): Iterator[_] =
-    readCSV("data/u.data", "\t").map { event =>
+    readCSV("data/u.data", "\t").flatMap { event =>
       val eventObj = event.lift
       (for {
         entityId ← eventObj(0)
@@ -47,7 +45,7 @@ object ImportDataScript extends App {
               .targetEntityId(targetEntityId)
               .targetEntityType("movie")
       ).map(client.createEvent)
-    }.flatten
+    }
 
   def importUsers(implicit ec: EventClient): Iterator[_] =
     readCSV("data/u.user").flatMap { user ⇒

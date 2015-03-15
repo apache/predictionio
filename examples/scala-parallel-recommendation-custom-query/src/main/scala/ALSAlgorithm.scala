@@ -35,7 +35,7 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
     val userStringIntMap = BiMap.stringInt(data.ratings.map(_.user))
 
     // HOWTO: collect Item as Map and convert ID to Int index
-    val items: Map[Int, Item] = data.items.map { case (id, item) =>
+    val items: Map[Int, Item] = data.items.map { case (id, item) ⇒
       (itemStringIntMap(id), item)
     }.collectAsMap.toMap
 
@@ -144,7 +144,7 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
                           items: Map[Int, Item],
                           query: Query) =
     selectedScores.view.filter { case (iId, _) ⇒
-      items(iId).creationYear.map(icr => query.creationYear.forall(icr >= _))
+      items(iId).creationYear.map(icr ⇒ query.creationYear.forall(icr >= _))
         .getOrElse(true)
     }
 }
