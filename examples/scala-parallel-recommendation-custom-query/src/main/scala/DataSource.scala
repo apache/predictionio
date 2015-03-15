@@ -14,12 +14,18 @@ import grizzled.slf4j.Logger
 case class DataSourceParams(appId: Int) extends Params
 
 case class Item(creationYear: Option[Int])
+object Item {
+  object Fields {
+    val CreationYear = "creationYear"
+  }
+}
 
 class DataSource(val dsp: DataSourceParams)
   extends PDataSource[TrainingData,
       EmptyEvaluationInfo, Query, EmptyActualResult] {
 
   @transient lazy val logger = Logger[this.type]
+  private lazy val EntityType = "movie"
 
   override
   def readTraining(sc: SparkContext): TrainingData = {
@@ -39,7 +45,7 @@ class DataSource(val dsp: DataSourceParams)
       entityType = Some("user"),
       eventNames = Some(List("rate")), // read "rate"
       // targetEntityType is optional field of an event.
-      targetEntityType = Some(Some("item")))(sc)
+      targetEntityType = Some(Some(EntityType)))(sc)
 
     // collect ratings
     val ratingsRDD = rateEventsRDD.flatMap { event =>
@@ -59,11 +65,8 @@ class DataSource(val dsp: DataSourceParams)
 }
 
 object ItemMarshaller {
-  private val creationDate = "creationDate"
-
-  def unmarshall(properties: DataMap): Option[Item] = {
-    Some(Item(properties.getOpt[Int](creationDate)))
-  }
+  def unmarshall(properties: DataMap): Option[Item] =
+    Some(Item(properties.getOpt[Int](Item.Fields.CreationYear)))
 }
 
 case class Rating(user: String, item: String, rating: Double)

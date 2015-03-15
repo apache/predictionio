@@ -77,8 +77,7 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
   def predict(model: ALSModel, query: Query): PredictedResult = {
     val queryFeatures =
       model.items.filter { case (ixd, item) => filterItem(item, query) }
-        .keys.map { itemId => model.productFeatures.lookup(itemId).headOption }
-        .seq.flatten
+        .keys.flatMap { iId => model.productFeatures.lookup(iId).headOption }
 
     val indexScores = if (queryFeatures.isEmpty) {
       logger.info(s"No productFeatures found for query ${query}.")
@@ -94,7 +93,8 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
     val topScores = getTopN(indexScores, query.num).toArray
 
     val itemScores = topScores.map { case (i, s) =>
-      new ItemScore(item = model.itemIntStringMap(i), score = s)
+      new ItemScore(item = model.itemIntStringMap(i), score = s,
+        creationYear = model.items(i).creationYear)
     }
 
     new PredictedResult(itemScores)

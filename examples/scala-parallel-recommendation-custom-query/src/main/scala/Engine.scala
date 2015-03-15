@@ -8,8 +8,8 @@ case class Query(user: String, num: Int, creationYear: Option[Int] = None)
 
 case class PredictedResult(itemScores: Array[ItemScore]) extends Serializable
 
-// todo(maxim.korolyov): add creation date to the recomendation result
-case class ItemScore(item: String, score: Double) extends Serializable
+case class ItemScore(item: String, score: Double, creationYear: Option[Int])
+  extends Serializable
 
 object RecommendationEngine extends IEngineFactory {
   def apply() =

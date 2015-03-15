@@ -4,7 +4,7 @@
   "engineFactory": "org.template.recommendation.RecommendationEngine",
   "datasource": {
     "params" : {
-      "appId": 2
+      "appId": 5
     }
   },
   "algorithms": [

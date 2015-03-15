@@ -29,7 +29,7 @@ class Serving
             if (mvList(i).stdDev == 0) { 0 }
             else { (is.score - mvList(i).mean) / mvList(i).stdDev }
 
-          ItemScore(is.item, score)
+          ItemScore(is.item, score, is.creationYear)
         }
       }
     }
@@ -37,11 +37,14 @@ class Serving
     // sum the standardized score if same item
     val combined = standard.flatten // Array of ItemScore
       .groupBy(_.item) // groupBy item id
-      .mapValues(itemScores => itemScores.map(_.score).reduce(_ + _))
-      .toArray // array of (item id, score)
-      .sortBy(_._2)(Ordering.Double.reverse)
+      .mapValues{ itemScores =>
+      itemScores.map(_.score).reduce(_ + _) →
+        itemScores.headOption.flatMap(_.creationYear)
+      }
+      .toArray // array of (item id, score, creationYear)
+      .sortBy(_._2._1)(Ordering.Double.reverse)
       .take(query.num)
-      .map { case (k,v) => ItemScore(k, v) }
+      .map { case (item,(score, year)) => ItemScore(item, score, year) }
 
     new PredictedResult(combined)
   }
