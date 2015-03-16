@@ -32,15 +32,15 @@ def import_events(client):
   for item_id in item_ids:
     print "Set item", item_id
     client.create_event(
-      event="$set",
-      entity_type="item",
-      entity_id=item_id,
-      properties={
-	"categories" : random.sample(categories, random.randint(1, 4)),
-	"title": "title for movie " + item_id,
-	"date": 1935,
-	"imdbUrl": "http://imdb/fake/url/id/" + item_id
-      }
+        event="$set",
+        entity_type="item",
+        entity_id=item_id,
+        properties={
+            "categories" : random.sample(categories, random.randint(1, 4)),
+            "title": "title for movie " + item_id,
+            "date": 1935 + random.randint(1, 25),
+            "imdbUrl": "http://imdb.com/fake-url/" + item_id
+        }
     )
     count += 1
 
@@ -55,29 +55,6 @@ def import_events(client):
         target_entity_type="item",
         target_entity_id=viewed_item
       )
-      count += 1
-
-  # each user randomly liked/disliked 10 items
-  for user_id in user_ids:
-    for viewed_item in random.sample(item_ids, 10):
-      if random.choice((False, True)) :
-        print "User", user_id ,"likes item", viewed_item
-        client.create_event(
-          event="like",
-          entity_type="user",
-          entity_id=user_id,
-          target_entity_type="item",
-          target_entity_id=viewed_item
-        )
-      else:
-        print "User", user_id ,"dislikes item", viewed_item
-        client.create_event(
-          event="dislike",
-          entity_type="user",
-          entity_id=user_id,
-          target_entity_type="item",
-          target_entity_id=viewed_item
-        )
       count += 1
 
   print "%s events are imported." % count

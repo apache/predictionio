@@ -16,52 +16,53 @@ import grizzled.slf4j.Logger
 case class DataSourceParams(appId: Int) extends Params
 
 class DataSource(val dsp: DataSourceParams)
-  extends PDataSource[TrainingData, EmptyEvaluationInfo, Query, EmptyActualResult] {
+  extends PDataSource[TrainingData,
+      EmptyEvaluationInfo, Query, EmptyActualResult] {
 
   @transient lazy val logger = Logger[this.type]
 
-  override def readTraining(sc: SparkContext): TrainingData = {
+  override
+  def readTraining(sc: SparkContext): TrainingData = {
     val eventsDb = Storage.getPEvents()
 
     // create a RDD of (entityID, User)
     val usersRDD: RDD[(String, User)] = eventsDb.aggregateProperties(
       appId = dsp.appId,
-      entityType = "user")(sc).map {
-        case (entityId, properties) =>
-          val user = try {
-            User()
-          } catch {
-            case e: Exception => {
-              logger.error(s"Failed to get properties ${properties} of" +
-                s" user ${entityId}. Exception: ${e}.")
-              throw e
-            }
-          }
-          (entityId, user)
+      entityType = "user"
+    )(sc).map { case (entityId, properties) =>
+      val user = try {
+        User()
+      } catch {
+        case e: Exception => {
+          logger.error(s"Failed to get properties ${properties} of" +
+            s" user ${entityId}. Exception: ${e}.")
+          throw e
+        }
       }
+      (entityId, user)
+    }.cache()
 
     // create a RDD of (entityID, Item)
     val itemsRDD: RDD[(String, Item)] = eventsDb.aggregateProperties(
       appId = dsp.appId,
-      entityType = "item")(sc).map {
-        case (entityId, properties) =>
-          val item = try {
-            // Assume categories is optional property of item.
-            Item(
-            	title = properties.get[String]("title"),
-              date = properties.get[String]("date"),
-              imdbUrl = properties.get[String]("imdbUrl"),
-              categories = properties.getOpt[List[String]]("categories")
-              )
-          } catch {
-            case e: Exception => {
-              logger.error(s"Failed to get properties ${properties} of" +
-                s" item ${entityId}. Exception: ${e}.")
-              throw e
-            }
-          }
-          (entityId, item)
+      entityType = "item"
+    )(sc).map { case (entityId, properties) =>
+      val item = try {
+        // Assume categories is optional property of item.
+        Item(
+          title = properties.get[String]("title"),
+          date = properties.get[String]("date"),
+          imdbUrl = properties.get[String]("imdbUrl"),
+          categories = properties.getOpt[List[String]]("categories"))
+      } catch {
+        case e: Exception => {
+          logger.error(s"Failed to get properties ${properties} of" +
+            s" item ${entityId}. Exception: ${e}.")
+          throw e
+        }
       }
+      (entityId, item)
+    }.cache()
 
     // get all "user" "view" "item" events
     val viewEventsRDD: RDD[ViewEvent] = eventsDb.find(
@@ -88,74 +89,34 @@ class DataSource(val dsp: DataSourceParams)
           }
         }
         viewEvent
-      }
-
-    // ADDED
-    // get all "user" "like" and "dislike" "item" events
-    val likeEventsRDD: RDD[LikeEvent] = eventsDb.find(
-      appId = dsp.appId,
-      entityType = Some("user"),
-      eventNames = Some(List("like", "dislike")),
-      // targetEntityType is optional field of an event.
-      targetEntityType = Some(Some("item")))(sc)
-      // eventsDb.find() returns RDD[Event]
-      .map { event =>
-        val likeEvent = try {
-          event.event match {
-            case "like" | "dislike" => LikeEvent(
-              user = event.entityId,
-              item = event.targetEntityId.get,
-              t = event.eventTime.getMillis,
-              like = (event.event == "like"))
-            case _ => throw new Exception(s"Unexpected event ${event} is read.")
-          }
-        } catch {
-          case e: Exception => {
-            logger.error(s"Cannot convert ${event} to LikeEvent." +
-              s" Exception: ${e}.")
-            throw e
-          }
-        }
-        likeEvent
-      }
+      }.cache()
 
     new TrainingData(
       users = usersRDD,
       items = itemsRDD,
-      viewEvents = viewEventsRDD,
-      likeEvents = likeEventsRDD // ADDED
-      )
+      viewEvents = viewEventsRDD
+    )
   }
 }
 
 case class User()
 
 case class Item(
-  title: String,
-  date: String,
-  imdbUrl: String,
-  categories: Option[List[String]])
+     title: String,
+     date: String,
+     imdbUrl: String,
+     categories: Option[List[String]])
 
 case class ViewEvent(user: String, item: String, t: Long)
-
-case class LikeEvent( // ADDED
-  user: String,
-  item: String,
-  t: Long,
-  like: Boolean // true: like. false: dislike
-  )
 
 class TrainingData(
   val users: RDD[(String, User)],
   val items: RDD[(String, Item)],
-  val viewEvents: RDD[ViewEvent],
-  val likeEvents: RDD[LikeEvent] // ADDED
-  ) extends Serializable {
+  val viewEvents: RDD[ViewEvent]
+) extends Serializable {
   override def toString = {
     s"users: [${users.count()} (${users.take(2).toList}...)]" +
-      s"items: [${items.count()} (${items.take(2).toList}...)]" +
-      s"viewEvents: [${viewEvents.count()}] (${viewEvents.take(2).toList}...)" +
-      // ADDED
-      s"likeEvents: [${likeEvents.count()}] (${likeEvents.take(2).toList}...)"
+    s"items: [${items.count()} (${items.take(2).toList}...)]" +
+    s"viewEvents: [${viewEvents.count()}] (${viewEvents.take(2).toList}...)"
   }
 }
