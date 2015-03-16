@@ -93,7 +93,6 @@ extends Metric[EI, Q, P, A, Double] {
 
   def calculate(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])])
   : Double = {
-    // TODO(yipjustin): Parallelize
     val r: Seq[(Double, Long)] = evalDataSet
     .par
     .map { case (_, qpaRDD) =>
@@ -102,8 +101,9 @@ extends Metric[EI, Q, P, A, Double] {
       .filter(!_.isEmpty)
       .map(_.get)
 
-      // TODO: reduce and count are actions. Make them async.
-      (scores.reduce(_ + _), scores.count)
+      scores.aggregate((0.0, 0L))( 
+        (u, v) => (u._1 + v, u._2 + 1),
+        (u, v) => (u._1 + v._1, u._2 + v._2))
     }
     .seq
 

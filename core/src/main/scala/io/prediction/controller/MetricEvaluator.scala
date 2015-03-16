@@ -35,6 +35,8 @@ import _root_.java.io.FileInputStream
 import _root_.java.io.FileOutputStream
 import _root_.java.io.ObjectInputStream
 import _root_.java.io.ObjectOutputStream
+import _root_.java.io.PrintWriter
+import _root_.java.io.File
 import _root_.java.lang.{ Iterable => JIterable }
 import _root_.java.util.{ HashMap => JHashMap, Map => JMap }
 import org.apache.spark.SparkConf
@@ -128,17 +130,65 @@ object MetricEvaluator {
       Seq[Metric[EI, Q, P, A, _]](),
       None)
   }
+
+  case class NameParams(name: String, params: Params) {
+    def this(np: (String, Params)) = this(np._1, np._2)
+  }
+
+  case class EngineVariant(
+    id: String,
+    description: String,
+    engineFactory: String,
+    datasource: NameParams,
+    preparator: NameParams,
+    algorithms: Seq[NameParams],
+    serving: NameParams) {
+
+    def this(evaluation: Evaluation, engineParams: EngineParams) = this(
+      id = "",
+      description = "",
+      engineFactory = evaluation.getClass.getName,
+      datasource = new NameParams(engineParams.dataSourceParams),
+      preparator = new NameParams(engineParams.preparatorParams),
+      algorithms = engineParams.algorithmParamsList.map(np => new NameParams(np)),
+      serving = new NameParams(engineParams.servingParams))
+  }
 }
 
 
-class MetricEvaluator[EI, Q, P, A, R](
+private[prediction] class MetricEvaluator[EI, Q, P, A, R] (
   val metric: Metric[EI, Q, P, A, R],
-  val otherMetrics: Seq[Metric[EI, Q, P, A, _]] = Seq[Metric[EI, Q, P, A, _]](),
-  //val otherMetrics: Seq[Metric[EI, Q, P, A, _]],
-  val outputPath: Option[String] = None)
+  val otherMetrics: Seq[Metric[EI, Q, P, A, _]],
+  val outputPath: Option[String])
   extends BaseEvaluator[EI, Q, P, A, MetricEvaluatorResult[R]] {
   @transient lazy val logger = Logger[this.type]
   @transient val engineInstances = Storage.getMetaDataEngineInstances
+
+  def saveEngineJson(
+    evaluation: Evaluation,
+    engineParams: EngineParams,
+    outputPath: String) {
+
+    val now = DateTime.now
+    val evalClassName = evaluation.getClass.getName
+    
+    val variant = MetricEvaluator.EngineVariant(
+      id = s"$evalClassName $now",
+      description = "",
+      engineFactory = evalClassName,
+      datasource = new MetricEvaluator.NameParams(engineParams.dataSourceParams),
+      preparator = new MetricEvaluator.NameParams(engineParams.preparatorParams),
+      algorithms = engineParams.algorithmParamsList.map(np => new MetricEvaluator.NameParams(np)),
+      serving = new MetricEvaluator.NameParams(engineParams.servingParams))
+
+    implicit lazy val formats = Utils.json4sDefaultFormats
+
+    logger.info("Writing best variant params to disk...")
+    val writer = new PrintWriter(new File(outputPath))
+    writer.write(writePretty(variant))
+    writer.close
+    logger.info(s"The best variant params can be found in $outputPath")
+  }
 
   def evaluateBase(
     sc: SparkContext,
@@ -172,6 +222,9 @@ class MetricEvaluator[EI, Q, P, A, R](
     .reduce { (x, y) =>
       (if (metric.compare(x._1._2.score, y._1._2.score) >= 0) x else y)
     }
+
+    // save engine params if it is set.
+    outputPath.map { path => saveEngineJson(evaluation, bestEngineParams, path) }
 
     MetricEvaluatorResult(
       bestScore = bestScore,

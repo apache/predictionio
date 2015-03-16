@@ -44,6 +44,7 @@ import scala.language.implicitConversions
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization.read
+import org.json4s.native.Serialization.writePretty
 
 import io.prediction.workflow.NameParamsSerializer
 import grizzled.slf4j.Logger
