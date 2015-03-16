@@ -188,3 +188,7 @@ $ bundle exec rake check
 ```
 
 The `rake check` task parses each HTML page in the `build` folder and checks it for common errors including 404s.
+
+## License
+
+Documentation is under a [Creative Commons Attribution-NonCommercial-ShareAlike 3.0 License](http://creativecommons.org/licenses/by-nc-sa/3.0/).
