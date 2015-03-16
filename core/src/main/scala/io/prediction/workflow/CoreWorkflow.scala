@@ -19,6 +19,7 @@ import com.github.nscala_time.time.Imports.DateTime
 import com.twitter.chill.KryoInjection
 import grizzled.slf4j.Logger
 import io.prediction.controller.EngineParams
+import io.prediction.controller.Evaluation
 import io.prediction.controller.WorkflowParams
 import io.prediction.core.BaseEngine
 import io.prediction.core.BaseEvaluator
@@ -92,6 +93,7 @@ object CoreWorkflow {
   }
 
   def runEvaluation[EI, Q, P, A, R <: BaseEvaluatorResult](
+      evaluation: Evaluation,
       engine: BaseEngine[EI, Q, P, A],
       engineParamsList: Seq[EngineParams],
       evaluationInstance: EvaluationInstance,
@@ -116,6 +118,7 @@ object CoreWorkflow {
 
     val evaluatorResult: BaseEvaluatorResult = EvaluationWorkflow.runEvaluation(
       sc,
+      evaluation,
       engine,
       engineParamsList,
       evaluator,

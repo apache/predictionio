@@ -94,7 +94,7 @@ trait Evaluation extends Deployment {
     engineMetric: (BaseEngine[EI, Q, P, A], Metric[EI, Q, P, A, _])) {
     engineEvaluator = (
       engineMetric._1, 
-      new MetricEvaluator(engineMetric._2))
+      MetricEvaluator(engineMetric._2))
   }
 
   /** Returns both the [[Engine]] and [[Metric]] contained in this
@@ -115,6 +115,6 @@ trait Evaluation extends Deployment {
       Seq[Metric[EI, Q, P, A, _]])) {
     engineEvaluator = (
       engineMetrics._1,
-      new MetricEvaluator(engineMetrics._2, engineMetrics._3))
+      MetricEvaluator(engineMetrics._2, engineMetrics._3))
   }
 }

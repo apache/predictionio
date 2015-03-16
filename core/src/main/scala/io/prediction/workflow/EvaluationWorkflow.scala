@@ -27,6 +27,7 @@ import io.prediction.controller.Utils
 import io.prediction.controller.NiceRendering
 import io.prediction.controller.SanityCheck
 import io.prediction.controller.WorkflowParams
+import io.prediction.controller.Evaluation
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseDataSource
 import io.prediction.core.BaseEvaluator
@@ -68,12 +69,13 @@ object EvaluationWorkflow {
   @transient lazy val logger = Logger[this.type]
   def runEvaluation[EI, Q, P, A, R <: BaseEvaluatorResult](
       sc: SparkContext,
+      evaluation: Evaluation,
       engine: BaseEngine[EI, Q, P, A],
       engineParamsList: Seq[EngineParams],
       evaluator: BaseEvaluator[EI, Q, P, A, R],
       params: WorkflowParams)
     : R = {
     val engineEvalDataSet = engine.batchEval(sc, engineParamsList, params)
-    evaluator.evaluateBase(sc, engineEvalDataSet, params)
+    evaluator.evaluateBase(sc, evaluation, engineEvalDataSet, params)
   }
 }

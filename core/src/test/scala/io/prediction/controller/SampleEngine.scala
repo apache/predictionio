@@ -461,7 +461,6 @@ object Metric1 {
   case class Result(val c: Int, val v: Double) extends Serializable
 }
 
-
 class Metric1
 extends Metric[Engine1.EvalInfo, Engine1.Query, Engine1.Prediction,
 Engine1.Actual, Metric1.Result]()(Ordering.by[Metric1.Result, Double](_.v)) {

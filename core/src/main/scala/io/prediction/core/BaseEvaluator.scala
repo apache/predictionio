@@ -16,6 +16,7 @@
 package io.prediction.core
 
 import io.prediction.controller.EngineParams
+import io.prediction.controller.Evaluation
 import io.prediction.controller.WorkflowParams
 import scala.reflect._
 import org.apache.spark.SparkContext
@@ -26,6 +27,7 @@ abstract class BaseEvaluator[EI, Q, P, A, ER <: BaseEvaluatorResult]
   extends AbstractDoer {
   def evaluateBase(
     sc: SparkContext,
+    evaluation: Evaluation,
     engineEvalDataSet: Seq[(EngineParams, Seq[(EI, RDD[(Q, P, A)])])],
     params: WorkflowParams): ER
 }

@@ -100,15 +100,49 @@ extends BaseEvaluatorResult {
   }
 }
 
+object MetricEvaluator {
+  def apply[EI, Q, P, A, R](
+    metric: Metric[EI, Q, P, A, R],
+    otherMetrics: Seq[Metric[EI, Q, P, A, _]],
+    outputPath: String): MetricEvaluator[EI, Q, P, A, R] = {
+    new MetricEvaluator[EI, Q, P, A, R](
+      metric,
+      otherMetrics,
+      Some(outputPath))
+  }
+
+  def apply[EI, Q, P, A, R](
+    metric: Metric[EI, Q, P, A, R],
+    otherMetrics: Seq[Metric[EI, Q, P, A, _]])
+  : MetricEvaluator[EI, Q, P, A, R] = {
+    new MetricEvaluator[EI, Q, P, A, R](
+      metric,
+      otherMetrics,
+      None)
+  }
+  
+  def apply[EI, Q, P, A, R](metric: Metric[EI, Q, P, A, R])
+  : MetricEvaluator[EI, Q, P, A, R] = {
+    new MetricEvaluator[EI, Q, P, A, R](
+      metric,
+      Seq[Metric[EI, Q, P, A, _]](),
+      None)
+  }
+}
+
+
 class MetricEvaluator[EI, Q, P, A, R](
   val metric: Metric[EI, Q, P, A, R],
-  val otherMetrics: Seq[Metric[EI, Q, P, A, _]] = Seq[Metric[EI, Q, P, A, _]]())
+  val otherMetrics: Seq[Metric[EI, Q, P, A, _]] = Seq[Metric[EI, Q, P, A, _]](),
+  //val otherMetrics: Seq[Metric[EI, Q, P, A, _]],
+  val outputPath: Option[String] = None)
   extends BaseEvaluator[EI, Q, P, A, MetricEvaluatorResult[R]] {
   @transient lazy val logger = Logger[this.type]
   @transient val engineInstances = Storage.getMetaDataEngineInstances
 
   def evaluateBase(
     sc: SparkContext,
+    evaluation: Evaluation,
     engineEvalDataSet: Seq[(EngineParams, Seq[(EI, RDD[(Q, P, A)])])],
     params: WorkflowParams): MetricEvaluatorResult[R] = {
 

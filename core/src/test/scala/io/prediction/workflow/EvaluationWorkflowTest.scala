@@ -22,6 +22,7 @@ import org.scalatest.Suite
 
 class EvaluationWorkflowSuite extends FunSuite with SharedSparkContext {
   import io.prediction.controller.Engine1._
+
   test("Evaluation return best engine params, simple result type: Double") {
     val engine = new Engine1()
     val ep0 = EngineParams(dataSourceParams = Engine1.DSP(0.2))
@@ -30,10 +31,15 @@ class EvaluationWorkflowSuite extends FunSuite with SharedSparkContext {
     val ep3 = EngineParams(dataSourceParams = Engine1.DSP(-0.2))
     val engineParamsList = Seq(ep0, ep1, ep2, ep3)
 
-    val evaluator = new MetricEvaluator(new Metric0())
+    val evaluator = MetricEvaluator(new Metric0())
+  
+    object Eval extends Evaluation {
+      engineEvaluator = (new Engine1(), MetricEvaluator(new Metric0()))
+    }
 
     val result = EvaluationWorkflow.runEvaluation(
       sc,
+      Eval,
       engine,
       engineParamsList,
       evaluator,
@@ -51,10 +57,15 @@ class EvaluationWorkflowSuite extends FunSuite with SharedSparkContext {
     val ep3 = EngineParams(dataSourceParams = Engine1.DSP(-0.2))
     val engineParamsList = Seq(ep0, ep1, ep2, ep3)
 
-    val evaluator = new MetricEvaluator(new Metric1())
+    val evaluator = MetricEvaluator(new Metric1())
+    
+    object Eval extends Evaluation {
+      engineEvaluator = (new Engine1(), MetricEvaluator(new Metric1()))
+    }
 
     val result = EvaluationWorkflow.runEvaluation(
       sc,
+      Eval,
       engine,
       engineParamsList,
       evaluator,
