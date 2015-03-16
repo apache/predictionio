@@ -4,7 +4,7 @@
   "engineFactory": "org.template.similarproduct.SimilarProductEngine",
   "datasource": {
     "params" : {
-      "appId": 11
+      "appId": 2
     }
   },
   "algorithms": [
@@ -13,15 +13,6 @@
       "params": {
         "rank": 10,
         "numIterations" : 20,
-        "lambda": 0.01,
-        "seed": 3
-      }
-    },
-    {
-      "name": "likealgo",
-      "params": {
-        "rank": 8,
-        "numIterations" : 15,
         "lambda": 0.01,
         "seed": 3
       }
