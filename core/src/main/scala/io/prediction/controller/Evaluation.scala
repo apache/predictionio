@@ -95,7 +95,10 @@ trait Evaluation extends Deployment {
     engineMetric: (BaseEngine[EI, Q, P, A], Metric[EI, Q, P, A, _])) {
     engineEvaluator = (
       engineMetric._1, 
-      MetricEvaluator(engineMetric._2))
+      MetricEvaluator(
+        metric = engineMetric._2,
+        otherMetrics = Seq[Metric[EI, Q, P, A, _]](),
+        outputPath = "best.json"))
   }
 
   /** Returns both the [[Engine]] and [[Metric]] contained in this

@@ -2,12 +2,11 @@
 title: Hyperparameter Tuning
 ---
 
-
-A PredictionIO engine is governed by a set of parameters, these parameters
+A PredictionIO engine is instantiated by a set of parameters, these parameters
 determines which algorithm is used as well as the parameter for the algorithm.
 It naturally raises a question of how to choose the best set of parameters.
-The evaluation module facilitates user to *tune* the engine to obtain the best
-parameter set.
+The evaluation module steamlines the process of *tuning* the engine to the best
+parameter set and deploy it.
 
 ## Quick Start
 
@@ -15,7 +14,7 @@ We demonstrate the evaluation with [the classification template]
 (/templates/classification/quickstart/).
 The classification template uses naive bayesian algorithm that has a smoothing
 parameter. We evaluate the prediction quality against different parameter value
-to find the best one.
+to find the best parameter, and then deploy it.
 
 ### Edit the AppId
 
@@ -31,7 +30,7 @@ object EngineParamsList extends EngineParamsGenerator {
 }
 ```
 
-### Building and run the evaluation
+### Build and run the evaluation
 To run evaluation, the command `pio eval` is used. It takes to
 mandatory parameter, 
 1. the `Evaluation` object, it tells PredictionIO the engine and metric we use
@@ -63,6 +62,7 @@ You will see the following output:
 [INFO] [MetricEvaluator] Iteration 2
 [INFO] [MetricEvaluator] EngineParams: {"dataSourceParams":{"":{"appId":19,"evalK":5}},"preparatorParams":{"":{}},"algorithmParamsList":[{"naive":{"lambda":1000.0}}],"servingParams":{"":{}}}
 [INFO] [MetricEvaluator] Result: MetricScores(0.4444444444444444,List())
+[INFO] [MetricEvaluator] Writing best variant params to disk...
 [INFO] [CoreWorkflow$] Updating evaluation instance with result: MetricEvaluatorResult:
   # engine params evaluated: 3
 Optimal Engine Params:
@@ -93,6 +93,7 @@ Optimal Engine Params:
 }
 Metrics:
   org.template.classification.Accuracy: 0.9281045751633987
+The best variant params can be found in best.json
 [INFO] [CoreWorkflow$] runEvaluation completed
 ```
 
@@ -100,6 +101,26 @@ The console prints out the evaluation metric score of each engine params, and
 finally pretty print the optimal engine params.
 Amongst the 3 engine params we evaluate, *lambda = 10.0* yields the highest 
 accuracy score of ~0.9281.
+
+### Deploy the best engine parameter
+
+The evaluation module also writes out the best engine parameter to disk at
+`best.json`. We can train and deploy this specify engine variant using the 
+extra parameter `-v`. For example:
+
+```bash
+$ pio train -v best.json
+...
+[INFO] [CoreWorkflow$] Training completed successfully.
+$ pio deploy -v best.json
+...
+[INFO] [HttpListener] Bound to localhost/127.0.0.1:8000
+[INFO] [MasterActor] Bind successful. Ready to serve.
+```
+
+At this point, we have successfully deployed the best engine variant we found
+through the evaluation process.
+
 
 ## Detailed Explanation
 

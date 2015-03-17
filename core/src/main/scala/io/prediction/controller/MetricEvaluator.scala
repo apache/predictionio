@@ -62,7 +62,8 @@ case class MetricEvaluatorResult[R](
   val bestIdx: Int,
   val metricHeader: String,
   val otherMetricHeaders: Seq[String],
-  val engineParamsScores: Seq[(EngineParams, MetricScores[R])]) 
+  val engineParamsScores: Seq[(EngineParams, MetricScores[R])],
+  val outputPath: Option[String])
 extends BaseEvaluatorResult {
 
   override def toOneLiner(): String = {
@@ -73,7 +74,6 @@ extends BaseEvaluatorResult {
   override def toJSON(): String = {
     implicit lazy val formats = Utils.json4sDefaultFormats +
       new NameParamsSerializer
-
     write(this)
   }
   
@@ -96,7 +96,11 @@ extends BaseEvaluatorResult {
         s"  $metricHeader: ${bestScore.score}") ++
       otherMetricHeaders.zip(bestScore.otherScores).map { 
         case (h, s) => s"  $h: $s"
-      })
+      } ++
+      outputPath.toSeq.map {
+        p => s"The best variant params can be found in $p"
+      }
+    )
 
     strings.mkString("\n")
   }
@@ -183,11 +187,10 @@ private[prediction] class MetricEvaluator[EI, Q, P, A, R] (
 
     implicit lazy val formats = Utils.json4sDefaultFormats
 
-    logger.info("Writing best variant params to disk...")
+    logger.info("Writing best variant params to disk ($outputPath)...")
     val writer = new PrintWriter(new File(outputPath))
     writer.write(writePretty(variant))
     writer.close
-    logger.info(s"The best variant params can be found in $outputPath")
   }
 
   def evaluateBase(
@@ -232,6 +235,7 @@ private[prediction] class MetricEvaluator[EI, Q, P, A, R] (
       bestIdx = bestIdx,
       metricHeader = metric.header,
       otherMetricHeaders = otherMetrics.map(_.header),
-      engineParamsScores = evalResultList)
+      engineParamsScores = evalResultList,
+      outputPath = outputPath)
   }
 }
