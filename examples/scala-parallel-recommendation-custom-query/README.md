@@ -84,13 +84,61 @@ private def filterItems(selectedScores: Array[(Int, Double)],
  }
 ```
 
-* And the last step will be to modify the predict method in the ALSAlgorithm to filter predicted result set:
+* Modify the predict method in the ALSAlgorithm to filter predicted result set:
 
 `val filteredScores = filterItems(indexScores, model.items, query)`
 
+* And the last step could be to modify the serving to sort recommended items by the year of movie creation(our custom property) as Hagay Gazuli mentioned in the [google group](https://groups.google.com/forum/#!searchin/predictionio-user/created$20%7Csort:date/predictionio-user/LEHxuc0Bu_0/W9RkAApvivsJ).
+
+```
+class Serving extends LServxing[Query, PredictedResult] {
+  override def serve(query: Query,
+            predictedResults: Seq[PredictedResult]): PredictedResult =
+    predictedResults.headOption.map { result ⇒
+      val preparedItems = result.itemScores
+        .sortBy { case ItemScore(item, score, year) ⇒ year }(
+          Ordering.Option[Int].reverse)
+        .take(query.num)
+      new PredictedResult(preparedItems)
+    }.getOrElse(new PredictedResult(Array.empty[ItemScore]))
+}
+```
+
 * Now you can filter your recommendation by items that were made after some certain year:
 
-`curl -H 'Content-Type: application/json' '127.0.0.1:8000/queries.json' -d '{"user":100, "num":5, "creationYear":1990}' | python -m json.tool`
+```> curl -H 'Content-Type: application/json' '127.0.0.1:8000/queries.json' -d '{"user":100, "num":5, "creationYear":1990}' | python -m json.tool```
+
+Where result of curl is piped to python json.tool lib just for convenience to pretty print the response from engine:
+```
+    "itemScores": [
+        {
+            "creationYear": 1996,
+            "item": "831",
+            "score": 518.9319563470217
+        },
+        {
+            "creationYear": 1996,
+            "item": "1619",
+            "score": 15.321792791296401
+        },
+        {
+            "creationYear": 1994,
+            "item": "1554",
+            "score": 628.1994336041231
+        },
+        {
+            "creationYear": 1993,
+            "item": "736",
+            "score": 419.3508956666954
+        },
+        {
+            "creationYear": 1991,
+            "item": "627",
+            "score": 498.28818189885175
+        }
+    ]
+}
+```
 
 That's it! Now your recommendation engine is using filtering on custom item field on predicted result set.
 
