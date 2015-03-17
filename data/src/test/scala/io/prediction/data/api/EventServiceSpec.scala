@@ -36,7 +36,7 @@ class EventServiceSpec extends Specification {
   val accessKeysClient = Storage.getMetaDataAccessKeys
 
   val eventServiceActor = system.actorOf(
-    Props(classOf[EventServiceActor], eventClient, accessKeysClient))
+    Props(classOf[EventServiceActor], eventClient, accessKeysClient, true))
 
   "GET / request" should {
     "properly produce OK HttpResponses" in {
