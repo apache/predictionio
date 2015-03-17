@@ -1,0 +1,97 @@
+/*
+This is the visible area of you carousel.
+Set a width here to define how much items are visible.
+The width can be either fixed in px or flexible in %.
+Position must be relative!
+*/
+.jcarousel {
+  position: relative;
+  overflow: hidden;
+
+}
+
+.jcarousel-wrapper {
+  width: 400px;
+}
+
+/*
+This is the container of the carousel items.
+You must ensure that the position is relative or absolute and
+that the width is big enough to contain all items.
+*/
+.jcarousel ul {
+  width: 99999px;
+  position: relative;
+
+  /* Optional, required in this case since it's a <ul> element */
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/*
+These are the item elements. jCarousel works best, if the items
+have a fixed width and height (but it's not required).
+*/
+.jcarousel li {
+  /* Required only for block elements like <li>'s */
+  float: left;
+  width: 400px;
+
+}
+
+.jcarousel-pagination {
+  width: 100%;
+  list-style-type: none;
+  display: inline-block;
+  margin: 0;
+  padding: 20px 0 20px 0;
+  border-bottom: 1px solid $border-color;
+
+  li  {
+    display: inline-block;
+    margin: 0 20px 0 0;
+
+    a {
+      border: 1px solid $border-color;
+      border-radius: 30px;
+      width: 30px;
+      height: 30px;
+      line-height: 30px;
+      text-align: center;
+      display: inline-block;
+      color: $carousel-link-color;
+      &:hover {
+        background-color: $carousel-hover-background-color;
+        border: 1px solid $carousel-hover-background-color;
+        text-decoration: none;
+        color: $carousel-hover-link-color;
+      }
+    }
+    &.active {
+      a {
+        background-color: $carousel-active-background-color;
+        border: 1px solid $carousel-active-background-color;
+        color: $carousel-active-link-color;
+
+      }
+    }
+
+  }
+}
+
+.jcarousel-controls {
+  display: inline-block;
+  width: 100%;
+  padding: 15px 0 15px 0;
+  border-top: 1px solid $border-color;
+}
+
+.jcarousel-control-prev {
+  margin: 0 0 0 15px;
+}
+
+.jcarousel-control-next {
+  float: right;
+  margin: 0 15px 0 0;
+}

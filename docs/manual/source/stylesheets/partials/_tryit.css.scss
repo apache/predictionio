@@ -1,0 +1,30 @@
+.codepicnic {
+  display: flex;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.tutorial {
+  margin: 0 25px 0 0;
+}
+
+@include medium {
+  .codepicnic {
+    flex-wrap: nowrap;
+  }
+
+}
+
+
+
+
+.iframe {
+  width: 100%;
+
+  iframe {
+    border: 1px solid $border-color;
+    width: 100%;
+    height: 500px;
+
+  }
+}
