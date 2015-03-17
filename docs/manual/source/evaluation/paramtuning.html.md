@@ -367,6 +367,7 @@ You will see the following output:
 [INFO] [MetricEvaluator] Iteration 2
 [INFO] [MetricEvaluator] EngineParams: {"dataSourceParams":{"":{"appId":19,"evalK":5}},"preparatorParams":{"":{}},"algorithmParamsList":[{"naive":{"lambda":1000.0}}],"servingParams":{"":{}}}
 [INFO] [MetricEvaluator] Result: MetricScores(0.4444444444444444,List())
+[INFO] [MetricEvaluator] Writing best variant params to disk...
 [INFO] [CoreWorkflow$] Updating evaluation instance with result: MetricEvaluatorResult:
   # engine params evaluated: 3
 Optimal Engine Params:
@@ -397,6 +398,7 @@ Optimal Engine Params:
 }
 Metrics:
   org.template.classification.Accuracy: 0.9281045751633987
+The best variant params can be found in best.json
 [INFO] [CoreWorkflow$] runEvaluation completed
 ```
 
