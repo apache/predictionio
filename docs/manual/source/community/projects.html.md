@@ -18,7 +18,7 @@ Community-powered SDKs are [separately listed](/sdk/).
 
 URL: https://github.com/PredictionIO/PredictionIO-Vagrant
 
-Bring Up PredictionIO 0.9.1-SNAPSHOT VM with Vagrant.
+Bring Up PredictionIO 0.9.x VM with Vagrant.
 
 - Core Author: Raphael Mäder
 
