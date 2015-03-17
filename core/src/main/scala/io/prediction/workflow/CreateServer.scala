@@ -15,26 +15,6 @@
 
 package io.prediction.workflow
 
-import io.prediction.controller.IEngineFactory
-import io.prediction.controller.EmptyParams
-import io.prediction.controller.Engine
-import io.prediction.controller.PAlgorithm
-import io.prediction.controller.Params
-// import io.prediction.controller.ParamsWithAppId
-import io.prediction.controller.WithPrId
-import io.prediction.controller.Utils
-import io.prediction.controller.WorkflowParams
-import io.prediction.controller.java.LJavaAlgorithm
-import io.prediction.controller.java.LJavaServing
-import io.prediction.controller.java.PJavaAlgorithm
-import io.prediction.core.BaseAlgorithm
-import io.prediction.core.BaseServing
-import io.prediction.core.BaseEngine
-import io.prediction.core.Doer
-import io.prediction.data.storage.EngineInstance
-import io.prediction.data.storage.EngineManifest
-import io.prediction.data.storage.Storage
-
 import akka.actor._
 import akka.event.Logging
 import akka.io.IO
@@ -42,40 +22,47 @@ import akka.pattern.ask
 import akka.util.Timeout
 import com.github.nscala_time.time.Imports.DateTime
 import com.google.gson.Gson
-import com.twitter.chill.{KryoBase, KryoInjection, ScalaKryoInstantiator}
+import com.twitter.chill.KryoBase
+import com.twitter.chill.KryoInjection
+import com.twitter.chill.ScalaKryoInstantiator
 import grizzled.slf4j.Logging
-import org.apache.spark.SparkConf
-import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-import org.apache.spark.rdd.RDD
+import io.prediction.controller.Engine
+import io.prediction.controller.Params
+import io.prediction.controller.Utils
+import io.prediction.controller.WithPrId
+import io.prediction.controller.WorkflowParams
+import io.prediction.controller.java.LJavaAlgorithm
+import io.prediction.controller.java.LJavaServing
+import io.prediction.controller.java.PJavaAlgorithm
+import io.prediction.core.BaseAlgorithm
+import io.prediction.core.BaseServing
+import io.prediction.core.Doer
+import io.prediction.data.storage.EngineInstance
+import io.prediction.data.storage.EngineManifest
+import io.prediction.data.storage.Storage
 import org.json4s._
 import org.json4s.native.JsonMethods._
-import org.json4s.native.Serialization.{ read, write }
+import org.json4s.native.Serialization.write
 import spray.can.Http
-import spray.routing._
-import spray.http._
 import spray.http.MediaTypes._
+import spray.http._
+import spray.routing._
 
-import scala.concurrent.Future
-import scala.concurrent.future
-import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import scala.concurrent.duration._
+import scala.concurrent.future
 import scala.language.existentials
-import scala.reflect.runtime.universe
 import scala.util.Failure
 import scala.util.Random
 import scala.util.Success
 
-import java.io.File
-import java.io.ByteArrayInputStream
-import java.io.ObjectInputStream
 import java.io.PrintWriter
 import java.io.StringWriter
-import java.net.URLClassLoader
 
 class KryoInstantiator(classLoader: ClassLoader) extends ScalaKryoInstantiator {
-  override def newKryo: KryoBase = {
-    val kryo = super.newKryo
+  override def newKryo(): KryoBase = {
+    val kryo = super.newKryo()
     kryo.setClassLoader(classLoader)
     kryo
   }
@@ -211,7 +198,7 @@ object CreateServer extends Logging {
       asInstanceOf[Seq[Any]]
 
     val sparkContext = WorkflowContext(
-      batch = (if (sc.batch == "") engineInstance.batch else sc.batch),
+      batch = if (sc.batch == "") engineInstance.batch else sc.batch,
       executorEnv = engineInstance.env,
       mode = "Serving",
       sparkEnv = engineInstance.sparkConf)
@@ -274,24 +261,24 @@ class MasterActor(
   def undeploy(ip: String, port: Int): Unit = {
     val serverUrl = s"http://${ip}:${port}"
     log.info(
-      s"Undeploying any existing engine instance at ${serverUrl}")
+      s"Undeploying any existing engine instance at $serverUrl")
     try {
-      val code = scalaj.http.Http(s"${serverUrl}/stop").asString.code
+      val code = scalaj.http.Http(s"$serverUrl/stop").asString.code
       code match {
         case 200 => Unit
         case 404 => log.error(
-          s"Another process is using ${serverUrl}. Unable to undeploy.")
+          s"Another process is using $serverUrl. Unable to undeploy.")
         case _ => log.error(
-          s"Another process is using ${serverUrl}, or an existing " +
-          s"engine server is not responding properly (HTTP ${code}). " +
+          s"Another process is using $serverUrl, or an existing " +
+          s"engine server is not responding properly (HTTP $code). " +
           "Unable to undeploy.")
       }
     } catch {
       case e: java.net.ConnectException =>
-        log.warning(s"Nothing at ${serverUrl}")
+        log.warning(s"Nothing at $serverUrl")
       case _: Throwable =>
         log.error("Another process might be occupying " +
-          s"${ip}:${port}. Unable to undeploy.")
+          s"$ip:$port. Unable to undeploy.")
     }
   }
 
@@ -348,7 +335,7 @@ class MasterActor(
     case x: Http.CommandFailed =>
       if (retry > 0) {
         retry -= 1
-        log.error(s"Bind failed. Retrying... (${retry} more trial(s))")
+        log.error(s"Bind failed. Retrying... ($retry more trial(s))")
         context.system.scheduler.scheduleOnce(1.seconds) {
           self ! BindServer()
         }
@@ -559,7 +546,7 @@ class ServerActor[Q, P](
                 f onComplete {
                   case Success(code) => {
                     if (code != 201) {
-                      log.error(s"Feedback event failed. Status code: ${code}."
+                      log.error(s"Feedback event failed. Status code: $code."
                         + s"Data: ${write(data)}.")
                     }
                   }
@@ -571,7 +558,7 @@ class ServerActor[Q, P](
                 //   then overwrite with new prId
                 // - if it is not WithPrId, no prId injection
                 if (r._2.isInstanceOf[WithPrId]) {
-                  r._1 merge parse( s"""{"prId" : "${newPrId}"}""")
+                  r._1 merge parse( s"""{"prId" : "$newPrId"}""")
                 } else {
                   r._1
                 }
@@ -579,11 +566,11 @@ class ServerActor[Q, P](
 
               // Bookkeeping
               val servingEndTime = DateTime.now
-              lastServingSec = (
-                servingEndTime.getMillis - servingStartTime.getMillis) / 1000.0
-              avgServingSec = (
+              lastServingSec =
+                (servingEndTime.getMillis - servingStartTime.getMillis) / 1000.0
+              avgServingSec =
                 ((avgServingSec * requestCount) + lastServingSec) /
-                (requestCount + 1))
+                (requestCount + 1)
               requestCount += 1
 
               respondWithMediaType(`application/json`) {
@@ -592,17 +579,17 @@ class ServerActor[Q, P](
             } catch {
               case e: MappingException =>
                 log.error(
-                  s"Query '${queryString}' is invalid. Reason: ${e.getMessage}")
+                  s"Query '$queryString' is invalid. Reason: ${e.getMessage}")
                 args.logUrl map { url =>
                   remoteLog(
                     url,
                     args.logPrefix.getOrElse(""),
-                    s"Query:\n${queryString}\n\nStack Trace:\n" +
+                    s"Query:\n$queryString\n\nStack Trace:\n" +
                       s"${getStackTraceString(e)}\n\n")
                   }
                 complete(StatusCodes.BadRequest, e.getMessage)
               case e: Throwable =>
-                val msg = s"Query:\n${queryString}\n\nStack Trace:\n" +
+                val msg = s"Query:\n$queryString\n\nStack Trace:\n" +
                   s"${getStackTraceString(e)}\n\n"
                 log.error(msg)
                 args.logUrl map { url =>
