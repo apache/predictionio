@@ -6,7 +6,8 @@ By default the recommendation template reads the rate and buy user events and th
 
 First off all you have to import your events to the pio event server.
 
-You can use ImportDataScript.scala to import users, movies and rate events from [movielenses database](http://grouplens.org/datasets/movielens/)
+You can use ImportDataScript.scala to import users, movies and rate events from [movielenses database](http://grouplens.org/datasets/movielens/). 
+Make sure that data files are in `UTF-8` encoding.
 
 This command line tool accepts 2 args:
 
