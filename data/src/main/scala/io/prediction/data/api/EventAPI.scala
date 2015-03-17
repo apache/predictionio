@@ -23,6 +23,8 @@ import io.prediction.data.storage.EventJson4sSupport
 import io.prediction.data.storage.LEvents
 import io.prediction.data.storage.StorageError
 import io.prediction.data.storage.Storage
+import io.prediction.data.webhooks.EventConverter
+import io.prediction.data.webhooks.segmentio.SegmentIOConverter
 
 import akka.actor.ActorSystem
 import akka.actor.Actor
@@ -33,9 +35,11 @@ import akka.pattern.ask
 import akka.util.Timeout
 
 import org.json4s.{Formats, DefaultFormats}
+import org.json4s.JObject
 import org.json4s.ext.JodaTimeSerializers
 import org.json4s.native.JsonMethods.parse
 
+import spray.util.LoggingContext
 import spray.can.Http
 import spray.http.HttpCharsets
 import spray.http.HttpEntity
@@ -114,6 +118,7 @@ class Stats(val startTime: DateTime) {
 class EventServiceActor(
     val eventClient: LEvents,
     val accessKeysClient: AccessKeys,
+    val eventConverters: Map[String, EventConverter],
     val stats: Boolean) extends HttpServiceActor {
 
   object Json4sProtocol extends Json4sSupport {
@@ -342,7 +347,65 @@ class EventServiceActor(
           }
         }
       }  // stats.json get
+    } ~
+    path("webhooks" / jsonPath ) { web =>
+      post {
+        handleRejections(rejectionHandler) {
+          authenticate(withAccessKey) { appId =>
+            entity(as[JObject]) { jObj =>
+
+                log.info(s"POST webhooks ${web} events ${jObj}")
+
+                eventConverters.get(web).map { converter =>
+                  complete {
+                    val event = converter.convert(jObj)
+                    val data = eventClient.futureInsert(event, appId).map { r =>
+                      val result = r match {
+                        case Left(StorageError(message)) =>
+                          (StatusCodes.InternalServerError,
+                            Map("message" -> message))
+                        case Right(id) =>
+                          (StatusCodes.Created, Map("eventId" -> s"${id}"))
+                      }
+                      if (stats) {
+                        statsActorRef ! Bookkeeping(appId, result._1, event)
+                      }
+                      result
+                    }
+                    data
+                  }
+                }.getOrElse{
+                  log.info(s"invalid ${web} path")
+                  val message = s"webhooks for ${web} is not supported."
+                  complete(
+                    StatusCodes.NotFound, Map("message" -> message)
+                  )
+                }
+
+            }
+          }
+        }
+      } ~
+      get {
+        handleRejections(rejectionHandler) {
+          authenticate(withAccessKey) { appId =>
+            respondWithMediaType(MediaTypes.`application/json`) {
+              complete {
+                Future {
+                  eventConverters.get(web).map { converter =>
+                    (StatusCodes.OK, Map("message" -> "Nothing"))
+                  }.getOrElse {
+                    val message = s"webhooks for ${web} is not supported."
+                    (StatusCodes.NotFound, Map("message" -> message))
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
+    // TODO: handle webhooks with form submission format
 
   def receive: Actor.Receive = runRoute(route)
 
@@ -402,10 +465,12 @@ case class StartServer(
 class EventServerActor(
     val eventClient: LEvents,
     val accessKeysClient: AccessKeys,
+    val eventConverters: Map[String, EventConverter],
     val stats: Boolean) extends Actor {
   val log = Logging(context.system, this)
   val child = context.actorOf(
-    Props(classOf[EventServiceActor], eventClient, accessKeysClient, stats),
+    Props(classOf[EventServiceActor], eventClient, accessKeysClient,
+      eventConverters, stats),
     "EventServiceActor")
   implicit val system = context.system
 
@@ -431,11 +496,17 @@ object EventServer {
     val eventClient = Storage.getLEvents()
     val accessKeysClient = Storage.getMetaDataAccessKeys
 
+    // webhooks
+    val eventConverters: Map[String, EventConverter] = Map(
+      "segmentio" -> new EventConverter(new SegmentIOConverter())
+    )
+
     val serverActor = system.actorOf(
       Props(
         classOf[EventServerActor],
         eventClient,
         accessKeysClient,
+        eventConverters,
         config.stats),
       "EventServerActor")
     if (config.stats) system.actorOf(Props[StatsActor], "StatsActor")
