@@ -4,7 +4,7 @@ title: PredictionIO - A Quick Intro
 
 In a common scenario, PredictionIO's **Event Server** continuously collects data from your application.
 A PredictionIO **engine** then builds predictive model(s) with one or more algorithms using the data.
-After it is deployed as a web service, it listens to queries from your application and respond with predicted results in real-time. 
+After it is deployed as a web service, it listens to queries from your application and respond with predicted results in real-time.
 
 ![PredictionIO Single Engine Overview](/images/overview-singleengine.png)
 
@@ -27,7 +27,7 @@ It can be achieved by [making some modifications](#).
 
 Engine is responsible for making prediction.
 It contains one or more machine learning algorithms. An engine reads training data and build predictive model(s).
-It is then deployed as a web service. A deployed engine responds to prediction queries from your application through REST API in real-time. 
+It is then deployed as a web service. A deployed engine responds to prediction queries from your application through REST API in real-time.
 
 PredictionIO's [template gallery](http://templates.prediction.io/) offers Engine Templates for all kinds of machine learning tasks.
 You can easily create one or more engines from these templates .

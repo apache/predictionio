@@ -1,0 +1,16 @@
+doctype html
+html
+  head
+    = partial 'head/base'
+  body
+    #global
+      = partial 'header'
+      #page.container
+        main#main role="main" data-swiftype-index="true"
+          #content
+            = yield
+      = partial 'footer'
+      = partial 'copyright'
+    = partial 'swiftype'
+    = javascript_include_tag  'application'
+    = javascript_include_tag  'tryit'

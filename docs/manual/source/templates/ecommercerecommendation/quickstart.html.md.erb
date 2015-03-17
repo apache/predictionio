@@ -15,22 +15,7 @@ WARNING: This template requires PredictionIO version >= 0.9.0
 
 ## Usage
 
-Input Query:
-
-- UserID
-- Num of items to be recommended
-- List of white-listed item categories (optional)
-- List of white-listed ItemIds (optional)
-- List of black-listed ItemIds (optional)
-
-The template also supports black-list and whitelist. If a whitelist is provided, the engine will include only those products in the recommendation.
-Likewise, if a blacklist is provided, the engine will exclude those products in the recommendation.
-
-Output PredictedResult:
-
-- A ranked list of recommended itemIDs
-
-### Predictive Model Training
+### Event Data Requirements
 
 By default, this template takes the following data from Event Server:
 
@@ -44,6 +29,22 @@ INFO: This template can easily be customized to consider more user events such a
 The *view* events are used as Training Data to train the model. The algorithm has a parameter *unseenOnly*; when this parameter is set to true, the engine would recommend unseen items only. You can specify a list of events which are considered as *seen* events with the algorithm parameter *seenEvents*. The default values are *view* and *buy* events, which means that the engine by default recommends un-viewed and un-bought items only. You can also define your own events which are considered as *seen*.
 
 The constraint *unavailableItems* set events are used to exclude a list of unaviable items (such as out of stock) for all users in real time.
+
+### Input Query
+
+- UserID
+- Num of items to be recommended
+- List of white-listed item categories (optional)
+- List of white-listed ItemIds (optional)
+- List of black-listed ItemIds (optional)
+
+The template also supports black-list and whitelist. If a whitelist is provided, the engine will include only those products in the recommendation.
+Likewise, if a blacklist is provided, the engine will exclude those products in the recommendation.
+
+### Output PredictedResult
+
+- A ranked list of recommended itemIDs
+
 
 ## 1. Install and Run PredictionIO
 

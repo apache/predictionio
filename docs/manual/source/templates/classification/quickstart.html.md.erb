@@ -17,6 +17,24 @@ You can customize it easily to fit your specific use case and needs.
 We are going to show you how to create your own classification engine for
 production use based on this template.
 
+## Usage
+
+### Event Data Requirements
+
+By default, the template requires the following events to be collected:
+
+- user $set event, which set the attributes of the user
+
+NOTE: You can customize to use other event.
+
+### Input Query
+
+- array of features values
+
+### Output PredictedResult
+
+- the predicted label
+
 ## 1. Install and Run PredictionIO
 
 <%= partial 'shared/quickstart/install' %>

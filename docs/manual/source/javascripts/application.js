@@ -1,5 +1,6 @@
 //= require 'jquery'
 //= require 'Tabslet'
+//= require 'jcarousel'
 
 $(document).ready(function() {
   // Main Navigation
@@ -46,5 +47,7 @@ $(document).ready(function() {
       window.open(this.href);
     }).addClass('external');
   });
+  
+  
 
 });

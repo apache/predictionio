@@ -6,26 +6,27 @@ title: Quick Start - Product Ranking Engine Template
 
 This engine template sorts a list of products for a user based on his/her preference. This is ideal for personalizing the display order of product page, catalog, or menu items if you have large number of options. It creates engagement and early conversion by placing products that a user prefers on the top.
 
-
-
 ## Usage
 
-Input Query:
+### Event Data Requirements
+
+By default, this template takes the following data from Event Server as Training Data:
+
+- user *$set* events
+- item *$set* events
+- Users' *view* item events
+
+INFO: This template can easily be customized to consider more user events such as *buy*, *rate* and *like*.
+
+### Input Query
 
 - UserID
 - List of ItemIDs, which are the products to be ranked
 
-Output PredictedResult:
+### Output PredictedResult
 
 - a ranked list of recommended itemIDs
 
-### Predictive Model Training
-
-By default, this template takes the following data from Event Server as Training Data:
-
-- Users' *view* events
-
-INFO: This template can easily be customized to consider more user events such as *buy*, *rate* and *like*.
 
 ## 1. Install and Run PredictionIO
 
