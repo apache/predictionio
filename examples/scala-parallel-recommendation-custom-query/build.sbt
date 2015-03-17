@@ -9,7 +9,6 @@ organization := "io.prediction"
 def provided  (deps: ModuleID*): Seq[ModuleID] = deps map (_ % "provided")
 
 libraryDependencies ++= provided(
-  "io.prediction"    % "client"         % "0.8.3" withSources() withJavadoc(),
   "io.prediction"    %% "core"          % "0.8.6",
   "org.apache.spark" %% "spark-core"    % "1.2.0",
   "org.apache.spark" %% "spark-mllib"   % "1.2.0")

@@ -1,8 +1,23 @@
 # Filtering result set on custom item field (Recommendation)
 
+## Import data to pio engine
+
 By default the recommendation template reads the rate and buy user events and the user itself. You can modify the default DataSource to read your custom item with specified list of properties.
 
 First off all you have to import your events to the pio event server.
+
+You can use ImportDataScript.scala to import users, movies and rate events from [movielenses database](http://grouplens.org/datasets/movielens/)
+
+This command line tool accepts 2 args:
+
+ 1. app access key and it is mandatory
+ 2. pio engine url. default is `http://localhost:7070`
+ 
+For example in the sbt console: `> runMain org.template.recommendation.ImportDataScript.scala <access_key>`
+
+## Modify the engine.
+
+This example is based on v0.1.1 of [scala parallel recommendation template](https://github.com/PredictionIO/template-scala-parallel-recommendation/)
 
 In this example we modify DataSource to read custom event with one property.
 

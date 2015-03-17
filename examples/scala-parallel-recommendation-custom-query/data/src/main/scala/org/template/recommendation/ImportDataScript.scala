@@ -1,22 +1,25 @@
 package org.template.recommendation
 
-import java.io.File
-import java.util
-
-import io.prediction.EngineClient
-import io.prediction.EventClient
-import io.prediction.Event
-
-import scala.io.Source
+import io.prediction.{Event, EventClient
+}
 import scala.collection.JavaConverters._
 
+import scala.io.Source
+
+/**
+ * @author Maxim Korolyov.
+ */
 object ImportDataScript extends App {
 
+  /**
+   * Imports users, movies and rate events if movielens database to pio.
+   * first arg is mandatory - it is app access key
+   * second arg is optional - it is pio engine url (default is `localhost:7070`)
+   * @param args
+   */
   override def main(args: Array[String]): Unit = {
     val accessKey = if (args.length == 0) {
-      /*throw new IllegalArgumentException(
-        "access key should be passed")*/
-      "FrfaVivp1rhFTFVB0RN2jTvTIe5QwirkEk8IcWiVBtCvw65EddgSa3aKKxwKpguo"
+      throw new IllegalArgumentException("access key should be passed")
     } else args(0)
 
     val engineUrl = if (args.length > 1) args(1) else "http://localhost:7070"
@@ -38,13 +41,13 @@ object ImportDataScript extends App {
         targetEntityId ← eventObj(1)
         rating ← eventObj(2)
       } yield new Event()
-              .event("rate")
-              .entityId(entityId)
-              .entityType("user")
-              .properties(javaMap("rating" → new java.lang.Double(rating)))
-              .targetEntityId(targetEntityId)
-              .targetEntityType("movie")
-      ).map(client.createEvent)
+          .event("rate")
+          .entityId(entityId)
+          .entityType("user")
+          .properties(javaMap("rating" → new java.lang.Double(rating)))
+          .targetEntityId(targetEntityId)
+          .targetEntityType("movie")
+        ).map(client.createEvent)
     }
 
   def importUsers(implicit ec: EventClient): Iterator[_] =
