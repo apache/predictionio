@@ -11,6 +11,5 @@ class Serving extends LServing[Query, PredictedResult] {
         .sortBy { case ItemScore(item, score, year) ⇒ year }(
           Ordering.Option[Int].reverse)
       new PredictedResult(preparedItems)
-
     }.getOrElse(new PredictedResult(Array.empty[ItemScore]))
 }
