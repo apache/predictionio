@@ -91,7 +91,8 @@ case class BuildArgs(
   sbtExtra: Option[String] = None,
   sbtAssemblyPackageDependency: Boolean = true,
   sbtClean: Boolean = false,
-  uberJar: Boolean = false)
+  uberJar: Boolean = false,
+  forceGeneratePIOSbt: Boolean = false)
 
 case class DeployArgs(
   ip: String = "localhost",
@@ -211,6 +212,9 @@ object Console extends Logging {
           } text("Skip building external dependencies assembly."),
           opt[Unit]("uber-jar") action { (x, c) =>
             c.copy(build = c.build.copy(uberJar = true))
+          },
+          opt[Unit]("generate-pio-sbt") action { (x, c) =>
+            c.copy(build = c.build.copy(forceGeneratePIOSbt = true))
           }
         )
       note("")
@@ -821,7 +825,7 @@ object Console extends Logging {
 
   def compile(ca: ConsoleArgs): Unit = {
     // only add pioVersion to sbt if project/pio.sbt exists
-    if (new File("project", "pio.sbt").exists) {
+    if (new File("project", "pio-build.sbt").exists || ca.build.forceGeneratePIOSbt) {
       FileUtils.writeLines(
         new File("pio.sbt"),
         Seq(
