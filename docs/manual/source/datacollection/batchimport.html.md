@@ -5,7 +5,7 @@ title: Importing Data in Batch
 If you have a large amount of data to start with, performing batch import will
 be much faster than sending every event over an HTTP connection.
 
-## Preparing the Input File
+## Preparing Input File
 
 The import tool expects its input to be a file stored either in the local
 filesystem or on HDFS. Each line of the file should be a JSON object string
