@@ -23,8 +23,10 @@ import io.prediction.data.storage.EventJson4sSupport
 import io.prediction.data.storage.LEvents
 import io.prediction.data.storage.StorageError
 import io.prediction.data.storage.Storage
-import io.prediction.data.webhooks.EventConverter
+import io.prediction.data.webhooks.WebhooksJsonConverter
+import io.prediction.data.webhooks.WebhooksFormConverter
 import io.prediction.data.webhooks.segmentio.SegmentIOConverter
+import io.prediction.data.webhooks.mailchimp.MailChimpConverter
 
 import akka.actor.ActorSystem
 import akka.actor.Actor
@@ -47,6 +49,7 @@ import spray.http.HttpResponse
 import spray.http.MediaTypes
 import spray.http.StatusCodes
 import spray.http.StatusCode
+import spray.http.FormData
 import spray.httpx.Json4sSupport
 import spray.httpx.unmarshalling.Unmarshaller
 import spray.routing._
@@ -118,7 +121,8 @@ class Stats(val startTime: DateTime) {
 class EventServiceActor(
     val eventClient: LEvents,
     val accessKeysClient: AccessKeys,
-    val eventConverters: Map[String, EventConverter],
+    val webhooksJsonConverters: Map[String, WebhooksJsonConverter],
+    val webhooksFormConverters: Map[String, WebhooksFormConverter],
     val stats: Boolean) extends HttpServiceActor {
 
   object Json4sProtocol extends Json4sSupport {
@@ -126,8 +130,6 @@ class EventServiceActor(
       new EventJson4sSupport.APISerializer ++
       JodaTimeSerializers.all
   }
-
-  import Json4sProtocol._
 
   val log = Logging(context.system, this)
 
@@ -137,7 +139,7 @@ class EventServiceActor(
   implicit val timeout = Timeout(5, TimeUnit.SECONDS)
 
   // for better message response
-  val rejectionHandler = RejectionHandler {
+  /*val rejectionHandler = RejectionHandler {
     case MalformedRequestContentRejection(msg, _) :: _ =>
       complete(StatusCodes.BadRequest, Map("message" -> msg))
     case MissingQueryParamRejection(msg) :: _ =>
@@ -146,9 +148,11 @@ class EventServiceActor(
     case AuthenticationFailedRejection(cause, challengeHeaders) :: _ =>
       complete(StatusCodes.Unauthorized, challengeHeaders,
         Map("message" -> s"Invalid accessKey."))
-  }
+  }*/
+  val rejectionHandler = Common.rejectionHandler
 
   val jsonPath = """(.+)\.json$""".r
+  val formPath = """(.+)$""".r
 
   /* with accessKey in query, return appId if succeed */
   def withAccessKey: RequestContext => Future[Authentication[Int]] = {
@@ -172,6 +176,8 @@ class EventServiceActor(
 
   val route: Route =
     pathSingleSlash {
+      import Json4sProtocol._
+
       get {
         respondWithMediaType(MediaTypes.`application/json`) {
           complete(Map("status" -> "alive"))
@@ -179,6 +185,9 @@ class EventServiceActor(
       }
     } ~
     path("events" / jsonPath ) { eventId =>
+
+      import Json4sProtocol._
+
       get {
         handleRejections(rejectionHandler) {
           authenticate(withAccessKey) { appId =>
@@ -232,6 +241,9 @@ class EventServiceActor(
       }
     } ~
     path("events.json") {
+
+      import Json4sProtocol._
+
       post {
         handleRejections(rejectionHandler) {
           authenticate(withAccessKey) { appId =>
@@ -327,6 +339,9 @@ class EventServiceActor(
       }
     } ~
     path("stats.json") {
+
+      import Json4sProtocol._
+
       get {
         handleRejections(rejectionHandler) {
           authenticate(withAccessKey) { appId =>
@@ -349,39 +364,25 @@ class EventServiceActor(
       }  // stats.json get
     } ~
     path("webhooks" / jsonPath ) { web =>
+
+      import Json4sProtocol._
+
       post {
         handleRejections(rejectionHandler) {
           authenticate(withAccessKey) { appId =>
             entity(as[JObject]) { jObj =>
-
-                log.info(s"POST webhooks ${web} events ${jObj}")
-
-                eventConverters.get(web).map { converter =>
-                  complete {
-                    val event = converter.convert(jObj)
-                    val data = eventClient.futureInsert(event, appId).map { r =>
-                      val result = r match {
-                        case Left(StorageError(message)) =>
-                          (StatusCodes.InternalServerError,
-                            Map("message" -> message))
-                        case Right(id) =>
-                          (StatusCodes.Created, Map("eventId" -> s"${id}"))
-                      }
-                      if (stats) {
-                        statsActorRef ! Bookkeeping(appId, result._1, event)
-                      }
-                      result
-                    }
-                    data
-                  }
-                }.getOrElse{
-                  log.info(s"invalid ${web} path")
-                  val message = s"webhooks for ${web} is not supported."
-                  complete(
-                    StatusCodes.NotFound, Map("message" -> message)
-                  )
-                }
-
+              log.info(s"POST webhooks ${web} events ${jObj}")
+              complete {
+                Webhooks.postJson(
+                  appId = appId,
+                  jObj = jObj,
+                  web = web,
+                  webhooksJsonConverters = webhooksJsonConverters,
+                  eventClient = eventClient,
+                  log = log,
+                  stats = stats,
+                  statsActorRef = statsActorRef)
+              }
             }
           }
         }
@@ -391,21 +392,52 @@ class EventServiceActor(
           authenticate(withAccessKey) { appId =>
             respondWithMediaType(MediaTypes.`application/json`) {
               complete {
-                Future {
-                  eventConverters.get(web).map { converter =>
-                    (StatusCodes.OK, Map("message" -> "Nothing"))
-                  }.getOrElse {
-                    val message = s"webhooks for ${web} is not supported."
-                    (StatusCodes.NotFound, Map("message" -> message))
-                  }
-                }
+                Webhooks.getJson(
+                  appId = appId,
+                  web = web,
+                  webhooksJsonConverters = webhooksJsonConverters,
+                  log = log)
               }
             }
           }
         }
       }
+    } ~
+    path("webhooks" / formPath ) { web =>
+      post {
+        handleRejections(rejectionHandler) {
+          authenticate(withAccessKey) { appId =>
+            entity(as[FormData]){ formData =>
+              complete {
+                Webhooks.postForm(
+                  appId = appId,
+                  formData = formData,
+                  web = web,
+                  webhooksFormConverters = webhooksFormConverters,
+                  eventClient = eventClient,
+                  log = log,
+                  stats = stats,
+                  statsActorRef = statsActorRef)
+              }
+            }
+          }
+        }
+      } ~
+      get {
+        handleRejections(rejectionHandler) {
+          authenticate(withAccessKey) { appId =>
+            complete {
+              Webhooks.getForm(
+                appId = appId,
+                web = web,
+                webhooksFormConverters = webhooksFormConverters,
+                log = log)
+            }
+          }
+        }
+      }
+
     }
-    // TODO: handle webhooks with form submission format
 
   def receive: Actor.Receive = runRoute(route)
 
@@ -465,12 +497,17 @@ case class StartServer(
 class EventServerActor(
     val eventClient: LEvents,
     val accessKeysClient: AccessKeys,
-    val eventConverters: Map[String, EventConverter],
+    val webhooksJsonConverters: Map[String, WebhooksJsonConverter],
+    val webhooksFormConverters: Map[String, WebhooksFormConverter],
     val stats: Boolean) extends Actor {
   val log = Logging(context.system, this)
   val child = context.actorOf(
-    Props(classOf[EventServiceActor], eventClient, accessKeysClient,
-      eventConverters, stats),
+    Props(classOf[EventServiceActor],
+      eventClient,
+      accessKeysClient,
+      webhooksJsonConverters,
+      webhooksFormConverters,
+      stats),
     "EventServiceActor")
   implicit val system = context.system
 
@@ -497,8 +534,12 @@ object EventServer {
     val accessKeysClient = Storage.getMetaDataAccessKeys
 
     // webhooks
-    val eventConverters: Map[String, EventConverter] = Map(
-      "segmentio" -> new EventConverter(new SegmentIOConverter())
+    val webhooksJsonConverters: Map[String, WebhooksJsonConverter] = Map(
+      "segmentio" -> new WebhooksJsonConverter(new SegmentIOConverter())
+    )
+
+    val webhooksFormConverters: Map[String, WebhooksFormConverter] = Map(
+      "mailchimp" -> new WebhooksFormConverter(new MailChimpConverter())
     )
 
     val serverActor = system.actorOf(
@@ -506,7 +547,8 @@ object EventServer {
         classOf[EventServerActor],
         eventClient,
         accessKeysClient,
-        eventConverters,
+        webhooksJsonConverters,
+        webhooksFormConverters,
         config.stats),
       "EventServerActor")
     if (config.stats) system.actorOf(Props[StatsActor], "StatsActor")

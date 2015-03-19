@@ -16,7 +16,7 @@
 package io.prediction.data.webhooks.segmentio
 
 import io.prediction.data.storage.Event
-import io.prediction.data.webhooks.WebhooksConverter
+import io.prediction.data.webhooks.JsonConverter
 import io.prediction.data.storage.Utils
 
 import org.json4s.{Formats, DefaultFormats}
@@ -92,7 +92,7 @@ object IdentifyConverter {
 
 
 
-private[prediction] class SegmentIOConverter extends WebhooksConverter {
+private[prediction] class SegmentIOConverter extends JsonConverter {
 
   implicit def json4sFormats: Formats = DefaultFormats
 
@@ -104,6 +104,7 @@ private[prediction] class SegmentIOConverter extends WebhooksConverter {
     common.`type` match {
       case "identify" => IdentifyConverter.toEventJson(
         common, data.extract[Identify])
+      // TODO: better error handling
       case _ => throw new Exception(s"Cannot process ${data}.")
     }
   }
@@ -117,6 +118,6 @@ private[prediction] class SegmentIOConverter extends WebhooksConverter {
   }
 
   override
-  def isReversable = true
+  def isReversible = true
 
 }
