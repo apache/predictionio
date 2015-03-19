@@ -27,7 +27,7 @@ WARNING: Please make sure your import file does not contain any empty lines.
 Empty lines will be treated as a null object and will return an error during
 import.
 
-## Import Events from the Input File
+## Import Events from Input File
 
 Importing events from a file can be done easily using the command line
 interface. Assuming that `pio` be in your search path, your App ID be `123`, and
