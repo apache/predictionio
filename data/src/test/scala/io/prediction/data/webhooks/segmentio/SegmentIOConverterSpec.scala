@@ -23,16 +23,16 @@ import org.json4s.DefaultFormats
 import org.json4s.native.JsonMethods.parse
 import org.json4s.native.Serialization.write
 
-class SegmentIOConverterSpec extends Specification {
+class SegmentIOConnectorSpec extends Specification {
 
   // TOOD: test other events
   // TODO: test different optional fields
 
   implicit val formats = DefaultFormats
 
-  val converter = new SegmentIOConverter()
+  val connector = new SegmentIOConnector()
 
-  "SegmentIOConverter" should {
+  "SegmentIOConnector" should {
 
     "convert identify to event JSON" in {
       // simple format
@@ -52,7 +52,7 @@ class SegmentIOConverterSpec extends Specification {
       """).asInstanceOf[JObject]
 
       // write and parse back to discard any JNothing field
-      val event = parse(write(converter.toEventJson(identify))).asInstanceOf[JObject]
+      val event = parse(write(connector.toEventJson(identify))).asInstanceOf[JObject]
 
       val expected = parse("""
         {

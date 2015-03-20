@@ -23,10 +23,10 @@ import io.prediction.data.storage.EventJson4sSupport
 import io.prediction.data.storage.LEvents
 import io.prediction.data.storage.StorageError
 import io.prediction.data.storage.Storage
-import io.prediction.data.webhooks.JsonConverter
-import io.prediction.data.webhooks.FormConverter
-import io.prediction.data.webhooks.segmentio.SegmentIOConverter
-import io.prediction.data.webhooks.mailchimp.MailChimpConverter
+import io.prediction.data.webhooks.JsonConnector
+import io.prediction.data.webhooks.FormConnector
+import io.prediction.data.webhooks.segmentio.SegmentIOConnector
+import io.prediction.data.webhooks.mailchimp.MailChimpConnector
 
 import akka.actor.ActorSystem
 import akka.actor.Actor
@@ -121,8 +121,8 @@ class Stats(val startTime: DateTime) {
 class EventServiceActor(
     val eventClient: LEvents,
     val accessKeysClient: AccessKeys,
-    val jsonConverters: Map[String, JsonConverter],
-    val formConverters: Map[String, FormConverter],
+    val jsonConnectors: Map[String, JsonConnector],
+    val formConnectors: Map[String, FormConnector],
     val stats: Boolean) extends HttpServiceActor {
 
   object Json4sProtocol extends Json4sSupport {
@@ -377,7 +377,7 @@ class EventServiceActor(
                   appId = appId,
                   jObj = jObj,
                   web = web,
-                  jsonConverters = jsonConverters,
+                  jsonConnectors = jsonConnectors,
                   eventClient = eventClient,
                   log = log,
                   stats = stats,
@@ -395,7 +395,7 @@ class EventServiceActor(
                 Webhooks.getJson(
                   appId = appId,
                   web = web,
-                  jsonConverters = jsonConverters,
+                  jsonConnectors = jsonConnectors,
                   log = log)
               }
             }
@@ -413,7 +413,7 @@ class EventServiceActor(
                   appId = appId,
                   formData = formData,
                   web = web,
-                  formConverters = formConverters,
+                  formConnectors = formConnectors,
                   eventClient = eventClient,
                   log = log,
                   stats = stats,
@@ -430,7 +430,7 @@ class EventServiceActor(
               Webhooks.getForm(
                 appId = appId,
                 web = web,
-                formConverters = formConverters,
+                formConnectors = formConnectors,
                 log = log)
             }
           }
@@ -497,16 +497,16 @@ case class StartServer(
 class EventServerActor(
     val eventClient: LEvents,
     val accessKeysClient: AccessKeys,
-    val webhooksJsonConverters: Map[String, JsonConverter],
-    val webhooksFormConverters: Map[String, FormConverter],
+    val webhooksJsonConnectors: Map[String, JsonConnector],
+    val webhooksFormConnectors: Map[String, FormConnector],
     val stats: Boolean) extends Actor {
   val log = Logging(context.system, this)
   val child = context.actorOf(
     Props(classOf[EventServiceActor],
       eventClient,
       accessKeysClient,
-      webhooksJsonConverters,
-      webhooksFormConverters,
+      webhooksJsonConnectors,
+      webhooksFormConnectors,
       stats),
     "EventServiceActor")
   implicit val system = context.system
@@ -534,12 +534,12 @@ object EventServer {
     val accessKeysClient = Storage.getMetaDataAccessKeys
 
     // webhooks
-    val jsonConverters: Map[String, JsonConverter] = Map(
-      "segmentio" -> new SegmentIOConverter()
+    val jsonConnectors: Map[String, JsonConnector] = Map(
+      "segmentio" -> new SegmentIOConnector()
     )
 
-    val formConverters: Map[String, FormConverter] = Map(
-      "mailchimp" -> new MailChimpConverter()
+    val formConnectors: Map[String, FormConnector] = Map(
+      "mailchimp" -> new MailChimpConnector()
     )
 
     val serverActor = system.actorOf(
@@ -547,8 +547,8 @@ object EventServer {
         classOf[EventServerActor],
         eventClient,
         accessKeysClient,
-        jsonConverters,
-        formConverters,
+        jsonConnectors,
+        formConnectors,
         config.stats),
       "EventServerActor")
     if (config.stats) system.actorOf(Props[StatsActor], "StatsActor")

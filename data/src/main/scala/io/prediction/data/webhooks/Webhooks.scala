@@ -25,29 +25,29 @@ import org.json4s.native.Serialization.read
 import org.json4s.native.Serialization.write
 
 
-private[prediction] object ConverterUtil {
+private[prediction] object ConnectorUtil {
 
   implicit val eventJson4sFormats: Formats = DefaultFormats +
     new EventJson4sSupport.APISerializer
 
   // intentionally use EventJson4sSupport.APISerializer to convert
-  // from JSON to Event object. Don't allow converter directly create
+  // from JSON to Event object. Don't allow connector directly create
   // Event object so that the Event object formation is consistent
   // by enforcing JSON format
 
-  def toEvent(converter: JsonConverter, data: JObject): Event = {
-    read[Event](write(converter.toEventJson(data)))
+  def toEvent(connector: JsonConnector, data: JObject): Event = {
+    read[Event](write(connector.toEventJson(data)))
   }
 
-  def toEvent(converter: FormConverter, data: Map[String, String]): Event = {
-    read[Event](write(converter.toEventJson(data)))
+  def toEvent(connector: FormConnector, data: Map[String, String]): Event = {
+    read[Event](write(connector.toEventJson(data)))
   }
 
 }
 
 
-/** Converter for Webhooks connection */
-private[prediction] abstract class JsonConverter {
+/** Connector for Webhooks connection */
+private[prediction] abstract class JsonConnector {
 
   // TODO: support conversion to multiple events?
 
@@ -56,7 +56,7 @@ private[prediction] abstract class JsonConverter {
 
 }
 
-private[prediction] abstract class FormConverter {
+private[prediction] abstract class FormConnector {
 
   // TODO: support conversion to multiple events?
 

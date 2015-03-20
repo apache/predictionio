@@ -23,16 +23,16 @@ import org.json4s.DefaultFormats
 import org.json4s.native.JsonMethods.parse
 import org.json4s.native.Serialization.write
 
-class MailChimpConverterSpec extends Specification {
+class MailChimpConnectorSpec extends Specification {
 
   // TOOD: test other events
   // TODO: test different optional fields
 
   implicit val formats = DefaultFormats
 
-  val converter = new MailChimpConverter()
+  val connector = new MailChimpConnector()
 
-  "MailChimpConverter" should {
+  "MailChimpConnector" should {
 
     "convert subscribe to event JSON" in {
 
@@ -52,7 +52,7 @@ class MailChimpConverterSpec extends Specification {
       )
 
       // write and parse back to discard any JNothing field
-      val event = parse(write(converter.toEventJson(subscribe))).asInstanceOf[JObject]
+      val event = parse(write(connector.toEventJson(subscribe))).asInstanceOf[JObject]
 
       val expected = parse("""
         {

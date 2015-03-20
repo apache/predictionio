@@ -16,7 +16,7 @@
 package io.prediction.data.webhooks.segmentio
 
 import io.prediction.data.storage.Event
-import io.prediction.data.webhooks.JsonConverter
+import io.prediction.data.webhooks.JsonConnector
 import io.prediction.data.storage.Utils
 
 import org.json4s.{Formats, DefaultFormats}
@@ -26,7 +26,7 @@ import org.json4s.JString
 import org.json4s.JField
 import org.json4s.JNothing
 
-private[prediction] class SegmentIOConverter extends JsonConverter {
+private[prediction] class SegmentIOConnector extends JsonConnector {
 
   implicit val json4sFormats: Formats = DefaultFormats
 

@@ -16,7 +16,7 @@
 
 package io.prediction.data.webhooks.mailchimp
 
-import io.prediction.data.webhooks.FormConverter
+import io.prediction.data.webhooks.FormConnector
 import io.prediction.data.storage.EventValidation
 import io.prediction.data.Utils
 
@@ -27,7 +27,7 @@ import org.json4s.JNothing
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 
-private[prediction] class MailChimpConverter extends FormConverter {
+private[prediction] class MailChimpConnector extends FormConnector {
 
   override
   def toEventJson(data: Map[String, String]): JObject = {

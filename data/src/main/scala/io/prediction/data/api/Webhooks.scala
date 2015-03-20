@@ -15,9 +15,9 @@
 
 package io.prediction.data.api
 
-import io.prediction.data.webhooks.JsonConverter
-import io.prediction.data.webhooks.FormConverter
-import io.prediction.data.webhooks.ConverterUtil
+import io.prediction.data.webhooks.JsonConnector
+import io.prediction.data.webhooks.FormConnector
+import io.prediction.data.webhooks.ConnectorUtil
 import io.prediction.data.storage.Event
 import io.prediction.data.storage.EventJson4sSupport
 import io.prediction.data.storage.LEvents
@@ -46,7 +46,7 @@ object Webhooks {
     appId: Int,
     jObj: JObject,
     web: String,
-    jsonConverters: Map[String, JsonConverter],
+    jsonConnectors: Map[String, JsonConnector],
     eventClient: LEvents,
     log: LoggingAdapter,
     stats: Boolean,
@@ -54,8 +54,8 @@ object Webhooks {
   )(implicit ec: ExecutionContext): Future[(StatusCode, Map[String, String])] = {
 
     val eventFuture = Future {
-      jsonConverters.get(web).map { converter =>
-        ConverterUtil.toEvent(converter, jObj)
+      jsonConnectors.get(web).map { connector =>
+        ConnectorUtil.toEvent(connector, jObj)
       }
     }
 
@@ -89,11 +89,11 @@ object Webhooks {
   def getJson(
     appId: Int,
     web: String,
-    jsonConverters: Map[String, JsonConverter],
+    jsonConnectors: Map[String, JsonConnector],
     log: LoggingAdapter
   )(implicit ec: ExecutionContext): Future[(StatusCode, Map[String, String])] = {
     Future {
-      jsonConverters.get(web).map { converter =>
+      jsonConnectors.get(web).map { connector =>
         (StatusCodes.OK, Map("message" -> "Ok"))
       }.getOrElse {
         val message = s"webhooks for ${web} is not supported."
@@ -106,15 +106,15 @@ object Webhooks {
     appId: Int,
     formData: FormData,
     web: String,
-    formConverters: Map[String, FormConverter],
+    formConnectors: Map[String, FormConnector],
     eventClient: LEvents,
     log: LoggingAdapter,
     stats: Boolean,
     statsActorRef: ActorSelection
   )(implicit ec: ExecutionContext): Future[(StatusCode, String)] = {
     val eventFuture = Future {
-      formConverters.get(web).map { converter =>
-        ConverterUtil.toEvent(converter, formData.fields.toMap)
+      formConnectors.get(web).map { connector =>
+        ConnectorUtil.toEvent(connector, formData.fields.toMap)
       }
     }
 
@@ -147,11 +147,11 @@ object Webhooks {
   def getForm(
     appId: Int,
     web: String,
-    formConverters: Map[String, FormConverter],
+    formConnectors: Map[String, FormConnector],
     log: LoggingAdapter
   )(implicit ec: ExecutionContext): Future[(StatusCode, String)] = {
     Future {
-      formConverters.get(web).map { converter =>
+      formConnectors.get(web).map { connector =>
         (StatusCodes.OK, "Ok")
       }.getOrElse {
         val message = s"webhooks for ${web} is not supported."
