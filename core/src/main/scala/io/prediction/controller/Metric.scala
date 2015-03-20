@@ -74,6 +74,36 @@ extends Metric[EI, Q, P, A, Double] {
   }
 }
 
+/** Returns the sum of the score returned by the calculate method.
+  *
+  * @tparam EI Evaluation information
+  * @tparam Q Query
+  * @tparam P Predicted result
+  * @tparam A Actual result
+  *
+  * @group Evaluation
+  */
+abstract class SumMetric[EI, Q, P, A]
+extends Metric[EI, Q, P, A, Double] {
+  /** Implement this method to return a score that will be used for summing
+    * across all QPA tuples.
+    */
+  def calculate(q: Q, p: P, a: A): Double
+
+  def calculate(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])])
+  : Double = {
+    // TODO(yipjustin): Parallelize
+    val r: Seq[Double] = evalDataSet
+    .map { case (_, qpaRDD) => 
+      qpaRDD
+      .map { case (q, p, a) => calculate(q, p, a) }
+      .aggregate[Double](0.0)(_ + _, _ + _) 
+    }
+
+    r.sum
+  }
+}
+
 /** Returns the global average of the non-None score returned by the calculate
   * method.
   *
