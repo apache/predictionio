@@ -11,19 +11,73 @@ title: Try PredictionIO
       div class="jcarousel"
         ul
           li
-            h2 Some Heading
-            p paragraph text about that heading <code>inline code</code> more text.
-            p another paragraph.
-            h3 Heading 3
-            p more text blah blah blah
-            p loriem ipsum <code>more code</code> and now some <b>bold</b> text.
-          li
-            h2 Page 2
-            p Page 2
-          li
-            h2 Page 3
-            p page 3
+            h2 Starting PredictionIO
+            p Start PredictionIO and it's dependancies with:
+            p <code>$ pio-start-all</code>
+            h2 Check Status
+            p At any time you can run:
+            p <code>$ pio status</code>
+            p Which checks the status of PredictionIO and it's dependancies.
 
+          li
+            h2 Create a New Engine
+            p Copy one of our #{link_to 'Engine Templates', 'http://templates.prediction.io'} with:
+            p <code>$ pio template get ramaboo/template-scala-parallel-similarproduct-with-rating MyEngine</code>
+
+            h2 Create a New App
+            p Create a new app with:
+            p <code>$ pio app new MyApp</code>
+            p Make note of your <b>App ID</b> and <b>Access Key</b>. You will need these in a latter step.
+            h3 Listing Apps
+            p If at any time you forget your App ID or Access Key you can run:
+            p <code>$ pio app list</code>
+
+          li
+            h2 Importing Data
+            p You can import data with one of our many #{link_to 'SDKs', 'http://docs.prediction.io/sdk/'}.
+
+            p Start by going to the <code>data</code> directory with:
+            p <code>$ cd ~/PredictionIO/data</code>
+
+            h4 Java
+            p <code>$ java command</code>
+            h4 PHP
+            p <code>$ php something</code>
+            h4 Python
+            p <code>$ python something</code>
+            h4 Ruby
+            p <code>$ ruby import.rb</code>
+
+            p These import scripts will import a subset of the #{link_to 'MovieLens', 'http://grouplens.org/datasets/movielens/'} dataset.
+
+            h3 Additional Languages
+            p We also have community contributed #{link_to 'SDKs', 'http://docs.prediction.io/sdk/'} for Node.js, C#/.NET, and Swift.
+          li
+            h2 Deploying the Engine
+            p All engine commands need to be run from withing the engine directory:
+            p <code>$ cd ~/PredictionIO/MyEngine</code>
+
+            h3 Build Engine
+            p Build the engine with:
+            p <code>$ pio build</code>
+
+            h3 Train the Model
+            p Train the model with:
+            p <code>$ pio train</code>
+
+            h3 Deploy the Results
+            p Deploy to production with:
+            p <code>$ pio deploy</code>
+          li
+            h2 Querying Results
+            p You can query results using cURL with:
+            p <code>$ curl -H "Content-Type: application/json" -d '{ "item": "1", "num": 5 }' http://localhost:8000/queries.json</code>
+            p This will return 5 recomended movies for Movie 1.
+          li
+            h2 Next Steps
+            p #{link_to 'Install', 'http://docs.prediction.io/install/'} PredictionIO on your own computer!
+            h3 Support
+            p Get support on our #{link_to 'Google Group', 'https://groups.google.com/forum/#!forum/predictionio-user'} or on Twitter #{link_to '@PredictionIO', 'https://twitter.com/predictionio/'}
         .jcarousel-controls
           a href="#" class="jcarousel-control-prev"
             | &lsaquo; Prev
