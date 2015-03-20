@@ -65,9 +65,11 @@ extends Metric[EI, Q, P, A, Double] {
     // TODO(yipjustin): Parallelize
     val r: Seq[(Double, Long)] = evalDataSet
     .map { case (_, qpaRDD) =>
-      val s = qpaRDD.map { case (q, p, a) => calculate(q, p, a) }.reduce(_ + _)
-      val c = qpaRDD.count
-      (s, c)
+      val s = qpaRDD.map { case (q, p, a) => calculate(q, p, a) }
+      
+      s.aggregate((0.0, 0L))( 
+        (u, v) => (u._1 + v, u._2 + 1),
+        (u, v) => (u._1 + v._1, u._2 + v._2))
     }
 
     (r.map(_._1).sum / r.map(_._2).sum)
@@ -115,4 +117,6 @@ extends Metric[EI, Q, P, A, Double] {
     }
   }
 }
+
+
 
