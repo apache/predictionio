@@ -23,8 +23,8 @@ import io.prediction.data.storage.EventJson4sSupport
 import io.prediction.data.storage.LEvents
 import io.prediction.data.storage.StorageError
 import io.prediction.data.storage.Storage
-import io.prediction.data.webhooks.WebhooksJsonConverter
-import io.prediction.data.webhooks.WebhooksFormConverter
+import io.prediction.data.webhooks.JsonConverter
+import io.prediction.data.webhooks.FormConverter
 import io.prediction.data.webhooks.segmentio.SegmentIOConverter
 import io.prediction.data.webhooks.mailchimp.MailChimpConverter
 
@@ -121,8 +121,8 @@ class Stats(val startTime: DateTime) {
 class EventServiceActor(
     val eventClient: LEvents,
     val accessKeysClient: AccessKeys,
-    val webhooksJsonConverters: Map[String, WebhooksJsonConverter],
-    val webhooksFormConverters: Map[String, WebhooksFormConverter],
+    val jsonConverters: Map[String, JsonConverter],
+    val formConverters: Map[String, FormConverter],
     val stats: Boolean) extends HttpServiceActor {
 
   object Json4sProtocol extends Json4sSupport {
@@ -377,7 +377,7 @@ class EventServiceActor(
                   appId = appId,
                   jObj = jObj,
                   web = web,
-                  webhooksJsonConverters = webhooksJsonConverters,
+                  jsonConverters = jsonConverters,
                   eventClient = eventClient,
                   log = log,
                   stats = stats,
@@ -395,7 +395,7 @@ class EventServiceActor(
                 Webhooks.getJson(
                   appId = appId,
                   web = web,
-                  webhooksJsonConverters = webhooksJsonConverters,
+                  jsonConverters = jsonConverters,
                   log = log)
               }
             }
@@ -413,7 +413,7 @@ class EventServiceActor(
                   appId = appId,
                   formData = formData,
                   web = web,
-                  webhooksFormConverters = webhooksFormConverters,
+                  formConverters = formConverters,
                   eventClient = eventClient,
                   log = log,
                   stats = stats,
@@ -430,7 +430,7 @@ class EventServiceActor(
               Webhooks.getForm(
                 appId = appId,
                 web = web,
-                webhooksFormConverters = webhooksFormConverters,
+                formConverters = formConverters,
                 log = log)
             }
           }
@@ -497,8 +497,8 @@ case class StartServer(
 class EventServerActor(
     val eventClient: LEvents,
     val accessKeysClient: AccessKeys,
-    val webhooksJsonConverters: Map[String, WebhooksJsonConverter],
-    val webhooksFormConverters: Map[String, WebhooksFormConverter],
+    val webhooksJsonConverters: Map[String, JsonConverter],
+    val webhooksFormConverters: Map[String, FormConverter],
     val stats: Boolean) extends Actor {
   val log = Logging(context.system, this)
   val child = context.actorOf(
@@ -534,12 +534,12 @@ object EventServer {
     val accessKeysClient = Storage.getMetaDataAccessKeys
 
     // webhooks
-    val webhooksJsonConverters: Map[String, WebhooksJsonConverter] = Map(
-      "segmentio" -> new WebhooksJsonConverter(new SegmentIOConverter())
+    val jsonConverters: Map[String, JsonConverter] = Map(
+      "segmentio" -> new SegmentIOConverter()
     )
 
-    val webhooksFormConverters: Map[String, WebhooksFormConverter] = Map(
-      "mailchimp" -> new WebhooksFormConverter(new MailChimpConverter())
+    val formConverters: Map[String, FormConverter] = Map(
+      "mailchimp" -> new MailChimpConverter()
     )
 
     val serverActor = system.actorOf(
@@ -547,8 +547,8 @@ object EventServer {
         classOf[EventServerActor],
         eventClient,
         accessKeysClient,
-        webhooksJsonConverters,
-        webhooksFormConverters,
+        jsonConverters,
+        formConverters,
         config.stats),
       "EventServerActor")
     if (config.stats) system.actorOf(Props[StatsActor], "StatsActor")

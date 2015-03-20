@@ -15,8 +15,11 @@
 
 package io.prediction.data.api
 
-import io.prediction.data.webhooks.WebhooksJsonConverter
-import io.prediction.data.webhooks.WebhooksFormConverter
+import io.prediction.data.webhooks.JsonConverter
+import io.prediction.data.webhooks.FormConverter
+import io.prediction.data.webhooks.ConverterUtil
+import io.prediction.data.storage.Event
+import io.prediction.data.storage.EventJson4sSupport
 import io.prediction.data.storage.LEvents
 import io.prediction.data.storage.StorageError
 
@@ -27,7 +30,8 @@ import spray.http.StatusCode
 import spray.http.FormData
 import spray.httpx.Json4sSupport
 
-import org.json4s.{Formats, DefaultFormats}
+import org.json4s.Formats
+import org.json4s.DefaultFormats
 import org.json4s.JObject
 
 import akka.event.LoggingAdapter
@@ -38,15 +42,11 @@ import scala.concurrent.{ExecutionContext, Future}
 
 object Webhooks {
 
-  /*private object Json4sProtocol extends Json4sSupport {
-    implicit def json4sFormats: Formats = DefaultFormats
-  }*/
-
   def postJson(
     appId: Int,
     jObj: JObject,
     web: String,
-    webhooksJsonConverters: Map[String, WebhooksJsonConverter],
+    jsonConverters: Map[String, JsonConverter],
     eventClient: LEvents,
     log: LoggingAdapter,
     stats: Boolean,
@@ -54,8 +54,8 @@ object Webhooks {
   )(implicit ec: ExecutionContext): Future[(StatusCode, Map[String, String])] = {
 
     val eventFuture = Future {
-      webhooksJsonConverters.get(web).map { converter =>
-        converter.convert(jObj)
+      jsonConverters.get(web).map { converter =>
+        ConverterUtil.toEvent(converter, jObj)
       }
     }
 
@@ -89,11 +89,11 @@ object Webhooks {
   def getJson(
     appId: Int,
     web: String,
-    webhooksJsonConverters: Map[String, WebhooksJsonConverter],
+    jsonConverters: Map[String, JsonConverter],
     log: LoggingAdapter
   )(implicit ec: ExecutionContext): Future[(StatusCode, Map[String, String])] = {
     Future {
-      webhooksJsonConverters.get(web).map { converter =>
+      jsonConverters.get(web).map { converter =>
         (StatusCodes.OK, Map("message" -> "Ok"))
       }.getOrElse {
         val message = s"webhooks for ${web} is not supported."
@@ -106,15 +106,15 @@ object Webhooks {
     appId: Int,
     formData: FormData,
     web: String,
-    webhooksFormConverters: Map[String, WebhooksFormConverter],
+    formConverters: Map[String, FormConverter],
     eventClient: LEvents,
     log: LoggingAdapter,
     stats: Boolean,
     statsActorRef: ActorSelection
   )(implicit ec: ExecutionContext): Future[(StatusCode, String)] = {
     val eventFuture = Future {
-      webhooksFormConverters.get(web).map { converter =>
-        converter.convert(formData.fields.toMap)
+      formConverters.get(web).map { converter =>
+        ConverterUtil.toEvent(converter, formData.fields.toMap)
       }
     }
 
@@ -147,11 +147,11 @@ object Webhooks {
   def getForm(
     appId: Int,
     web: String,
-    webhooksFormConverters: Map[String, WebhooksFormConverter],
+    formConverters: Map[String, FormConverter],
     log: LoggingAdapter
   )(implicit ec: ExecutionContext): Future[(StatusCode, String)] = {
     Future {
-      webhooksFormConverters.get(web).map { converter =>
+      formConverters.get(web).map { converter =>
         (StatusCodes.OK, "Ok")
       }.getOrElse {
         val message = s"webhooks for ${web} is not supported."
@@ -159,34 +159,5 @@ object Webhooks {
       }
     }
   }
-
-/*
-  def route(log: LoggingAdapter) =
-    path("webhooks" / "test") {
-      post {
-        entity(as[FormData]){ m =>
-          println(m)
-          log.info(s"${m} ${m.fields} ${m.fields.size}")
-          val d = m.fields.foreach { case (s1, s2) =>
-            log.info(s"s1 ${s1}  s2 ${s2}")
-          }
-
-          complete(s"The color is ${m}")
-        }
-      }
-    } ~
-    path ("webhooks" / "testjon") {
-
-      import Json4sProtocol._
-
-      post {
-        entity(as[JObject]) { jObj =>
-          println(jObj)
-          log.info(s"${jObj}")
-          complete("json request")
-        }
-      }
-    }
-*/
 
 }

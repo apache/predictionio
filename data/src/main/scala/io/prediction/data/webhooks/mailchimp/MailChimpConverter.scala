@@ -23,12 +23,11 @@ import io.prediction.data.Utils
 import org.json4s.DefaultFormats
 import org.json4s.JObject
 import org.json4s.JNothing
-import org.json4s.JsonDSL._
 
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 
-private[prediction] class MailChimpConverter extends FormConverter  {
+private[prediction] class MailChimpConverter extends FormConverter {
 
   override
   def toEventJson(data: Map[String, String]): JObject = {
@@ -36,6 +35,7 @@ private[prediction] class MailChimpConverter extends FormConverter  {
     // TODO: handle if the key "type" does not exist
     val json = data("type") match {
       case "subscribe" => subscribeToEventJson(data)
+      // TODO: support other events
       // TODO: better error handling
       case _ => throw new Exception(s"Cannot convert ${data} to event JSON")
     }
@@ -52,6 +52,9 @@ private[prediction] class MailChimpConverter extends FormConverter  {
   }
 
   def subscribeToEventJson(data: Map[String, String]): JObject = {
+
+    import org.json4s.JsonDSL._
+
     /*
     "type": "subscribe",
     "fired_at": "2009-03-26 21:35:57",
@@ -67,27 +70,32 @@ private[prediction] class MailChimpConverter extends FormConverter  {
     "data[ip_signup]": "10.20.10.30"
     */
 
+    // convert to ISO8601 format
     val eventTime = Utils.dateTimeToString(parseMailChimpDateTime(data("fired_at")))
 
     // TODO: handle optional fields
-    ("event" -> "subscribe") ~
-    ("entityType" -> "user") ~
-    ("entityId" -> data("data[id]")) ~
-    ("targetEntityType" -> "list") ~
-    ("targetEntityId" -> data("data[list_id]")) ~
-    ("eventTime" -> eventTime) ~
-    ("properties" -> (
-      ("email" -> data("data[email]")) ~
-      ("email_type" -> data("data[email_type]")) ~
-      ("merges" -> (
-        ("EMAIL" -> data("data[merges][EMAIL]")) ~
-        ("FNAME" -> data("data[merges][FNAME]"))) ~
-        ("LNAME" -> data("data[merges][LNAME]")) ~
-        ("INTERESTS" -> data("data[merges][INTERESTS]"))
-      )) ~
-      ("ip_opt" -> data("data[ip_opt]")) ~
-      ("ip_signup" -> data("data[ip_signup]"))
-    )
+    val json =
+      ("event" -> "subscribe") ~
+      ("entityType" -> "user") ~
+      ("entityId" -> data("data[id]")) ~
+      ("targetEntityType" -> "list") ~
+      ("targetEntityId" -> data("data[list_id]")) ~
+      ("eventTime" -> eventTime) ~
+      ("properties" -> (
+        ("email" -> data("data[email]")) ~
+        ("email_type" -> data("data[email_type]")) ~
+        ("merges" -> (
+          ("EMAIL" -> data("data[merges][EMAIL]")) ~
+          ("FNAME" -> data("data[merges][FNAME]"))) ~
+          ("LNAME" -> data("data[merges][LNAME]")) ~
+          ("INTERESTS" -> data("data[merges][INTERESTS]"))
+        )) ~
+        ("ip_opt" -> data("data[ip_opt]")) ~
+        ("ip_signup" -> data("data[ip_signup]")
+      ))
+
+    json
 
   }
+
 }

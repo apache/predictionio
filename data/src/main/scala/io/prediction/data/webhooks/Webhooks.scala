@@ -18,57 +18,49 @@ package io.prediction.data.webhooks
 import io.prediction.data.storage.Event
 import io.prediction.data.storage.EventJson4sSupport
 
-import org.json4s.JObject
-import org.json4s.JString
-import org.json4s.JField
-import org.json4s.DefaultFormats
 import org.json4s.Formats
+import org.json4s.DefaultFormats
+import org.json4s.JObject
+import org.json4s.native.Serialization.read
+import org.json4s.native.Serialization.write
 
-private[prediction] class WebhooksJsonConverter(val converter: JsonConverter) {
 
-  implicit def json4sFormats: Formats = DefaultFormats +
+private[prediction] object ConverterUtil {
+
+  implicit val eventJson4sFormats: Formats = DefaultFormats +
     new EventJson4sSupport.APISerializer
 
-  // TODO: allow convert to Seq[Event]?
-  def convert(data: JObject): Event = {
-    // intentionally use EventJson4sSupport.APISerializer to convert
-    // from JSON to Event object. Don't allow converter directly create
-    // Event object so that the event formation is consistent.
-    converter.toEventJson(data).extract[Event]
+  // intentionally use EventJson4sSupport.APISerializer to convert
+  // from JSON to Event object. Don't allow converter directly create
+  // Event object so that the Event object formation is consistent
+  // by enforcing JSON format
+
+  def toEvent(converter: JsonConverter, data: JObject): Event = {
+    read[Event](write(converter.toEventJson(data)))
   }
 
-  def convert(event: Event): JObject = {
-    converter.fromEvent(event)
+  def toEvent(converter: FormConverter, data: Map[String, String]): Event = {
+    read[Event](write(converter.toEventJson(data)))
   }
+
 }
+
 
 /** Converter for Webhooks connection */
 private[prediction] abstract class JsonConverter {
-  /** Convert from the original JSON to Event API JSON (required)*/
+
+  // TODO: support conversion to multiple events?
+
+  /** Convert from the original JSON to Event API JSON*/
   def toEventJson(data: JObject): JObject
-
-  /** Convert from Event to the original JSON (optional) */
-  def fromEvent(event: Event): JObject = {
-    JObject()
-  }
-
-  /** define this to true if fromEvent() is implemented */
-  def isReversible: Boolean = false
-
-}
-
-
-private[prediction] class WebhooksFormConverter(val converter: FormConverter) {
-  implicit def json4sFormats: Formats = DefaultFormats +
-    new EventJson4sSupport.APISerializer
-
-  // TODO: allow convert to Seq[Event]?
-  def convert(data: Map[String, String]): Event = {
-    converter.toEventJson(data).extract[Event]
-  }
 
 }
 
 private[prediction] abstract class FormConverter {
+
+  // TODO: support conversion to multiple events?
+
+  /** Convert from original Form submission data to Event API JSON */
   def toEventJson(data: Map[String, String]): JObject
+
 }

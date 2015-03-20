@@ -26,75 +26,9 @@ import org.json4s.JString
 import org.json4s.JField
 import org.json4s.JNothing
 
-private[prediction] case class Common(
-  `type`: String,
-  context: Option[JObject],
-  timestamp: String
-  // TODO: add more fields
-) {
-
-  def toJFields: List[JField] = {
-    JField("type", JString(`type`)) ::
-    JField("context", context.getOrElse(JNothing)) ::
-    JField("timestamp", JString(timestamp)) ::
-    Nil
-  }
-}
-
-private[prediction] case class Identify(
-  userId: String,
-  traits: Option[JObject]
-  // TODO: add more fields
-) {
-
-  def toJFields: List[JField] = {
-    JField("userId", JString(userId)) ::
-    JField("traits", traits.getOrElse(JNothing)) ::
-    Nil
-  }
-
-}
-
-object IdentifyConverter {
-
-  def toEventJson(common: Common, identify: Identify): JObject = {
-    // optional
-    val propertiesList =
-      JField("context", common.context.getOrElse(JNothing)) ::
-      JField("traits", identify.traits.getOrElse(JNothing)) ::
-      Nil
-
-    JObject(
-      JField("event", JString(common.`type`)) ::
-      JField("entityType", JString("user")) ::
-      JField("entityId", JString(identify.userId)) ::
-      JField("eventTime", JString(common.timestamp)) ::
-      JField("properties", JObject(propertiesList)) ::
-      Nil
-    )
-  }
-
-  def fromEvent(event: Event): JObject = {
-    val common = Common(
-      `type` = event.event,
-      context = event.properties.getOpt[JObject]("context"),
-      timestamp = event.eventTime.toString
-    )
-
-    val identify = Identify(
-      userId = event.entityId,
-      traits = event.properties.getOpt[JObject]("traits")
-    )
-
-    JObject(common.toJFields ++ identify.toJFields)
-  }
-}
-
-
-
 private[prediction] class SegmentIOConverter extends JsonConverter {
 
-  implicit def json4sFormats: Formats = DefaultFormats
+  implicit val json4sFormats: Formats = DefaultFormats
 
   override
   def toEventJson(data: JObject): JObject = {
@@ -102,22 +36,43 @@ private[prediction] class SegmentIOConverter extends JsonConverter {
     val common = data.extract[Common]
 
     common.`type` match {
-      case "identify" => IdentifyConverter.toEventJson(
-        common, data.extract[Identify])
+      case "identify" => toEventJson(
+        common = common,
+        identify = data.extract[Identify])
+
+      // TODO: support other events
       // TODO: better error handling
       case _ => throw new Exception(s"Cannot process ${data}.")
     }
   }
 
-  override
-  def fromEvent(event: Event): JObject = {
-    event.event match {
-      case "identify" => IdentifyConverter.fromEvent(event)
-      case _ => throw new Exception(s"Cannot convert from ${event}.")
-    }
+  def toEventJson(common: Common, identify: Identify): JObject = {
+
+    import org.json4s.JsonDSL._
+
+    val json =
+      ("event" -> common.`type`) ~
+      ("entityType" -> "user") ~
+      ("entityId" -> identify.userId) ~
+      ("eventTime" -> common.timestamp) ~
+      ("properties" -> (
+        ("context" -> common.context) ~
+        ("traits" -> identify.traits)
+      ))
+    json
   }
 
-  override
-  def isReversible = true
-
 }
+
+private[prediction] case class Common(
+  `type`: String,
+  context: Option[JObject],
+  timestamp: String
+  // TODO: add more fields
+)
+
+private[prediction] case class Identify(
+  userId: String,
+  traits: Option[JObject]
+  // TODO: add more fields
+)
