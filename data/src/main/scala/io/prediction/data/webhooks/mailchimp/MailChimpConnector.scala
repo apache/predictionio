@@ -27,7 +27,7 @@ import org.json4s.JNothing
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 
-private[prediction] class MailChimpConnector extends FormConnector {
+private[prediction] object MailChimpConnector extends FormConnector {
 
   override
   def toEventJson(data: Map[String, String]): JObject = {
@@ -39,7 +39,6 @@ private[prediction] class MailChimpConnector extends FormConnector {
       // TODO: better error handling
       case _ => throw new Exception(s"Cannot convert ${data} to event JSON")
     }
-    println(json)
     json
   }
 

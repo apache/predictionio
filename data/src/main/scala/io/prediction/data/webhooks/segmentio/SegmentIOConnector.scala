@@ -26,7 +26,7 @@ import org.json4s.JString
 import org.json4s.JField
 import org.json4s.JNothing
 
-private[prediction] class SegmentIOConnector extends JsonConnector {
+private[prediction] object SegmentIOConnector extends JsonConnector {
 
   implicit val json4sFormats: Formats = DefaultFormats
 

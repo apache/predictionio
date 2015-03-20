@@ -44,23 +44,3 @@ private[prediction] object ConnectorUtil {
   }
 
 }
-
-
-/** Connector for Webhooks connection */
-private[prediction] abstract class JsonConnector {
-
-  // TODO: support conversion to multiple events?
-
-  /** Convert from the original JSON to Event API JSON*/
-  def toEventJson(data: JObject): JObject
-
-}
-
-private[prediction] abstract class FormConnector {
-
-  // TODO: support conversion to multiple events?
-
-  /** Convert from original Form submission data to Event API JSON */
-  def toEventJson(data: Map[String, String]): JObject
-
-}

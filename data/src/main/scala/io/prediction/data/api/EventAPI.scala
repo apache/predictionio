@@ -138,17 +138,6 @@ class EventServiceActor(
   implicit def executionContext: ExecutionContext = actorRefFactory.dispatcher
   implicit val timeout = Timeout(5, TimeUnit.SECONDS)
 
-  // for better message response
-  /*val rejectionHandler = RejectionHandler {
-    case MalformedRequestContentRejection(msg, _) :: _ =>
-      complete(StatusCodes.BadRequest, Map("message" -> msg))
-    case MissingQueryParamRejection(msg) :: _ =>
-      complete(StatusCodes.NotFound,
-        Map("message" -> s"missing required query parameter ${msg}."))
-    case AuthenticationFailedRejection(cause, challengeHeaders) :: _ =>
-      complete(StatusCodes.Unauthorized, challengeHeaders,
-        Map("message" -> s"Invalid accessKey."))
-  }*/
   val rejectionHandler = Common.rejectionHandler
 
   val jsonPath = """(.+)\.json$""".r
@@ -371,13 +360,12 @@ class EventServiceActor(
         handleRejections(rejectionHandler) {
           authenticate(withAccessKey) { appId =>
             entity(as[JObject]) { jObj =>
-              log.info(s"POST webhooks ${web} events ${jObj}")
               complete {
                 Webhooks.postJson(
                   appId = appId,
-                  jObj = jObj,
                   web = web,
-                  jsonConnectors = jsonConnectors,
+                  data = jObj,
+                  connectors = jsonConnectors,
                   eventClient = eventClient,
                   log = log,
                   stats = stats,
@@ -395,7 +383,7 @@ class EventServiceActor(
                 Webhooks.getJson(
                   appId = appId,
                   web = web,
-                  jsonConnectors = jsonConnectors,
+                  connectors = jsonConnectors,
                   log = log)
               }
             }
@@ -411,9 +399,9 @@ class EventServiceActor(
               complete {
                 Webhooks.postForm(
                   appId = appId,
-                  formData = formData,
                   web = web,
-                  formConnectors = formConnectors,
+                  data = formData,
+                  connectors = formConnectors,
                   eventClient = eventClient,
                   log = log,
                   stats = stats,
@@ -430,7 +418,7 @@ class EventServiceActor(
               Webhooks.getForm(
                 appId = appId,
                 web = web,
-                formConnectors = formConnectors,
+                connectors = formConnectors,
                 log = log)
             }
           }
@@ -535,11 +523,11 @@ object EventServer {
 
     // webhooks
     val jsonConnectors: Map[String, JsonConnector] = Map(
-      "segmentio" -> new SegmentIOConnector()
+      "segmentio" -> SegmentIOConnector
     )
 
     val formConnectors: Map[String, FormConnector] = Map(
-      "mailchimp" -> new MailChimpConnector()
+      "mailchimp" -> MailChimpConnector
     )
 
     val serverActor = system.actorOf(

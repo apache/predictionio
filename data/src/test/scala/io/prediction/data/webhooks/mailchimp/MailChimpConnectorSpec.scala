@@ -30,8 +30,6 @@ class MailChimpConnectorSpec extends Specification {
 
   implicit val formats = DefaultFormats
 
-  val connector = new MailChimpConnector()
-
   "MailChimpConnector" should {
 
     "convert subscribe to event JSON" in {
@@ -52,7 +50,8 @@ class MailChimpConnectorSpec extends Specification {
       )
 
       // write and parse back to discard any JNothing field
-      val event = parse(write(connector.toEventJson(subscribe))).asInstanceOf[JObject]
+      val event = parse(write(MailChimpConnector.toEventJson(subscribe)))
+        .asInstanceOf[JObject]
 
       val expected = parse("""
         {

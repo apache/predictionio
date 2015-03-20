@@ -40,13 +40,13 @@ import akka.actor.ActorSelection
 import scala.concurrent.{ExecutionContext, Future}
 
 
-object Webhooks {
+private[prediction] object Webhooks {
 
   def postJson(
     appId: Int,
-    jObj: JObject,
     web: String,
-    jsonConnectors: Map[String, JsonConnector],
+    data: JObject,
+    connectors: Map[String, JsonConnector],
     eventClient: LEvents,
     log: LoggingAdapter,
     stats: Boolean,
@@ -54,16 +54,15 @@ object Webhooks {
   )(implicit ec: ExecutionContext): Future[(StatusCode, Map[String, String])] = {
 
     val eventFuture = Future {
-      jsonConnectors.get(web).map { connector =>
-        ConnectorUtil.toEvent(connector, jObj)
+      connectors.get(web).map { connector =>
+        ConnectorUtil.toEvent(connector, data)
       }
     }
 
     eventFuture.flatMap { eventOpt =>
       if (eventOpt.isEmpty) {
         Future {
-          log.info(s"invalid ${web} path")
-          val message = s"webhooks for ${web} is not supported."
+          val message = s"webhooks connection for ${web} is not supported."
           (StatusCodes.NotFound, Map("message" -> message))
         }
       } else {
@@ -89,14 +88,14 @@ object Webhooks {
   def getJson(
     appId: Int,
     web: String,
-    jsonConnectors: Map[String, JsonConnector],
+    connectors: Map[String, JsonConnector],
     log: LoggingAdapter
   )(implicit ec: ExecutionContext): Future[(StatusCode, Map[String, String])] = {
     Future {
-      jsonConnectors.get(web).map { connector =>
+      connectors.get(web).map { connector =>
         (StatusCodes.OK, Map("message" -> "Ok"))
       }.getOrElse {
-        val message = s"webhooks for ${web} is not supported."
+        val message = s"webhooks connection for ${web} is not supported."
         (StatusCodes.NotFound, Map("message" -> message))
       }
     }
@@ -104,25 +103,24 @@ object Webhooks {
 
   def postForm(
     appId: Int,
-    formData: FormData,
     web: String,
-    formConnectors: Map[String, FormConnector],
+    data: FormData,
+    connectors: Map[String, FormConnector],
     eventClient: LEvents,
     log: LoggingAdapter,
     stats: Boolean,
     statsActorRef: ActorSelection
   )(implicit ec: ExecutionContext): Future[(StatusCode, String)] = {
     val eventFuture = Future {
-      formConnectors.get(web).map { connector =>
-        ConnectorUtil.toEvent(connector, formData.fields.toMap)
+      connectors.get(web).map { connector =>
+        ConnectorUtil.toEvent(connector, data.fields.toMap)
       }
     }
 
     eventFuture.flatMap { eventOpt =>
       if (eventOpt.isEmpty) {
         Future {
-          log.info(s"invalid ${web} path")
-          val message = s"webhooks for ${web} is not supported."
+          val message = s"webhooks connection for ${web} is not supported."
           (StatusCodes.NotFound, message)
         }
       } else {
@@ -132,7 +130,7 @@ object Webhooks {
             case Left(StorageError(message)) =>
               (StatusCodes.InternalServerError, message)
             case Right(id) =>
-              (StatusCodes.Created, (s"eventId is ${id}"))
+              (StatusCodes.Created, (s"${id}"))
           }
           if (stats) {
             statsActorRef ! Bookkeeping(appId, result._1, event)
@@ -147,14 +145,14 @@ object Webhooks {
   def getForm(
     appId: Int,
     web: String,
-    formConnectors: Map[String, FormConnector],
+    connectors: Map[String, FormConnector],
     log: LoggingAdapter
   )(implicit ec: ExecutionContext): Future[(StatusCode, String)] = {
     Future {
-      formConnectors.get(web).map { connector =>
+      connectors.get(web).map { connector =>
         (StatusCodes.OK, "Ok")
       }.getOrElse {
-        val message = s"webhooks for ${web} is not supported."
+        val message = s"webhooks connection for ${web} is not supported."
         (StatusCodes.NotFound, message)
       }
     }

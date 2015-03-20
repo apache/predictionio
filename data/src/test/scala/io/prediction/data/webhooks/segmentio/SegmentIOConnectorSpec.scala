@@ -30,8 +30,6 @@ class SegmentIOConnectorSpec extends Specification {
 
   implicit val formats = DefaultFormats
 
-  val connector = new SegmentIOConnector()
-
   "SegmentIOConnector" should {
 
     "convert identify to event JSON" in {
@@ -52,7 +50,8 @@ class SegmentIOConnectorSpec extends Specification {
       """).asInstanceOf[JObject]
 
       // write and parse back to discard any JNothing field
-      val event = parse(write(connector.toEventJson(identify))).asInstanceOf[JObject]
+      val event = parse(write(SegmentIOConnector.toEventJson(identify)))
+        .asInstanceOf[JObject]
 
       val expected = parse("""
         {
