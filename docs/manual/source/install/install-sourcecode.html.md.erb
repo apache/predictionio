@@ -95,18 +95,17 @@ sample minimal configuration.
 
 > For production deployment, run a fully distributed HBase configuration.
 
-Edit `conf/hbase-site.xml` and put the following in. You may replace `/home/abc`
-with your own home directory.
+Edit `/path/to/hbase/conf/hbase-site.xml` and configure the local **data** directories for HBase and ZooKeeper. These directories should be empty the first time you launch pio.
 
 ```
 <configuration>
   <property>
     <name>hbase.rootdir</name>
-    <value>file:///home/abc/hbase</value>
+    <value>file:///path/to/hbase-data-dir</value>
   </property>
   <property>
     <name>hbase.zookeeper.property.dataDir</name>
-    <value>/home/abc/zookeeper</value>
+    <value>/path/to/zookeeper-data-dir</value>
   </property>
 </configuration>
 ```
@@ -118,10 +117,11 @@ would be
 export JAVA_HOME=`/usr/libexec/java_home -v 1.7`
 ```
 
-Navigate to your pio root and edit ```conf/pio-env.sh``` add the path to hbase's root directory and config:
+Navigate back to your pio root and edit ```conf/pio-env.sh``` add the path to hbase's root and config directories:
 
 ```
 HBASE_CONF_DIR=/path/to/hbase/conf
+...
 PIO_STORAGE_SOURCES_HBASE_HOME=/path/to/hbase
 ```
 
