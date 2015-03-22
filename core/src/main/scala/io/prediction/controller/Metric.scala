@@ -54,7 +54,8 @@ extends Serializable {
   * @group Evaluation
   */
 abstract class AverageMetric[EI, Q, P, A]
-extends Metric[EI, Q, P, A, Double] {
+    extends Metric[EI, Q, P, A, Double]
+    with QPAMetric[Q, P, A, Double] {
   /** Implement this method to return a score that will be used for averaging
     * across all QPA tuples.
     */
@@ -86,7 +87,8 @@ extends Metric[EI, Q, P, A, Double] {
   * @group Evaluation
   */
 abstract class SumMetric[EI, Q, P, A]
-extends Metric[EI, Q, P, A, Double] {
+    extends Metric[EI, Q, P, A, Double]
+    with QPAMetric[Q, P, A, Double] {
   /** Implement this method to return a score that will be used for summing
     * across all QPA tuples.
     */
@@ -117,7 +119,8 @@ extends Metric[EI, Q, P, A, Double] {
   * @group Evaluation
   */
 abstract class OptionAverageMetric[EI, Q, P, A]
-extends Metric[EI, Q, P, A, Double] {
+    extends Metric[EI, Q, P, A, Double] 
+    with QPAMetric[Q, P, A, Option[Double]] {
   /** Implement this method to return a score that will be used for averaging
     * across all QPA tuples.
     */
@@ -149,4 +152,8 @@ extends Metric[EI, Q, P, A, Double] {
 }
 
 
-
+/** Trait for metric which returns a score based on Query, PredictedResult, and ActualResult.
+  */
+trait QPAMetric[Q, P, A, R] {
+  def calculate(q: Q, p: P, a: A): R
+}
