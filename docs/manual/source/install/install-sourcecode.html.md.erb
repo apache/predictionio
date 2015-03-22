@@ -118,9 +118,10 @@ would be
 export JAVA_HOME=`/usr/libexec/java_home -v 1.7`
 ```
 
-Navigate to your pio root and edit ```conf/pio-env.sh``` add:
+Navigate to your pio root and edit ```conf/pio-env.sh``` add the path to hbase's root directory and config:
 
 ```
+HBASE_CONF_DIR=/path/to/hbase/conf
 PIO_STORAGE_SOURCES_HBASE_HOME=/path/to/hbase
 ```
 
