@@ -15,17 +15,6 @@
 
 package io.prediction.workflow
 
-import akka.actor._
-import akka.event.Logging
-import akka.io.IO
-import akka.pattern.ask
-import akka.util.Timeout
-import com.github.nscala_time.time.Imports.DateTime
-import com.google.gson.Gson
-import com.twitter.chill.KryoBase
-import com.twitter.chill.KryoInjection
-import com.twitter.chill.ScalaKryoInstantiator
-import grizzled.slf4j.Logging
 import io.prediction.controller.Engine
 import io.prediction.controller.Params
 import io.prediction.controller.Utils
@@ -40,6 +29,20 @@ import io.prediction.core.Doer
 import io.prediction.data.storage.EngineInstance
 import io.prediction.data.storage.EngineManifest
 import io.prediction.data.storage.Storage
+
+import akka.actor._
+import akka.event.Logging
+import akka.io.IO
+import akka.pattern.ask
+import akka.util.Timeout
+import com.github.nscala_time.time.Imports.DateTime
+import com.google.gson.Gson
+import com.twitter.bijection.Injection
+import com.twitter.chill.KryoBase
+import com.twitter.chill.KryoInjection
+import com.twitter.chill.ScalaKryoInstantiator
+import de.javakaffee.kryoserializers.SynchronizedCollectionsSerializer
+import grizzled.slf4j.Logging
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization.write
@@ -57,14 +60,21 @@ import scala.util.Failure
 import scala.util.Random
 import scala.util.Success
 
-import java.io.PrintWriter
-import java.io.StringWriter
+import java.io.{Serializable, PrintWriter, StringWriter}
 
 class KryoInstantiator(classLoader: ClassLoader) extends ScalaKryoInstantiator {
   override def newKryo(): KryoBase = {
     val kryo = super.newKryo()
     kryo.setClassLoader(classLoader)
+    SynchronizedCollectionsSerializer.registerSerializers(kryo)
     kryo
+  }
+}
+
+object KryoInstantiator extends Serializable {
+  def newKryoInjection : Injection[Any, Array[Byte]] = {
+    val kryoInstantiator = new KryoInstantiator(getClass.getClassLoader)
+    KryoInjection.instance(kryoInstantiator)
   }
 }
 
@@ -190,8 +200,7 @@ object CreateServer extends Logging {
 
     val engineParams = engine.engineInstanceToEngineParams(engineInstance)
 
-    val kryoInstantiator = new KryoInstantiator(getClass.getClassLoader)
-    val kryo = KryoInjection.instance(kryoInstantiator)
+    val kryo = KryoInstantiator.newKryoInjection
 
     val modelsFromEngineInstance =
       kryo.invert(modeldata.get(engineInstance.id).get.models).get.
