@@ -1,0 +1,30 @@
+## Export Events to Apache Parquet
+
+PredictionIO supports exporting your events to [Apache
+Parquet](http://parquet.incubator.apache.org/), a columnar storage format that
+allows you to query quickly.
+
+Let's export the data we imported in [Recommendation Engine Template Quick
+Start](/templates/recommendation/quickstart/#import-sample-data), and assume the
+App ID is 1.
+
+```
+$ $PIO_HOME/bin/pio export --appid 1 --output /tmp/movies --format parquet
+```
+
+After the command has finished successfully, you should see something similar to
+the following.
+
+```
+root
+ |-- creationTime: string (nullable = true)
+ |-- entityId: string (nullable = true)
+ |-- entityType: string (nullable = true)
+ |-- event: string (nullable = true)
+ |-- eventId: string (nullable = true)
+ |-- eventTime: string (nullable = true)
+ |-- properties: struct (nullable = true)
+ |    |-- rating: double (nullable = true)
+ |-- targetEntityId: string (nullable = true)
+ |-- targetEntityType: string (nullable = true)
+```
