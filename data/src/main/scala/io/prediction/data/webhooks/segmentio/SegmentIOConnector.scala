@@ -15,8 +15,9 @@
 
 package io.prediction.data.webhooks.segmentio
 
-import io.prediction.data.storage.Event
 import io.prediction.data.webhooks.JsonConnector
+import io.prediction.data.webhooks.ConnectorException
+import io.prediction.data.storage.Event
 import io.prediction.data.storage.Utils
 
 import org.json4s.{Formats, DefaultFormats}
@@ -25,6 +26,7 @@ import org.json4s.JObject
 import org.json4s.JString
 import org.json4s.JField
 import org.json4s.JNothing
+import org.json4s.MappingException
 
 private[prediction] object SegmentIOConnector extends JsonConnector {
 
@@ -33,16 +35,27 @@ private[prediction] object SegmentIOConnector extends JsonConnector {
   override
   def toEventJson(data: JObject): JObject = {
     // TODO: check segmentio API version
-    val common = data.extract[Common]
+    val common = try {
+      data.extract[Common]
+    } catch {
+      case e: Exception => throw new ConnectorException(
+          s"Cannot extract Common field from ${data}. ${e.getMessage()}", e)
+    }
 
-    common.`type` match {
-      case "identify" => toEventJson(
-        common = common,
-        identify = data.extract[Identify])
+    try {
+      common.`type` match {
+        case "identify" => toEventJson(
+          common = common,
+          identify = data.extract[Identify])
 
-      // TODO: support other events
-      // TODO: better error handling
-      case _ => throw new Exception(s"Cannot process ${data}.")
+        // TODO: support other events
+        case _ => throw new ConnectorException(
+          s"Cannot convert unknown type ${common.`type`} to event JSON.")
+      }
+    } catch {
+      case e: ConnectorException => throw e
+      case e: Exception => throw new ConnectorException(
+        s"Cannot convert ${data} to event JSON. ${e.getMessage()}", e)
     }
   }
 

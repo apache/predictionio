@@ -12,8 +12,10 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
-  
+
 package io.prediction.data.api
+
+import io.prediction.data.webhooks.ConnectorException
 
 import spray.routing._
 import spray.routing.Directives._
@@ -43,4 +45,14 @@ object Common {
         Map("message" -> s"Invalid accessKey."))
   }
 
+  val exceptionHandler = ExceptionHandler {
+    case e: ConnectorException => {
+      val msg = s"${e.getMessage()}"
+      complete(StatusCodes.BadRequest, Map("message" -> msg))
+    }
+    case e: Exception => {
+      val msg = s"${e.getMessage()}"
+      complete(StatusCodes.BadRequest, Map("message" -> msg))
+    }
+  }
 }

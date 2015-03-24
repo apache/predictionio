@@ -17,6 +17,7 @@
 package io.prediction.data.webhooks.mailchimp
 
 import io.prediction.data.webhooks.FormConnector
+import io.prediction.data.webhooks.ConnectorException
 import io.prediction.data.storage.EventValidation
 import io.prediction.data.Utils
 
@@ -32,12 +33,13 @@ private[prediction] object MailChimpConnector extends FormConnector {
   override
   def toEventJson(data: Map[String, String]): JObject = {
 
-    // TODO: handle if the key "type" does not exist
-    val json = data("type") match {
-      case "subscribe" => subscribeToEventJson(data)
+    val json = data.get("type") match {
+      case Some("subscribe") => subscribeToEventJson(data)
       // TODO: support other events
-      // TODO: better error handling
-      case _ => throw new Exception(s"Cannot convert ${data} to event JSON")
+      case Some(x) => throw new ConnectorException(
+        s"Cannot convert unknown MailChimp data type ${x} to event JSON")
+      case None => throw new ConnectorException(
+        s"The field 'type' is required for MailChimp data.")
     }
     json
   }

@@ -357,34 +357,38 @@ class EventServiceActor(
       import Json4sProtocol._
 
       post {
-        handleRejections(rejectionHandler) {
-          authenticate(withAccessKey) { appId =>
-            entity(as[JObject]) { jObj =>
-              complete {
-                Webhooks.postJson(
-                  appId = appId,
-                  web = web,
-                  data = jObj,
-                  connectors = jsonConnectors,
-                  eventClient = eventClient,
-                  log = log,
-                  stats = stats,
-                  statsActorRef = statsActorRef)
+        handleExceptions(Common.exceptionHandler) {
+          handleRejections(rejectionHandler) {
+            authenticate(withAccessKey) { appId =>
+              entity(as[JObject]) { jObj =>
+                complete {
+                  Webhooks.postJson(
+                    appId = appId,
+                    web = web,
+                    data = jObj,
+                    connectors = jsonConnectors,
+                    eventClient = eventClient,
+                    log = log,
+                    stats = stats,
+                    statsActorRef = statsActorRef)
+                }
               }
             }
           }
         }
       } ~
       get {
-        handleRejections(rejectionHandler) {
-          authenticate(withAccessKey) { appId =>
-            respondWithMediaType(MediaTypes.`application/json`) {
-              complete {
-                Webhooks.getJson(
-                  appId = appId,
-                  web = web,
-                  connectors = jsonConnectors,
-                  log = log)
+        handleExceptions(Common.exceptionHandler) {
+          handleRejections(rejectionHandler) {
+            authenticate(withAccessKey) { appId =>
+              respondWithMediaType(MediaTypes.`application/json`) {
+                complete {
+                  Webhooks.getJson(
+                    appId = appId,
+                    web = web,
+                    connectors = jsonConnectors,
+                    log = log)
+                }
               }
             }
           }
@@ -393,33 +397,38 @@ class EventServiceActor(
     } ~
     path("webhooks" / formPath ) { web =>
       post {
-        handleRejections(rejectionHandler) {
-          authenticate(withAccessKey) { appId =>
-            entity(as[FormData]){ formData =>
-              complete {
-                Webhooks.postForm(
-                  appId = appId,
-                  web = web,
-                  data = formData,
-                  connectors = formConnectors,
-                  eventClient = eventClient,
-                  log = log,
-                  stats = stats,
-                  statsActorRef = statsActorRef)
+        handleExceptions(Common.exceptionHandler) {
+          handleRejections(rejectionHandler) {
+            authenticate(withAccessKey) { appId =>
+              entity(as[FormData]){ formData =>
+                //log.debug(formData.toString)
+                complete {
+                  Webhooks.postForm(
+                    appId = appId,
+                    web = web,
+                    data = formData,
+                    connectors = formConnectors,
+                    eventClient = eventClient,
+                    log = log,
+                    stats = stats,
+                    statsActorRef = statsActorRef)
+                }
               }
             }
           }
         }
       } ~
       get {
-        handleRejections(rejectionHandler) {
-          authenticate(withAccessKey) { appId =>
-            complete {
-              Webhooks.getForm(
-                appId = appId,
-                web = web,
-                connectors = formConnectors,
-                log = log)
+        handleExceptions(Common.exceptionHandler) {
+          handleRejections(rejectionHandler) {
+            authenticate(withAccessKey) { appId =>
+              complete {
+                Webhooks.getForm(
+                  appId = appId,
+                  web = web,
+                  connectors = formConnectors,
+                  log = log)
+              }
             }
           }
         }
