@@ -23,6 +23,10 @@ import io.prediction.data.storage.EventJson4sSupport
 import io.prediction.data.storage.LEvents
 import io.prediction.data.storage.StorageError
 import io.prediction.data.storage.Storage
+import io.prediction.data.webhooks.JsonConnector
+import io.prediction.data.webhooks.FormConnector
+import io.prediction.data.webhooks.segmentio.SegmentIOConnector
+import io.prediction.data.webhooks.mailchimp.MailChimpConnector
 
 import akka.actor.ActorSystem
 import akka.actor.Actor
@@ -33,9 +37,11 @@ import akka.pattern.ask
 import akka.util.Timeout
 
 import org.json4s.{Formats, DefaultFormats}
+import org.json4s.JObject
 import org.json4s.ext.JodaTimeSerializers
 import org.json4s.native.JsonMethods.parse
 
+import spray.util.LoggingContext
 import spray.can.Http
 import spray.http.HttpCharsets
 import spray.http.HttpEntity
@@ -43,6 +49,7 @@ import spray.http.HttpResponse
 import spray.http.MediaTypes
 import spray.http.StatusCodes
 import spray.http.StatusCode
+import spray.http.FormData
 import spray.httpx.Json4sSupport
 import spray.httpx.unmarshalling.Unmarshaller
 import spray.routing._
@@ -114,6 +121,8 @@ class Stats(val startTime: DateTime) {
 class EventServiceActor(
     val eventClient: LEvents,
     val accessKeysClient: AccessKeys,
+    val jsonConnectors: Map[String, JsonConnector],
+    val formConnectors: Map[String, FormConnector],
     val stats: Boolean) extends HttpServiceActor {
 
   object Json4sProtocol extends Json4sSupport {
@@ -122,8 +131,6 @@ class EventServiceActor(
       JodaTimeSerializers.all
   }
 
-  import Json4sProtocol._
-
   val log = Logging(context.system, this)
 
   // we use the enclosing ActorContext's or ActorSystem's dispatcher for our
@@ -131,19 +138,10 @@ class EventServiceActor(
   implicit def executionContext: ExecutionContext = actorRefFactory.dispatcher
   implicit val timeout = Timeout(5, TimeUnit.SECONDS)
 
-  // for better message response
-  val rejectionHandler = RejectionHandler {
-    case MalformedRequestContentRejection(msg, _) :: _ =>
-      complete(StatusCodes.BadRequest, Map("message" -> msg))
-    case MissingQueryParamRejection(msg) :: _ =>
-      complete(StatusCodes.NotFound,
-        Map("message" -> s"missing required query parameter ${msg}."))
-    case AuthenticationFailedRejection(cause, challengeHeaders) :: _ =>
-      complete(StatusCodes.Unauthorized, challengeHeaders,
-        Map("message" -> s"Invalid accessKey."))
-  }
+  val rejectionHandler = Common.rejectionHandler
 
   val jsonPath = """(.+)\.json$""".r
+  val formPath = """(.+)$""".r
 
   /* with accessKey in query, return appId if succeed */
   def withAccessKey: RequestContext => Future[Authentication[Int]] = {
@@ -167,6 +165,8 @@ class EventServiceActor(
 
   val route: Route =
     pathSingleSlash {
+      import Json4sProtocol._
+
       get {
         respondWithMediaType(MediaTypes.`application/json`) {
           complete(Map("status" -> "alive"))
@@ -174,6 +174,9 @@ class EventServiceActor(
       }
     } ~
     path("events" / jsonPath ) { eventId =>
+
+      import Json4sProtocol._
+
       get {
         handleRejections(rejectionHandler) {
           authenticate(withAccessKey) { appId =>
@@ -227,6 +230,9 @@ class EventServiceActor(
       }
     } ~
     path("events.json") {
+
+      import Json4sProtocol._
+
       post {
         handleRejections(rejectionHandler) {
           authenticate(withAccessKey) { appId =>
@@ -322,6 +328,9 @@ class EventServiceActor(
       }
     } ~
     path("stats.json") {
+
+      import Json4sProtocol._
+
       get {
         handleRejections(rejectionHandler) {
           authenticate(withAccessKey) { appId =>
@@ -342,6 +351,101 @@ class EventServiceActor(
           }
         }
       }  // stats.json get
+    } ~
+    path("webhooks" / jsonPath ) { web =>
+
+      import Json4sProtocol._
+
+      post {
+        handleExceptions(Common.exceptionHandler) {
+          handleRejections(rejectionHandler) {
+            authenticate(withAccessKey) { appId =>
+              respondWithMediaType(MediaTypes.`application/json`) {
+                entity(as[JObject]) { jObj =>
+                  complete {
+                    Webhooks.postJson(
+                      appId = appId,
+                      web = web,
+                      data = jObj,
+                      connectors = jsonConnectors,
+                      eventClient = eventClient,
+                      log = log,
+                      stats = stats,
+                      statsActorRef = statsActorRef)
+                  }
+                }
+              }
+            }
+          }
+        }
+      } ~
+      get {
+        handleExceptions(Common.exceptionHandler) {
+          handleRejections(rejectionHandler) {
+            authenticate(withAccessKey) { appId =>
+              respondWithMediaType(MediaTypes.`application/json`) {
+                complete {
+                  Webhooks.getJson(
+                    appId = appId,
+                    web = web,
+                    connectors = jsonConnectors,
+                    log = log)
+                }
+              }
+            }
+          }
+        }
+      }
+    } ~
+    path("webhooks" / formPath ) { web =>
+      post {
+        handleExceptions(Common.exceptionHandler) {
+          handleRejections(rejectionHandler) {
+            authenticate(withAccessKey) { appId =>
+              respondWithMediaType(MediaTypes.`application/json`) {
+                entity(as[FormData]){ formData =>
+                  //log.debug(formData.toString)
+                  complete {
+                    // respond with JSON
+                    import Json4sProtocol._
+
+                    Webhooks.postForm(
+                      appId = appId,
+                      web = web,
+                      data = formData,
+                      connectors = formConnectors,
+                      eventClient = eventClient,
+                      log = log,
+                      stats = stats,
+                      statsActorRef = statsActorRef)
+                  }
+                }
+              }
+            }
+          }
+        }
+      } ~
+      get {
+        handleExceptions(Common.exceptionHandler) {
+          handleRejections(rejectionHandler) {
+            authenticate(withAccessKey) { appId =>
+              respondWithMediaType(MediaTypes.`application/json`) {
+                complete {
+                  // respond with JSON
+                  import Json4sProtocol._
+
+                  Webhooks.getForm(
+                    appId = appId,
+                    web = web,
+                    connectors = formConnectors,
+                    log = log)
+                }
+              }
+            }
+          }
+        }
+      }
+
     }
 
   def receive: Actor.Receive = runRoute(route)
@@ -402,10 +506,17 @@ case class StartServer(
 class EventServerActor(
     val eventClient: LEvents,
     val accessKeysClient: AccessKeys,
+    val webhooksJsonConnectors: Map[String, JsonConnector],
+    val webhooksFormConnectors: Map[String, FormConnector],
     val stats: Boolean) extends Actor {
   val log = Logging(context.system, this)
   val child = context.actorOf(
-    Props(classOf[EventServiceActor], eventClient, accessKeysClient, stats),
+    Props(classOf[EventServiceActor],
+      eventClient,
+      accessKeysClient,
+      webhooksJsonConnectors,
+      webhooksFormConnectors,
+      stats),
     "EventServiceActor")
   implicit val system = context.system
 
@@ -431,11 +542,22 @@ object EventServer {
     val eventClient = Storage.getLEvents()
     val accessKeysClient = Storage.getMetaDataAccessKeys
 
+    // webhooks
+    val jsonConnectors: Map[String, JsonConnector] = Map(
+      "segmentio" -> SegmentIOConnector
+    )
+
+    val formConnectors: Map[String, FormConnector] = Map(
+      "mailchimp" -> MailChimpConnector
+    )
+
     val serverActor = system.actorOf(
       Props(
         classOf[EventServerActor],
         eventClient,
         accessKeysClient,
+        jsonConnectors,
+        formConnectors,
         config.stats),
       "EventServerActor")
     if (config.stats) system.actorOf(Props[StatsActor], "StatsActor")
