@@ -360,17 +360,19 @@ class EventServiceActor(
         handleExceptions(Common.exceptionHandler) {
           handleRejections(rejectionHandler) {
             authenticate(withAccessKey) { appId =>
-              entity(as[JObject]) { jObj =>
-                complete {
-                  Webhooks.postJson(
-                    appId = appId,
-                    web = web,
-                    data = jObj,
-                    connectors = jsonConnectors,
-                    eventClient = eventClient,
-                    log = log,
-                    stats = stats,
-                    statsActorRef = statsActorRef)
+              respondWithMediaType(MediaTypes.`application/json`) {
+                entity(as[JObject]) { jObj =>
+                  complete {
+                    Webhooks.postJson(
+                      appId = appId,
+                      web = web,
+                      data = jObj,
+                      connectors = jsonConnectors,
+                      eventClient = eventClient,
+                      log = log,
+                      stats = stats,
+                      statsActorRef = statsActorRef)
+                  }
                 }
               }
             }
@@ -400,18 +402,23 @@ class EventServiceActor(
         handleExceptions(Common.exceptionHandler) {
           handleRejections(rejectionHandler) {
             authenticate(withAccessKey) { appId =>
-              entity(as[FormData]){ formData =>
-                //log.debug(formData.toString)
-                complete {
-                  Webhooks.postForm(
-                    appId = appId,
-                    web = web,
-                    data = formData,
-                    connectors = formConnectors,
-                    eventClient = eventClient,
-                    log = log,
-                    stats = stats,
-                    statsActorRef = statsActorRef)
+              respondWithMediaType(MediaTypes.`application/json`) {
+                entity(as[FormData]){ formData =>
+                  //log.debug(formData.toString)
+                  complete {
+                    // respond with JSON
+                    import Json4sProtocol._
+
+                    Webhooks.postForm(
+                      appId = appId,
+                      web = web,
+                      data = formData,
+                      connectors = formConnectors,
+                      eventClient = eventClient,
+                      log = log,
+                      stats = stats,
+                      statsActorRef = statsActorRef)
+                  }
                 }
               }
             }
@@ -422,12 +429,17 @@ class EventServiceActor(
         handleExceptions(Common.exceptionHandler) {
           handleRejections(rejectionHandler) {
             authenticate(withAccessKey) { appId =>
-              complete {
-                Webhooks.getForm(
-                  appId = appId,
-                  web = web,
-                  connectors = formConnectors,
-                  log = log)
+              respondWithMediaType(MediaTypes.`application/json`) {
+                complete {
+                  // respond with JSON
+                  import Json4sProtocol._
+
+                  Webhooks.getForm(
+                    appId = appId,
+                    web = web,
+                    connectors = formConnectors,
+                    log = log)
+                }
               }
             }
           }

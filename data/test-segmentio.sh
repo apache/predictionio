@@ -53,7 +53,7 @@ curl -i -X POST http://localhost:7070/webhooks/segmentio.json?accessKey=$accessK
 -w %{time_total}
 
 
-# invalid json path
+# invalid webhooks path
 curl -i -X POST http://localhost:7070/webhooks/invalidpath.json?accessKey=$accessKey \
 -H "Content-Type: application/json" \
 -d '{
@@ -73,5 +73,10 @@ curl -i -X POST http://localhost:7070/webhooks/invalidpath.json?accessKey=$acces
 
 # get request
 curl -i -X GET http://localhost:7070/webhooks/segmentio.json?accessKey=$accessKey \
+-H "Content-Type: application/json" \
+-w %{time_total}
+
+# get invalid
+curl -i -X GET http://localhost:7070/webhooks/invalidpath.json?accessKey=$accessKey \
 -H "Content-Type: application/json" \
 -w %{time_total}

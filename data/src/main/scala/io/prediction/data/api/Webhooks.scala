@@ -70,8 +70,7 @@ private[prediction] object Webhooks {
         val data = eventClient.futureInsert(event, appId).map { r =>
           val result = r match {
             case Left(StorageError(message)) =>
-              (StatusCodes.InternalServerError,
-                Map("message" -> message))
+              (StatusCodes.InternalServerError, Map("message" -> message))
             case Right(id) =>
               (StatusCodes.Created, Map("eventId" -> s"${id}"))
           }
@@ -110,7 +109,7 @@ private[prediction] object Webhooks {
     log: LoggingAdapter,
     stats: Boolean,
     statsActorRef: ActorSelection
-  )(implicit ec: ExecutionContext): Future[(StatusCode, String)] = {
+  )(implicit ec: ExecutionContext): Future[(StatusCode, Map[String, String])] = {
     val eventFuture = Future {
       connectors.get(web).map { connector =>
         ConnectorUtil.toEvent(connector, data.fields.toMap)
@@ -121,16 +120,16 @@ private[prediction] object Webhooks {
       if (eventOpt.isEmpty) {
         Future {
           val message = s"webhooks connection for ${web} is not supported."
-          (StatusCodes.NotFound, message)
+          (StatusCodes.NotFound, Map("message" -> message))
         }
       } else {
         val event = eventOpt.get
         val data = eventClient.futureInsert(event, appId).map { r =>
           val result = r match {
             case Left(StorageError(message)) =>
-              (StatusCodes.InternalServerError, message)
+              (StatusCodes.InternalServerError, Map("message" -> message))
             case Right(id) =>
-              (StatusCodes.Created, (s"${id}"))
+              (StatusCodes.Created, Map("eventId" -> s"${id}"))
           }
           if (stats) {
             statsActorRef ! Bookkeeping(appId, result._1, event)
@@ -147,13 +146,13 @@ private[prediction] object Webhooks {
     web: String,
     connectors: Map[String, FormConnector],
     log: LoggingAdapter
-  )(implicit ec: ExecutionContext): Future[(StatusCode, String)] = {
+  )(implicit ec: ExecutionContext): Future[(StatusCode, Map[String, String])] = {
     Future {
       connectors.get(web).map { connector =>
-        (StatusCodes.OK, "Ok")
+        (StatusCodes.OK, Map("message" -> "Ok"))
       }.getOrElse {
         val message = s"webhooks connection for ${web} is not supported."
-        (StatusCodes.NotFound, message)
+        (StatusCodes.NotFound, Map("message" -> message))
       }
     }
   }
