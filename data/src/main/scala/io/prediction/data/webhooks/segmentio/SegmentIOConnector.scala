@@ -20,7 +20,8 @@ import io.prediction.data.webhooks.ConnectorException
 import io.prediction.data.storage.Event
 import io.prediction.data.storage.Utils
 
-import org.json4s.{Formats, DefaultFormats}
+import org.json4s.Formats
+import org.json4s.DefaultFormats
 import org.json4s.JValue
 import org.json4s.JObject
 import org.json4s.JString

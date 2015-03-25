@@ -21,9 +21,7 @@ import io.prediction.data.webhooks.ConnectorException
 import io.prediction.data.storage.EventValidation
 import io.prediction.data.Utils
 
-import org.json4s.DefaultFormats
 import org.json4s.JObject
-import org.json4s.JNothing
 
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
