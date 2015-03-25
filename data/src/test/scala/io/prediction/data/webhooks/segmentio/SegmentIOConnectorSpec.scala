@@ -15,26 +15,20 @@
 
 package io.prediction.data.webhooks.segmentio
 
+import io.prediction.data.webhooks.ConnectorTestUtil
+
 import org.specs2.mutable._
 
-import org.json4s.JObject
-import org.json4s.Formats
-import org.json4s.DefaultFormats
-import org.json4s.native.JsonMethods.parse
-import org.json4s.native.Serialization.write
-
-class SegmentIOConnectorSpec extends Specification {
+class SegmentIOConnectorSpec extends Specification with ConnectorTestUtil {
 
   // TOOD: test other events
   // TODO: test different optional fields
-
-  implicit val formats = DefaultFormats
 
   "SegmentIOConnector" should {
 
     "convert identify to event JSON" in {
       // simple format
-      val identify = parse("""
+      val identify = """
         {
           "version"   : 1,
           "type"      : "identify",
@@ -47,13 +41,9 @@ class SegmentIOConnectorSpec extends Specification {
           },
           "timestamp" : "2012-12-02T00:30:08.276Z"
         }
-      """).asInstanceOf[JObject]
+      """
 
-      // write and parse back to discard any JNothing field
-      val event = parse(write(SegmentIOConnector.toEventJson(identify)))
-        .asInstanceOf[JObject]
-
-      val expected = parse("""
+      val expected = """
         {
           "event" : "identify",
           "entityType": "user",
@@ -68,9 +58,9 @@ class SegmentIOConnectorSpec extends Specification {
           },
           "eventTime" : "2012-12-02T00:30:08.276Z"
         }
-      """).asInstanceOf[JObject]
+      """
 
-      event.obj must containTheSameElementsAs(expected.obj)
+      check(SegmentIOConnector, identify, expected)
     }
 
   }

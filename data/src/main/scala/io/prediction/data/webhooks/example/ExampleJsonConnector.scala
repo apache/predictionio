@@ -20,11 +20,7 @@ import io.prediction.data.webhooks.ConnectorException
 
 import org.json4s.Formats
 import org.json4s.DefaultFormats
-import org.json4s.JValue
 import org.json4s.JObject
-import org.json4s.JString
-import org.json4s.JField
-import org.json4s.JNothing
 
 /** Example JsonConnector with following types of webhooks JSON input:
   *

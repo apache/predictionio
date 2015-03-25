@@ -15,20 +15,14 @@
 
 package io.prediction.data.webhooks.mailchimp
 
+import io.prediction.data.webhooks.ConnectorTestUtil
+
 import org.specs2.mutable._
 
-import org.json4s.JObject
-import org.json4s.Formats
-import org.json4s.DefaultFormats
-import org.json4s.native.JsonMethods.parse
-import org.json4s.native.Serialization.write
-
-class MailChimpConnectorSpec extends Specification {
+class MailChimpConnectorSpec extends Specification with ConnectorTestUtil {
 
   // TOOD: test other events
   // TODO: test different optional fields
-
-  implicit val formats = DefaultFormats
 
   "MailChimpConnector" should {
 
@@ -49,11 +43,7 @@ class MailChimpConnectorSpec extends Specification {
         "data[ip_signup]" -> "10.20.10.30"
       )
 
-      // write and parse back to discard any JNothing field
-      val event = parse(write(MailChimpConnector.toEventJson(subscribe)))
-        .asInstanceOf[JObject]
-
-      val expected = parse("""
+      val expected = """
         {
           "event" : "subscribe",
           "entityType" : "user",
@@ -74,9 +64,9 @@ class MailChimpConnectorSpec extends Specification {
           },
           "eventTime" : "2009-03-26T21:35:57.000Z"
         }
-      """).asInstanceOf[JObject]
+      """
 
-      event.obj must containTheSameElementsAs(expected.obj)
+      check(MailChimpConnector, subscribe, expected)
     }
 
   }
