@@ -70,7 +70,7 @@ def import_events(client):
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(
     description="Import sample data for e-commerce recommendation engine")
-  parser.add_argument('--access_key', default='invald_access_key')
+  parser.add_argument('--access_key', default='invalid_access_key')
   parser.add_argument('--url', default="http://localhost:7070")
 
   args = parser.parse_args()

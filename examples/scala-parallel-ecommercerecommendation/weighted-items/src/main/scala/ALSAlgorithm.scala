@@ -14,7 +14,7 @@ import org.apache.spark.mllib.recommendation.{Rating => MLlibRating}
 import grizzled.slf4j.Logger
 
 import scala.collection.mutable.PriorityQueue
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 case class ALSAlgorithmParams(
@@ -146,7 +146,7 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
 
     // convert whiteList's string ID to integer index
     val whiteList: Option[Set[Int]] = query.whiteList.map( set =>
-      set.map(model.itemStringIntMap.get(_)).flatten
+      set.map(model.itemStringIntMap.get).flatten
     )
 
     val blackList: Set[String] = query.blackList.getOrElse(Set[String]())
@@ -162,7 +162,7 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
         eventNames = Some(ap.seenEvents),
         targetEntityType = Some(Some("item")),
         // set time limit to avoid super long DB access
-        timeout = Duration(200, "millis")
+        timeout = 200.millis
       ) match {
         case Right(x) => x
         case Left(e) => {
@@ -211,8 +211,8 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
     // combine query's blackList,seenItems and unavailableItems
     // into final blackList.
     // convert seen Items list from String ID to interger Index
-    val finalBlackList: Set[Int] = (blackList ++ seenItems ++
-      unavailableItems).map( x => model.itemStringIntMap.get(x)).flatten
+    val finalBlackList: Set[Int] = (blackList ++ seenItems ++ unavailableItems)
+      .map( x => model.itemStringIntMap.get(x)).flatten
 
     val userFeature =
       model.userStringIntMap.get(query.user).map { userIndex =>
@@ -260,7 +260,6 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
         whiteList = whiteList,
         blackList = finalBlackList
       )
-
     }
 
     val itemScores = topScores.map { case (i, s) =>
@@ -282,7 +281,6 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
     whiteList: Option[Set[Int]],
     blackList: Set[Int]): Array[(Int, Double)] = {
 
-    val userFeatures = model.userFeatures
     val productFeatures = model.productFeatures
 
     // get latest 10 user view item events
@@ -341,9 +339,9 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
           )
         }
         .map { case (i, (item, feature)) =>
-          val s = recentFeatures.map{ rf =>
+          val s = recentFeatures.map { rf =>
             cosine(rf, feature.get) // feature is defined
-          }.reduce(_ + _)
+          }.sum
           // Can adjust score here
           (i, s)
         }
@@ -379,7 +377,7 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
 
   private
   def dotProduct(v1: Array[Double], v2: Array[Double]): Double = {
-    val size = v1.size
+    val size = v1.length
     var i = 0
     var d: Double = 0
     while (i < size) {
@@ -391,7 +389,7 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
 
   private
   def cosine(v1: Array[Double], v2: Array[Double]): Double = {
-    val size = v1.size
+    val size = v1.length
     var i = 0
     var n1: Double = 0
     var n2: Double = 0
@@ -402,8 +400,8 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
       d += v1(i) * v2(i)
       i += 1
     }
-    val n1n2 = (math.sqrt(n1) * math.sqrt(n2))
-    if (n1n2 == 0) 0 else (d / n1n2)
+    val n1n2 = math.sqrt(n1) * math.sqrt(n2)
+    if (n1n2 == 0) 0 else d / n1n2
   }
 
   private
@@ -424,7 +422,6 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
         !(itemCat.toSet.intersect(cat).isEmpty)
       }.getOrElse(false) // discard this item if it has no categories
     }.getOrElse(true)
-
   }
 
 }
