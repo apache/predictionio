@@ -1,155 +1,143 @@
-# E-Commerce Recommendation Template
+# E-Commerce Recommendation Template With Weighted Items
+
+This engine template is based on the E-Commerce Recommendation Template v0.1.1. It has been modified so that
+each item can be given a different weight.
+
+By default, items have a weight of 1.0. Giving an item a weight greater than
+1.0 will make them appear more often and can be useful for i.e. promoted products. An item can also be given
+a weight smaller than 1.0 (but bigger than 0), in which case it will be recommended less often than originally. Weight
+values smaller than 0.0 are invalid.
 
 ## Documentation
 
 Please refer to http://docs.prediction.io/templates/ecommercerecommendation/quickstart/
 
-## Versions
-
-### v0.1.1
-
-- update for PredictionIO 0.9.0
-
-### v0.1.0
-
-- initial version
-
-
 ## Development Notes
 
-### import sample data
+### Weight constraint event
+
+Item weights are specified by means of a `weightedItems` constraint type event , which includes the weight for all items 
+which don't have the default weight of 1.0. At any given time, only the last such `weightedItems` event is taken into
+account.
+
+The event design has been optimized for the use case where there may be many different items that are to be adjusted
+by the same percentage, an so it's based on a list of objects, each containing a list of item IDs and their weight:
 
 ```
-$ python data/import_eventserver.py --access_key <your_access_key>
-```
-
-### query
-
-normal:
-
-```
-$ curl -H "Content-Type: application/json" \
--d '{
-  "user" : "u1",
-  "num" : 10 }' \
-http://localhost:8000/queries.json \
--w %{time_connect}:%{time_starttransfer}:%{time_total}
-```
-
-```
-$ curl -H "Content-Type: application/json" \
--d '{
-  "user" : "u1",
-  "num": 10,
-  "categories" : ["c4", "c3"]
-}' \
-http://localhost:8000/queries.json \
--w %{time_connect}:%{time_starttransfer}:%{time_total}
-```
-
-```
-curl -H "Content-Type: application/json" \
--d '{
-  "user" : "u1",
-  "num": 10,
-  "whiteList": ["i21", "i26", "i40"]
-}' \
-http://localhost:8000/queries.json \
--w %{time_connect}:%{time_starttransfer}:%{time_total}
-```
-
-```
-curl -H "Content-Type: application/json" \
--d '{
-  "user" : "u1",
-  "num": 10,
-  "blackList": ["i21", "i26", "i40"]
-}' \
-http://localhost:8000/queries.json \
--w %{time_connect}:%{time_starttransfer}:%{time_total}
-```
-
-unknown user:
-
-```
-curl -H "Content-Type: application/json" \
--d '{
-  "user" : "unk1",
-  "num": 10}' \
-http://localhost:8000/queries.json \
--w %{time_connect}:%{time_starttransfer}:%{time_total}
-```
-
-### handle new user
-
-new user:
-
-```
-curl -H "Content-Type: application/json" \
--d '{
-  "user" : "x1",
-  "num": 10}' \
-http://localhost:8000/queries.json \
--w %{time_connect}:%{time_starttransfer}:%{time_total}
-```
-
-import some view events and try to get recommendation for x1 again.
-
-```
-curl -i -X POST http://localhost:7070/events.json?accessKey=zPkr6sBwQoBwBjVHK2hsF9u26L38ARSe19QzkdYentuomCtYSuH0vXP5fq7advo4 \
--H "Content-Type: application/json" \
--d '{
-  "event" : "view",
-  "entityType" : "user"
-  "entityId" : "x1",
-  "targetEntityType" : "item",
-  "targetEntityId" : "i2",
-  "eventTime" : "2015-02-17T02:11:21.934Z"
-}'
-
-curl -i -X POST http://localhost:7070/events.json?accessKey=zPkr6sBwQoBwBjVHK2hsF9u26L38ARSe19QzkdYentuomCtYSuH0vXP5fq7advo4 \
--H "Content-Type: application/json" \
--d '{
-  "event" : "view",
-  "entityType" : "user"
-  "entityId" : "x1",
-  "targetEntityType" : "item",
-  "targetEntityId" : "i3",
-  "eventTime" : "2015-02-17T02:12:21.934Z"
-}'
-
-```
-
-## handle unavailable items
-
-Set the following items as unavailable (need to specify complete list each time when this list is changed):
-
-```
-curl -i -X POST http://localhost:7070/events.json?accessKey=zPkr6sBwQoBwBjVHK2hsF9u26L38ARSe19QzkdYentuomCtYSuH0vXP5fq7advo4 \
--H "Content-Type: application/json" \
--d '{
+{
   "event" : "$set",
   "entityType" : "constraint"
-  "entityId" : "unavailableItems",
+  "entityId" : "weightedItems",
   "properties" : {
-    "items": ["i43", "i20", "i37", "i3", "i4", "i5"],
-  }
+    weights: [
+      {  
+        "items": [ "i4", "i14"],
+        "weight" : 1.2,
+      },
+      { 
+        "items": [ "i11"], 
+        "weight" : 1.5,
+      }
+    ]
+  },
   "eventTime" : "2015-02-17T02:11:21.934Z"
-}'
+}
 ```
 
-Set empty list when no more items unavailable:
+### Changes to ALSAlgorithm.scala
+
+* Added a case class to represent each group items which are given the same weight:
+
+```scala
+// Item weights are defined according to this structure so that groups of items can be easily changed together
+case class WeightsGroup(
+  items: Set[String],
+  weight: Double
+)
+```
+
+* Extract the sequence of `WeightsGroup`s defined in the last `weightedItems` event:
+
+```scala
+    // Get the latest constraint weightedItems. This comes in the form of a sequence of WeightsGroup
+    val groupedWeights = lEventsDb.findSingleEntity(
+      appId = ap.appId,
+      entityType = "constraint",
+      entityId = "weightedItems",
+      eventNames = Some(Seq("$set")),
+      limit = Some(1),
+      latest = true,
+      timeout = 200.millis
+    ) match {
+      case Right(x) =>
+        if (x.hasNext)
+          x.next().properties.get[Seq[WeightsGroup]]("weights")
+        else
+          Seq.empty
+      case Left(e) =>
+        logger.error(s"Error when reading set weightedItems event: ${e}")
+        Seq.empty
+    }
+```
+
+* Transform the sequence of `WeightsGroup`s into a `Map[Int, Double]` that we can easily query to extract the weight
+given to an item, using its `Int` index. For undefined items, their weight is 1.0.
+
+```scala
+    // Transform groupedWeights into a map of index -> weight that we can easily query
+    val weights: Map[Int, Double] = (for {
+      group <- groupedWeights
+      item <- group.items
+      index <- model.itemStringIntMap.get(item)
+    } yield (index, group.weight))
+      .toMap
+      .withDefaultValue(1.0)
+```
+
+* Adjust scores according to item weights:
+
+```scala
+            val originalScore = dotProduct(uf, feature.get)
+            // Adjusting score according to given item weights
+            val adjustedScore = originalScore * weights(i)
+            (i, adjustedScore)
+```
+
+* Pass map of weights to `predictNewUser` function and adjust scores similarly
+
+```scala
+  private
+  def predictNewUser(
+    model: ALSModel,
+    query: Query,
+    whiteList: Option[Set[Int]],
+    blackList: Set[Int],
+    weights: Map[Int, Double]): Array[(Int, Double)] = {
+```
+
+```scala
+          val originalScore = recentFeatures.map { rf =>
+            cosine(rf, feature.get) // feature is defined
+          }.sum
+          // Adjusting score according to given item weights
+          val adjustedScore = originalScore * weights(i)
+          (i, adjustedScore)
+```
+
+```scala
+      predictNewUser(
+        model = model,
+        query = query,
+        whiteList = whiteList,
+        blackList = finalBlackList,
+        weights = weights
+      )
+```
+
+### set_weights.py script
+
+A `set_weights.py` has been created to add weight to some of the elements. Usage:
 
 ```
-curl -i -X POST http://localhost:7070/events.json?accessKey=zPkr6sBwQoBwBjVHK2hsF9u26L38ARSe19QzkdYentuomCtYSuH0vXP5fq7advo4 \
--H "Content-Type: application/json" \
--d '{
-  "event" : "$set",
-  "entityType" : "constraint"
-  "entityId" : "unavailableItems",
-  "properties" : {
-    "items": [],
-  }
-  "eventTime" : "2015-02-18T02:11:21.934Z"
-}'
+$ python data/set_weights.py --access_key <your_access_key>
 ```
