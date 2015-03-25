@@ -50,6 +50,12 @@ class ALSModel(
   }
 }
 
+// Item weights are defined according to this structure so that groups of items can be easily changed together
+case class WeightsGroup(
+  items: Set[String],
+  weight: Double
+)
+
 /**
   * Use ALS to build item x feature matrix
   */
@@ -193,7 +199,7 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
       eventNames = Some(Seq("$set")),
       limit = Some(1),
       latest = true,
-      timeout = Duration(200, "millis")
+      timeout = 200.millis
     ) match {
       case Right(x) => {
         if (x.hasNext) {
@@ -208,9 +214,38 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
       }
     }
 
+    // Get the latest constraint weightedItems. This comes in the form of a sequence of WeightsGroup
+    val groupedWeights = lEventsDb.findSingleEntity(
+      appId = ap.appId,
+      entityType = "constraint",
+      entityId = "weightedItems",
+      eventNames = Some(Seq("$set")),
+      limit = Some(1),
+      latest = true,
+      timeout = 200.millis
+    ) match {
+      case Right(x) =>
+        if (x.hasNext)
+          x.next().properties.get[Seq[WeightsGroup]]("weights")
+        else
+          Seq.empty
+      case Left(e) =>
+        logger.error(s"Error when reading set weightedItems event: ${e}")
+        Seq.empty
+    }
+
+    // Transform groupedWeights into a map of index -> weight that we can easily query
+    val weights: Map[Int, Double] = (for {
+      group <- groupedWeights
+      item <- group.items
+      index <- model.itemStringIntMap.get(item)
+    } yield (index, group.weight))
+      .toMap
+      .withDefaultValue(1.0)
+
     // combine query's blackList,seenItems and unavailableItems
     // into final blackList.
-    // convert seen Items list from String ID to interger Index
+    // convert seen Items list from String ID to integer Index
     val finalBlackList: Set[Int] = (blackList ++ seenItems ++ unavailableItems)
       .map( x => model.itemStringIntMap.get(x)).flatten
 
@@ -238,9 +273,10 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
           }
           .map { case (i, (item, feature)) =>
             // NOTE: feature must be defined, so can call .get
-            val s = dotProduct(uf, feature.get)
-            // Can adjust score here
-            (i, s)
+            val originalScore = dotProduct(uf, feature.get)
+            // Adjusting score according to given item weights
+            val adjustedScore = originalScore * weights(i)
+            (i, adjustedScore)
           }
           .filter(_._2 > 0) // only keep items with score > 0
           .seq // convert back to sequential collection
@@ -258,7 +294,8 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
         model = model,
         query = query,
         whiteList = whiteList,
-        blackList = finalBlackList
+        blackList = finalBlackList,
+        weights = weights
       )
     }
 
@@ -279,7 +316,8 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
     model: ALSModel,
     query: Query,
     whiteList: Option[Set[Int]],
-    blackList: Set[Int]): Array[(Int, Double)] = {
+    blackList: Set[Int],
+    weights: Map[Int, Double]): Array[(Int, Double)] = {
 
     val productFeatures = model.productFeatures
 
@@ -339,11 +377,12 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
           )
         }
         .map { case (i, (item, feature)) =>
-          val s = recentFeatures.map { rf =>
+          val originalScore = recentFeatures.map { rf =>
             cosine(rf, feature.get) // feature is defined
           }.sum
-          // Can adjust score here
-          (i, s)
+          // Adjusting score according to given item weights
+          val adjustedScore = originalScore * weights(i)
+          (i, adjustedScore)
         }
         .filter(_._2 > 0) // keep items with score > 0
         .seq // convert back to sequential collection
@@ -417,11 +456,10 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
     !blackList.contains(i) &&
     // filter categories
     categories.map { cat =>
-      item.categories.map { itemCat =>
-        // keep this item if has ovelap categories with the query
-        !(itemCat.toSet.intersect(cat).isEmpty)
-      }.getOrElse(false) // discard this item if it has no categories
+      item.categories.exists { itemCat =>
+        // keep this item if its categories overlap with the query categories
+        itemCat.toSet.intersect(cat).nonEmpty
+      } // discard this item if it has no categories
     }.getOrElse(true)
   }
-
 }
