@@ -92,6 +92,7 @@ have a fixed width and height (but it's not required).
     color: $carousel-control-font-color;
     border-radius: 3px;
     padding: 5px 10px 5px 10px;
+    font-weight: 600;
     &:hover {
       text-decoration: none;
       background-color: $carousel-control-hover-background-color;
