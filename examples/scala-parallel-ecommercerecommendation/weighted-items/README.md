@@ -16,7 +16,7 @@ Please refer to http://docs.prediction.io/templates/ecommercerecommendation/quic
 
 ### Weight constraint event
 
-Item weights are specified by means of a `weightedItems` constraint type event , which includes the weight for all items 
+Item weights are specified by means of a `weightedItems` constraint type event , which includes the weight for all items
 which don't have the default weight of 1.0. At any given time, only the last such `weightedItems` event is taken into
 account.
 
@@ -34,8 +34,8 @@ by the same percentage, an so it's based on a list of objects, each containing a
         "items": [ "i4", "i14"],
         "weight" : 1.2,
       },
-      { 
-        "items": [ "i11"], 
+      {
+        "items": [ "i11"],
         "weight" : 1.5,
       }
     ]
@@ -133,6 +133,75 @@ given to an item, using its `Int` index. For undefined items, their weight is 1.
         weights = weights
       )
 ```
+
+### Setting constraint "weightedItems"
+
+You can set the constraint *weightedItems* by simply sending an event to Event Server.
+
+For example, say, you wanna adjust the score of items "i4", "i14" with a weight of 1.2 and item "i11" with weight of 1.5:
+
+```
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=zPkr6sBwQoBwBjVHK2hsF9u26L38ARSe19QzkdYentuomCtYSuH0vXP5fq7advo4 \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "constraint"
+  "entityId" : "weightedItems",
+  "properties" : {
+    "weights": [
+      {
+        "items": ["i4", "i14"],
+        "weight": 1.2
+      },
+      {
+        "items": ["i11"],
+        "weight": 1.5
+      }
+    ]
+  }
+  "eventTime" : "2015-02-17T02:11:21.934Z"
+}'
+```
+
+Note that only latest set constraint is used (based on eventTime), which means that if you create another new constraint event, the previous constraint won't have any effect anymore. For example, after you send the following event, only scores of items "i2" and "i10" will be adjusted by the weights and previous constraint for items "i4", "i14"," i11" won't be used anymore.
+
+```
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=<ACCESS KEY> \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "constraint"
+  "entityId" : "weightedItems",
+  "properties" : {
+    "weights": [
+      {
+        "items": ["i2", "i10"],
+        "weight": 1.5
+      }
+    ]
+  }
+  "eventTime" : "2015-02-20T04:56:78.123Z"
+}'
+```
+
+To clear the constraint, simply set empty weights array. i.e:
+
+```
+curl -i -X POST http://localhost:7070/events.json?accessKey=<ACCESS KEY> \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "constraint"
+  "entityId" : "weightedItems",
+  "properties" : {
+    "weights": []
+  }
+  "eventTime" : "2015-02-20T04:56:78.123Z"
+}'
+```
+
+
+You can also use SDK to send these events as shown in the sample set_weights.py script.
 
 ### set_weights.py script
 
