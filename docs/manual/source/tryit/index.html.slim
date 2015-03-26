@@ -38,9 +38,17 @@ title: Try PredictionIO
 
           li
             h2 Querying Results
-            p You can query results using cURL with:
+            p You can query results using cURL with after you see "Ready to serve":
             p <code>$ curl -H "Content-Type: application/json" -d '{ "items": ["296"], "num": 5 }' http://localhost:8000/queries.json</code>
             p This will return 5 recomended movies for movie 296 (Pulp Fiction).
+          li
+            h2 Importing Data
+            p For this example we have already imported the data. If you want to do it yourself though you can do it with the following from the <i>/app</i> directory:
+            p <code>$ ruby import.rb</code>
+            p The Ruby script imports data from the <i>/app/data/ratings.csv</i> file.
+            p You can also lookup movie titles in the <i>/app/data/movies.csv</i> file.
+
+
           li
             h2 Next Steps
             p #{link_to 'Install', 'http://docs.prediction.io/install/'} PredictionIO on your own computer!
