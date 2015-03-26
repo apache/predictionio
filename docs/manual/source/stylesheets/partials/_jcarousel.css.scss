@@ -85,13 +85,27 @@ have a fixed width and height (but it's not required).
   width: 100%;
   padding: 15px 0 15px 0;
   border-top: 1px solid $border-color;
+
+  a {
+    display: inline-block;
+    background-color: $carousel-control-background-color;
+    color: $carousel-control-font-color;
+    border-radius: 3px;
+    padding: 5px 10px 5px 10px;
+    &:hover {
+      text-decoration: none;
+      background-color: $carousel-control-hover-background-color;
+    }
+  }
+  .inactive {
+    display: none;
+  }
 }
 
 .jcarousel-control-prev {
-  margin: 0 0 0 15px;
+
 }
 
 .jcarousel-control-next {
   float: right;
-  margin: 0 15px 0 0;
 }
