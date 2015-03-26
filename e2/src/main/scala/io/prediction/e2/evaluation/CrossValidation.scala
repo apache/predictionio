@@ -14,21 +14,30 @@
   */
 package io.prediction.e2.evaluation
 
-import io.prediction.e2.engine.LabeledPoint
 import org.apache.spark.rdd.RDD
 
 object CommonHelperFunctions {
-  def splitData(evalK: Int, labeledPoints: RDD[LabeledPoint]): Seq[(RDD[LabeledPoint], RDD[LabeledPoint])] = {
+
+
+  def splitData[D, TD, EI, Q, A](
+     evalK: Int,
+     dataset: RDD[D],
+     evaluatorInfo: EI,
+     trainingDataCreator: RDD[D] => TD,
+     queryCreator: D => Q,
+     actualCreator: D => A): Seq[(TD, EI, RDD[(Q, A)])] = {
+
     // K-fold splitting
-    val indexedPoints: RDD[(LabeledPoint, Long)] = labeledPoints.zipWithIndex
+    val indexedPoints: RDD[(D, Long)] = dataset.zipWithIndex
 
     (0 until evalK).map { idx =>
       val trainingPoints = indexedPoints.filter(_._2 % evalK != idx).map(_._1)
       val testingPoints = indexedPoints.filter(_._2 % evalK == idx).map(_._1)
 
       (
-        trainingPoints,
-        testingPoints
+        trainingDataCreator(trainingPoints),
+        evaluatorInfo,
+        testingPoints.map { d: D => (queryCreator(d), actualCreator(d))}
       )
     }
   }

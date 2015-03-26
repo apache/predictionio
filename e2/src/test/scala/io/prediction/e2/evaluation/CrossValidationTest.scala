@@ -14,39 +14,64 @@ with SharedSparkContext with CrossValidationFixture {
   val labeledPoints = dataset.labeledPoints
   val dataCount = labeledPoints.length
   val evalKs = (1 to dataCount)
-  type DataSplit = (RDD[LabeledPoint], RDD[LabeledPoint])
+  type D = LabeledPoint
+  type TD = TrainingData
+  type EI = Null
+  type Q = Query
+  type A = ActualResult
+  type DataSplit = (TD, EI, RDD[(Q, A)])
 
   "Fold count" should "equal evalK" in {
     evalKs.map {k =>
-      val labeledPointsRdd = sc.parallelize(labeledPoints)
-      val splits = CommonHelperFunctions.splitData(k, labeledPointsRdd)
+      val labeledPointsRDD = sc.parallelize(labeledPoints)
+      val splits = CommonHelperFunctions.splitData[D, TD, EI, Q, A](
+        k,
+        labeledPointsRDD,
+        null,
+        toTrainingData,
+        toQuery,
+        toActualResult)
       splits.length should be (k)
     }
   }
 
+
   "Testing data size" should  "equal total / evalK" in {
+    val labeledPointsRDD = sc.parallelize(labeledPoints)
     evalKs.map {k =>
-      val labeledPointsRdd = sc.parallelize(labeledPoints)
-      val splits = CommonHelperFunctions.splitData(k, labeledPointsRdd)
+      val splits = CommonHelperFunctions.splitData[D, TD, EI, Q, A](
+        k,
+        labeledPointsRDD,
+        null,
+        toTrainingData,
+        toQuery,
+        toActualResult)
       splits.map {split: DataSplit =>
         val foldSize = dataCount / k
         if (dataCount % k == 0) {
-          split._2.count() should be(foldSize)
+          split._3.count() should be(foldSize)
         }
         else {
-          val diff = split._2.count().toInt - foldSize
-          diff should be <= 1
+          val diff = split._3.count() - foldSize
+          diff should be <= 1L
         }
       }
     }
   }
 
   "Training + testing" should "equal original dataset" in {
+    val labeledPointsRDD = sc.parallelize(labeledPoints)
     evalKs.map {k =>
-      val labeledPointsRdd = sc.parallelize(labeledPoints)
-      val splits = CommonHelperFunctions.splitData(k, labeledPointsRdd)
+      val splits = CommonHelperFunctions.splitData[D, TD, EI, Q, A](
+        k,
+        labeledPointsRDD,
+        null,
+        toTrainingData,
+        toQuery,
+        toActualResult)
       splits.map {split: DataSplit =>
-        val collected = split._1.union(split._2).collect()
+        val trainginDataRDD = sc.parallelize(split._1.labeledPoints)
+        val collected = trainginDataRDD.union(split._2).collect()
         collected.toSet should equal (labeledPoints.toSet)
       }
     }

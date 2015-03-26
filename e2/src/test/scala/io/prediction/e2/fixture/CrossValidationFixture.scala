@@ -1,6 +1,7 @@
 package io.prediction.e2.fixture
 
 import io.prediction.e2.engine.LabeledPoint
+import org.apache.spark.rdd.RDD
 
 trait CrossValidationFixture {
   def dataset = {
@@ -20,4 +21,24 @@ trait CrossValidationFixture {
       )
     }
   }
+
+  case class TrainingData(
+    val labeledPoints: Seq[LabeledPoint]
+  )
+
+  def toTrainingData(labeledPoints: RDD[LabeledPoint]) = TrainingData(labeledPoints.collect().toSeq)
+
+  case class Query(
+    val features: Array[String]
+  )
+
+  def toQuery(labeledPoint: LabeledPoint) = Query(labeledPoint.features)
+
+  case class ActualResult(
+    val label: String
+  )
+
+  def toActualResult(labeledPoint: LabeledPoint) = ActualResult(labeledPoint.label)
+
+
 }
