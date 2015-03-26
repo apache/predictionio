@@ -57,66 +57,10 @@ import spray.routing.authentication.Authentication
 import spray.routing.Directives._
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.collection.mutable.{ HashMap => MHashMap }
-import scala.collection.mutable
 
 import java.util.concurrent.TimeUnit
 
 import com.github.nscala_time.time.Imports.DateTime
-
-case class EntityTypesEvent(
-  val entityType: String,
-  val targetEntityType: Option[String],
-  val event: String) {
-
-  def this(e: Event) = this(
-    e.entityType,
-    e.targetEntityType,
-    e.event)
-}
-
-case class KV[K, V](key: K, value: V)
-
-case class StatsSnapshot(
-  val startTime: DateTime,
-  val endTime: Option[DateTime],
-  val basic: Seq[KV[EntityTypesEvent, Long]],
-  val statusCode: Seq[KV[StatusCode, Long]]
-)
-
-
-class Stats(val startTime: DateTime) {
-  private[this] var _endTime: Option[DateTime] = None
-  var statusCodeCount = MHashMap[(Int, StatusCode), Long]().withDefaultValue(0L)
-  var eteCount = MHashMap[(Int, EntityTypesEvent), Long]().withDefaultValue(0L)
-
-  def cutoff(endTime: DateTime) {
-    _endTime = Some(endTime)
-  }
-
-  def update(appId: Int, statusCode: StatusCode, event: Event) {
-    statusCodeCount((appId, statusCode)) += 1
-    eteCount((appId, new EntityTypesEvent(event))) += 1
-  }
-
-  def extractByAppId[K, V](appId: Int, m: mutable.Map[(Int, K), V])
-  : Seq[KV[K, V]] = {
-    m
-    .toSeq
-    .flatMap { case (k, v) =>
-      if (k._1 == appId) { Seq(KV(k._2, v)) } else { Seq() }
-    }
-  }
-
-  def get(appId: Int): StatsSnapshot = {
-    StatsSnapshot(
-      startTime,
-      _endTime,
-      extractByAppId(appId, eteCount),
-      extractByAppId(appId, statusCodeCount)
-    )
-  }
-}
 
 class EventServiceActor(
     val eventClient: LEvents,
@@ -452,51 +396,7 @@ class EventServiceActor(
 
 }
 
-case class Bookkeeping(val appId: Int, statusCode: StatusCode, event: Event)
-case class GetStats(val appId: Int)
 
-class StatsActor extends Actor {
-  implicit val system = context.system
-  val log = Logging(system, this)
-
-  def getCurrent: DateTime = {
-    DateTime.now.
-      withMinuteOfHour(0).
-      withSecondOfMinute(0).
-      withMillisOfSecond(0)
-  }
-
-  var longLiveStats = new Stats(DateTime.now)
-  var hourlyStats = new Stats(getCurrent)
-
-  var prevHourlyStats = new Stats(getCurrent.minusHours(1))
-  prevHourlyStats.cutoff(hourlyStats.startTime)
-
-  def bookkeeping(appId: Int, statusCode: StatusCode, event: Event) {
-    val current = getCurrent
-    // If the current hour is different from the stats start time, we create
-    // another stats instance, and move the current to prev.
-    if (current != hourlyStats.startTime) {
-      prevHourlyStats = hourlyStats
-      prevHourlyStats.cutoff(current)
-      hourlyStats = new Stats(current)
-    }
-
-    hourlyStats.update(appId, statusCode, event)
-    longLiveStats.update(appId, statusCode, event)
-  }
-
-  def receive: Actor.Receive = {
-    case Bookkeeping(appId, statusCode, event) =>
-      bookkeeping(appId, statusCode, event)
-    case GetStats(appId) => sender() ! Map(
-      "time" -> DateTime.now,
-      "currentHour" -> hourlyStats.get(appId),
-      "prevHour" -> prevHourlyStats.get(appId),
-      "longLive" -> longLiveStats.get(appId))
-    case _ => log.error("Unknown message.")
-  }
-}
 
 /* message */
 case class StartServer(
