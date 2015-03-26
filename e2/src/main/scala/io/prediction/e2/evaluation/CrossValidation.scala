@@ -14,18 +14,21 @@
   */
 package io.prediction.e2.evaluation
 
+import scala.reflect.ClassTag
 import org.apache.spark.rdd.RDD
 
 object CommonHelperFunctions {
 
 
-  def splitData[D, TD, EI, Q, A](
+  def splitData[D: ClassTag, TD, EI, Q, A](
      evalK: Int,
      dataset: RDD[D],
      evaluatorInfo: EI,
      trainingDataCreator: RDD[D] => TD,
      queryCreator: D => Q,
      actualCreator: D => A): Seq[(TD, EI, RDD[(Q, A)])] = {
+
+    val testingCreator = (d: D) => (queryCreator(d), actualCreator(d))
 
     // K-fold splitting
     val indexedPoints: RDD[(D, Long)] = dataset.zipWithIndex
@@ -37,7 +40,7 @@ object CommonHelperFunctions {
       (
         trainingDataCreator(trainingPoints),
         evaluatorInfo,
-        testingPoints.map { d: D => (queryCreator(d), actualCreator(d))}
+        testingPoints.map(testingCreator)
       )
     }
   }
