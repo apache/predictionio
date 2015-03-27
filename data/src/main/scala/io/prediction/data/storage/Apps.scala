@@ -27,7 +27,26 @@ package io.prediction.data.storage
 private[prediction] case class App(
   id: Int,
   name: String,
-  description: Option[String])
+  channels: Set[String],
+  description: Option[String]) {
+
+  require(channels.forall(App.isValidChannelName(_)),
+    s"Invalid channel names: ${channels.filter(!App.isValidChannelName(_))}." +
+    s" ${App.channelNameConstraint}")
+
+}
+
+private[prediction] object App {
+
+  def isValidChannelName(s: String): Boolean = {
+    // note: update channelNameConstraint if this rule is changed
+    s.matches("^[a-zA-Z0-9-]{1,16}$")
+  }
+
+  // for display error message consistently
+  val channelNameConstraint: String =
+    "Only alphanumeric and - characters are allowed and max length is 16."
+}
 
 /**
  * Base trait for implementations that interact with Apps in the backend data

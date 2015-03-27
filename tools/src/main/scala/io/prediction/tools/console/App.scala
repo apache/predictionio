@@ -24,6 +24,7 @@ import grizzled.slf4j.Logging
 case class AppArgs(
   id: Option[Int] = None,
   name: String = "",
+  channel: String = "",
   description: Option[String] = None)
 
 object App extends Logging {
@@ -44,6 +45,7 @@ object App extends Logging {
       val appid = apps.insert(StorageApp(
         id = ca.app.id.getOrElse(0),
         name = ca.app.name,
+        channels = Set.empty[String], // default no channel
         description = ca.app.description))
       appid map { id =>
         val events = Storage.getLEvents()
@@ -94,6 +96,42 @@ object App extends Logging {
     }
     info(s"Finished listing ${apps.size} app(s).")
     0
+  }
+
+  def show(ca: ConsoleArgs): Int = {
+    val apps = Storage.getMetaDataApps
+    val accessKeys = Storage.getMetaDataAccessKeys
+    apps.getByName(ca.app.name) map { app =>
+      info(s"    App Name: ${app.name}")
+      info(s"      App ID: ${app.id}")
+      val keys = accessKeys.getByAppid(app.id)
+
+      var firstKey = true
+      keys foreach { k =>
+        val events =
+          if (k.events.size > 0) k.events.sorted.mkString(",") else "(all)"
+        if (firstKey) {
+          info(f"  Access Key: ${k.key}%s | ${events}%s")
+          firstKey = false
+        } else {
+          info(f"              ${k.key}%s | ${events}%s")
+        }
+      }
+
+      var firstChannel = true
+      app.channels.foreach { channel =>
+        if (firstChannel) {
+          info(s"    Channels: ${channel}")
+          firstChannel = false
+        } else {
+          info(s"              ${channel}")
+        }
+      }
+      0
+    } getOrElse {
+      error(s"App ${ca.app.name} does not exist. Aborting.")
+      1
+    }
   }
 
   def delete(ca: ConsoleArgs): Int = {
@@ -176,4 +214,86 @@ object App extends Logging {
       1
     }
   }
+
+  def channelNew(ca: ConsoleArgs): Int = {
+    val apps = Storage.getMetaDataApps
+    val newChannel = ca.app.channel
+    apps.getByName(ca.app.name) map { app =>
+      if (app.channels.contains(newChannel)) {
+        error(s"Unable to create new channel.")
+        error(s"${newChannel} already exists.")
+        1
+      } else if (!StorageApp.isValidChannelName(newChannel)) {
+        error(s"Unable to create new channel.")
+        error(s"The channel name ${newChannel} is invalid.")
+        error(s"${StorageApp.channelNameConstraint}")
+        1
+      } else {
+        val updatedApp = app.copy(channels = (app.channels + newChannel))
+        val status = apps.update(updatedApp)
+        if (status) {
+          info(s"Created new channel: ${newChannel}.")
+          // TODO kenneth: PDIO-593 initialize storage as well
+          info(s"${app.name} now has the following channels:")
+          var firstChannel = true
+          updatedApp.channels.foreach { channel =>
+            if (firstChannel) {
+              info(s"    Channels: ${channel}")
+              firstChannel = false
+            } else {
+              info(s"              ${channel}")
+            }
+          }
+          0
+        } else {
+          error(s"Unable to create new channel.")
+          1
+        }
+      }
+    } getOrElse {
+      error(s"App ${ca.app.name} does not exist. Aborting.")
+      1
+    }
+  }
+
+  def channelDelete(ca: ConsoleArgs): Int = {
+    val apps = Storage.getMetaDataApps
+    val deleteChannel = ca.app.channel
+    apps.getByName(ca.app.name) map { app =>
+      if (!app.channels.contains(deleteChannel)) {
+        error(s"Unable to delete channel.")
+        error(s"${deleteChannel} doesn't exist.")
+        1
+      } else {
+        val updatedApp = app.copy(channels = (app.channels - deleteChannel))
+        val status = apps.update(updatedApp)
+        if (status) {
+          info(s"Deleted channel: ${deleteChannel}.")
+          // TODO kenneth: PDIO-593. Remove storage as well
+          if (updatedApp.channels.isEmpty) {
+            info(s"${app.name} now has no more additional channels.")
+          } else {
+            info(s"${app.name} now has the following channels:")
+            var firstChannel = true
+            updatedApp.channels.foreach { channel =>
+              if (firstChannel) {
+                info(s"    Channels: ${channel}")
+                firstChannel = false
+              } else {
+                info(s"              ${channel}")
+              }
+            }
+          }
+          0
+        } else {
+          error(s"Unable to delete channel.")
+          1
+        }
+      }
+    } getOrElse {
+      error(s"App ${ca.app.name} does not exist. Aborting.")
+      1
+    }
+  }
+
 }

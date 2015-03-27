@@ -441,6 +441,16 @@ object Console extends Logging {
               c.copy(commands = c.commands :+ "list")
             },
           note(""),
+          cmd("show").
+            text("Show details of an app.").
+            action { (_, c) =>
+              c.copy(commands = c.commands :+ "show")
+            } children (
+              arg[String]("<name>") action { (x, c) =>
+                c.copy(app = c.app.copy(name = x))
+              } text("Name of the app to be shown.")
+            ),
+          note(""),
           cmd("delete").
             text("Delete an app.").
             action { (_, c) =>
@@ -459,6 +469,32 @@ object Console extends Logging {
               arg[String]("<name>") action { (x, c) =>
                 c.copy(app = c.app.copy(name = x))
               } text("Name of the app whose data to be deleted.")
+            ),
+          note(""),
+          cmd("channel-new").
+            text("Create a new channel for the app.").
+            action { (_, c) =>
+              c.copy(commands = c.commands :+ "channel-new")
+            } children (
+              arg[String]("<name>") action { (x, c) =>
+                c.copy(app = c.app.copy(name = x))
+              } text("App name."),
+              arg[String]("<channel>") action { (x, c) =>
+                c.copy(app = c.app.copy(channel = x))
+              } text ("Channel name to be created.")
+            ),
+          note(""),
+          cmd("channel-delete").
+            text("Delete a channel of the app.").
+            action { (_, c) =>
+              c.copy(commands = c.commands :+ "channel-delete")
+            } children (
+              arg[String]("<name>") action { (x, c) =>
+                c.copy(app = c.app.copy(name = x))
+              } text("App name."),
+              arg[String]("<channel>") action { (x, c) =>
+                c.copy(app = c.app.copy(channel = x))
+              } text ("Channel name to be deleted.")
             )
         )
       note("")
@@ -620,10 +656,16 @@ object Console extends Logging {
           App.create(ca)
         case Seq("app", "list") =>
           App.list(ca)
+        case Seq("app", "show") =>
+          App.show(ca)
         case Seq("app", "delete") =>
           App.delete(ca)
         case Seq("app", "data-delete") =>
           App.dataDelete(ca)
+        case Seq("app", "channel-new") =>
+          App.channelNew(ca)
+        case Seq("app", "channel-delete") =>
+          App.channelDelete(ca)
         case Seq("accesskey", "new") =>
           AccessKey.create(ca)
         case Seq("accesskey", "list") =>
