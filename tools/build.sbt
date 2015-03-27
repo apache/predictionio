@@ -48,5 +48,3 @@ outputPath in assembly := baseDirectory.value.getAbsoluteFile.getParentFile /
   "assembly" / ("pio-assembly-" + version.value + ".jar")
 
 cleanFiles <+= baseDirectory { base => base.getParentFile / "assembly" }
-
-net.virtualvoid.sbt.graph.Plugin.graphSettings

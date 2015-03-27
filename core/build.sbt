@@ -36,8 +36,6 @@ libraryDependencies ++= Seq(
   "org.slf4j"               % "slf4j-log4j12"    % "1.7.7",
   "org.specs2"             %% "specs2"           % "2.3.13" % "test")
 
-net.virtualvoid.sbt.graph.Plugin.graphSettings
-
 //testOptions := Seq(Tests.Filter(s => Seq("Dev").exists(s.contains(_))))
 
 parallelExecution in Test := false
