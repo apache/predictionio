@@ -28,19 +28,16 @@ object CommonHelperFunctions {
      queryCreator: D => Q,
      actualCreator: D => A): Seq[(TD, EI, RDD[(Q, A)])] = {
 
-    def testingCreator(d: D) = (queryCreator(d), actualCreator(d))
-
-    // K-fold splitting
-    val indexedPoints: RDD[(D, Long)] = dataset.zipWithIndex
+    val indexedPoints = dataset.zipWithIndex
 
     (0 until evalK).map { idx =>
-      val trainingPoints = indexedPoints.filter(_._2 % evalK != idx).map(_._1)
-      val testingPoints = indexedPoints.filter(_._2 % evalK == idx).map(_._1)
+      val trainingPoints = indexedPoints.flatMap { case (pt, i) if  i % evalK != idx => Some(pt) case _ => None}
+      val testingPoints = indexedPoints.flatMap { case (pt, i) if  i % evalK == idx => Some(pt) case _ => None}
 
       (
         trainingDataCreator(trainingPoints),
         evaluatorInfo,
-        testingPoints.map(testingCreator)
+        testingPoints.map { d => (queryCreator(d), actualCreator(d)) }
       )
     }
   }
