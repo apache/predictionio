@@ -28,7 +28,7 @@ object CommonHelperFunctions {
      queryCreator: D => Q,
      actualCreator: D => A): Seq[(TD, EI, RDD[(Q, A)])] = {
 
-    val testingCreator = (d: D) => (queryCreator(d), actualCreator(d))
+    def testingCreator(d: D) = (queryCreator(d), actualCreator(d))
 
     // K-fold splitting
     val indexedPoints: RDD[(D, Long)] = dataset.zipWithIndex
