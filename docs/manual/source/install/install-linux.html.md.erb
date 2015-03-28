@@ -128,6 +128,11 @@ For example:
 export JAVA_HOME=`/usr/lib/jvm/java-8-oracle/jre`
 ```
 
+For Mac users, use this instead:
+```
+export JAVA_HOME=`/usr/libexec/java_home -v 1.7`
+```
+
 In addition, you must set your environment variable `JAVA_HOME`.
 For example, in `/home/abc/.bashrc` add the following line:
 ```
@@ -137,3 +142,5 @@ export JAVA_HOME=`/usr/lib/jvm/java-8-oracle`
 <%= partial 'shared/install/dependent_services' %>
 
 Now you have installed everything you need!
+
+#### [Next: Recommendation Engine Quick Start](/templates/recommendation/quickstart/)
