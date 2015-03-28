@@ -217,11 +217,12 @@ object App extends Logging {
 
   def channelNew(ca: ConsoleArgs): Int = {
     val apps = Storage.getMetaDataApps
+    val events = Storage.getLEvents()
     val newChannel = ca.app.channel
     apps.getByName(ca.app.name) map { app =>
       if (app.channels.contains(newChannel)) {
         error(s"Unable to create new channel.")
-        error(s"${newChannel} already exists.")
+        error(s"Channel ${newChannel} already exists.")
         1
       } else if (!StorageApp.isValidChannelName(newChannel)) {
         error(s"Unable to create new channel.")
@@ -232,21 +233,40 @@ object App extends Logging {
         val updatedApp = app.copy(channels = (app.channels + newChannel))
         val status = apps.update(updatedApp)
         if (status) {
-          info(s"Created new channel: ${newChannel}.")
-          // TODO kenneth: PDIO-593 initialize storage as well
-          info(s"${app.name} now has the following channels:")
-          var firstChannel = true
-          updatedApp.channels.foreach { channel =>
-            if (firstChannel) {
-              info(s"    Channels: ${channel}")
-              firstChannel = false
-            } else {
-              info(s"              ${channel}")
+          info(s"Updated App meta-data.")
+          // initialize storage
+          val dbInit = events.init(app.id, Some(newChannel))
+          if (dbInit) {
+            info(s"Initialized Event Store for the channel: ${newChannel}.")
+            info(s"Created new channel: ${newChannel}.")
+            info(s"App ${app.name} now has the following channels:")
+            var firstChannel = true
+            updatedApp.channels.foreach { channel =>
+              if (firstChannel) {
+                info(s"    Channels: ${channel}")
+                firstChannel = false
+              } else {
+                info(s"              ${channel}")
+              }
             }
+            0
+          } else {
+            error(s"Unable to create new channel.")
+            error(s"Failed to initalize Event Store.")
+            // reverted back the app meta data
+            val revertedApp = app.copy(channels = (app.channels - newChannel))
+            val revertedStatus = apps.update(revertedApp)
+            if (!revertedStatus) {
+              error(s"Failed to revert back the App meta-data change.")
+              error(s"The channel ${newChannel} CANNOT be used!")
+              error(s"Please run 'pio app channel-delete ${app.name} ${newChannel}' " +
+                "to delete this channel!")
+            }
+            1
           }
-          0
         } else {
           error(s"Unable to create new channel.")
+          error(s"Failed to update App meta-data.")
           1
         }
       }
@@ -258,35 +278,48 @@ object App extends Logging {
 
   def channelDelete(ca: ConsoleArgs): Int = {
     val apps = Storage.getMetaDataApps
+    val events = Storage.getLEvents()
     val deleteChannel = ca.app.channel
     apps.getByName(ca.app.name) map { app =>
       if (!app.channels.contains(deleteChannel)) {
         error(s"Unable to delete channel.")
-        error(s"${deleteChannel} doesn't exist.")
+        error(s"Channel ${deleteChannel} doesn't exist.")
         1
       } else {
-        val updatedApp = app.copy(channels = (app.channels - deleteChannel))
-        val status = apps.update(updatedApp)
-        if (status) {
-          info(s"Deleted channel: ${deleteChannel}.")
-          // TODO kenneth: PDIO-593. Remove storage as well
-          if (updatedApp.channels.isEmpty) {
-            info(s"${app.name} now has no more additional channels.")
-          } else {
-            info(s"${app.name} now has the following channels:")
-            var firstChannel = true
-            updatedApp.channels.foreach { channel =>
-              if (firstChannel) {
-                info(s"    Channels: ${channel}")
-                firstChannel = false
-              } else {
-                info(s"              ${channel}")
+        // NOTE: remove storage first before remove meta data (in case remove storage failed)
+        val dbRemoved = events.remove(app.id, Some(deleteChannel))
+        if (dbRemoved) {
+          info(s"Removed Event Store for this channel: ${deleteChannel}")
+          val updatedApp = app.copy(channels = (app.channels - deleteChannel))
+          val status = apps.update(updatedApp)
+          if (status) {
+            info(s"Deleted channel: ${deleteChannel}.")
+            if (updatedApp.channels.isEmpty) {
+              info(s"App ${app.name} now has no more additional channels.")
+            } else {
+              info(s"App ${app.name} now has the following channels:")
+              var firstChannel = true
+              updatedApp.channels.foreach { channel =>
+                if (firstChannel) {
+                  info(s"    Channels: ${channel}")
+                  firstChannel = false
+                } else {
+                  info(s"              ${channel}")
+                }
               }
             }
+            0
+          } else {
+            error(s"Unable to delete channel.")
+            error(s"Failed to update App meta-data.")
+            error(s"The channel ${deleteChannel} CANNOT be used!")
+            error(s"Please run 'pio app channel-delete ${app.name} ${deleteChannel}' " +
+              "to delete this channel again!")
+            1
           }
-          0
         } else {
           error(s"Unable to delete channel.")
+          error(s"Error removing Event Store for this channel.")
           1
         }
       }

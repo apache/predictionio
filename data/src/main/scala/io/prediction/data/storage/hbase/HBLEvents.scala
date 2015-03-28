@@ -50,7 +50,7 @@ class HBLEvents(val client: HBClient, val namespace: String)
     HBEventsUtil.tableName(namespace, appId))
 
   override
-  def init(appId: Int): Boolean = {
+  def init(appId: Int, channel: Option[String] = None): Boolean = {
     // check namespace exist
     val existingNamespace = client.admin.listNamespaceDescriptors()
       .map(_.getName)
@@ -60,7 +60,7 @@ class HBLEvents(val client: HBClient, val namespace: String)
       client.admin.createNamespace(nameDesc)
     }
 
-    val tableName = TableName.valueOf(HBEventsUtil.tableName(namespace, appId))
+    val tableName = TableName.valueOf(HBEventsUtil.tableName(namespace, appId, channel))
     if (!client.admin.tableExists(tableName)) {
       info(s"The table ${tableName.getNameAsString()} doesn't exist yet." +
         " Creating now...")
@@ -73,8 +73,8 @@ class HBLEvents(val client: HBClient, val namespace: String)
   }
 
   override
-  def remove(appId: Int): Boolean = {
-    val tableName = TableName.valueOf(HBEventsUtil.tableName(namespace, appId))
+  def remove(appId: Int, channel: Option[String] = None): Boolean = {
+    val tableName = TableName.valueOf(HBEventsUtil.tableName(namespace, appId, channel))
     try {
       if (client.admin.tableExists(tableName)) {
         info(s"Removing table ${tableName.getNameAsString()}...")
