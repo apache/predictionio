@@ -19,6 +19,7 @@ import io.prediction.data.webhooks.ConnectorException
 
 import spray.routing._
 import spray.routing.Directives._
+import spray.routing.Rejection
 import spray.http.StatusCodes
 import spray.http.StatusCode
 import spray.httpx.Json4sSupport
@@ -40,9 +41,19 @@ object Common {
     case MissingQueryParamRejection(msg) :: _ =>
       complete(StatusCodes.NotFound,
         Map("message" -> s"missing required query parameter ${msg}."))
-    case AuthenticationFailedRejection(cause, challengeHeaders) :: _ =>
-      complete(StatusCodes.Unauthorized, challengeHeaders,
-        Map("message" -> s"Invalid accessKey."))
+    case AuthenticationFailedRejection(cause, challengeHeaders) :: _ => {
+      val msg = cause match {
+        case AuthenticationFailedRejection.CredentialsRejected =>
+          "Invalid accessKey."
+        case AuthenticationFailedRejection.CredentialsMissing =>
+          "Missing accessKey."
+      }
+      complete(StatusCodes.Unauthorized, challengeHeaders, Map("message" -> msg))
+    }
+    case ChannelRejection(msg) :: _ =>
+      complete(StatusCodes.Unauthorized, Map("message" -> msg))
+    case NonExistentAppRejection(msg) :: _ =>
+      complete(StatusCodes.Unauthorized, Map("message" -> msg))
   }
 
   val exceptionHandler = ExceptionHandler {
@@ -56,3 +67,9 @@ object Common {
     }
   }
 }
+
+/** invalid channel */
+case class ChannelRejection(msg: String) extends Rejection
+
+/** the app doesn't exist */
+case class NonExistentAppRejection(msg: String) extends Rejection
