@@ -22,6 +22,7 @@ import org.apache.spark.rdd.RDD
 import scala.reflect._
 import scala.reflect.runtime.universe._
 import grizzled.slf4j.Logger
+import Numeric.Implicits._   
 
 /** Base class of a [[Metric]].
   *
@@ -77,34 +78,36 @@ abstract class AverageMetric[EI, Q, P, A]
   }
 }
 
-/** Returns the sum of the score returned by the calculate method.
+/** Returns the sum of the score returned by the calculate method. 
   *
   * @tparam EI Evaluation information
   * @tparam Q Query
   * @tparam P Predicted result
   * @tparam A Actual result
+  * @tparam R Result, output of the function calculate, must be Numeric
   *
   * @group Evaluation
   */
-abstract class SumMetric[EI, Q, P, A]
-    extends Metric[EI, Q, P, A, Double]
-    with QPAMetric[Q, P, A, Double] {
+abstract class SumMetric[EI, Q, P, A, R: ClassTag](implicit num: Numeric[R])
+    extends Metric[EI, Q, P, A, R]()(num)
+    with QPAMetric[Q, P, A, R] {
   /** Implement this method to return a score that will be used for summing
     * across all QPA tuples.
     */
-  def calculate(q: Q, p: P, a: A): Double
+  def calculate(q: Q, p: P, a: A): R
 
   def calculate(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])])
-  : Double = {
-    // TODO(yipjustin): Parallelize
-    val r: Seq[Double] = evalDataSet
+  : R = {
+    val r: Seq[R] = evalDataSet
+    .par
     .map { case (_, qpaRDD) => 
       qpaRDD
       .map { case (q, p, a) => calculate(q, p, a) }
-      .aggregate[Double](0.0)(_ + _, _ + _) 
+      .aggregate[R](num.zero)(_ + _, _ + _) 
     }
+    .seq
 
-    r.sum
+    r.aggregate[R](num.zero)(_ + _, _ + _)
   }
 }
 
