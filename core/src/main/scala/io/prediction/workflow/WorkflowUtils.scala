@@ -22,9 +22,9 @@ import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import grizzled.slf4j.Logging
 import io.prediction.controller.EmptyParams
+import io.prediction.controller.EngineFactory
 import io.prediction.controller.EngineParamsGenerator
 import io.prediction.controller.Evaluation
-import io.prediction.controller.IEngineFactory
 import io.prediction.controller.Params
 import io.prediction.controller.PersistentModelLoader
 import io.prediction.controller.Utils
@@ -56,20 +56,20 @@ object WorkflowUtils extends Logging {
     * @throws NoSuchMethodException
     *         Thrown when engine factory's apply() method is not implemented.
     */
-  def getEngine(engine: String, cl: ClassLoader): (EngineLanguage.Value, IEngineFactory) = {
+  def getEngine(engine: String, cl: ClassLoader): (EngineLanguage.Value, EngineFactory) = {
     val runtimeMirror = universe.runtimeMirror(cl)
     val engineModule = runtimeMirror.staticModule(engine)
     val engineObject = runtimeMirror.reflectModule(engineModule)
     try {
       (
         EngineLanguage.Scala,
-        engineObject.instance.asInstanceOf[IEngineFactory]
+        engineObject.instance.asInstanceOf[EngineFactory]
       )
     } catch {
       case e @ (_: NoSuchFieldException | _: ClassNotFoundException) => try {
         (
           EngineLanguage.Java,
-          Class.forName(engine).newInstance.asInstanceOf[IEngineFactory]
+          Class.forName(engine).newInstance.asInstanceOf[EngineFactory]
         )
       }
     }
