@@ -61,12 +61,6 @@ trait PersistentModel[AP <: Params] {
   def save(id: String, params: AP, sc: SparkContext): Boolean
 }
 
-/** DEPRECATED. Use [[PersistentModel]] instead.
-  *
-  * @group Algorithm */
-@deprecated("Use PersistentModel instead.", "0.9.2")
-trait IPersistentModel[AP <: Params] extends PersistentModel[AP]
-
 /** Implement an object that extends this trait for PredictionIO to support
   * loading a persisted model during serving deployment.
   *
@@ -88,64 +82,14 @@ trait PersistentModelLoader[AP <: Params, M] {
   def apply(id: String, params: AP, sc: Option[SparkContext]): M
 }
 
+/** DEPRECATED. Use [[PersistentModel]] instead.
+  *
+  * @group Algorithm */
+@deprecated("Use PersistentModel instead.", "0.9.2")
+trait IPersistentModel[AP <: Params] extends PersistentModel[AP]
+
 /** DEPRECATED. Use [[PersistentModelLoader]] instead.
   *
   * @group Algorithm */
 @deprecated("Use PersistentModelLoader instead.", "0.9.2")
 trait IPersistentModelLoader[AP <: Params, M] extends PersistentModelLoader[AP, M]
-
-/** This trait is a convenience helper for persisting your model to the local
-  * filesystem. This trait and [[LocalFileSystemPersistentModelLoader]] contain
-  * concrete implementation and need not be implemented.
-  *
-  * The underlying implementation is [[Utils.save]].
-  *
-  * {{{
-  * class MyModel extends LocalFileSystemPersistentModel[MyParams] {
-  *   ...
-  * }
-  *
-  * object MyModel extends LocalFileSystemPersistentModelLoader[MyParams, MyModel] {
-  *   ...
-  * }
-  * }}}
-  *
-  * @tparam AP Algorithm parameters class.
-  * @see [[LocalFileSystemPersistentModelLoader]]
-  * @group Algorithm
-  */
-trait LocalFileSystemPersistentModel[AP <: Params] extends PersistentModel[AP] {
-  def save(id: String, params: AP, sc: SparkContext): Boolean = {
-    Utils.save(id, this)
-    true
-  }
-}
-
-/** DEPRECATED. Use [[LocalFileSystemPersistentModel]] instead.
-  *
-  * @group Algorithm */
-@deprecated("Use LocalFileSystemPersistentModel instead.", "0.9.2")
-trait IFSPersistentModel[AP <: Params] extends LocalFileSystemPersistentModel[AP]
-
-/** Implement an object that extends this trait for PredictionIO to support
-  * loading a persisted model from local filesystem during serving deployment.
-  *
-  * The underlying implementation is [[Utils.load]].
-  *
-  * @tparam AP Algorithm parameters class.
-  * @tparam M Model class.
-  * @see [[LocalFileSystemPersistentModel]]
-  * @group Algorithm
-  */
-trait LocalFileSystemPersistentModelLoader[AP <: Params, M]
-  extends PersistentModelLoader[AP, M] {
-  def apply(id: String, params: AP, sc: Option[SparkContext]): M = {
-    Utils.load(id).asInstanceOf[M]
-  }
-}
-
-/** DEPRECATED. Use [[LocalFileSystemPersistentModelLoader]] instead.
-  *
-  * @group Algorithm */
-@deprecated("Use LocalFileSystemPersistentModelLoader instead.", "0.9.2")
-trait IFSPersistentModelLoader[AP <: Params, M] extends LocalFileSystemPersistentModelLoader[AP, M]
