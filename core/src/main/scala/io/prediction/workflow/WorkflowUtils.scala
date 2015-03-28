@@ -15,34 +15,32 @@
 
 package io.prediction.workflow
 
-import io.prediction.controller.EngineParamsGenerator
-import io.prediction.controller.Evaluation
-import io.prediction.controller.IEngineFactory
-import io.prediction.controller.IPersistentModelLoader
-import io.prediction.controller.EmptyParams
-import io.prediction.controller.Params
-import io.prediction.controller.Utils
-import io.prediction.core.BuildInfo
+import java.io.File
+import java.io.FileNotFoundException
 
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import grizzled.slf4j.Logging
+import io.prediction.controller.EmptyParams
+import io.prediction.controller.EngineParamsGenerator
+import io.prediction.controller.Evaluation
+import io.prediction.controller.IEngineFactory
+import io.prediction.controller.Params
+import io.prediction.controller.PersistentModelLoader
+import io.prediction.controller.Utils
+import io.prediction.core.BuildInfo
+import org.apache.log4j.Level
+import org.apache.log4j.LogManager
 import org.apache.spark.SparkContext
-import org.json4s.JValue
+import org.apache.spark.api.java.JavaRDDLike
+import org.apache.spark.rdd.RDD
 import org.json4s.JsonAST.JValue
 import org.json4s._
 import org.json4s.native.JsonMethods._
-import org.apache.log4j.Level
-import org.apache.log4j.LogManager
-import org.apache.spark.api.java.JavaRDDLike
-import org.apache.spark.rdd.RDD
 
 import scala.io.Source
 import scala.language.existentials
 import scala.reflect.runtime.universe
-
-import java.io.File
-import java.io.FileNotFoundException
 
 /** Collection of reusable workflow related utilities. */
 object WorkflowUtils extends Logging {
@@ -364,7 +362,7 @@ object SparkWorkflowUtils extends Logging {
     val pmmModule = runtimeMirror.staticModule(pmm.className)
     val pmmObject = runtimeMirror.reflectModule(pmmModule)
     try {
-      pmmObject.instance.asInstanceOf[IPersistentModelLoader[AP, M]](
+      pmmObject.instance.asInstanceOf[PersistentModelLoader[AP, M]](
         runId,
         params,
         sc)

@@ -88,8 +88,8 @@ abstract class PAlgorithm[PD, M, Q : Manifest, P]
     // Persist is successful only if the model is an instance of
     // IPersistentModel and save is successful.
     val m = bm.asInstanceOf[M]
-    if (m.isInstanceOf[IPersistentModel[_]]) {
-      if (m.asInstanceOf[IPersistentModel[Params]].save(
+    if (m.isInstanceOf[PersistentModel[_]]) {
+      if (m.asInstanceOf[PersistentModel[Params]].save(
         modelId, algoParams, sc)) {
         PersistentModelManifest(className = m.getClass.getName)
       } else {
@@ -168,8 +168,8 @@ abstract class LAlgorithm[PD, M : ClassTag, Q : Manifest, P]
 
     // Check RDD[M].count == 1
     val m = bm.asInstanceOf[RDD[M]].first
-    if (m.isInstanceOf[IPersistentModel[_]]) {
-      if (m.asInstanceOf[IPersistentModel[Params]].save(
+    if (m.isInstanceOf[PersistentModel[_]]) {
+      if (m.asInstanceOf[PersistentModel[Params]].save(
         modelId, algoParams, sc)) {
         PersistentModelManifest(className = m.getClass.getName)
       } else {
@@ -238,8 +238,8 @@ abstract class P2LAlgorithm[PD, M : ClassTag, Q : Manifest, P]
     // return the Manifest, otherwise, Unit. 
 
     val m = bm.asInstanceOf[M]
-    if (m.isInstanceOf[IPersistentModel[_]]) {
-      if (m.asInstanceOf[IPersistentModel[Params]].save(
+    if (m.isInstanceOf[PersistentModel[_]]) {
+      if (m.asInstanceOf[PersistentModel[Params]].save(
         modelId, algoParams, sc)) {
         PersistentModelManifest(className = m.getClass.getName)
       } else {

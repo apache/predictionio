@@ -1,26 +1,11 @@
 package io.prediction.controller
 
-import org.scalatest.FunSuite
-import org.scalatest.Inside
-import org.scalatest.Matchers._
-import org.scalatest.Inspectors._
-
+import grizzled.slf4j.Logger
+import io.prediction.controller.{Params => PIOParams}
+import io.prediction.core._
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
-import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
-
-import _root_.java.lang.Thread
-
-import io.prediction.controller._
-import io.prediction.core._
-import grizzled.slf4j.{ Logger, Logging }
-
-
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Suite
-
-import io.prediction.controller.{ Params => PIOParams }
 
 object Engine0 {
   @transient lazy val logger = Logger[this.type] 
@@ -250,9 +235,9 @@ object Engine0 {
   
   object PAlgo3 {
     case class Model(id: Int, pd: ProcessedData)
-    extends IFSPersistentModel[Params]
+    extends LocalFileSystemPersistentModel[Params]
     
-    object Model extends IFSPersistentModelLoader[Params, Model] 
+    object Model extends LocalFileSystemPersistentModelLoader[Params, Model]
 
     case class Params(id: Int) extends PIOParams
   }
@@ -305,9 +290,9 @@ object Engine0 {
     case class Params(val id: Int) extends PIOParams
 
     case class Model(id: Int, pd: ProcessedData)
-    extends IFSPersistentModel[EmptyParams]
+    extends LocalFileSystemPersistentModel[EmptyParams]
     
-    object Model extends IFSPersistentModelLoader[EmptyParams, Model] 
+    object Model extends LocalFileSystemPersistentModelLoader[EmptyParams, Model]
   }
 
   class LAlgo2(params: LAlgo2.Params) 
@@ -367,9 +352,9 @@ object Engine0 {
     case class Params(val id: Int) extends PIOParams
 
     case class Model(id: Int, pd: ProcessedData)
-    extends IFSPersistentModel[EmptyParams]
+    extends LocalFileSystemPersistentModel[EmptyParams]
     
-    object Model extends IFSPersistentModelLoader[EmptyParams, Model] 
+    object Model extends LocalFileSystemPersistentModelLoader[EmptyParams, Model]
   }
 
   class NAlgo2(params: NAlgo2.Params) 
