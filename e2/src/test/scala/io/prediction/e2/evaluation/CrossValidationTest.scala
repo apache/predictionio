@@ -47,24 +47,26 @@ with SharedSparkContext{
   val dataCount = labeledPoints.size
   val evalKs = (1 to dataCount)
   val emptyParams = new CrossValidationTest.EmptyParams()
-  type D = LabeledPoint
-  type TD = CrossValidationTest.TrainingData
-  type EI = CrossValidationTest.EmptyParams
-  type Q = CrossValidationTest.Query
-  type A = CrossValidationTest.ActualResult
-  type Fold = (TD, EI, RDD[(Q, A)])
+  type Fold = (CrossValidationTest.TrainingData,
+               CrossValidationTest.EmptyParams,
+               RDD[(CrossValidationTest.Query, CrossValidationTest.ActualResult)])
 
-  def toTestTrain(dataSplit: Fold): (Seq[D], Seq[D]) = {
+  def toTestTrain(dataSplit: Fold): (Seq[LabeledPoint], Seq[LabeledPoint]) = {
     val trainingData = dataSplit._1.labeledPoints
     val queryActual = dataSplit._3
-    val testingData = queryActual.map { case (query: Q, actual: A) =>
+    val testingData = queryActual.map { case (query, actual) =>
       LabeledPoint(actual.label, query.features)
     }
     (trainingData, testingData.collect().toSeq)
   }
 
   def splitData(k: Int, labeledPointsRDD: RDD[LabeledPoint]): Seq[Fold] = {
-    CommonHelperFunctions.splitData[D, TD, EI, Q, A](
+    CommonHelperFunctions.splitData[
+      LabeledPoint,
+      CrossValidationTest.TrainingData,
+      CrossValidationTest.EmptyParams,
+      CrossValidationTest.Query,
+      CrossValidationTest.ActualResult](
       k,
       labeledPointsRDD,
       emptyParams,
@@ -86,7 +88,7 @@ with SharedSparkContext{
     val labeledPointsRDD = sc.parallelize(labeledPoints)
     val splits = evalKs.map {k => k -> splitData(k, labeledPointsRDD)}
     val diffs = splits.map { case (k, folds) =>
-      folds.map { fold: Fold => fold._3.count() - dataCount / k}
+      folds.map { fold => fold._3.count() - dataCount / k}
     }
     diffs.flatten.filter(_ > 1) should be('empty)
     val (zeros, ones) = diffs.map({diffSequence => diffSequence.partition(_ == 0) }).unzip
@@ -99,7 +101,7 @@ with SharedSparkContext{
     val labeledPointsRDD = sc.parallelize(labeledPoints)
     val splits = evalKs.map {k => splitData(k, labeledPointsRDD)}
     val reJoined = splits.flatMap {folds =>
-      folds.map {fold: Fold =>
+      folds.map {fold =>
         val (training, testing) = toTestTrain(fold)
         (training ++ testing).toSet
       }
@@ -112,7 +114,7 @@ with SharedSparkContext{
     val labeledPointsRDD = sc.parallelize(labeledPoints)
     val splits = evalKs.map {k => k -> splitData(k, labeledPointsRDD)}
     val intersections = splits.flatMap { case (k, folds) =>
-      folds.flatMap { fold: Fold =>
+      folds.flatMap { fold =>
         val (training, testing) = toTestTrain(fold)
         training.toSet.intersect(testing.toSet)
       }
