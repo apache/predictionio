@@ -40,9 +40,14 @@ object CommonHelperFunctions {
 
     val indexedPoints = dataset.zipWithIndex
 
-    (0 until evalK).map { idx =>
-      val trainingPoints = indexedPoints.flatMap { case (pt, i) if  i % evalK != idx => Some(pt) case _ => None}
-      val testingPoints = indexedPoints.flatMap { case (pt, i) if  i % evalK == idx => Some(pt) case _ => None}
+    def selectPoint(foldIdx: Int, pt: D, idx: Long, k: Int, isTraining: Boolean): Option[D] = {
+      if ((idx % k == foldIdx) ^ isTraining) Some(pt)
+      else None
+    }
+
+    (0 until evalK).map { foldIdx =>
+      val trainingPoints = indexedPoints.flatMap { case(pt, idx) => selectPoint(foldIdx, pt, idx, evalK, true)}
+      val testingPoints = indexedPoints.flatMap { case(pt, idx) => selectPoint(foldIdx, pt, idx, evalK, false)}
 
       (
         trainingDataCreator(trainingPoints),
