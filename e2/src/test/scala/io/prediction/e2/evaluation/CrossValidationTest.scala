@@ -77,49 +77,46 @@ with SharedSparkContext{
 
   "Fold count" should "equal evalK" in {
     val labeledPointsRDD = sc.parallelize(labeledPoints)
-    val splits = evalKs.map {k => k -> splitData(k, labeledPointsRDD)}
-    splits.map { case (k, folds) =>
-        folds.length should be(k)
-    }
+    val lengths = evalKs.map {k => splitData(k, labeledPointsRDD).length}
+    lengths should be(evalKs)
   }
 
 
-  "Testing data size" should  "equal total / evalK" in {
+  "Testing data size" should  "be within 1 of total / evalK" in {
     val labeledPointsRDD = sc.parallelize(labeledPoints)
     val splits = evalKs.map {k => k -> splitData(k, labeledPointsRDD)}
-    splits.map {case (k, folds) =>
-      folds.map {fold: Fold =>
-        val foldSize = dataCount / k
-        if (dataCount % k == 0) {
-          fold._3.count() should be(foldSize)
-        }
-        else {
-          val diff = fold._3.count() - foldSize
-          diff should be <= 1L
-        }
-      }
+    val diffs = splits.map { case (k, folds) =>
+      folds.map { fold: Fold => fold._3.count() - dataCount / k}
     }
+    diffs.flatten.filter(_ > 1) should be('empty)
+    val (zeros, ones) = diffs.map({diffSequence => diffSequence.partition(_ == 0) }).unzip
+    ones.map(_.length) should be(evalKs.map {k => dataCount % k})
   }
+
+
 
   "Training + testing" should "equal original dataset" in {
     val labeledPointsRDD = sc.parallelize(labeledPoints)
-    val splits = evalKs.map {k => k -> splitData(k, labeledPointsRDD)}
-    splits.map {case (k, folds) =>
+    val splits = evalKs.map {k => splitData(k, labeledPointsRDD)}
+    val reJoined = splits.flatMap {folds =>
       folds.map {fold: Fold =>
         val (training, testing) = toTestTrain(fold)
-        (training ++ testing).toSet should equal (labeledPoints.toSet)
+        (training ++ testing).toSet
       }
     }
+    reJoined should be(reJoined.map {k => labeledPoints.toSet})
+
   }
 
   "Training and testing" should "be disjoint" in {
     val labeledPointsRDD = sc.parallelize(labeledPoints)
     val splits = evalKs.map {k => k -> splitData(k, labeledPointsRDD)}
-    splits.map { case (k, folds) =>
-      folds.map { fold: Fold =>
+    val intersections = splits.flatMap { case (k, folds) =>
+      folds.flatMap { fold: Fold =>
         val (training, testing) = toTestTrain(fold)
-        training.toSet.intersect(testing.toSet) should be('empty)
+        training.toSet.intersect(testing.toSet)
       }
     }
+    intersections should be('empty)
   }
 }
