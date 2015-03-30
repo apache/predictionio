@@ -1,6 +1,6 @@
 package io.prediction.e2.evaluation
 
-import io.prediction.e2.evaluation.CrossValidationTest.EmptyParams
+import io.prediction.e2.evaluation.CrossValidationTest.EmptyEvaluationParams
 import org.scalatest.{Matchers, FlatSpec}
 import org.apache.spark.rdd.RDD
 import io.prediction.e2.fixture.SharedSparkContext
@@ -15,7 +15,7 @@ object CrossValidationTest {
   case class Query(features: Array[String])
   case class ActualResult(label: String)
 
-  class EmptyParams extends Serializable {}
+  case class EmptyEvaluationParams()
 
   def toTrainingData(labeledPoints: RDD[LabeledPoint]) = TrainingData(labeledPoints.collect().toSeq)
   def toQuery(labeledPoint: LabeledPoint) = Query(labeledPoint.features)
@@ -46,9 +46,9 @@ with SharedSparkContext{
 
   val dataCount = labeledPoints.size
   val evalKs = (1 to dataCount)
-  val emptyParams = new CrossValidationTest.EmptyParams()
+  val emptyParams = new CrossValidationTest.EmptyEvaluationParams()
   type Fold = (CrossValidationTest.TrainingData,
-               CrossValidationTest.EmptyParams,
+               CrossValidationTest.EmptyEvaluationParams,
                RDD[(CrossValidationTest.Query, CrossValidationTest.ActualResult)])
 
   def toTestTrain(dataSplit: Fold): (Seq[LabeledPoint], Seq[LabeledPoint]) = {
@@ -64,7 +64,7 @@ with SharedSparkContext{
     CommonHelperFunctions.splitData[
       LabeledPoint,
       CrossValidationTest.TrainingData,
-      CrossValidationTest.EmptyParams,
+      CrossValidationTest.EmptyEvaluationParams,
       CrossValidationTest.Query,
       CrossValidationTest.ActualResult](
       k,
