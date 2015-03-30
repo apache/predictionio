@@ -17,14 +17,10 @@ package io.prediction.controller
 
 import io.prediction.core.BaseDataSource
 import io.prediction.core.BasePreparator
-import io.prediction.controller.java.JavaUtils
-
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
 import scala.reflect._
-import scala.reflect.runtime.universe._
 
 /** Base class of a parallel preparator.
   *
@@ -131,7 +127,7 @@ object PIdentityPreparator {
   * @group Preparator
   */
 class LIdentityPreparator[TD]
-extends LPreparator[TD, TD]()(JavaUtils.fakeClassTag[TD]) {
+extends LPreparator[TD, TD]()(ClassTag.AnyRef.asInstanceOf[ClassTag[TD]]) {
   def prepare(td: TD): TD = td
 }
 
