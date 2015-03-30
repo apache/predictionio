@@ -19,8 +19,18 @@ import org.apache.spark.rdd.RDD
 
 object CommonHelperFunctions {
 
+  /**
+   * Split a data set into evalK folds for crossvalidation. Apply to data sets supplied to evaluation.
+   *
+   * @tparam D Data point class.
+   * @tparam TD Training data class.
+   * @tparam EI Evaluation Info class.
+   * @tparam Q Input query class.
+   * @tparam A Actual value class.
+   */
 
   def splitData[D: ClassTag, TD, EI, Q, A](
+
      evalK: Int,
      dataset: RDD[D],
      evaluatorInfo: EI,
