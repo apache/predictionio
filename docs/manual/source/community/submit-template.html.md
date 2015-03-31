@@ -4,9 +4,7 @@ title:  Submitting a Template to Template Gallery
 
 ## Template Guidelines
 
-- Please follow [Scala Style Guide](http://docs.scala-lang.org/style/)
-
-- Give your template and GitHub repo a meaningful name
+- Please give your template and GitHub repo a meaningful name
 
 - For clarity, the engine template directory structure should be:
 
@@ -18,6 +16,7 @@ title:  Submitting a Template to Template Gallery
   README.md
   build.sbt
   engine.json # one or more engine.json
+  template.json
   ```
 
 - Try to keep the root directory clean. If you have additional script files or other files, please create new folders for them and provide description.
@@ -32,9 +31,11 @@ title:  Submitting a Template to Template Gallery
   7. Steps to send sample query and expected output
 
 
-- If you have additional sample data, please also provide description and how to import them.
+- If you have additional sample data, please also provide description and how to import them in README
 
-- If you have multiple engine.json files, please provide description of them.
+- If you have multiple engine.json files, please provide description of them in README
+
+- It's recommended to follow [Scala Style Guide](http://docs.scala-lang.org/style/)
 
 ## How to submit
 
