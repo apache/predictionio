@@ -15,18 +15,12 @@
 
 package io.prediction.controller
 
-import grizzled.slf4j.Logger
-import io.prediction.workflow.PersistentModelManifest
 import io.prediction.workflow.SharedSparkContext
-import io.prediction.workflow.StopAfterPrepareInterruption
-import io.prediction.workflow.StopAfterReadInterruption
-import org.apache.spark.rdd.RDD
-import org.scalatest.Inspectors._
+
+import grizzled.slf4j.Logger
 import org.scalatest.Matchers._
 import org.scalatest.FunSuite
 import org.scalatest.Inside
-
-import scala.util.Random
 
 object MetricDevSuite {
   class QIntSumMetric extends SumMetric[EmptyParams, Int, Int, Int, Int] {

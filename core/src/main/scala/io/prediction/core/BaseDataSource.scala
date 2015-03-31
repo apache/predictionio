@@ -17,8 +17,6 @@ package io.prediction.core
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-import scala.reflect._
 
 abstract class BaseDataSource[TD, EI, Q, A]
   extends AbstractDoer {

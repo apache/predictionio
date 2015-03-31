@@ -18,13 +18,6 @@ package io.prediction.controller
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseServing
 
-import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-import org.apache.spark.rdd.RDD
-
-import scala.reflect._
-import scala.reflect.runtime.universe._
-
 /** Base class of serving. 
   *
   * @tparam Q Input query class.

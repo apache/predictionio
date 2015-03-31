@@ -15,10 +15,7 @@
 
 package io.prediction.core
 
-import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-import scala.reflect._
 
 // Probably will add an extra parameter for ad hoc json formatter.
 abstract class BasePreparator[TD, PD]

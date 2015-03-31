@@ -18,9 +18,6 @@ package io.prediction.workflow
 import java.io.File
 import java.io.FileNotFoundException
 
-import com.google.gson.Gson
-import com.google.gson.JsonSyntaxException
-import grizzled.slf4j.Logging
 import io.prediction.controller.EmptyParams
 import io.prediction.controller.EngineFactory
 import io.prediction.controller.EngineParamsGenerator
@@ -29,6 +26,10 @@ import io.prediction.controller.Params
 import io.prediction.controller.PersistentModelLoader
 import io.prediction.controller.Utils
 import io.prediction.core.BuildInfo
+
+import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
+import grizzled.slf4j.Logging
 import org.apache.log4j.Level
 import org.apache.log4j.LogManager
 import org.apache.spark.SparkContext
