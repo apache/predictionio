@@ -23,7 +23,7 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Suite
 import scala.util.Random
 
-class FastEngineDevSuite
+class FastEngineSuite
 extends FunSuite with Inside with SharedSparkContext {
   import io.prediction.controller.Engine0._
   
