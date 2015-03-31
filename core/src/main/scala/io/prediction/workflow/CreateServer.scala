@@ -20,9 +20,6 @@ import io.prediction.controller.Params
 import io.prediction.controller.Utils
 import io.prediction.controller.WithPrId
 import io.prediction.controller.WorkflowParams
-import io.prediction.controller.java.LJavaAlgorithm
-import io.prediction.controller.java.LJavaServing
-import io.prediction.controller.java.PJavaAlgorithm
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseServing
 import io.prediction.core.Doer
@@ -396,7 +393,6 @@ class ServerActor[Q, P](
   val serverStartTime = DateTime.now
   lazy val gson = new Gson
   val log = Logging(context.system, this)
-  val (javaAlgorithms, scalaAlgorithms) = algorithms.partition(_.isJava)
 
   var requestCount: Int = 0
   var avgServingSec: Double = 0.0
@@ -472,37 +468,16 @@ class ServerActor[Q, P](
               val servingStartTime = DateTime.now
 
               val queryTime = DateTime.now
-              val javaQuery = javaAlgorithms.headOption map { alg =>
-                val queryClass = if (
-                  alg.isInstanceOf[LJavaAlgorithm[_, _, Q, P]]) {
-                  alg.asInstanceOf[LJavaAlgorithm[_, _, Q, P]].queryClass
-                } else {
-                  alg.asInstanceOf[PJavaAlgorithm[_, _, Q, P]].queryClass
-                }
-                gson.fromJson(queryString, queryClass)
-              }
-              val scalaQuery = scalaAlgorithms.headOption map { alg =>
-                Extraction.extract(parse(queryString))(
-                  alg.querySerializer, alg.queryManifest)
-              }
+              val query = Extraction.extract(parse(queryString))(
+                algorithms.head.querySerializer, algorithms.head.queryManifest())
               val predictions = algorithms.zipWithIndex.map { case (a, ai) =>
-                if (a.isJava) {
-                  a.predictBase(models(ai), javaQuery.get)
-                } else {
-                  a.predictBase(models(ai), scalaQuery.get)
-                }
+                a.predictBase(models(ai), query)
               }
-              val r = if (serving.isInstanceOf[LJavaServing[Q, P]]) {
-                val prediction = serving.serveBase(javaQuery.get, predictions)
-                // parse to Json4s JObject for later merging with prId
-                (parse(gson.toJson(prediction)), prediction, javaQuery.get)
-              } else {
-                val prediction = serving.serveBase(scalaQuery.get, predictions)
-                (Extraction.decompose(prediction)(
-                  scalaAlgorithms.head.querySerializer),
-                  prediction,
-                  scalaQuery.get)
-              }
+              val prediction = serving.serveBase(query, predictions)
+              val r = (Extraction.decompose(prediction)(
+                algorithms.head.querySerializer),
+                prediction,
+                query)
               /** Handle feedback to Event Server
                 * Send the following back to the Event Server
                 * - appId
@@ -513,9 +488,9 @@ class ServerActor[Q, P](
                 */
               val result = if (feedbackEnabled) {
                 implicit val formats =
-                  if (!scalaAlgorithms.isEmpty) {
-                    scalaAlgorithms.head.querySerializer
-                  } else {
+                  algorithms.headOption map { alg =>
+                    alg.querySerializer
+                  } getOrElse {
                     Utils.json4sDefaultFormats
                   }
                 // val genPrId = Random.alphanumeric.take(64).mkString

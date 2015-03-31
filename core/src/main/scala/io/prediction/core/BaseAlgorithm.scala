@@ -15,12 +15,11 @@
 
 package io.prediction.core
 
-import io.prediction.controller.Utils
 import io.prediction.controller.Params
-
+import io.prediction.controller.Utils
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
+
 import scala.reflect._
 
 trait WithBaseQuerySerializer {
@@ -45,6 +44,5 @@ abstract class BaseAlgorithm[PD, M, Q : Manifest, P]
   : Any = Unit
 
   // TODO(yipjustin): obsolete as of 0.8.7. cleanup.
-  def isJava: Boolean
   def isParallel: Boolean = true
 }
