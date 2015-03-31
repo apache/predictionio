@@ -90,7 +90,7 @@ with SharedSparkContext{
     val diffs = splits.map { case (k, folds) =>
       folds.map(fold => fold._3.count() - dataCount / k)
     }
-    diffs.flatten.filter(_ > 1) should be('empty)
+    diffs.flatMap(fold => if (fold.exists(_ > 1)) Some(true) else None) should be('empty)
     val (zeros, ones) = diffs.map(diffSequence => diffSequence.partition(_ == 0)).unzip
     ones.map(_.length) should be(evalKs.map(k => dataCount % k))
   }
