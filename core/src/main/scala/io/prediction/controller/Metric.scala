@@ -76,6 +76,114 @@ abstract class AverageMetric[EI, Q, P, A]
   }
 }
 
+/** Returns the global average of the non-None score returned by the calculate
+  * method.
+  *
+  * @tparam EI Evaluation information
+  * @tparam Q Query
+  * @tparam P Predicted result
+  * @tparam A Actual result
+  *
+  * @group Evaluation
+  */
+abstract class OptionAverageMetric[EI, Q, P, A]
+    extends Metric[EI, Q, P, A, Double] 
+    with QPAMetric[Q, P, A, Option[Double]] {
+  /** Implement this method to return a score that will be used for averaging
+    * across all QPA tuples.
+    */
+  def calculate(q: Q, p: P, a: A): Option[Double]
+
+  def calculate(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])])
+  : Double = {
+    val r = evalDataSet
+    .par
+    .map { case (_, qpaRDD) =>
+      qpaRDD
+      .flatMap { case (q, p, a) => calculate(q, p, a).toSeq }
+      .stats
+    }
+    .seq
+    .reduce((a, b) => a.merge(b))
+
+    if (r.count == 0) {
+      Double.NegativeInfinity
+    } else {
+      r.mean
+    }
+  }
+}
+
+/** Returns the global stdev of the score returned by the calculate method.
+  *
+  * This method uses [[org.apache.spark.util.StatCounter]] library, a one pass
+  * method is used for calculation.
+  *
+  * @tparam EI Evaluation information
+  * @tparam Q Query
+  * @tparam P Predicted result
+  * @tparam A Actual result
+  *
+  * @group Evaluation
+  */
+abstract class StdevMetric[EI, Q, P, A]
+    extends Metric[EI, Q, P, A, Double]
+    with QPAMetric[Q, P, A, Double] {
+  /** Implement this method to return a score that will be used for calculating
+    * the stdev
+    * across all QPA tuples.
+    */
+  def calculate(q: Q, p: P, a: A): Double
+
+  def calculate(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])])
+  : Double = {
+    val r = evalDataSet
+    .par
+    .map { case (_, qpaRDD) =>
+      qpaRDD.map { case (q, p, a) => calculate(q, p, a) }.stats
+    }
+    .seq
+    .reduce((a, b) => a.merge(b))
+
+    r.stdev
+  }
+}
+
+/** Returns the global stdev of the non-None score returned by the calculate method.
+  *
+  * This method uses [[org.apache.spark.util.StatCounter]] library, a one pass
+  * method is used for calculation.
+  *
+  * @tparam EI Evaluation information
+  * @tparam Q Query
+  * @tparam P Predicted result
+  * @tparam A Actual result
+  *
+  * @group Evaluation
+  */
+abstract class OptionStdevMetric[EI, Q, P, A]
+    extends Metric[EI, Q, P, A, Double]
+    with QPAMetric[Q, P, A, Option[Double]] {
+  /** Implement this method to return a score that will be used for calculating
+    * the stdev
+    * across all QPA tuples.
+    */
+  def calculate(q: Q, p: P, a: A): Option[Double]
+
+  def calculate(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])])
+  : Double = {
+    val r = evalDataSet
+    .par
+    .map { case (_, qpaRDD) =>
+      qpaRDD.flatMap { case (q, p, a) => calculate(q, p, a).toSeq }.stats
+    }
+    .seq
+    .reduce((a, b) => a.merge(b))
+
+    r.stdev
+  }
+}
+
 /** Returns the sum of the score returned by the calculate method. 
   *
   * @tparam EI Evaluation information
@@ -106,46 +214,6 @@ abstract class SumMetric[EI, Q, P, A, R: ClassTag](implicit num: Numeric[R])
     .seq
 
     r.aggregate[R](num.zero)(_ + _, _ + _)
-  }
-}
-
-/** Returns the global average of the non-None score returned by the calculate
-  * method.
-  *
-  * @tparam EI Evaluation information
-  * @tparam Q Query
-  * @tparam P Predicted result
-  * @tparam A Actual result
-  *
-  * @group Evaluation
-  */
-abstract class OptionAverageMetric[EI, Q, P, A]
-    extends Metric[EI, Q, P, A, Double] 
-    with QPAMetric[Q, P, A, Option[Double]] {
-  @transient lazy val logger = Logger[this.type] 
-
-  /** Implement this method to return a score that will be used for averaging
-    * across all QPA tuples.
-    */
-  def calculate(q: Q, p: P, a: A): Option[Double]
-
-  def calculate(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])])
-  : Double = {
-    val r = evalDataSet
-    .par
-    .map { case (_, qpaRDD) =>
-      qpaRDD
-      .flatMap { case (q, p, a) => calculate(q, p, a).toSeq }
-      .stats
-    }
-    .seq
-    .reduce((a, b) => a.merge(b))
-
-    if (r.count == 0) {
-      Double.NegativeInfinity
-    } else {
-      r.mean
-    }
   }
 }
 

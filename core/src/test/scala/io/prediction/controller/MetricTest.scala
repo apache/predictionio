@@ -43,13 +43,20 @@ object MetricDevSuite {
   
   class QOptionAverageMetric extends OptionAverageMetric[EmptyParams, Int, Int, Int] {
     def calculate(q: Int, p: Int, a: Int): Option[Double] = {
-      if (q < 0) {
-        None
-      } else {
-        Some(q.toDouble)
-      }
+      if (q < 0) { None } else { Some(q.toDouble) }
     }
   }
+  
+  class QStdevMetric extends StdevMetric[EmptyParams, Int, Int, Int] {
+    def calculate(q: Int, p: Int, a: Int): Double = q.toDouble
+  }
+  
+  class QOptionStdevMetric extends OptionStdevMetric[EmptyParams, Int, Int, Int] {
+    def calculate(q: Int, p: Int, a: Int): Option[Double] = {
+      if (q < 0) { None } else { Some(q.toDouble) }
+    }
+  }
+  
 }
 
 class MetricDevSuite
@@ -82,6 +89,34 @@ extends FunSuite with Inside with SharedSparkContext {
     val result = m.calculate(sc, evalDataSet)
     
     result shouldBe (12.0 / 4)
+  }
+  
+  test("Stdev Metric") {
+    val qpaSeq0 = Seq((1, 0, 0), (1, 0, 0), (1, 0, 0), (1, 0, 0))
+    val qpaSeq1 = Seq((5, 0, 0), (5, 0, 0), (5, 0, 0), (5, 0, 0))
+
+    val evalDataSet = Seq(
+      (EmptyParams(), sc.parallelize(qpaSeq0)),
+      (EmptyParams(), sc.parallelize(qpaSeq1)))
+  
+    val m = new MetricDevSuite.QStdevMetric()
+    val result = m.calculate(sc, evalDataSet)
+    
+    result shouldBe 2.0
+  }
+  
+  test("Option Stdev Metric") {
+    val qpaSeq0 = Seq((1, 0, 0), (1, 0, 0), (1, 0, 0), (1, 0, 0))
+    val qpaSeq1 = Seq((5, 0, 0), (5, 0, 0), (5, 0, 0), (5, 0, 0), (-5, 0, 0))
+
+    val evalDataSet = Seq(
+      (EmptyParams(), sc.parallelize(qpaSeq0)),
+      (EmptyParams(), sc.parallelize(qpaSeq1)))
+  
+    val m = new MetricDevSuite.QOptionStdevMetric()
+    val result = m.calculate(sc, evalDataSet)
+    
+    result shouldBe 2.0
   }
 
   test("Sum Metric [Int]") {
