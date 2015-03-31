@@ -47,7 +47,8 @@ with SharedSparkContext{
   val dataCount = labeledPoints.size
   val evalKs = (1 to dataCount)
   val emptyParams = new CrossValidationTest.EmptyEvaluationParams()
-  type Fold = (CrossValidationTest.TrainingData,
+  type Fold = (
+    CrossValidationTest.TrainingData,
     CrossValidationTest.EmptyEvaluationParams,
     RDD[(CrossValidationTest.Query, CrossValidationTest.ActualResult)])
 
@@ -67,12 +68,12 @@ with SharedSparkContext{
       CrossValidationTest.EmptyEvaluationParams,
       CrossValidationTest.Query,
       CrossValidationTest.ActualResult](
-      k,
-      labeledPointsRDD,
-      emptyParams,
-      CrossValidationTest.toTrainingData,
-      CrossValidationTest.toQuery,
-      CrossValidationTest.toActualResult)
+        k,
+        labeledPointsRDD,
+        emptyParams,
+        CrossValidationTest.toTrainingData,
+        CrossValidationTest.toQuery,
+        CrossValidationTest.toActualResult)
   }
 
 
