@@ -7,6 +7,12 @@ components of an engine:
 * **S**erving
 * **E**valuator
 
-Let's look at the code and see how you can customize the engine you built from the <%= template_name %>.
+Let's look at the code and see how you can customize the engine you built from 
+the <%= template_name %>.
 
+<% if defined?(evaluation_link) %>
+NOTE: Evaluator will not be covered in this tutorial. 
+Please visit [evaluation explained](<%= evaluation_link%>) for using evaluation.
+<% else %>
 NOTE: Evaluator will not be covered in this tutorial.
+<% end %>

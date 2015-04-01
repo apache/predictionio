@@ -15,43 +15,39 @@
 
 package io.prediction.controller
 
-import io.prediction.core.BaseDataSource
-import io.prediction.core.BasePreparator
+import grizzled.slf4j.Logger
 import io.prediction.core.BaseAlgorithm
+import io.prediction.core.BaseDataSource
+import io.prediction.core.BaseEngine
+import io.prediction.core.BasePreparator
 import io.prediction.core.BaseServing
 import io.prediction.core.Doer
-import io.prediction.core.BaseEngine
+import io.prediction.data.storage.EngineInstance
+import io.prediction.data.storage.StorageClientException
 import io.prediction.workflow.CreateWorkflow
-import io.prediction.workflow.WorkflowUtils
 import io.prediction.workflow.EngineLanguage
+import io.prediction.workflow.NameParamsSerializer
 import io.prediction.workflow.PersistentModelManifest
 import io.prediction.workflow.SparkWorkflowUtils
-import io.prediction.workflow.StopAfterReadInterruption
 import io.prediction.workflow.StopAfterPrepareInterruption
-import io.prediction.data.storage.EngineInstance
-import _root_.java.util.NoSuchElementException
-import io.prediction.data.storage.StorageClientException
-
+import io.prediction.workflow.StopAfterReadInterruption
+import io.prediction.workflow.WorkflowUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-
-import scala.language.implicitConversions
-
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization.read
 
-import io.prediction.workflow.NameParamsSerializer
-import grizzled.slf4j.Logger
+import scala.language.implicitConversions
 
 /** This class chains up the entire data process. PredictionIO uses this
   * information to create workflows and deployments. In Scala, you should
-  * implement an object that extends the `IEngineFactory` trait similar to the
+  * implement an object that extends the [[EngineFactory]] trait similar to the
   * following example.
   *
   * {{{
-  * object ItemRankEngine extends IEngineFactory {
+  * object ItemRankEngine extends EngineFactory {
   *   def apply() = {
   *     new Engine(
   *       classOf[ItemRankDataSource],
@@ -65,7 +61,7 @@ import grizzled.slf4j.Logger
   * }
   * }}}
   *
-  * @see [[IEngineFactory]]
+  * @see [[EngineFactory]]
   * @tparam TD Training data class.
   * @tparam EI Evaluation info class.
   * @tparam PD Prepared data class.
@@ -679,7 +675,7 @@ object Engine {
   *
   * @group Engine
   */
-trait IEngineFactory {
+trait EngineFactory {
   /** Creates an instance of an [[Engine]]. */
   def apply(): BaseEngine[_, _, _, _]
 
@@ -687,6 +683,12 @@ trait IEngineFactory {
   def engineParams(key: String): EngineParams = EngineParams()
 }
 
+/** DEPRECATED. Use [[EngineFactory]] instead.
+  *
+  * @group Engine
+  */
+@deprecated("Use EngineFactory instead.", "0.9.2")
+trait IEngineFactory extends EngineFactory
 
 /** Defines an engine parameters generator.
   *

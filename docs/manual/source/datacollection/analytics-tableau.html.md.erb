@@ -1,0 +1,127 @@
+---
+title: Machine Learning Analytics with Tableau
+---
+
+With Spark SQL, it is possible to connect Tableau to PredictionIO Event Server
+for interactive analysis of event data.
+
+## Prerequisites
+
+- Tableau Desktop 8.3+ with a proper license key that supports Spark SQL;
+- Spark ODBC Driver from Databricks
+  (https://databricks.com/spark/odbc-driver-download);
+- Apache Hadoop 2.4+
+- Apache Hive 0.3.1+
+
+INFO: In this article, we will assume that you have a working HDFS, and that
+your environmental variable `HADOOP_HOME` has been properly set. This is
+essential for Apache Hive to function properly. In addition, `HADOOP_CONF_DIR`
+in `$PIO_HOME/conf/pio-env.sh` must also be properly set for the `pio export`
+command to write to HDFS instead of the local filesystem.
+
+<%= partial 'shared/datacollection/parquet' %>
+
+## Creating Hive Tables
+
+Before you can use Spark SQL's Thrift JDBC/ODBC Server, you will need to create
+the table schema in Hive first. Please make sure to replace `path_of_hive` with
+the real path.
+
+```
+$ cd path_of_hive
+$ bin/hive
+hive> CREATE EXTERNAL TABLE events (event STRING, entityType STRING, entityId STRING, targetEntityType STRING, targetEntityId STRING, properties STRUCT<rating:DOUBLE>) STORED AS parquet LOCATION '/tmp/movies';
+hive> exit;
+```
+
+## Launch Spark SQL's Thrift JDBC/ODBC Server
+
+Once you have created your Hive tables, create a Hive configuration in your Spark
+installation. If you have a custom `hive-site.xml`, simply copy or link it to
+`$SPARK_HOME/conf`. Otherwise, Hive would have created a local Derby database,
+and you will need to let Spark knows about it. Create
+`$SPARK_HOME/conf/hive-site.xml` from scratch with the following template.
+
+WARNING: You must change `/opt/apache-hive-0.13.1-bin` below to a real Hive
+path.
+
+```xml
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+  <property>
+    <name>javax.jdo.option.ConnectionURL</name>
+    <value>jdbc:derby:;databaseName=/opt/apache-hive-0.13.1-bin/metastore_db;create=true</value>
+  </property>
+</configuration>
+```
+
+Launch Spark SQL's Thift JDBC/ODBC Server by
+
+```
+$ $SPARK_HOME/sbin/start-thriftserver.sh
+```
+
+You can test the server using the included Beeline client.
+
+```
+$ $SPARK_HOME/bin/beeline
+beeline> !connect jdbc:hive2://localhost:10000
+(Use empty username and password when prompted)
+0: jdbc:hive2://localhost:10000> select * from events limit 10;
++--------+-------------+-----------+-------------------+-----------------+------------------+
+| event  | entitytype  | entityid  | targetentitytype  | targetentityid  |    properties    |
++--------+-------------+-----------+-------------------+-----------------+------------------+
+| buy    | user        | 3         | item              | 0               | {"rating":null}  |
+| buy    | user        | 3         | item              | 1               | {"rating":null}  |
+| rate   | user        | 3         | item              | 2               | {"rating":1.0}   |
+| buy    | user        | 3         | item              | 7               | {"rating":null}  |
+| buy    | user        | 3         | item              | 8               | {"rating":null}  |
+| buy    | user        | 3         | item              | 9               | {"rating":null}  |
+| rate   | user        | 3         | item              | 14              | {"rating":1.0}   |
+| buy    | user        | 3         | item              | 15              | {"rating":null}  |
+| buy    | user        | 3         | item              | 16              | {"rating":null}  |
+| buy    | user        | 3         | item              | 18              | {"rating":null}  |
++--------+-------------+-----------+-------------------+-----------------+------------------+
+10 rows selected (0.515 seconds)
+0: jdbc:hive2://localhost:10000>
+```
+
+Now you are ready to use Tableau!
+
+## Performing Analysis with Tableau
+
+Launch Tableau and Connect to Data. Click on **Spark SQL (Beta)** and enter
+Spark SQL's Thrift JDBC/ODBC Server information. Make sure to pick **User Name**
+as **Authentication**. Click **Connect**.
+
+![Tableau and Spark SQL](/images/datacollection/tableau-01.png)
+
+On the next page, pick **default** under **Schema**.
+
+INFO: You may not see any choices when you click on Schema. Simply press Enter
+and Tableau will try to list all schemas.
+
+Once you see a list of tables that includes **events**, click **New Custom
+SQL**, then enter the following.
+
+```sql
+SELECT event, entityType, entityId, targetEntityType, targetEntityId, properties.rating FROM events
+```
+
+Click **Update Now**. You should see the following screen by now, indicating
+success in loading data. Using a custom SQL allows you to extract arbitrary
+fields from within properties.
+
+![Setting up Tableau](/images/datacollection/tableau-02.png)
+
+Click **Go to Worksheet** and start analyzing. The following shows an example of
+breaking down different rating values.
+
+![Rating Values Breakdown](/images/datacollection/tableau-03.png)
+
+The following shows a summary of interactions.
+
+![Interactions](/images/datacollection/tableau-04.png)
+
+Happy analyzing!

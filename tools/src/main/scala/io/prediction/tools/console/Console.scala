@@ -941,7 +941,7 @@ object Console extends Logging {
     if (new File(s"${sparkHome}/bin/spark-submit").exists) {
       println(s"Apache Spark")
       println(s"  Installed at: ${sparkHome}")
-      val sparkMinVersion = "1.2.0"
+      val sparkMinVersion = "1.3.0"
       val sparkReleaseFile = new File(s"${sparkHome}/RELEASE")
       if (sparkReleaseFile.exists) {
         val sparkReleaseStrings =
