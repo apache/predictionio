@@ -45,7 +45,7 @@ fi
 # distribution
 MIN_SPARK_VERSION="1.2.0"
 if [ -r "$SPARK_HOME/RELEASE" ]; then
-  SPARK_VERSION=`awk '{print $2}' $SPARK_HOME/RELEASE`
+  SPARK_VERSION=`head -n 1 $SPARK_HOME/RELEASE | awk '{print $2}'`
   if semverLT $SPARK_VERSION $MIN_SPARK_VERSION; then
     echo "You have Apache Spark $SPARK_VERSION at $SPARK_HOME which does not meet the minimum version requirement of $MIN_SPARK_VERSION."
     echo "Aborting."
