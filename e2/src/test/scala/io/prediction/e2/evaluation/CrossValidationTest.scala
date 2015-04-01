@@ -1,6 +1,5 @@
 package io.prediction.e2.evaluation
 
-import io.prediction.e2.evaluation.CrossValidationTest.EmptyEvaluationParams
 import org.scalatest.{Matchers, FlatSpec}
 import org.apache.spark.rdd.RDD
 import io.prediction.e2.fixture.SharedSparkContext
