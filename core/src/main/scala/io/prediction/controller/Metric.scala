@@ -35,7 +35,7 @@ import grizzled.slf4j.Logger
 abstract class Metric[EI, Q, P, A, R](implicit rOrder: Ordering[R])
 extends Serializable {
   /** Class name of this [[Metric]]. */
-  def header: String = this.getClass.getName
+  def header: String = this.getClass.getSimpleName
 
   /** Calculates the result of this [[Metric]]. */
   def calculate(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])]): R
