@@ -25,11 +25,11 @@ SCALA_VERSION=2.10
 FWDIR="$(cd `dirname $0`/..; pwd)"
 
 # Export this as PIO_HOME
-export PIO_HOME="$FWDIR"
+export PIO_HOME="${FWDIR}"
 
-. $FWDIR/bin/load-pio-env.sh
+. ${FWDIR}/bin/load-pio-env.sh
 
-. $FWDIR/bin/semver.sh
+. ${FWDIR}/bin/semver.sh
 
 if [ -z "$1" ]; then
   echo "Usage: pio-class <class> [<args>]" 1>&2
@@ -45,8 +45,8 @@ fi
 # distribution
 MIN_SPARK_VERSION="1.2.0"
 if [ -r "$SPARK_HOME/RELEASE" ]; then
-  SPARK_VERSION=`awk '{print $2}' $SPARK_HOME/RELEASE`
-  if semverLT $SPARK_VERSION $MIN_SPARK_VERSION; then
+  SPARK_VERSION=`awk '{print $2}' ${SPARK_HOME}/RELEASE`
+  if semverLT ${SPARK_VERSION} ${MIN_SPARK_VERSION}; then
     echo "You have Apache Spark $SPARK_VERSION at $SPARK_HOME which does not meet the minimum version requirement of $MIN_SPARK_VERSION."
     echo "Aborting."
     exit 1
@@ -68,12 +68,12 @@ else
 fi
 
 # Compute classpath using external script
-classpath_output=$($FWDIR/bin/compute-classpath.sh)
+classpath_output=$(${FWDIR}/bin/compute-classpath.sh)
 if [[ "$?" != "0" ]]; then
   echo "$classpath_output"
   exit 1
 else
-  CLASSPATH=$classpath_output
+  CLASSPATH=${classpath_output}
 fi
 
 export CLASSPATH

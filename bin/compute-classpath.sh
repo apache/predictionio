@@ -19,7 +19,7 @@ SCALA_VERSION=2.10
 # Figure out where PredictionIO is installed
 FWDIR="$(cd `dirname $0`/..; pwd)"
 
-. $FWDIR/bin/load-pio-env.sh
+. ${FWDIR}/bin/load-pio-env.sh
 
 # Build up classpath
 CLASSPATH="$FWDIR/conf"

@@ -15,19 +15,19 @@
 # limitations under the License.
 
 export PIO_HOME="$(cd `dirname $0`/..; pwd)"
-. $PIO_HOME/bin/load-pio-env.sh
+. ${PIO_HOME}/bin/load-pio-env.sh
 
 if [[ "$@" == "--with-spark" ]]
 then
   echo "Starting the PIO shell with the Apache Spark Shell."
   # compute the $ASSEMPLY_JAR, the location of the assemply jar, with
   # bin/compute-classpath.sh
-  . $PIO_HOME/bin/compute-classpath.sh
+  . ${PIO_HOME}/bin/compute-classpath.sh
   $SPARK_HOME/bin/spark-shell --jars $ASSEMBLY_JAR 
 else
-  echo "Starting the PIO shell without Apache Spark."
-  echo "If you need the Apache Spark library, run 'pio-shell --with-spark'."
-  cd $PIO_HOME
+  echo -e "\033[0;33m Starting the PIO shell without Apache Spark."
+  echo -e "\033[0;33m If you need the Apache Spark library, run 'pio-shell --with-spark'."
+  cd ${PIO_HOME}
   ./sbt/sbt console
 fi
 

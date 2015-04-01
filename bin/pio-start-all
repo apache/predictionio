@@ -26,17 +26,17 @@ export PIO_HOME="$(cd `dirname $0`/..; pwd)"
 echo "Starting Elasticsearch..."
 if [ -n "$PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME" ]; then
   JPS=`jps`
-  if [[ $JPS =~ "Elasticsearch" ]]; then
-    echo "Elasticsearch is already running. Please use pio-stop-all to try stopping it first."
-    echo "Note: If you started Elasticsearch manually, you will need to kill it manually."
-    echo "Aborting..."
+  if [[ ${JPS} =~ "Elasticsearch" ]]; then
+    echo -e "\033[0;31m Elasticsearch is already running. Please use pio-stop-all to try stopping it first."
+    echo -e "\033[0;31m Note: If you started Elasticsearch manually, you will need to kill it manually."
+    echo -e "\033[0;31m Aborting..."
     exit 1
   else
     $PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME/bin/elasticsearch -d -p $PIO_HOME/es.pid
   fi
 else
-  echo "Please set PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME in conf/pio-env.sh, or in your environment."
-  echo "Cannot start Elasticsearch. Aborting..."
+  echo -e "\033[0;31m Please set PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME in conf/pio-env.sh, or in your environment."
+  echo -e "\033[0;31m Cannot start Elasticsearch. Aborting..."
   exit 1
 fi
 
@@ -45,11 +45,11 @@ echo "Starting HBase..."
 if [ -n "$PIO_STORAGE_SOURCES_HBASE_HOME" ]; then
   $PIO_STORAGE_SOURCES_HBASE_HOME/bin/start-hbase.sh
 else
-  echo "Please set PIO_STORAGE_SOURCES_HBASE_HOME in conf/pio-env.sh, or in your environment."
+  echo -e "\033[0;31m Please set PIO_STORAGE_SOURCES_HBASE_HOME in conf/pio-env.sh, or in your environment."
   # Kill everything for cleanliness
-  echo "Cannot start HBase. Aborting..."
+  echo -e "\033[0;31m Cannot start HBase. Aborting..."
   sleep 3
-  $PIO_HOME/bin/pio-stop-all
+  ${PIO_HOME}/bin/pio-stop-all
   exit 1
 fi
 
@@ -57,4 +57,4 @@ fi
 echo "Waiting 10 seconds for HBase to fully initialize..."
 sleep 10
 echo "Starting PredictionIO Event Server..."
-$PIO_HOME/bin/pio-daemon $PIO_HOME/eventserver.pid eventserver --ip 0.0.0.0
+${PIO_HOME}/bin/pio-daemon ${PIO_HOME}/eventserver.pid eventserver --ip 0.0.0.0
