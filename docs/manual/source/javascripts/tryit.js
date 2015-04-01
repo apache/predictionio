@@ -54,4 +54,8 @@ $(document).ready(function() {
         return '<li><a href="#' + page + '">' + page + '</a></li>';
       }
     });
+    
+  $('#tryit-start').on('click', function() {  
+    $('.jcarousel').jcarousel('scroll', 1);
+  });
 });

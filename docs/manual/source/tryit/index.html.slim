@@ -11,6 +11,15 @@ title: Try PredictionIO
       div class="jcarousel"
         ul
           li
+            h2 Introduction
+            p In this 5 minute tutorial, you will see how PredictionIO works first hand.
+            p You'll start the server, and check it's status.
+            p Then you will build, train, and deploy a model using an #{link_to 'engine template', 'http://templates.prediction.io'}.
+            p After that you will learn to query the predicted results.
+            p Finally you will learn about importing data.
+            p #{link_to 'Start', '#', class: 'button-primary', id: 'tryit-start'}
+
+          li
             h2 Starting PredictionIO
             p Start PredictionIO and it's dependancies with:
             p <code>$ pio-start-all</code>
@@ -20,41 +29,8 @@ title: Try PredictionIO
             p Which checks the status of PredictionIO and it's dependancies.
 
           li
-            h2 Create a New Engine
-            p Copy one of our #{link_to 'Engine Templates', 'http://templates.prediction.io'} with:
-            p <code>$ pio template get ramaboo/template-scala-parallel-similarproduct-with-rating MyEngine</code>
-
-            h2 Create a New App
-            p Create a new app with:
-            p <code>$ pio app new MyApp</code>
-            p Make note of your <b>App ID</b> and <b>Access Key</b>. You will need these in a latter step.
-            h3 Listing Apps
-            p If at any time you forget your App ID or Access Key you can run:
-            p <code>$ pio app list</code>
-
-          li
-            h2 Importing Data
-            p You can import data with one of our many #{link_to 'SDKs', 'http://docs.prediction.io/sdk/'}.
-
-            p Start by going to the <code>data</code> directory with:
-            p <code>$ cd ~/PredictionIO/data</code>
-
-            h4 Java
-            p <code>$ java command</code>
-            h4 PHP
-            p <code>$ php something</code>
-            h4 Python
-            p <code>$ python something</code>
-            h4 Ruby
-            p <code>$ ruby import.rb</code>
-
-            p These import scripts will import a subset of the #{link_to 'MovieLens', 'http://grouplens.org/datasets/movielens/'} dataset.
-
-            h3 Additional Languages
-            p We also have community contributed #{link_to 'SDKs', 'http://docs.prediction.io/sdk/'} for Node.js, C#/.NET, and Swift.
-          li
             h2 Deploying the Engine
-            p All engine commands need to be run from withing the engine directory:
+            p All engine commands need to be run from within the engine directory:
             p <code>$ cd ~/PredictionIO/MyEngine</code>
 
             h3 Build Engine
@@ -66,13 +42,22 @@ title: Try PredictionIO
             p <code>$ pio train</code>
 
             h3 Deploy the Results
-            p Deploy to production with:
-            p <code>$ pio deploy</code>
+            p Deploy the trained engine as a background process:
+            p <code>$ pio deploy &</code>
+
           li
             h2 Querying Results
-            p You can query results using cURL with:
-            p <code>$ curl -H "Content-Type: application/json" -d '{ "item": "1", "num": 5 }' http://localhost:8000/queries.json</code>
-            p This will return 5 recomended movies for Movie 1.
+            p You can query results using cURL with after you see "Ready to serve":
+            p <code>$ curl -H "Content-Type: application/json" -d '{ "items": ["296"], "num": 5 }' http://localhost:8000/queries.json</code>
+            p This will return 5 recomended movies for movie 296 (Pulp Fiction).
+          li
+            h2 Importing Data
+            p For this example we have already imported the data. If you want to do it yourself though you can do it with the following from the <i>/app</i> directory:
+            p <code>$ ruby import.rb</code>
+            p The Ruby script imports data from the <i>/app/data/ratings.csv</i> file.
+            p You can also lookup movie titles in the <i>/app/data/movies.csv</i> file.
+            p Learn more about our #{link_to 'SDKs', 'http://docs.prediction.io/sdk/'} on our #{link_to 'Docs', 'http://docs.prediction.io'} site.
+
           li
             h2 Next Steps
             p #{link_to 'Install', 'http://docs.prediction.io/install/'} PredictionIO on your own computer!
@@ -87,4 +72,4 @@ title: Try PredictionIO
 
 
   .iframe
-    iframe src="https://codepicnic.com/consoles/predictionio-demo"
+    iframe src="https://codepicnic.com/bites/predictionio-0-9-1?sidebar=closed&hostname=predictionio"

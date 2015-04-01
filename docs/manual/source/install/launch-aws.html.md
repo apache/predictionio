@@ -13,8 +13,9 @@ ready-to-use PredictionIO Amazon EC2 instance with a single click.
 
 ## Access AWS Marketplace
 
-Visit [PredictionIO product's page on AWS Marketplace](https://aws.amazon.com/marketplace/pp/B00RPIFSYS/) and sign in with your
-AWS account.
+Visit [PredictionIO product's page on AWS
+Marketplace](https://aws.amazon.com/marketplace/pp/B00RPIFSYS/) and sign in with
+your AWS account.
 
 ## Using 1-Click Launch
 
@@ -33,7 +34,8 @@ For larger loads, use "Standard Large (m1.large)" or "Standard XL (m1.xlarge)".
 
 ## Setting Security Group
 
-The default security group, marked by "AutogenByAWSMP", has the following ports opened to public:
+The default security group, marked by "AutogenByAWSMP", has the following ports
+opened to public:
 
 * 22 (SSH)
 * 7070 (PredictionIO Event Server)
@@ -44,8 +46,16 @@ The default security group, marked by "AutogenByAWSMP", has the following ports 
 ## Start Using PredictionIO
 
 It may take a few minutes after the EC2 instance has launched for all
-PredictionIO components to become ready. When they are ready, you may connect to your instance, see [AWS documentation](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-connect-to-instance-linux.html) for more details.
+PredictionIO components to become ready. When they are ready, you may connect to
+your instance, see [AWS
+documentation](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-connect-to-instance-linux.html)
+for more details.
 
-Once you connect to your instance, you can find PredictionIO  at `/opt/PredictionIO` and the binary command path is `/opt/PredictionIO/bin`.
+Once you connect to your instance, you can find PredictionIO  at
+`/opt/PredictionIO` and the binary command path is `/opt/PredictionIO/bin`.
+
+NOTE: The following link will bring you to the recommendation engine quick
+start. Remember, the AWS instance will have everything automatically started for
+you, so you could safely skip the **Install and Run PredictionIO** section.
 
 #### [Next: Recommendation Engine Quick Start](/templates/recommendation/quickstart/)
