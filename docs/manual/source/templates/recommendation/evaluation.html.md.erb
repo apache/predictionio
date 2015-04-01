@@ -255,8 +255,11 @@ The `getRating` method is factored out from the `readTraining` method as
 they both serve the same function of reading from data source and
 perform a user-item action into a rating (lines 22 - 40).
 
-The `readEval` method is a k-fold evaluation implementation, the key part
-is that we construct one query *for each user* (line 60).
+The `readEval` method is a k-fold evaluation implementation.
+We annotate each rating in the raw data by an index (line 54), then
+in each fold, the rating goes to either the training or testing set
+based on the modulus value.
+We group ratings by user, and one query is constructed *for each user* (line 60).
 
 
 ## Evaluation Metrics
