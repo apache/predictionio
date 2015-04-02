@@ -20,7 +20,8 @@ import org.apache.spark.rdd.RDD
 object CommonHelperFunctions {
 
   /**
-   * Split a data set into evalK folds for crossvalidation. Apply to data sets supplied to evaluation.
+   * Split a data set into evalK folds for crossvalidation.
+   * Apply to data sets supplied to evaluation.
    *
    * @tparam D Data point class.
    * @tparam TD Training data class.
@@ -46,8 +47,12 @@ object CommonHelperFunctions {
     }
 
     (0 until evalK).map { foldIdx =>
-      val trainingPoints = indexedPoints.flatMap { case(pt, idx) => selectPoint(foldIdx, pt, idx, evalK, true)}
-      val testingPoints = indexedPoints.flatMap { case(pt, idx) => selectPoint(foldIdx, pt, idx, evalK, false)}
+      val trainingPoints = indexedPoints.flatMap { case(pt, idx) =>
+        selectPoint(foldIdx, pt, idx, evalK, true)
+      }
+      val testingPoints = indexedPoints.flatMap { case(pt, idx) =>
+        selectPoint(foldIdx, pt, idx, evalK, false)
+      }
 
       (
         trainingDataCreator(trainingPoints),
