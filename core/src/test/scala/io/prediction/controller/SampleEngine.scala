@@ -1,8 +1,9 @@
 package io.prediction.controller
 
-import grizzled.slf4j.Logger
 import io.prediction.controller.{Params => PIOParams}
 import io.prediction.core._
+
+import grizzled.slf4j.Logger
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
@@ -287,7 +288,7 @@ object Engine0 {
   }
   
   object LAlgo2 {
-    case class Params(val id: Int) extends PIOParams
+    case class Params(id: Int) extends PIOParams
 
     case class Model(id: Int, pd: ProcessedData)
     extends LocalFileSystemPersistentModel[EmptyParams]
@@ -305,7 +306,7 @@ object Engine0 {
   }
 
   object LAlgo3 {
-    case class Params(val id: Int) extends PIOParams
+    case class Params(id: Int) extends PIOParams
 
     case class Model(id: Int, pd: ProcessedData)
   }
@@ -349,7 +350,7 @@ object Engine0 {
   }
   
   object NAlgo2 {
-    case class Params(val id: Int) extends PIOParams
+    case class Params(id: Int) extends PIOParams
 
     case class Model(id: Int, pd: ProcessedData)
     extends LocalFileSystemPersistentModel[EmptyParams]
@@ -368,7 +369,7 @@ object Engine0 {
   }
 
   object NAlgo3 {
-    case class Params(val id: Int) extends PIOParams
+    case class Params(id: Int) extends PIOParams
 
     case class Model(id: Int, pd: ProcessedData)
   }
@@ -401,11 +402,11 @@ object Engine0 {
 }
 
 object Engine1 {
-  case class EvalInfo(val v: Double) extends Serializable
+  case class EvalInfo(v: Double) extends Serializable
   case class Query() extends Serializable
   case class Prediction() extends Serializable
   case class Actual() extends Serializable
-  case class DSP(val v: Double) extends Params
+  case class DSP(v: Double) extends Params
 }
 
 class Engine1 
@@ -438,12 +439,12 @@ Engine1.Actual, Double] {
     sc: SparkContext, 
     evalDataSet: Seq[(Engine1.EvalInfo, RDD[(Engine1.Query, Engine1.Prediction,
     Engine1.Actual)])]): Double = {
-    return evalDataSet.head._1.v
+    evalDataSet.head._1.v
   }
 }
 
 object Metric1 {
-  case class Result(val c: Int, val v: Double) extends Serializable
+  case class Result(c: Int, v: Double) extends Serializable
 }
 
 class Metric1
@@ -455,7 +456,7 @@ Engine1.Actual, Metric1.Result]()(Ordering.by[Metric1.Result, Double](_.v)) {
     sc: SparkContext, 
     evalDataSet: Seq[(Engine1.EvalInfo, RDD[(Engine1.Query, Engine1.Prediction,
     Engine1.Actual)])]): Metric1.Result = {
-    return Metric1.Result(0, evalDataSet.head._1.v)
+    Metric1.Result(0, evalDataSet.head._1.v)
   }
 }
 

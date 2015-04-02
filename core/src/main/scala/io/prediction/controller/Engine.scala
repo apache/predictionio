@@ -15,7 +15,6 @@
 
 package io.prediction.controller
 
-import grizzled.slf4j.Logger
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseDataSource
 import io.prediction.core.BaseEngine
@@ -32,6 +31,8 @@ import io.prediction.workflow.SparkWorkflowUtils
 import io.prediction.workflow.StopAfterPrepareInterruption
 import io.prediction.workflow.StopAfterReadInterruption
 import io.prediction.workflow.WorkflowUtils
+
+import grizzled.slf4j.Logger
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
@@ -234,11 +235,11 @@ class Engine[TD, EI, PD, Q, P, A](
 
   /** Extract model for persistent layer.
     *
-    * PredictionIO presist models for future use.  It allows custom
+    * PredictionIO presist models for future use. It allows custom
     * implementation for persisting models. You need to implement the
-    * [[io.prediction.controller.IPersistentModel]] interface. This method
+    * [[io.prediction.controller.PersistentModel]] interface. This method
     * traverses all models in the workflow. If the model is a
-    * [[io.prediction.controller.IPersistentModel]], it calls the save method
+    * [[io.prediction.controller.PersistentModel]], it calls the save method
     * for custom persistence logic.
     *
     * For model doesn't support custom logic, PredictionIO serializes the whole

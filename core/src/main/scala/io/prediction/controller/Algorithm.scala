@@ -25,7 +25,6 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
 import scala.reflect._
-import scala.reflect.runtime.universe._
 
 /** Base class of a parallel algorithm.
   *
@@ -151,8 +150,8 @@ abstract class LAlgorithm[PD, M : ClassTag, Q : Manifest, P]
   /** Implement this method to produce a prediction from a query and trained
     * model.
     *
-    * @param model Trained model produced by [[train]].
-    * @param query An input query.
+    * @param m Trained model produced by [[train]].
+    * @param q An input query.
     * @return A prediction.
     */
   def predict(m: M, q: Q): P

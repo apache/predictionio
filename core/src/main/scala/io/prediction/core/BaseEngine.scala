@@ -15,14 +15,11 @@
 
 package io.prediction.core
 
-import io.prediction.controller.Utils
 import io.prediction.controller.EngineParams
 import io.prediction.controller.WorkflowParams
 
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import scala.reflect._
 import org.json4s.JValue
 
 abstract class BaseEngine[EI, Q, P, A] extends Serializable {
