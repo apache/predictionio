@@ -15,14 +15,8 @@
 
 package io.prediction.core
 
-import io.prediction.controller.Params
-
 import grizzled.slf4j.Logging
-import org.json4s._
-import org.json4s.ext.JodaTimeSerializers
-import org.json4s.native.JsonMethods._
-
-import scala.reflect._
+import io.prediction.controller.Params
 
 // Base class for all controllers.
 abstract class AbstractDoer extends Serializable 
