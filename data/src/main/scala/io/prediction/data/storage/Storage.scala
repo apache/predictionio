@@ -264,6 +264,9 @@ object Storage extends Logging {
   private[prediction] def getMetaDataAccessKeys(): AccessKeys =
     getDataObject[AccessKeys](MetaDataRepository)
 
+  private[prediction] def getMetaDataChannels(): Channels =
+    getDataObject[Channels](MetaDataRepository)
+
   private[prediction] def getModelDataModels(): Models =
     getDataObject[Models](ModelDataRepository)
 

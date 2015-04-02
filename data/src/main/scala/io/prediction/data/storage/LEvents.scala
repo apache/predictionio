@@ -38,20 +38,20 @@ trait LEvents {
     * initialization routine to be called when app is first created.
     * return true if succeed or false if fail.
     * @param appId App ID
-    * @param channel Channel name
+    * @param channelId Channel ID
     * @return status. true if succeeded; false if failed.
     */
-  private[prediction] def init(appId: Int, channel: Option[String] = None): Boolean = {
+  private[prediction] def init(appId: Int, channelId: Option[Int] = None): Boolean = {
     throw new Exception("init() is not implemented.")
     false
   }
 
   /** Remove Event Store for this appId
     * @param appId App ID
-    * @param channel Channel name
+    * @param channelId Channel name
     * @return status. true if succeeded; false if failed.
     */
-  private[prediction] def remove(appId: Int, channel: Option[String] = None): Boolean = {
+  private[prediction] def remove(appId: Int, channelId: Option[Int] = None): Boolean = {
     throw new Exception("remove() is not implemented.")
     false
   }
