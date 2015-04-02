@@ -495,18 +495,20 @@ class ServerActor[Q, P](
                   }
                 // val genPrId = Random.alphanumeric.take(64).mkString
                 def genPrId: String = Random.alphanumeric.take(64).mkString
-                val newPrId = if (r._2.isInstanceOf[WithPrId]) {
-                  val org = r._2.asInstanceOf[WithPrId].prId
-                  if (org.isEmpty) genPrId else org
-                } else genPrId
+                val newPrId = r._2 match {
+                  case id: WithPrId =>
+                    val org = id.prId
+                    if (org.isEmpty) genPrId else org
+                  case _ => genPrId
+                }
 
                 // also save Query's prId as prId of this pio_pr predict events
                 val queryPrId =
-                  if (r._3.isInstanceOf[WithPrId]) {
-                    Map("prId" ->
-                      r._3.asInstanceOf[WithPrId].prId)
-                  } else {
-                    Map()
+                  r._3 match {
+                    case id: WithPrId =>
+                      Map("prId" -> id.prId)
+                    case _ =>
+                      Map()
                   }
                 val data = Map(
                   // "appId" -> dataSourceParams.asInstanceOf[ParamsWithAppId].appId,

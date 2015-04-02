@@ -1,25 +1,13 @@
 package io.prediction.controller
 
+import io.prediction.workflow.SharedSparkContext
+
 import org.scalatest.FunSuite
 import org.scalatest.Inside
 import org.scalatest.Matchers._
-import org.scalatest.Inspectors._
 
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
-
-import _root_.java.lang.Thread
-
-import io.prediction.controller._
-import io.prediction.core._
-import io.prediction.workflow.SharedSparkContext
-import grizzled.slf4j.{ Logger, Logging }
-
-
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Suite
 
 object EvaluationSuite {
   import io.prediction.controller.TestEvaluator._
