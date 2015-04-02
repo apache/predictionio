@@ -98,6 +98,8 @@ package io.prediction
   */
 package object controller {
 
+  class SerializableClass() extends Serializable
+
   /** Empty data source parameters.
     * @group General
     */
@@ -111,7 +113,7 @@ package object controller {
   /** Empty evaluation info.
     * @group General
     */
-  type EmptyEvaluationInfo = EmptyParams
+  type EmptyEvaluationInfo = SerializableClass
 
   /** Empty preparator parameters.
     * @group General
@@ -136,21 +138,21 @@ package object controller {
   /** Empty training data.
     * @group General
     */
-  type EmptyTrainingData = AnyRef
+  type EmptyTrainingData = SerializableClass
 
   /** Empty prepared data.
     * @group General
     */
-  type EmptyPreparedData = AnyRef
+  type EmptyPreparedData = SerializableClass
 
   /** Empty model.
     * @group General
     */
-  type EmptyModel = AnyRef
+  type EmptyModel = SerializableClass
 
   /** Empty actual result.
     * @group General
     */
-  type EmptyActualResult = AnyRef
+  type EmptyActualResult = SerializableClass
 
 }
