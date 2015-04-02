@@ -20,5 +20,6 @@ import org.apache.spark.SparkContext
 // Probably will add an extra parameter for ad hoc json formatter.
 abstract class BasePreparator[TD, PD]
   extends AbstractDoer {
+  private[prediction]
   def prepareBase(sc: SparkContext, td: TD): PD
 }
