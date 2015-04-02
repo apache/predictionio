@@ -20,23 +20,23 @@
 # Figure out where PredictionIO is installed
 export PIO_HOME="$(cd `dirname $0`/..; pwd)"
 
-. $PIO_HOME/bin/load-pio-env.sh
+. ${PIO_HOME}/bin/load-pio-env.sh
 
 # Elasticsearch
 echo "Starting Elasticsearch..."
 if [ -n "$PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME" ]; then
   JPS=`jps`
   if [[ ${JPS} =~ "Elasticsearch" ]]; then
-    echo -e "\033[0;31m Elasticsearch is already running. Please use pio-stop-all to try stopping it first."
-    echo -e "\033[0;31m Note: If you started Elasticsearch manually, you will need to kill it manually."
-    echo -e "\033[0;31m Aborting..."
+    echo -e "\033[0;31mElasticsearch is already running. Please use pio-stop-all to try stopping it first.\033[0m"
+    echo -e "\033[0;31mNote: If you started Elasticsearch manually, you will need to kill it manually.\033[0m"
+    echo -e "\033[0;31mAborting...\033[0m"
     exit 1
   else
     $PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME/bin/elasticsearch -d -p $PIO_HOME/es.pid
   fi
 else
-  echo -e "\033[0;31m Please set PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME in conf/pio-env.sh, or in your environment."
-  echo -e "\033[0;31m Cannot start Elasticsearch. Aborting..."
+  echo -e "\033[0;31mPlease set PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME in conf/pio-env.sh, or in your environment.\033[0m"
+  echo -e "\033[0;31mCannot start Elasticsearch. Aborting...\033[0m"
   exit 1
 fi
 
@@ -45,9 +45,9 @@ echo "Starting HBase..."
 if [ -n "$PIO_STORAGE_SOURCES_HBASE_HOME" ]; then
   $PIO_STORAGE_SOURCES_HBASE_HOME/bin/start-hbase.sh
 else
-  echo -e "\033[0;31m Please set PIO_STORAGE_SOURCES_HBASE_HOME in conf/pio-env.sh, or in your environment."
+  echo -e "\033[0;31mPlease set PIO_STORAGE_SOURCES_HBASE_HOME in conf/pio-env.sh, or in your environment.\033[0m"
   # Kill everything for cleanliness
-  echo -e "\033[0;31m Cannot start HBase. Aborting..."
+  echo -e "\033[0;31mCannot start HBase. Aborting...\033[0m"
   sleep 3
   ${PIO_HOME}/bin/pio-stop-all
   exit 1

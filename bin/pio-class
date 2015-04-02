@@ -38,7 +38,7 @@ fi
 
 # Warn if log4j.properties is not present
 if [ ! -f "$FWDIR/conf/log4j.properties" ]; then
-  echo "Warning: log4j.properties is missing from $FWDIR/conf"
+  echo "Warning: log4j.properties is missing from $FWDIR/conf\033[0m"
 fi
 
 # Make sure the Apache Spark version meets the prerequisite if it is a binary
@@ -47,8 +47,8 @@ MIN_SPARK_VERSION="1.2.0"
 if [ -r "$SPARK_HOME/RELEASE" ]; then
   SPARK_VERSION=`awk '{print $2}' ${SPARK_HOME}/RELEASE`
   if semverLT ${SPARK_VERSION} ${MIN_SPARK_VERSION}; then
-    echo "You have Apache Spark $SPARK_VERSION at $SPARK_HOME which does not meet the minimum version requirement of $MIN_SPARK_VERSION."
-    echo "Aborting."
+    echo "\033[0;31mYou have Apache Spark $SPARK_VERSION at $SPARK_HOME which does not meet the minimum version requirement of $MIN_SPARK_VERSION.\033[0m"
+    echo "\033[0;31mAborting.\033[0m"
     exit 1
   fi
 else
@@ -62,7 +62,7 @@ else
   if [ `command -v java` ]; then
     RUNNER="java"
   else
-    echo "JAVA_HOME is not set" >&2
+    echo -e "\033[0;31mJAVA_HOME is not set\033[0m" >&2
     exit 1
   fi
 fi

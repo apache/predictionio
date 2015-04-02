@@ -114,6 +114,7 @@ elif [[ "$1" == "-y" ]]; then
   # Java Install
   echo -e "\033[1;36mStarting Java install...\033[0m"
 
+  # todo: make java installation platform independant
   sudo apt-get update
   sudo apt-get install openjdk-7-jdk libgfortran3 -y
 
@@ -137,8 +138,8 @@ else
         guess_email=$(git config --global user.email)
       fi
 
-      if [ -n "$guess_email" ]; then
-        read -e -p "Email ($guess_email): " email
+      if [ -n "${guess_email}" ]; then
+        read -e -p "Email (${guess_email}): " email
       else
         read -e -p "Enter email: " email
       fi

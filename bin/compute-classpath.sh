@@ -22,9 +22,9 @@ FWDIR="$(cd `dirname $0`/..; pwd)"
 . ${FWDIR}/bin/load-pio-env.sh
 
 # Build up classpath
-CLASSPATH="$FWDIR/conf"
+CLASSPATH="${FWDIR}/conf"
 
-ASSEMBLY_DIR="$FWDIR/assembly"
+ASSEMBLY_DIR="${FWDIR}/assembly"
 
 if [ -n "$JAVA_HOME" ]; then
   JAR_CMD="$JAVA_HOME/bin/jar"
@@ -33,15 +33,15 @@ else
 fi
 
 # Use pio-assembly JAR from either RELEASE or assembly directory
-if [ -f "$FWDIR/RELEASE" ]; then
-  assembly_folder="$FWDIR"/lib
+if [ -f "${FWDIR}/RELEASE" ]; then
+  assembly_folder="${FWDIR}"/lib
 else
-  assembly_folder="$ASSEMBLY_DIR"
+  assembly_folder="${ASSEMBLY_DIR}"
 fi
 
-ASSEMBLY_JAR=$(ls "$assembly_folder"/pio-assembly*.jar 2>/dev/null)
+ASSEMBLY_JAR=$(ls "${assembly_folder}"/pio-assembly*.jar 2>/dev/null)
 
-CLASSPATH="$CLASSPATH:$ASSEMBLY_JAR"
+CLASSPATH="$CLASSPATH:${ASSEMBLY_JAR}"
 
 # Add hadoop conf dir if given -- otherwise FileSystem.*, etc fail ! Note, this
 # assumes that there is either a HADOOP_CONF_DIR or YARN_CONF_DIR which hosts

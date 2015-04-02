@@ -25,8 +25,8 @@ then
   . ${PIO_HOME}/bin/compute-classpath.sh
   $SPARK_HOME/bin/spark-shell --jars $ASSEMBLY_JAR 
 else
-  echo -e "\033[0;33m Starting the PIO shell without Apache Spark."
-  echo -e "\033[0;33m If you need the Apache Spark library, run 'pio-shell --with-spark'."
+  echo -e "\033[0;33mStarting the PIO shell without Apache Spark.\033[0m"
+  echo -e "\033[0;33mIf you need the Apache Spark library, run 'pio-shell --with-spark'.\033[0m"
   cd ${PIO_HOME}
   ./sbt/sbt console
 fi
