@@ -17,42 +17,42 @@
 set -e
 
 FWDIR="$(cd `dirname $0`; pwd)"
-DISTDIR="$FWDIR/dist"
+DISTDIR="${FWDIR}/dist"
 
-VERSION=$(grep version $FWDIR/build.sbt | grep ThisBuild | grep -o '".*"' | sed 's/"//g')
+VERSION=$(grep version ${FWDIR}/build.sbt | grep ThisBuild | grep -o '".*"' | sed 's/"//g')
 
 echo "Building binary distribution for PredictionIO $VERSION..."
 
-cd $FWDIR
+cd ${FWDIR}
 sbt/sbt common/publishLocal core/publishLocal data/publishLocal e2/publishLocal tools/assembly
 
-cd $FWDIR
-rm -rf $DISTDIR
-mkdir -p $DISTDIR/bin
-mkdir -p $DISTDIR/conf
-mkdir -p $DISTDIR/lib
-mkdir -p $DISTDIR/project
-mkdir -p $DISTDIR/sbt
+cd ${FWDIR}
+rm -rf ${DISTDIR}
+mkdir -p ${DISTDIR}/bin
+mkdir -p ${DISTDIR}/conf
+mkdir -p ${DISTDIR}/lib
+mkdir -p ${DISTDIR}/project
+mkdir -p ${DISTDIR}/sbt
 
-cp $FWDIR/bin/* $DISTDIR/bin
-cp $FWDIR/conf/* $DISTDIR/conf
-cp $FWDIR/project/build.properties $DISTDIR/project
-cp $FWDIR/sbt/sbt $DISTDIR/sbt
-cp $FWDIR/sbt/sbt-launch-lib.bash $DISTDIR/sbt
-cp $FWDIR/assembly/*assembly*jar $DISTDIR/lib
+cp ${FWDIR}/bin/* ${DISTDIR}/bin
+cp ${FWDIR}/conf/* ${DISTDIR}/conf
+cp ${FWDIR}/project/build.properties ${DISTDIR}/project
+cp ${FWDIR}/sbt/sbt ${DISTDIR}/sbt
+cp ${FWDIR}/sbt/sbt-launch-lib.bash ${DISTDIR}/sbt
+cp ${FWDIR}/assembly/*assembly*jar ${DISTDIR}/lib
 
-rm -f $DISTDIR/lib/*javadoc.jar
-rm -f $DISTDIR/lib/*sources.jar
-rm -f $DISTDIR/conf/pio-env.sh
-mv $DISTDIR/conf/pio-env.sh.template $DISTDIR/conf/pio-env.sh
+rm -f ${DISTDIR}/lib/*javadoc.jar
+rm -f ${DISTDIR}/lib/*sources.jar
+rm -f ${DISTDIR}/conf/pio-env.sh
+mv ${DISTDIR}/conf/pio-env.sh.template ${DISTDIR}/conf/pio-env.sh
 
-touch $DISTDIR/RELEASE
+touch ${DISTDIR}/RELEASE
 
 TARNAME="PredictionIO-$VERSION.tar.gz"
 TARDIR="PredictionIO-$VERSION"
-cp -r $DISTDIR $TARDIR
+cp -r ${DISTDIR} ${TARDIR}
 
-tar zcvf $TARNAME $TARDIR
-rm -rf $TARDIR
+tar zcvf ${TARNAME} ${TARDIR}
+rm -rf ${TARDIR}
 
-echo "PredictionIO binary distribution created at $TARNAME"
+echo -e "\033[0;32mPredictionIO binary distribution created at $TARNAME\033[0m"

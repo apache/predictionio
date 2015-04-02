@@ -24,7 +24,7 @@ if [ -z "$PIO_ENV_LOADED" ]; then
   # Returns the parent of the directory this script lives in.
   parent_dir="$(cd `dirname $0`/..; pwd)"
 
-  use_conf_dir=${PIO_CONF_DIR:-"$parent_dir/conf"}
+  use_conf_dir=${PIO_CONF_DIR:-"${parent_dir}/conf"}
 
   if [ -f "${use_conf_dir}/pio-env.sh" ]; then
     # Promote all variable declarations to environment (exported) variables
@@ -32,7 +32,6 @@ if [ -z "$PIO_ENV_LOADED" ]; then
     . "${use_conf_dir}/pio-env.sh"
     set +a
   else
-    echo "Warning: pio-env.sh was not found in ${use_conf_dir}. Using system environment variables instead."
-    echo ""
+    echo -e "\033[0;35mWarning: pio-env.sh was not found in ${use_conf_dir}. Using system environment variables instead.\033[0m\n"
   fi
 fi
