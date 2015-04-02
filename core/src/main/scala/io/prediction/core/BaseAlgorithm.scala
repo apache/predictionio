@@ -22,27 +22,31 @@ import org.apache.spark.rdd.RDD
 
 import scala.reflect._
 
-trait WithBaseQuerySerializer {
+trait BaseQuerySerializer {
   @transient lazy val querySerializer = Utils.json4sDefaultFormats
 }
 
 abstract class BaseAlgorithm[PD, M, Q : Manifest, P]
-  extends AbstractDoer with WithBaseQuerySerializer {
+  extends AbstractDoer with BaseQuerySerializer {
+  private[prediction]
   def trainBase(sc: SparkContext, pd: PD): M
 
   // Used by Evaluation
+  private[prediction]
   def batchPredictBase(sc: SparkContext, bm: Any, qs: RDD[(Long, Q)])
   : RDD[(Long, P)]
 
   // Used by Deploy
+  private[prediction]
   def predictBase(bm: Any, q: Q): P
 
+  private[prediction]
   def queryManifest(): Manifest[Q] = manifest[Q]
-  
-  def makePersistentModel(sc: SparkContext, modelId: String, 
-    algoParams: Params, bm: Any)
-  : Any = Unit
 
-  // TODO(yipjustin): obsolete as of 0.8.7. cleanup.
-  def isParallel: Boolean = true
+  private[prediction]
+  def makePersistentModel(
+    sc: SparkContext,
+    modelId: String,
+    algoParams: Params,
+    bm: Any): Any = Unit
 }
