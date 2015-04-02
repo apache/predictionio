@@ -5,10 +5,6 @@ import org.apache.spark.rdd.RDD
 import io.prediction.e2.fixture.SharedSparkContext
 import io.prediction.e2.engine.LabeledPoint
 
-
-
-import scala.language.reflectiveCalls
-
 object CrossValidationTest {
   case class TrainingData(labeledPoints: Seq[LabeledPoint])
   case class Query(features: Array[String])
