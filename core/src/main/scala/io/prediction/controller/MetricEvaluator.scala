@@ -187,7 +187,7 @@ private[prediction] class MetricEvaluator[EI, Q, P, A, R] (
 
     implicit lazy val formats = Utils.json4sDefaultFormats
 
-    logger.info("Writing best variant params to disk ($outputPath)...")
+    logger.info(s"Writing best variant params to disk ($outputPath)...")
     val writer = new PrintWriter(new File(outputPath))
     writer.write(writePretty(variant))
     writer.close
@@ -209,7 +209,7 @@ private[prediction] class MetricEvaluator[EI, Q, P, A, R] (
       (engineParams, metricScores)
     }
     .seq
-
+    
     implicit lazy val formats = Utils.json4sDefaultFormats +
       new NameParamsSerializer
 
