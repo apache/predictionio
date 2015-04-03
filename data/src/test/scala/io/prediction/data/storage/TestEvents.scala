@@ -99,4 +99,79 @@ trait TestEvents {
   val u2LastTime = u2BaseTime.plusDays(2)
   val u2 = """{"b": "value9", "d": [7, 5, 6], "g": "new11"}"""
 
+  // some random events
+  val r1 = Event(
+    event = "my_event",
+    entityType = "my_entity_type",
+    entityId = "my_entity_id",
+    targetEntityType = Some("my_target_entity_type"),
+    targetEntityId = Some("my_target_entity_id"),
+    properties = DataMap(
+      """{
+        "prop1" : 1,
+        "prop2" : "value2",
+        "prop3" : [1, 2, 3],
+        "prop4" : true,
+        "prop5" : ["a", "b", "c"],
+        "prop6" : 4.56
+      }"""
+    ),
+    eventTime = DateTime.now,
+    prId = Some("my_prid")
+  )
+  val r2 = Event(
+    event = "my_event2",
+    entityType = "my_entity_type2",
+    entityId = "my_entity_id2"
+  )
+  val r3 = Event(
+    event = "my_event3",
+    entityType = "my_entity_type",
+    entityId = "my_entity_id",
+    targetEntityType = Some("my_target_entity_type"),
+    targetEntityId = Some("my_target_entity_id"),
+    properties = DataMap(
+      """{
+        "propA" : 1.2345,
+        "propB" : "valueB",
+      }"""
+    ),
+    prId = Some("my_prid")
+  )
+  val r4 = Event(
+    event = "my_event4",
+    entityType = "my_entity_type4",
+    entityId = "my_entity_id4",
+    targetEntityType = Some("my_target_entity_type4"),
+    targetEntityId = Some("my_target_entity_id4"),
+    properties = DataMap(
+      """{
+        "prop1" : 1,
+        "prop2" : "value2",
+        "prop3" : [1, 2, 3],
+        "prop4" : true,
+        "prop5" : ["a", "b", "c"],
+        "prop6" : 4.56
+      }"""),
+    eventTime = DateTime.now
+  )
+  val r5 = Event(
+    event = "my_event5",
+    entityType = "my_entity_type5",
+    entityId = "my_entity_id5",
+    targetEntityType = Some("my_target_entity_type5"),
+    targetEntityId = Some("my_target_entity_id5"),
+    properties = DataMap(
+      """{
+        "prop1" : 1,
+        "prop2" : "value2",
+        "prop3" : [1, 2, 3],
+        "prop4" : true,
+        "prop5" : ["a", "b", "c"],
+        "prop6" : 4.56
+      }"""
+    ),
+    eventTime = DateTime.now
+  )
+
 }

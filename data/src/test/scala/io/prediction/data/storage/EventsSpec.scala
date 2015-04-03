@@ -23,7 +23,7 @@ import org.json4s.native.JsonMethods.parse
 
 import org.joda.time.DateTime
 
-class EventsSpec extends Specification {
+class LEventsSpec extends Specification with TestEvents {
   def is = s2"""
 
   PredictionIO Storage Events Specification
@@ -33,17 +33,28 @@ class EventsSpec extends Specification {
 
   """
 
-  def hbEvents = s2"""
+  def hbEvents = sequential ^ s2"""
 
-    HBEvents should" ^
+    HBEvents should
     - behave like any Events implementation ${events(hbDO)}
     - (table cleanup) ${Step(StorageTestUtils.dropHBaseNamespace(dbName))}
 
   """
 
-  def events(eventClient: LEvents) = s2"""
+  val appId = 1
 
-    inserting and getting 3 Events ${insertTest(eventClient)}
+  def events(eventClient: LEvents) = sequential ^ s2"""
+
+    init default ${initDefault(eventClient)}
+    insert 3 test events and get back by event ID ${insertAndGetEvents(eventClient)}
+    insert test user events ${insertTestUserEvents(eventClient)}
+    find user events ${findUserEvents(eventClient)}
+    aggregate user properties ${aggregateUserProperties(eventClient)}
+    init channel ${initChannel(eventClient)}
+    insert 2 events to channel ${insertChannel(eventClient)}
+    find events from channel ${findChannel(eventClient)}
+    remove default ${removeDefault(eventClient)}
+    remove channel ${removeChannel(eventClient)}
 
   """
 
@@ -53,52 +64,15 @@ class EventsSpec extends Specification {
     dbName
   )
 
-  def insertTest(eventClient: LEvents) = {
 
-    val appId = 1
-
+  def initDefault(eventClient: LEvents) = {
     eventClient.init(appId)
+  }
 
-    val listOfEvents = List(
-      Event(
-        event = "my_event",
-        entityType = "my_entity_type",
-        entityId = "my_entity_id",
-        targetEntityType = Some("my_target_entity_type"),
-        targetEntityId = Some("my_target_entity_id"),
-        properties = DataMap(parse(
-          """{
-            "prop1" : 1,
-            "prop2" : "value2",
-            "prop3" : [1, 2, 3],
-            "prop4" : true,
-            "prop5" : ["a", "b", "c"],
-            "prop6" : 4.56
-          }"""
-          ).asInstanceOf[JObject]),
-        eventTime = DateTime.now,
-        prId = Some("my_prid")
-      ),
-      Event(
-        event = "my_event2",
-        entityType = "my_entity_type2",
-        entityId = "my_entity_id2"
-      ),
-      Event(
-        event = "my_event3",
-        entityType = "my_entity_type",
-        entityId = "my_entity_id",
-        targetEntityType = Some("my_target_entity_type"),
-        targetEntityId = Some("my_target_entity_id"),
-        properties = DataMap(parse(
-          """{
-            "propA" : 1.2345,
-            "propB" : "valueB",
-          }"""
-          ).asInstanceOf[JObject]),
-        prId = Some("my_prid")
-      )
-    )
+  def insertAndGetEvents(eventClient: LEvents) = {
+
+    // events from TestEvents trait
+    val listOfEvents = List(r1,r2,r3)
 
     val insertResp = listOfEvents.map { eventClient.insert(_, appId) }
 
@@ -114,5 +88,83 @@ class EventsSpec extends Specification {
     val getEvents = getResp.map { resp => resp.right.get }
 
     insertedEvent must containTheSameElementsAs(getEvents)
+  }
+
+  def insertTestUserEvents(eventClient: LEvents) = {
+    // events from TestEvents trait
+    val listOfEvents = Vector(u1e5, u2e2, u1e3, u1e1, u2e3, u2e1, u1e4, u1e2)
+
+    listOfEvents.map{ eventClient.insert(_, appId) }
+
+    success
+  }
+
+  def findUserEvents(eventClient: LEvents) = {
+
+    val results: List[Event] = eventClient.find(
+      appId = appId,
+      entityType = Some("user"))
+      .right.get
+      .toList
+      .map(e => e.copy(eventId = None)) // ignore eventID
+
+    // same events in insertTestUserEvents
+    val expected = List(u1e5, u2e2, u1e3, u1e1, u2e3, u2e1, u1e4, u1e2)
+
+    results must containTheSameElementsAs(expected)
+  }
+
+  def aggregateUserProperties(eventClient: LEvents) = {
+
+    val result: Map[String, PropertyMap] = eventClient.aggregateProperties(
+      appId = appId,
+      entityType = "user").right.get
+
+    val expected = Map(
+      "u1" -> PropertyMap(u1, u1BaseTime, u1LastTime),
+      "u2" -> PropertyMap(u2, u2BaseTime, u2LastTime)
+    )
+
+    result must beEqualTo(expected)
+  }
+
+  val channelId = 12
+
+  def initChannel(eventClient: LEvents) = {
+    eventClient.init(appId, Some(channelId))
+  }
+
+  def insertChannel(eventClient: LEvents) = {
+
+    // events from TestEvents trait
+    val listOfEvents = List(r4,r5)
+
+    listOfEvents.map( eventClient.insert(_, appId, Some(channelId)) )
+
+    success
+  }
+
+  def findChannel(eventClient: LEvents) = {
+
+    val results: List[Event] = eventClient.find(
+      appId = appId,
+      channelId = Some(channelId)
+    )
+    .right.get
+    .toList
+    .map(e => e.copy(eventId = None)) // ignore eventId
+
+    // same events in insertChannel
+    val expected = List(r4, r5)
+
+    results must containTheSameElementsAs(expected)
+  }
+
+  def removeDefault(eventClient: LEvents) = {
+    eventClient.remove(appId)
+  }
+
+  def removeChannel(eventClient: LEvents) = {
+    eventClient.remove(appId, Some(channelId))
   }
 }

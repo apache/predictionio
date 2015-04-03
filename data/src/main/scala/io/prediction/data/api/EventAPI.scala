@@ -198,10 +198,11 @@ class EventServiceActor(
         handleRejections(rejectionHandler) {
           authenticate(withAccessKey) { authData =>
             val appId = authData.appId
+            val channelId = authData.channelId
             entity(as[Event]) { event =>
               complete {
                 log.debug(s"POST events")
-                val data = eventClient.futureInsert(event, appId).map { r =>
+                val data = eventClient.futureInsert(event, appId, channelId).map { r =>
                   val result = r match {
                     case Left(StorageError(message)) =>
                       (StatusCodes.InternalServerError,
@@ -224,6 +225,7 @@ class EventServiceActor(
         handleRejections(rejectionHandler) {
           authenticate(withAccessKey) { authData =>
             val appId = authData.appId
+            val channelId = authData.channelId
             parameters(
               'startTime.as[Option[String]],
               'untilTime.as[Option[String]],
@@ -255,6 +257,7 @@ class EventServiceActor(
                   parseTime.flatMap { case (startTime, untilTime) =>
                     val data = eventClient.futureFind(
                       appId = appId,
+                      channelId = channelId,
                       startTime = startTime,
                       untilTime = untilTime,
                       entityType = entityType,
@@ -325,11 +328,13 @@ class EventServiceActor(
           handleRejections(rejectionHandler) {
             authenticate(withAccessKey) { authData =>
               val appId = authData.appId
+              val channelId = authData.channelId
               respondWithMediaType(MediaTypes.`application/json`) {
                 entity(as[JObject]) { jObj =>
                   complete {
                     Webhooks.postJson(
                       appId = appId,
+                      channelId = channelId,
                       web = web,
                       data = jObj,
                       connectors = jsonConnectors,
@@ -349,10 +354,12 @@ class EventServiceActor(
           handleRejections(rejectionHandler) {
             authenticate(withAccessKey) { authData =>
               val appId = authData.appId
+              val channelId = authData.channelId
               respondWithMediaType(MediaTypes.`application/json`) {
                 complete {
                   Webhooks.getJson(
                     appId = appId,
+                    channelId = channelId,
                     web = web,
                     connectors = jsonConnectors,
                     log = log)
@@ -369,6 +376,7 @@ class EventServiceActor(
           handleRejections(rejectionHandler) {
             authenticate(withAccessKey) { authData =>
               val appId = authData.appId
+              val channelId = authData.channelId
               respondWithMediaType(MediaTypes.`application/json`) {
                 entity(as[FormData]){ formData =>
                   //log.debug(formData.toString)
@@ -378,6 +386,7 @@ class EventServiceActor(
 
                     Webhooks.postForm(
                       appId = appId,
+                      channelId = channelId,
                       web = web,
                       data = formData,
                       connectors = formConnectors,
@@ -397,6 +406,7 @@ class EventServiceActor(
           handleRejections(rejectionHandler) {
             authenticate(withAccessKey) { authData =>
               val appId = authData.appId
+              val channelId = authData.channelId
               respondWithMediaType(MediaTypes.`application/json`) {
                 complete {
                   // respond with JSON
@@ -404,6 +414,7 @@ class EventServiceActor(
 
                   Webhooks.getForm(
                     appId = appId,
+                    channelId = channelId,
                     web = web,
                     connectors = formConnectors,
                     log = log)
