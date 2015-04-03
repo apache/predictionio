@@ -47,11 +47,13 @@ class LEventsSpec extends Specification with TestEvents {
 
     init default ${initDefault(eventClient)}
     insert 3 test events and get back by event ID ${insertAndGetEvents(eventClient)}
+    insert and delete by ID ${insertAndDelete(eventClient)}
     insert test user events ${insertTestUserEvents(eventClient)}
     find user events ${findUserEvents(eventClient)}
     aggregate user properties ${aggregateUserProperties(eventClient)}
     init channel ${initChannel(eventClient)}
     insert 2 events to channel ${insertChannel(eventClient)}
+    insert 1 event to channel and delete by ID  ${insertAndDeleteChannel(eventClient)}
     find events from channel ${findChannel(eventClient)}
     remove default ${removeDefault(eventClient)}
     remove channel ${removeChannel(eventClient)}
@@ -88,6 +90,22 @@ class LEventsSpec extends Specification with TestEvents {
     val getEvents = getResp.map { resp => resp.right.get }
 
     insertedEvent must containTheSameElementsAs(getEvents)
+  }
+
+  def insertAndDelete(eventClient: LEvents) = {
+    val eventId = eventClient.insert(r2, appId).right.get
+
+    val resultBefore = eventClient.get(eventId, appId).right.get
+
+    val expectedBefore = r2.copy(eventId = Some(eventId))
+
+    val deleteStatus = eventClient.delete(eventId, appId).right.get
+
+    val resultAfter = eventClient.get(eventId, appId).right.get
+
+    (resultBefore must beEqualTo(Some(expectedBefore))) and
+    (deleteStatus must beEqualTo(true)) and
+    (resultAfter must beEqualTo(None))
   }
 
   def insertTestUserEvents(eventClient: LEvents) = {
@@ -142,6 +160,23 @@ class LEventsSpec extends Specification with TestEvents {
     listOfEvents.map( eventClient.insert(_, appId, Some(channelId)) )
 
     success
+  }
+
+  def insertAndDeleteChannel(eventClient: LEvents) = {
+
+    val eventId = eventClient.insert(r2, appId, Some(channelId)).right.get
+
+    val resultBefore = eventClient.get(eventId, appId, Some(channelId)).right.get
+
+    val expectedBefore = r2.copy(eventId = Some(eventId))
+
+    val deleteStatus = eventClient.delete(eventId, appId, Some(channelId)).right.get
+
+    val resultAfter = eventClient.get(eventId, appId, Some(channelId)).right.get
+
+    (resultBefore must beEqualTo(Some(expectedBefore))) and
+    (deleteStatus must beEqualTo(true)) and
+    (resultAfter must beEqualTo(None))
   }
 
   def findChannel(eventClient: LEvents) = {
