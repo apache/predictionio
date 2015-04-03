@@ -21,17 +21,20 @@ import java.io.File
 
 case class ImportArgs(
   appId: Int = 0,
+  channel: Option[String] = None,
   inputPath: String = "")
 
 object Import {
   def fileToEvents(ca: ConsoleArgs, core: File): Int = {
+    val channelArg = ca.imprt.channel
+      .map(ch => Seq("--channel", ch)).getOrElse(Seq())
     Runner.runOnSpark(
       "io.prediction.tools.imprt.FileToEvents",
       Seq(
         "--appid",
         ca.imprt.appId.toString,
         "--input",
-        ca.imprt.inputPath),
+        ca.imprt.inputPath) ++ channelArg,
       ca,
       core)
   }

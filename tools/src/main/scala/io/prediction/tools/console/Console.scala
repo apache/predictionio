@@ -578,6 +578,9 @@ object Console extends Logging {
           },
           opt[String]("format") action { (x, c) =>
             c.copy(export = c.export.copy(format = x))
+          },
+          opt[String]("channel") action { (x, c) =>
+            c.copy(export = c.export.copy(channel = Some(x)))
           }
         )
       cmd("import").
@@ -589,6 +592,9 @@ object Console extends Logging {
           },
           opt[String]("input") required() action { (x, c) =>
             c.copy(imprt = c.imprt.copy(inputPath = x))
+          },
+          opt[String]("channel") action { (x, c) =>
+            c.copy(imprt = c.imprt.copy(channel = Some(x)))
           }
         )
     }
