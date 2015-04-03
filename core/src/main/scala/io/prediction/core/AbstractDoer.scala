@@ -15,17 +15,11 @@
 
 package io.prediction.core
 
+import grizzled.slf4j.Logging
 import io.prediction.controller.Params
 
-import grizzled.slf4j.Logging
-import org.json4s._
-import org.json4s.ext.JodaTimeSerializers
-import org.json4s.native.JsonMethods._
-
-import scala.reflect._
-
 // Base class for all controllers.
-abstract class AbstractDoer extends Serializable 
+abstract class AbstractDoer extends Serializable
 
 object Doer extends Logging {
   def apply[C <: AbstractDoer] (
@@ -37,11 +31,11 @@ object Doer extends Logging {
     // First try (1), if failed, try (2).
     try {
       val constr = cls.getConstructor(params.getClass)
-      return constr.newInstance(params).asInstanceOf[C]
+      constr.newInstance(params)
     } catch {
       case e: NoSuchMethodException => try {
         val zeroConstr = cls.getConstructor()
-        return zeroConstr.newInstance().asInstanceOf[C]
+        zeroConstr.newInstance()
       } catch {
         case e: NoSuchMethodException =>
           error(s"${params.getClass.getName} was used as the constructor " +

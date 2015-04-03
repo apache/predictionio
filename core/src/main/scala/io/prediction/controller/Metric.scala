@@ -20,8 +20,7 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
 import scala.reflect._
-import scala.reflect.runtime.universe._
-import grizzled.slf4j.Logger
+
 import Numeric.Implicits._   
 import org.apache.spark.util.StatCounter
 

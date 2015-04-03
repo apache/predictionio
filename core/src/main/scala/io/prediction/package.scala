@@ -37,7 +37,7 @@ package io.prediction
   *  1. [[LDataSource]], [[LPreparator]], [[LAlgorithm]], [[LServing]]
   *
   * In both configurations 1 and 2, data is sourced and prepared in a
-  * parallelized fashion, with data type as [[org.apache.spark.rdd.RDD]].
+  * parallelized fashion, with data type as RDD.
   *
   * The difference between configurations 1 and 2 come at the algorithm stage.
   * In configuration 1, the algorithm operates on potentially large data as RDDs

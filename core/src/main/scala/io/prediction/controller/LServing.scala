@@ -13,13 +13,27 @@
   * limitations under the License.
   */
 
-package io.prediction.core
+package io.prediction.controller
 
-import org.apache.spark.SparkContext
+import io.prediction.core.BaseServing
 
-// Probably will add an extra parameter for ad hoc json formatter.
-abstract class BasePreparator[TD, PD]
-  extends AbstractDoer {
+/** Base class of serving. 
+  *
+  * @tparam Q Input query class.
+  * @tparam P Output prediction class.
+  * @group Serving
+  */
+abstract class LServing[Q, P] extends BaseServing[Q, P] {
   private[prediction]
-  def prepareBase(sc: SparkContext, td: TD): PD
+  def serveBase(q: Q, ps: Seq[P]): P = {
+    serve(q, ps)
+  }
+
+  /** Implement this method to combine multiple algorithms' predictions to
+    * produce a single final prediction.
+    *
+    * @param query Input query.
+    * @param predictions A list of algorithms' predictions.
+    */
+  def serve(query: Q, predictions: Seq[P]): P
 }

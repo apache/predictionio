@@ -15,12 +15,8 @@
 
 package io.prediction.core
 
-import org.apache.spark.rdd.RDD
-import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-import scala.reflect._
-
 abstract class BaseServing[Q, P]
   extends AbstractDoer {
+  private[prediction]
   def serveBase(q: Q, ps: Seq[P]): P
 }

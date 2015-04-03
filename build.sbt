@@ -104,6 +104,7 @@ scalacOptions in (ScalaUnidoc, unidoc) ++= Seq(
     "breeze",
     "html",
     "io.prediction.annotation",
+    "io.prediction.controller.html",
     "io.prediction.controller.java",
     "io.prediction.core",
     "io.prediction.data.api",

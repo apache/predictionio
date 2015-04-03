@@ -8,9 +8,9 @@ It naturally raises a question of how to choose the best set of parameters.  The
 evaluation module steamlines the process of tuning the engine to the best
 parameter set and deploy it.
 
-## Quick Start
+## Evaluation Quick Start
 
-We assume you have run the [Quick Start](/templates/recommendation/quickstart/) 
+We assume you have run the [Recommendation Quick Start](/templates/recommendation/quickstart/) 
 will skip the data collection / import instructions.
 
 ### Edit the AppId
@@ -261,11 +261,93 @@ in each fold, the rating goes to either the training or testing set
 based on the modulus value.
 We group ratings by user, and one query is constructed *for each user* (line 60).
 
-
 ## Evaluation Metrics
 
+In the [evaluation and tuning tutorial](/evaluation/), we use ***Metric*** to
+compute the quality of an engine variant. 
+However, in actual use cases like recommendation, as we have made many 
+assumptions in our model, using a single metric may lead to a biased evaluation.
+We will discuss using multiple
+***Metrics*** to generate a comprehensive evaluation, to generate a more global view 
+of the engine.
 
-## Parameters Generation
+### Precision@K
+
+Precision@K measures the portion of *relevant* items amongst the first *k* items.
+Recommendation engine usually wants to make sure the top few items recommended 
+are appealing to the user. Think about Google search, we usually give up after
+looking at the first and second result pages.
+
+### Precision@K Parameters
+
+There are two questions associated with it. 
+
+1. How do we define *relevant*? 
+2. What is a good value of *k*?
+
+Before we answer these questions, we need to understand what constitute a good metric.
+It is like exams, if everyone get full scores, the exam fails its goal to
+determine what the candidates don't know; if everyone fails, the exam fails its goal 
+to determine what the candidates know.
+A good metric should be able to distinguish the good from the bad.
+
+A way to define relevant is to use the notion of rating threshold. If the user 
+rating for an item is higher than certain threshold, we say it is relevant. 
+However, without looking at the data, it is hard to pick a reasonable threshold.
+We can set the threshold be as high as the maximum rating of 4.0, but it may 
+severely limit the relevant set size, and the precision scores will be close to 
+zero or undefined (precision is undefined if there is no relevant data).
+On the other hand, we can set the threshold be as low as the minimum rating, but
+it makes the precision metric uninformative as well since all scores will be close 
+to 1.
+Similar argument applies to picking a good value of *k* too. 
+
+A method to choose a good parameter is *not* to choose one, but instead test
+out *a whole sprectrum of parameters*. If an engine variant is good, it should
+robustly perform well across different metric parameters.
+The evaluation module supports multiple metrics. The following code
+snippets demonstrates a sample usage.
+
+```scala
+object ComprehensiveRecommendationEvaluation extends Evaluation {
+  val ratingThresholds = Seq(0.0, 2.0, 4.0)
+  val ks = Seq(1, 3, 10)
+
+  engineEvaluator = (
+    RecommendationEngine(),
+    MetricEvaluator(
+      metric = PrecisionAtK(k = 3, ratingThreshold = 2.0),
+      otherMetrics = (
+        (for (r <- ratingThresholds) yield PositiveCount(ratingThreshold = r)) ++
+        (for (r <- ratingThresholds; k <- ks) yield PrecisionAtK(k = k, ratingThreshold = r))
+      )))
+}
+```
+
+We have two types of `Metric`s.
+
+- `PositiveCount` is a helper metrics that returns the average 
+number of positive samples for a specific rating threshold, therefore we get some
+idea about the *demographic* of the data. If `PositiveCount` is too low or too
+high for certain threshold, we know that it should not be used.
+We have three thresholds (line 2), and three instances of 
+`PositiveCount` metric are instantiated (line 10), one for each threshold.
+
+- `Precision@K` is the actual metrics we use.
+We have two lists of parameters (lines 2 to 3): `ratingThreshold` defines what rating is good,
+and `k` defines how many items we evaluate in the `PredictedResult`. 
+We generate a list of all combinations (line 11).
+
+These metrics are expecified as `otherMetrics` (lines 9 to 11), they 
+will be calculated and generated on the evaluation UI.
+
+To run this evaluation, you can:
+
+```
+$ pio eval org.template.recommendation.ComprehensiveRecommendationEvaluation \
+  org.template.recommendation.EngineParamsList
+```
+
 
 
 

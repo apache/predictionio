@@ -33,7 +33,6 @@ import io.prediction.workflow.StopAfterPrepareInterruption
 import io.prediction.workflow.StopAfterReadInterruption
 import io.prediction.workflow.WorkflowUtils
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import org.json4s._
 import org.json4s.native.JsonMethods._
@@ -68,10 +67,10 @@ import scala.language.implicitConversions
   * @tparam Q Input query class.
   * @tparam P Output prediction class.
   * @tparam A Actual value class.
-  * @param dataSourceClassMap Map of data source class.
-  * @param preparatorClassMap Map of preparator class.
+  * @param dataSourceClassMap Map of data source names to class.
+  * @param preparatorClassMap Map of preparator names to class.
   * @param algorithmClassMap Map of algorithm names to classes.
-  * @param servingClassMap Map of serving class.
+  * @param servingClassMap Map of serving names to class.
   * @group Engine
   */
 class Engine[TD, EI, PD, Q, P, A](
@@ -82,12 +81,14 @@ class Engine[TD, EI, PD, Q, P, A](
     val servingClassMap: Map[String, Class[_ <: BaseServing[Q, P]]])
   extends BaseEngine[EI, Q, P, A] {
 
+  private[prediction]
   implicit lazy val formats = Utils.json4sDefaultFormats +
     new NameParamsSerializer
 
-  @transient lazy val logger = Logger[this.type]
+  @transient lazy protected val logger = Logger[this.type]
 
-  /**
+  /** This auxiliary constructor is provided for backward compatibility.
+    *
     * @param dataSourceClass Data source class.
     * @param preparatorClass Preparator class.
     * @param algorithmClassMap Map of algorithm names to classes.
@@ -104,7 +105,7 @@ class Engine[TD, EI, PD, Q, P, A](
       Map("" -> servingClass)
     )
 
-  /** Returns a new Engine instance. Mimic case class's copy method behavior.
+  /** Returns a new Engine instance, mimicking case class's copy method behavior.
     */
   def copy(
     dataSourceClassMap: Map[String, Class[_ <: BaseDataSource[TD, EI, Q, A]]]
@@ -122,7 +123,13 @@ class Engine[TD, EI, PD, Q, P, A](
       servingClassMap)
   }
 
-  /** Return persistentable models from trained model. */
+  /** Training this engine would return a list of models.
+    *
+    * @param sc An instance of SparkContext.
+    * @param engineParams An instance of [[EngineParams]] for running a single training.
+    * @param params An instance of [[WorkflowParams]] that controls the workflow.
+    * @return A list of models.
+    */
   def train(
       sc: SparkContext,
       engineParams: EngineParams,
@@ -159,8 +166,9 @@ class Engine[TD, EI, PD, Q, P, A](
 
   /** Algorithm models can be persisted before deploy. However, it is also
     * possible that models are not persisted. This method retrains non-persisted
-    * models and return a list of model that can be used directly in deploy.
+    * models and return a list of models that can be used directly in deploy.
     */
+  private[prediction]
   def prepareDeploy(
     sc: SparkContext,
     engineParams: EngineParams,
@@ -234,11 +242,11 @@ class Engine[TD, EI, PD, Q, P, A](
 
   /** Extract model for persistent layer.
     *
-    * PredictionIO presist models for future use.  It allows custom
+    * PredictionIO presist models for future use. It allows custom
     * implementation for persisting models. You need to implement the
-    * [[io.prediction.controller.IPersistentModel]] interface. This method
+    * [[io.prediction.controller.PersistentModel]] interface. This method
     * traverses all models in the workflow. If the model is a
-    * [[io.prediction.controller.IPersistentModel]], it calls the save method
+    * [[io.prediction.controller.PersistentModel]], it calls the save method
     * for custom persistence logic.
     *
     * For model doesn't support custom logic, PredictionIO serializes the whole
@@ -247,7 +255,7 @@ class Engine[TD, EI, PD, Q, P, A](
     * method return Unit, in which case PredictionIO will retrain the whole
     * model from scratch next time it is used.
     */
-  def makeSerializableModels(
+  private def makeSerializableModels(
     sc: SparkContext,
     engineInstanceId: String,
     // AlgoName, Algo, Model
@@ -267,6 +275,15 @@ class Engine[TD, EI, PD, Q, P, A](
     }
   }
 
+  /** This is implemented such that [[io.prediction.controller.Evaluation]] can
+    * use this method to generate inputs for [[io.prediction.controller.Metric]].
+    *
+    * @param sc An instance of SparkContext.
+    * @param engineParams An instance of [[EngineParams]] for running a single evaluation.
+    * @param params An instance of [[WorkflowParams]] that controls the workflow.
+    * @return A list of evaluation information and RDD of query, predicted
+    *         result, and actual result tuple tuple.
+    */
   def eval(
     sc: SparkContext, 
     engineParams: EngineParams,
@@ -306,8 +323,7 @@ class Engine[TD, EI, PD, Q, P, A](
     Engine.eval(sc, dataSource, preparator, algorithms, serving)
   }
 
-  override
-  def jValueToEngineParams(variantJson: JValue): EngineParams = {
+  override def jValueToEngineParams(variantJson: JValue): EngineParams = {
     val engineLanguage = EngineLanguage.Scala
     // Extract EngineParams
     logger.info(s"Extracting datasource params...")
@@ -365,8 +381,8 @@ class Engine[TD, EI, PD, Q, P, A](
       servingParams = servingParams)
   }
 
-  def engineInstanceToEngineParams(engineInstance: EngineInstance)
-  : EngineParams = {
+  private[prediction]
+  def engineInstanceToEngineParams(engineInstance: EngineInstance): EngineParams = {
     implicit val formats = DefaultFormats
     val engineLanguage = EngineLanguage.Scala
 
@@ -437,7 +453,7 @@ object Engine {
   type AX = Int
   type QX = Long
 
-  @transient lazy val logger = Logger[this.type]
+  @transient lazy private val logger = Logger[this.type]
 
   class DataSourceMap[TD, EI, Q, A](
     val m: Map[String, Class[_ <: BaseDataSource[TD, EI, Q, A]]]) {
