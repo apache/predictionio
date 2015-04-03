@@ -94,13 +94,13 @@ class EventServiceActor(
   /* with accessKey in query, return appId if succeed */
   def withAccessKey: RequestContext => Future[Authentication[AuthData]] = {
     ctx: RequestContext =>
-      val accessKeyOpt = ctx.request.uri.query.get("accessKey")
-      val channelOpt = ctx.request.uri.query.get("channel")
+      val accessKeyParamOpt = ctx.request.uri.query.get("accessKey")
+      val channelParamOpt = ctx.request.uri.query.get("channel")
       Future {
-        accessKeyOpt.map { accessKey =>
-          val accessKeyOpt = accessKeysClient.get(accessKey)
+        accessKeyParamOpt.map { accessKeyParam =>
+          val accessKeyOpt = accessKeysClient.get(accessKeyParam)
           accessKeyOpt.map { k =>
-            channelOpt.map { ch =>
+            channelParamOpt.map { ch =>
               val channelMap = channelsClient.getByAppid(k.appid).map(c => (c.name, c.id)).toMap
               if (channelMap.contains(ch)) {
                 Right(AuthData(k.appid, Some(channelMap(ch))))
@@ -140,10 +140,11 @@ class EventServiceActor(
         handleRejections(rejectionHandler) {
           authenticate(withAccessKey) { authData =>
             val appId = authData.appId
+            val channelId = authData.channelId
             respondWithMediaType(MediaTypes.`application/json`) {
               complete {
                 log.debug(s"GET event ${eventId}.")
-                val data = eventClient.futureGet(eventId, appId).map { r =>
+                val data = eventClient.futureGet(eventId, appId, channelId).map { r =>
                   r match {
                     case Left(StorageError(message)) =>
                       (StatusCodes.InternalServerError,
@@ -167,10 +168,11 @@ class EventServiceActor(
         handleRejections(rejectionHandler) {
           authenticate(withAccessKey) { authData =>
             val appId = authData.appId
+            val channelId = authData.channelId
             respondWithMediaType(MediaTypes.`application/json`) {
               complete {
                 log.debug(s"DELETE event ${eventId}.")
-                val data = eventClient.futureDelete(eventId, appId).map { r =>
+                val data = eventClient.futureDelete(eventId, appId, channelId).map { r =>
                   r match {
                     case Left(StorageError(message)) =>
                       (StatusCodes.InternalServerError,
