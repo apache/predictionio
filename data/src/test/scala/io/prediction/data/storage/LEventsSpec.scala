@@ -18,15 +18,10 @@ package io.prediction.data.storage
 import org.specs2._
 import org.specs2.specification.Step
 
-import org.json4s.JObject
-import org.json4s.native.JsonMethods.parse
-
-import org.joda.time.DateTime
-
 class LEventsSpec extends Specification with TestEvents {
   def is = s2"""
 
-  PredictionIO Storage Events Specification
+  PredictionIO Storage LEvents Specification
 
     Events can be implemented by:
     - HBEvents ${hbEvents}
