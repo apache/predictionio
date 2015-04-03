@@ -448,18 +448,35 @@ class Engine[TD, EI, PD, Q, P, A](
   }
 }
 
+/** This object contains concrete implementation for some methods of the
+  * [[Engine]] class.
+  *
+  * @group Engine
+  */
 object Engine {
-  type EX = Int
-  type AX = Int
-  type QX = Long
+  private type EX = Int
+  private type AX = Int
+  private type QX = Long
 
   @transient lazy private val logger = Logger[this.type]
 
+  /** Helper class to accept either a single data source, or a map of data
+    * sources, with a companion object providing implicit conversions, so
+    * using this class directly is not necessary.
+    *
+    * @tparam TD Training data class
+    * @tparam EI Evaluation information class
+    * @tparam Q Input query class
+    * @tparam A Actual result class
+    */
   class DataSourceMap[TD, EI, Q, A](
     val m: Map[String, Class[_ <: BaseDataSource[TD, EI, Q, A]]]) {
     def this(c: Class[_ <: BaseDataSource[TD, EI, Q, A]]) = this(Map("" -> c))
   }
 
+  /** Companion object providing implicit conversions, so using this directly
+    * is not necessary.
+    */
   object DataSourceMap {
     implicit def cToMap[TD, EI, Q, A](
       c: Class[_ <: BaseDataSource[TD, EI, Q, A]]):
@@ -469,11 +486,21 @@ object Engine {
       DataSourceMap[TD, EI, Q, A] = new DataSourceMap(m)
   }
 
+  /** Helper class to accept either a single preparator, or a map of
+    * preparators, with a companion object providing implicit conversions, so
+    * using this class directly is not necessary.
+    *
+    * @tparam TD Training data class
+    * @tparam PD Prepared data class
+    */
   class PreparatorMap[TD, PD](
     val m: Map[String, Class[_ <: BasePreparator[TD, PD]]]) {
     def this(c: Class[_ <: BasePreparator[TD, PD]]) = this(Map("" -> c))
   }
 
+  /** Companion object providing implicit conversions, so using this directly
+    * is not necessary.
+    */
   object PreparatorMap {
     implicit def cToMap[TD, PD](
       c: Class[_ <: BasePreparator[TD, PD]]):
@@ -483,11 +510,21 @@ object Engine {
       PreparatorMap[TD, PD] = new PreparatorMap(m)
   }
 
+  /** Helper class to accept either a single serving, or a map of serving, with
+    * a companion object providing implicit conversions, so using this class
+    * directly is not necessary.
+    *
+    * @tparam Q Input query class
+    * @tparam P Predicted result class
+    */
   class ServingMap[Q, P](
     val m: Map[String, Class[_ <: BaseServing[Q, P]]]) {
     def this(c: Class[_ <: BaseServing[Q, P]]) = this(Map("" -> c))
   }
 
+  /** Companion object providing implicit conversions, so using this directly
+    * is not necessary.
+    */
   object ServingMap {
     implicit def cToMap[Q, P](
       c: Class[_ <: BaseServing[Q, P]]): ServingMap[Q, P] =
@@ -497,6 +534,26 @@ object Engine {
         new ServingMap(m)
   }
 
+  /** Convenient method for returning an instance of [[Engine]].
+    *
+    * @param dataSourceMap Accepts either an instance of Class of the data
+    *                      source, or a Map of data source classes (implicitly
+    *                      converted to [[DataSourceMap]].
+    * @param preparatorMap Accepts either an instance of Class of the
+    *                      preparator, or a Map of preparator classes
+    *                      (implicitly converted to [[PreparatorMap]].
+    * @param algorithmClassMap Accepts a Map of algorithm classes.
+    * @param servingMap Accepts either an instance of Class of the serving, or
+    *                   a Map of serving classes (implicitly converted to
+    *                   [[ServingMap]].
+    * @tparam TD Training data class
+    * @tparam EI Evaluation information class
+    * @tparam PD Prepared data class
+    * @tparam Q Input query class
+    * @tparam P Predicted result class
+    * @tparam A Actual result class
+    * @return An instance of [[Engine]]
+    */
   def apply[TD, EI, PD, Q, P, A](
     dataSourceMap: DataSourceMap[TD, EI, Q, A],
     preparatorMap: PreparatorMap[TD, PD],
@@ -508,6 +565,19 @@ object Engine {
       servingMap.m
     )
 
+  /** Provides concrete implementation of training for [[Engine]].
+    *
+    * @param sc An instance of SparkContext
+    * @param dataSource An instance of data source
+    * @param preparator An instance of preparator
+    * @param algorithmList A list of algorithm instances
+    * @param params An instance of [[WorkflowParams]] that controls the training
+    *               process.
+    * @tparam TD Training data class
+    * @tparam PD Prepared data class
+    * @tparam Q Input query class
+    * @return A list of trained models
+    */
   def train[TD, PD, Q](
       sc: SparkContext,
       dataSource: BaseDataSource[TD, _, Q, _],
@@ -597,6 +667,22 @@ object Engine {
     models
   }
 
+  /** Provides concrete implementation of evaluation for [[Engine]].
+    *
+    * @param sc An instance of SparkContext
+    * @param dataSource An instance of data source
+    * @param preparator An instance of preparator
+    * @param algorithmList A list of algorithm instances
+    * @param serving An instance of serving
+    * @tparam TD Training data class
+    * @tparam PD Prepared data class
+    * @tparam Q Input query class
+    * @tparam P Predicted result class
+    * @tparam A Actual result class
+    * @tparam EI Evaluation information class
+    * @return A list of evaluation information, RDD of query, predicted result,
+    *         and actual result tuple tuple.
+    */
   def eval[TD, PD, Q, P, A, EI](
       sc: SparkContext,
       dataSource: BaseDataSource[TD, EI, Q, A],
