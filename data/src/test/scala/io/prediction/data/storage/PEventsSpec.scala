@@ -109,7 +109,15 @@ class PEventsSpec extends Specification with TestEvents {
   }
 
   def findChannel(parEventClient: PEvents) = {
-    pending
+    val resultRDD: RDD[Event] = parEventClient.find(
+      appId = appId,
+      channelId = Some(channelId)
+    )(sc)
+
+    val results = resultRDD.collect.toList
+      .map {_.copy(eventId = None)} // ignore eventId
+
+    results must containTheSameElementsAs(listOfEventsChannel)
   }
 
   def aggregateUserProperties(parEventClient: PEvents) = {
@@ -128,7 +136,18 @@ class PEventsSpec extends Specification with TestEvents {
   }
 
   def aggregateUserPropertiesChannel(parEventClient: PEvents) = {
-    pending
+    val resultRDD: RDD[(String, PropertyMap)] = parEventClient.aggregateProperties(
+      appId = appId,
+      channelId = Some(channelId),
+      entityType = "user"
+    )(sc)
+    val result: Map[String, PropertyMap] = resultRDD.collectAsMap.toMap
+
+    val expected = Map(
+      "u3" -> PropertyMap(u3, u3BaseTime, u3LastTime)
+    )
+
+    result must beEqualTo(expected)
   }
 
   def write(parEventClient: PEvents) = {
@@ -150,9 +169,22 @@ class PEventsSpec extends Specification with TestEvents {
   }
 
   def writeChannel(parEventClient: PEvents) = {
-    pending
+    val written = List(r1, r5, r6)
+    val writtenRDD = sc.parallelize(written)
+    parEventClient.write(writtenRDD, appId, Some(channelId))(sc)
+
+    // read back
+    val resultRDD = parEventClient.find(
+      appId = appId,
+      channelId = Some(channelId)
+    )(sc)
+
+    val results = resultRDD.collect.toList
+      .map { _.copy(eventId = None)} // ignore eventId
+
+    val expected = listOfEventsChannel ++ written
+
+    results must containTheSameElementsAs(expected)
   }
-
-
 
 }
