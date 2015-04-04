@@ -31,12 +31,16 @@ Name of the app to be deleted.
       App name.
 
 
-Usage: pio app data-delete <name>
+Usage: pio app data-delete <name> [--channel <name>] [--all]
 
 Delete data of an app.
 
   <name>
       App name.
+  --channel <name>
+      Delete data of the specified channel (default channel if not specified)
+  --all
+      Delete all data of this app (including both default and all channels)
 
 
 Usage: pio app channel-new <name> <channel>

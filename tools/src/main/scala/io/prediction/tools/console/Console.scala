@@ -468,7 +468,13 @@ object Console extends Logging {
             } children(
               arg[String]("<name>") action { (x, c) =>
                 c.copy(app = c.app.copy(name = x))
-              } text("Name of the app whose data to be deleted.")
+              } text("Name of the app whose data to be deleted."),
+              opt[String]("channel") action { (x, c) =>
+                c.copy(app = c.app.copy(dataDeleteChannel = Some(x)))
+              } text("Name of channel whose data to be deleted."),
+              opt[Unit]("all") action { (x, c) =>
+                c.copy(app = c.app.copy(all = true))
+              } text("Delete data of all channels including default")
             ),
           note(""),
           cmd("channel-new").

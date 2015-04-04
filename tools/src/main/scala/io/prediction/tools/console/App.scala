@@ -26,6 +26,8 @@ case class AppArgs(
   id: Option[Int] = None,
   name: String = "",
   channel: String = "",
+  dataDeleteChannel: Option[String] = None,
+  all: Boolean = false,
   description: Option[String] = None)
 
 object App extends Logging {
@@ -211,33 +213,78 @@ object App extends Logging {
   }
 
   def dataDelete(ca: ConsoleArgs): Int = {
+    if (ca.app.all) {
+      dataDeleteAll(ca)
+    } else {
+      dataDeleteOne(ca)
+    }
+  }
+
+  def dataDeleteOne(ca: ConsoleArgs): Int = {
     val apps = Storage.getMetaDataApps
+    val channels = Storage.getMetaDataChannels
     apps.getByName(ca.app.name) map { app =>
-      info(s"The data of the following app will be deleted. Are you sure?")
-      info(s"    App Name: ${app.name}")
-      info(s"      App ID: ${app.id}")
-      info(s" Description: ${app.description}")
+
+      val channelId = ca.app.dataDeleteChannel.map { ch =>
+        val channelMap = channels.getByAppid(app.id).map(c => (c.name, c.id)).toMap
+        if (!channelMap.contains(ch)) {
+          error(s"Unable to delete data for channel.")
+          error(s"Channel ${ch} doesn't exist.")
+          return 1
+        }
+
+        channelMap(ch)
+      }
+
+      if (channelId.isDefined) {
+        info(s"Data of the following channel will be deleted. Are you sure?")
+        info(s"Channel Name: ${ca.app.dataDeleteChannel.get}")
+        info(s"  Channel ID: ${channelId.get}")
+        info(s"    App Name: ${app.name}")
+        info(s"      App ID: ${app.id}")
+        info(s" Description: ${app.description}")
+      } else {
+        info(s"Data of the following app (default channel only) will be deleted. Are you sure?")
+        info(s"    App Name: ${app.name}")
+        info(s"      App ID: ${app.id}")
+        info(s" Description: ${app.description}")
+      }
+
       val choice = readLine("Enter 'YES' to proceed: ")
-      // TODO: delete channels as well
+
       choice match {
         case "YES" => {
           val events = Storage.getLEvents()
           // remove table
-          val r1 = if (events.remove(app.id)) {
-            info(s"Removed Event Store for this app ID: ${app.id}")
+          val r1 = if (events.remove(app.id, channelId)) {
+            if (channelId.isDefined)
+              info(s"Removed Event Store for this channel ID: ${channelId.get}")
+            else
+              info(s"Removed Event Store for this app ID: ${app.id}")
             0
           } else {
-            error(s"Error removing Event Store for this app.")
+            if (channelId.isDefined)
+              error(s"Error removing Event Store for this channel.")
+            else
+              error(s"Error removing Event Store for this app.")
+
             1
           }
           // re-create table
-          val dbInit = events.init(app.id)
+          val dbInit = events.init(app.id, channelId)
           val r2 = if (dbInit) {
-            info(s"Initialized Event Store for this app ID: ${app.id}.")
+            if (channelId.isDefined)
+              info(s"Initialized Event Store for this channel ID: ${channelId.get}.")
+            else
+              info(s"Initialized Event Store for this app ID: ${app.id}.")
             0
           } else {
-            error(s"Unable to initialize Event Store for this appId:" +
-              s" ${app.id}.")
+            if (channelId.isDefined)
+              error(s"Unable to initialize Event Store for this channel ID:" +
+                s" ${channelId.get}.")
+            else
+              error(s"Unable to initialize Event Store for this appId:" +
+                s" ${app.id}.")
             1
           }
           events.close()
@@ -252,6 +299,85 @@ object App extends Logging {
       error(s"App ${ca.app.name} does not exist. Aborting.")
       1
     }
+  }
+
+  def dataDeleteAll(ca: ConsoleArgs): Int = {
+    val apps = Storage.getMetaDataApps
+    val channels = Storage.getMetaDataChannels
+    val events = Storage.getLEvents()
+    val status = apps.getByName(ca.app.name) map { app =>
+      info(s"All data of the app (including default and all channels) will be deleted." +
+        " Are you sure?")
+      info(s"    App Name: ${app.name}")
+      info(s"      App ID: ${app.id}")
+      info(s" Description: ${app.description}")
+      val chans = channels.getByAppid(app.id)
+      var firstChan = true
+      val titleName = "Channel Name"
+      val titleID = "Channel ID"
+      chans.foreach { ch =>
+        if (firstChan) {
+          info(f"    Channels: ${titleName}%16s | ${titleID}%10s ")
+          firstChan = false
+        }
+        info(f"              ${ch.name}%16s | ${ch.id}%10s")
+      }
+
+      val choice = readLine("Enter 'YES' to proceed: ")
+      choice match {
+        case "YES" => {
+          // delete channels
+          val delChannelStatus: Seq[Int] = chans.map { ch =>
+            val r1 = if (events.remove(app.id, Some(ch.id))) {
+              info(s"Removed Event Store of the channel ID: ${ch.id}")
+              0
+            } else {
+              error(s"Error removing Event Store of the channel ID: ${ch.id}.")
+              1
+            }
+            // re-create table
+            val dbInit = events.init(app.id, Some(ch.id))
+            val r2 = if (dbInit) {
+              info(s"Initialized Event Store of the channel ID: ${ch.id}")
+              0
+            } else {
+              error(s"Unable to initialize Event Store of the channel ID: ${ch.id}.")
+              1
+            }
+            r1 + r2
+          }
+
+          if (delChannelStatus.filter(_ != 0).isEmpty) {
+            val r1 = if (events.remove(app.id)) {
+              info(s"Removed Event Store for this app ID: ${app.id}")
+              0
+            } else {
+              error(s"Error removing Event Store for this app.")
+              1
+            }
+
+            val dbInit = events.init(app.id)
+            val r2 = if (dbInit) {
+              info(s"Initialized Event Store for this app ID: ${app.id}.")
+              0
+            } else {
+              error(s"Unable to initialize Event Store for this appId: ${app.id}.")
+              1
+            }
+            info("Done.")
+            r1 + r2
+          } else 1
+        }
+        case _ =>
+          info("Aborted.")
+          0
+      }
+    } getOrElse {
+      error(s"App ${ca.app.name} does not exist. Aborting.")
+      1
+    }
+    events.close()
+    status
   }
 
   def channelNew(ca: ConsoleArgs): Int = {
