@@ -24,13 +24,13 @@ import io.prediction.core.BaseQuerySerializer
   * Algorithm and serving classes using your query class would only need to mix
   * in the trait to enable the custom serializer.
   *
-  * @group General
+  * @group Helper
   */
 trait CustomQuerySerializer extends BaseQuerySerializer
 
 /** DEPRECATED. Use [[CustomQuerySerializer]] instead.
   *
-  * @group General
+  * @group Helper
   */
 @deprecated("Use CustomQuerySerializer instead.", "0.9.2")
 trait WithQuerySerializer extends CustomQuerySerializer

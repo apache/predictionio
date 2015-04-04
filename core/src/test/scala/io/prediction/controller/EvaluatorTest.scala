@@ -1,6 +1,7 @@
 package io.prediction.controller
 
 import io.prediction.core._
+import io.prediction.workflow.WorkflowParams
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD

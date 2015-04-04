@@ -44,6 +44,7 @@ private[prediction] object Webhooks {
 
   def postJson(
     appId: Int,
+    channelId: Option[Int],
     web: String,
     data: JObject,
     connectors: Map[String, JsonConnector],
@@ -67,7 +68,7 @@ private[prediction] object Webhooks {
         }
       } else {
         val event = eventOpt.get
-        val data = eventClient.futureInsert(event, appId).map { r =>
+        val data = eventClient.futureInsert(event, appId, channelId).map { r =>
           val result = r match {
             case Left(StorageError(message)) =>
               (StatusCodes.InternalServerError, Map("message" -> message))
@@ -86,6 +87,7 @@ private[prediction] object Webhooks {
 
   def getJson(
     appId: Int,
+    channelId: Option[Int],
     web: String,
     connectors: Map[String, JsonConnector],
     log: LoggingAdapter
@@ -102,6 +104,7 @@ private[prediction] object Webhooks {
 
   def postForm(
     appId: Int,
+    channelId: Option[Int],
     web: String,
     data: FormData,
     connectors: Map[String, FormConnector],
@@ -124,7 +127,7 @@ private[prediction] object Webhooks {
         }
       } else {
         val event = eventOpt.get
-        val data = eventClient.futureInsert(event, appId).map { r =>
+        val data = eventClient.futureInsert(event, appId, channelId).map { r =>
           val result = r match {
             case Left(StorageError(message)) =>
               (StatusCodes.InternalServerError, Map("message" -> message))
@@ -143,6 +146,7 @@ private[prediction] object Webhooks {
 
   def getForm(
     appId: Int,
+    channelId: Option[Int],
     web: String,
     connectors: Map[String, FormConnector],
     log: LoggingAdapter

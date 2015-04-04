@@ -48,16 +48,24 @@ import org.apache.spark.SparkContext._
 class HBPEvents(client: HBClient, namespace: String)
   extends PEvents with Logging {
 
-  def checkTableExists(appId: Int): Unit = {
-    if (!client.admin.tableExists(HBEventsUtil.tableName(namespace, appId))) {
-      error(s"The appId ${appId} does not exist. Please use valid appId.")
-      throw new Exception(s"HBase table not found for appId ${appId}.")
+  def checkTableExists(appId: Int, channelId: Option[Int]): Unit = {
+    if (!client.admin.tableExists(HBEventsUtil.tableName(namespace, appId, channelId))) {
+      if (channelId.isDefined) {
+        error(s"The appId ${appId} with channelId ${channelId} does not exist." +
+          s" Please use valid appId and channelId.")
+        throw new Exception(s"HBase table not found for appId ${appId}" +
+          s" with channelId ${channelId}.")
+      } else {
+        error(s"The appId ${appId} does not exist. Please use valid appId.")
+        throw new Exception(s"HBase table not found for appId ${appId}.")
+      }
     }
   }
 
   override
   def find(
     appId: Int,
+    channelId: Option[Int] = None,
     startTime: Option[DateTime] = None,
     untilTime: Option[DateTime] = None,
     entityType: Option[String] = None,
@@ -67,11 +75,11 @@ class HBPEvents(client: HBClient, namespace: String)
     targetEntityId: Option[Option[String]] = None
     )(sc: SparkContext): RDD[Event] = {
 
-    checkTableExists(appId)
+    checkTableExists(appId, channelId)
 
     val conf = HBaseConfiguration.create()
     conf.set(TableInputFormat.INPUT_TABLE,
-      HBEventsUtil.tableName(namespace, appId))
+      HBEventsUtil.tableName(namespace, appId, channelId))
 
     val scan = HBEventsUtil.createScan(
         startTime = startTime,
@@ -100,16 +108,18 @@ class HBPEvents(client: HBClient, namespace: String)
   override
   def aggregateProperties(
     appId: Int,
+    channelId: Option[Int] = None,
     entityType: String,
     startTime: Option[DateTime] = None,
     untilTime: Option[DateTime] = None,
     required: Option[Seq[String]] = None)
     (sc: SparkContext): RDD[(String, PropertyMap)] = {
 
-    checkTableExists(appId)
+    checkTableExists(appId, channelId)
 
     val eventRDD = find(
       appId = appId,
+      channelId = channelId,
       startTime = startTime,
       untilTime = untilTime,
       entityType = Some(entityType),
@@ -119,7 +129,12 @@ class HBPEvents(client: HBClient, namespace: String)
       PEventAggregator.aggregateProperties(eventRDD)
     } catch {
       case e: TableNotFoundException => {
-        error(s"The appId ${appId} does not exist. Please use valid appId.")
+        if (channelId.isDefined) {
+          error(s"The appId ${appId} with channelId ${channelId} does not exist." +
+            s" Please use valid appId and channelId.")
+        } else {
+          error(s"The appId ${appId} does not exist. Please use valid appId.")
+        }
         throw e
       }
       case e: Exception => throw e
@@ -164,13 +179,14 @@ class HBPEvents(client: HBClient, namespace: String)
   }
 
   override
-  def write(events: RDD[Event], appId: Int)(sc: SparkContext): Unit = {
+  def write(
+    events: RDD[Event], appId: Int, channelId: Option[Int])(sc: SparkContext): Unit = {
 
-    checkTableExists(appId)
+    checkTableExists(appId, channelId)
 
     val conf = HBaseConfiguration.create()
     conf.set(TableOutputFormat.OUTPUT_TABLE,
-      HBEventsUtil.tableName(namespace, appId))
+      HBEventsUtil.tableName(namespace, appId, channelId))
     conf.setClass("mapreduce.outputformat.class",
       classOf[TableOutputFormat[Object]],
       classOf[OutputFormat[Object, Writable]])

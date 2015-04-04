@@ -9,9 +9,19 @@ Create a new app key to app ID mapping.
   <name>
       App name.
 
+
 Usage: pio app list
 
 List all apps.
+
+
+Usage: pio app show <name>
+
+Show details of an app.
+
+  <name>
+      App name.
+
 
 Usage: pio app delete <name>
 
@@ -20,9 +30,36 @@ Name of the app to be deleted.
   <name>
       App name.
 
-Usage: pio app data-delete <name>
+
+Usage: pio app data-delete <name> [--channel <name>] [--all]
 
 Delete data of an app.
 
   <name>
       App name.
+  --channel <name>
+      Delete data of the specified channel (default channel if not specified)
+  --all
+      Delete all data of this app (including both default and all channels)
+
+
+Usage: pio app channel-new <name> <channel>
+
+Create a new channel for the app.
+
+  <name>
+      App name.
+
+  <channel>
+      Channel name to be created.
+
+
+Usage: pio app channel-delete <name> <channel>
+
+Delete a channel for the app.
+
+  <name>
+      App name.
+
+  <channel>
+      Channel name to be deleted.

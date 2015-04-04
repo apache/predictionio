@@ -4,6 +4,7 @@ import io.prediction.controller.{Params => PIOParams}
 import io.prediction.core._
 
 import grizzled.slf4j.Logger
+import io.prediction.workflow.WorkflowParams
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD

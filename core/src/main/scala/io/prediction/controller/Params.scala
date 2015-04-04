@@ -18,25 +18,13 @@ package io.prediction.controller
 /** Base trait for all kinds of parameters that will be passed to constructors
   * of different controller classes.
   *
-  * @group General
+  * @group Helper
   */
 trait Params extends Serializable {}
 
-/** Mix in this trait for parameters that contain app ID. Only engines that
-  * take data source parameters with this trait would be able to use the
-  * feedback loop.
-  *
-  * @group General
-  */
-/*
-trait ParamsWithAppId extends Serializable {
-  val appId: Int
-}
-*/
-
 /** A concrete implementation of [[Params]] representing empty parameters.
   *
-  * @group General
+  * @group Helper
   */
 case class EmptyParams() extends Params {
   override def toString(): String = "Empty"

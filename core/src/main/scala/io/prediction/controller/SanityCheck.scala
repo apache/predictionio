@@ -19,7 +19,7 @@ package io.prediction.controller
   * automatically perform sanity check on your data classes during training.
   * This is very useful when you need to debug your engine.
   *
-  * @group General
+  * @group Helper
   */
 trait SanityCheck {
   /** Implement this method to perform checks on your data. This method should
