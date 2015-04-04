@@ -22,6 +22,7 @@ import io.prediction.workflow.NameParamsSerializer
 
 import com.github.nscala_time.time.Imports.DateTime
 import grizzled.slf4j.Logger
+import io.prediction.workflow.WorkflowParams
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.json4s.native.Serialization.write

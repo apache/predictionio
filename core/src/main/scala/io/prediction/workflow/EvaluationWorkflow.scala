@@ -16,7 +16,6 @@
 package io.prediction.workflow
 
 import io.prediction.controller.EngineParams
-import io.prediction.controller.WorkflowParams
 import io.prediction.controller.Evaluation
 import io.prediction.core.BaseEvaluator
 import io.prediction.core.BaseEvaluatorResult

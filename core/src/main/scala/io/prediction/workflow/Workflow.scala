@@ -13,41 +13,16 @@
   * limitations under the License.
   */
 
-package io.prediction.controller
+package io.prediction.workflow
 
 import io.prediction.annotation.Experimental
+import io.prediction.controller.EngineParams
+import io.prediction.controller.EngineParamsGenerator
+import io.prediction.controller.Evaluation
 import io.prediction.core.BaseEngine
 import io.prediction.core.BaseEvaluator
 import io.prediction.core.BaseEvaluatorResult
 import io.prediction.data.storage.EvaluationInstance
-import io.prediction.workflow.CoreWorkflow
-import io.prediction.workflow.WorkflowUtils
-
-/** Workflow parameters.
-  *
-  * @param batch Batch label of the run.
-  * @param verbose Verbosity level.
-  * @param saveModel Controls whether trained models are persisted.
-  * @param sparkEnv Spark properties that will be set in SparkConf.setAll().
-  * @param skipSanityCheck Skips all data sanity check.
-  * @param stopAfterRead Stops workflow after reading from data source.
-  * @param stopAfterPrepare Stops workflow after data preparation.
-  * @group Workflow
-  */
-case class WorkflowParams(
-  batch: String = "",
-  verbose: Int = 2,
-  saveModel: Boolean = true,
-  sparkEnv: Map[String, String] =
-    Map[String, String]("spark.executor.extraClassPath" -> "."),
-  skipSanityCheck: Boolean = false,
-  stopAfterRead: Boolean = false,
-  stopAfterPrepare: Boolean = false) {
-  // Temporary workaround for WorkflowParamsBuilder for Java. It doesn't support
-  // custom spark environment yet.
-  def this(batch: String, verbose: Int, saveModel: Boolean)
-  = this(batch, verbose, saveModel, Map[String, String]())
-}
 
 /** Collection of workflow creation methods.
   * @group Workflow

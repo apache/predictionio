@@ -31,6 +31,7 @@ import io.prediction.workflow.PersistentModelManifest
 import io.prediction.workflow.SparkWorkflowUtils
 import io.prediction.workflow.StopAfterPrepareInterruption
 import io.prediction.workflow.StopAfterReadInterruption
+import io.prediction.workflow.WorkflowParams
 import io.prediction.workflow.WorkflowUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD

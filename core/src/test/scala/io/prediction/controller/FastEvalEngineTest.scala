@@ -1,5 +1,6 @@
 package io.prediction.controller
 
+import io.prediction.workflow.WorkflowParams
 import org.scalatest.FunSuite
 import org.scalatest.Inside
 import org.scalatest.Matchers._

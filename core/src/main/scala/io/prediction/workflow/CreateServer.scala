@@ -19,7 +19,6 @@ import io.prediction.controller.Engine
 import io.prediction.controller.Params
 import io.prediction.controller.Utils
 import io.prediction.controller.WithPrId
-import io.prediction.controller.WorkflowParams
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseServing
 import io.prediction.core.Doer

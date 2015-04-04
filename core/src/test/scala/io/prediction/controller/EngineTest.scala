@@ -6,6 +6,7 @@ import io.prediction.workflow.StopAfterPrepareInterruption
 import io.prediction.workflow.StopAfterReadInterruption
 
 import grizzled.slf4j.Logger
+import io.prediction.workflow.WorkflowParams
 import org.apache.spark.rdd.RDD
 import org.scalatest.Inspectors._
 import org.scalatest.Matchers._

@@ -17,8 +17,6 @@ package io.prediction.workflow
 
 import io.prediction.controller.Engine
 import io.prediction.controller.Utils
-import io.prediction.controller.Workflow
-import io.prediction.controller.WorkflowParams
 import io.prediction.core.BaseEngine
 import io.prediction.data.storage.EngineInstance
 import io.prediction.data.storage.EvaluationInstance
