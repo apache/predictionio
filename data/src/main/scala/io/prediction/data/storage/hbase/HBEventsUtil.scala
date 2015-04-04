@@ -48,7 +48,13 @@ object HBEventsUtil {
 
   implicit val formats = DefaultFormats
 
-  def tableName(namespace: String, appId: Int): String = s"${namespace}:events_${appId}"
+  def tableName(namespace: String, appId: Int, channelId: Option[Int] = None): String = {
+    channelId.map { ch =>
+      s"${namespace}:events_${appId}_${ch}"
+    }.getOrElse {
+      s"${namespace}:events_${appId}"
+    }
+  }
 
   // column names for "e" column family
   val colNames: Map[String, Array[Byte]] = Map(

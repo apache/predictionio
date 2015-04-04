@@ -46,11 +46,11 @@ class HBLEvents(val client: HBClient, val namespace: String)
   def resultToEvent(result: Result, appId: Int): Event =
     HBEventsUtil.resultToEvent(result, appId)
 
-  def getTable(appId: Int): HTableInterface = client.connection.getTable(
-    HBEventsUtil.tableName(namespace, appId))
+  def getTable(appId: Int, channelId: Option[Int] = None): HTableInterface =
+    client.connection.getTable(HBEventsUtil.tableName(namespace, appId, channelId))
 
   override
-  def init(appId: Int): Boolean = {
+  def init(appId: Int, channelId: Option[Int] = None): Boolean = {
     // check namespace exist
     val existingNamespace = client.admin.listNamespaceDescriptors()
       .map(_.getName)
@@ -60,7 +60,7 @@ class HBLEvents(val client: HBClient, val namespace: String)
       client.admin.createNamespace(nameDesc)
     }
 
-    val tableName = TableName.valueOf(HBEventsUtil.tableName(namespace, appId))
+    val tableName = TableName.valueOf(HBEventsUtil.tableName(namespace, appId, channelId))
     if (!client.admin.tableExists(tableName)) {
       info(s"The table ${tableName.getNameAsString()} doesn't exist yet." +
         " Creating now...")
@@ -73,8 +73,8 @@ class HBLEvents(val client: HBClient, val namespace: String)
   }
 
   override
-  def remove(appId: Int): Boolean = {
-    val tableName = TableName.valueOf(HBEventsUtil.tableName(namespace, appId))
+  def remove(appId: Int, channelId: Option[Int] = None): Boolean = {
+    val tableName = TableName.valueOf(HBEventsUtil.tableName(namespace, appId, channelId))
     try {
       if (client.admin.tableExists(tableName)) {
         info(s"Removing table ${tableName.getNameAsString()}...")
@@ -100,10 +100,11 @@ class HBLEvents(val client: HBClient, val namespace: String)
   }
 
   override
-  def futureInsert(event: Event, appId: Int)(implicit ec: ExecutionContext):
+  def futureInsert(
+    event: Event, appId: Int, channelId: Option[Int])(implicit ec: ExecutionContext):
     Future[Either[StorageError, String]] = {
     Future {
-      val table = getTable(appId)
+      val table = getTable(appId, channelId)
       val (put, rowKey) = HBEventsUtil.eventToPut(event, appId)
       table.put(put)
       table.flushCommits()
@@ -114,13 +115,12 @@ class HBLEvents(val client: HBClient, val namespace: String)
     } */
   }
 
-
-
   override
-  def futureGet(eventId: String, appId: Int)(implicit ec: ExecutionContext):
+  def futureGet(
+    eventId: String, appId: Int, channelId: Option[Int])(implicit ec: ExecutionContext):
     Future[Either[StorageError, Option[Event]]] = {
       Future {
-        val table = getTable(appId)
+        val table = getTable(appId, channelId)
         val rowKey = RowKey(eventId)
         val get = new Get(rowKey.toBytes)
 
@@ -140,10 +140,11 @@ class HBLEvents(val client: HBClient, val namespace: String)
     }
 
   override
-  def futureDelete(eventId: String, appId: Int)(implicit ec: ExecutionContext):
+  def futureDelete(
+    eventId: String, appId: Int, channelId: Option[Int])(implicit ec: ExecutionContext):
     Future[Either[StorageError, Boolean]] = {
     Future {
-      val table = getTable(appId)
+      val table = getTable(appId, channelId)
       val rowKey = RowKey(eventId)
       val exists = table.exists(new Get(rowKey.toBytes))
       table.delete(new Delete(rowKey.toBytes))
@@ -152,6 +153,7 @@ class HBLEvents(val client: HBClient, val namespace: String)
     }
   }
 
+  /** @deprecated */
   override
   def futureGetByAppId(appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]] = {
@@ -166,6 +168,7 @@ class HBLEvents(val client: HBClient, val namespace: String)
         reversed = None)
     }
 
+  /** @deprecated */
   override
   def futureGetByAppIdAndTime(appId: Int, startTime: Option[DateTime],
     untilTime: Option[DateTime])(implicit ec: ExecutionContext):
@@ -181,6 +184,7 @@ class HBLEvents(val client: HBClient, val namespace: String)
         reversed = None)
   }
 
+  /** @deprecated */
   override
   def futureGetByAppIdAndTimeAndEntity(appId: Int,
     startTime: Option[DateTime],
@@ -202,6 +206,7 @@ class HBLEvents(val client: HBClient, val namespace: String)
   override
   def futureFind(
     appId: Int,
+    channelId: Option[Int] = None,
     startTime: Option[DateTime] = None,
     untilTime: Option[DateTime] = None,
     entityType: Option[String] = None,
@@ -213,7 +218,7 @@ class HBLEvents(val client: HBClient, val namespace: String)
     reversed: Option[Boolean] = None)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Iterator[Event]]] = {
       Future {
-        val table = getTable(appId)
+        val table = getTable(appId, channelId)
 
         val scan = HBEventsUtil.createScan(
           startTime = startTime,
@@ -245,6 +250,7 @@ class HBLEvents(val client: HBClient, val namespace: String)
   override
   def futureAggregateProperties(
     appId: Int,
+    channelId: Option[Int] = None,
     entityType: String,
     startTime: Option[DateTime] = None,
     untilTime: Option[DateTime] = None,
@@ -252,6 +258,7 @@ class HBLEvents(val client: HBClient, val namespace: String)
     Future[Either[StorageError, Map[String, PropertyMap]]] = {
       futureFind(
         appId = appId,
+        channelId = channelId,
         startTime = startTime,
         untilTime = untilTime,
         entityType = Some(entityType),
@@ -271,6 +278,7 @@ class HBLEvents(val client: HBClient, val namespace: String)
   override
   def futureAggregatePropertiesSingle(
     appId: Int,
+    channelId: Option[Int] = None,
     entityType: String,
     entityId: String,
     startTime: Option[DateTime] = None,
@@ -278,6 +286,7 @@ class HBLEvents(val client: HBClient, val namespace: String)
     Future[Either[StorageError, Option[PropertyMap]]] = {
       futureFind(
         appId = appId,
+        channelId = channelId,
         startTime = startTime,
         untilTime = untilTime,
         entityType = Some(entityType),
@@ -290,6 +299,7 @@ class HBLEvents(val client: HBClient, val namespace: String)
       }
     }
 
+  /** @deprecated */
   override
   def futureDeleteByAppId(appId: Int)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Unit]] = {

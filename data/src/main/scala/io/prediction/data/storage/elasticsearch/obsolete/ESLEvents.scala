@@ -54,7 +54,8 @@ class ESLEvents(client: Client, index: String) extends LEvents with Logging {
   def typeName: String = s"events"
 
   override
-  def futureInsert(event: Event, appId: Int)(implicit ec: ExecutionContext):
+  def futureInsert(
+    event: Event, appId: Int, channelId: Option[Int])(implicit ec: ExecutionContext):
     Future[Either[StorageError, String]] = {
     val response = Promise[IndexResponse]
 

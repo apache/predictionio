@@ -1,12 +1,14 @@
-Usage: pio export --appid <value> --output <value> [--format <value>]
+Usage: pio export --appid <value> --output <value> [--format <value>] [--channel <value>]
 
 Exports all events of an app to a file. If Hadoop configuration is present, the
 file will be exported to HDFS instead of local filesystem.
 
   --appid <value>
       App ID of events to be exported.
+  --channel <value>
+      Channel Name (default if this is not specified)
   --output <value>
       Output path of the exported file.
   --format <value>
       The format of the exported file. Valid values are "json" and "parquet".
-      The default format is "json". 
+      The default format is "json".
