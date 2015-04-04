@@ -274,9 +274,9 @@ object Console extends Logging {
           arg[String]("<evaluation-class>") action { (x, c) =>
             c.copy(common = c.common.copy(evaluation = Some(x)))
           },
-          arg[String]("<engine-parameters-generator-class>") action { (x, c) =>
+          arg[String]("[<engine-parameters-generator-class>]") optional() action { (x, c) =>
             c.copy(common = c.common.copy(engineParamsGenerator = Some(x)))
-          },
+          } text("Optional engine parameters generator class, overriding the first argument"),
           opt[String]("batch") action { (x, c) =>
             c.copy(common = c.common.copy(batch = x))
           } text("Batch label of the run.")
