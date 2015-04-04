@@ -193,8 +193,6 @@ abstract class OptionStdevMetric[EI, Q, P, A]
 abstract class SumMetric[EI, Q, P, A, R: ClassTag](implicit num: Numeric[R])
     extends Metric[EI, Q, P, A, R]()(num)
     with QPAMetric[Q, P, A, R] {
-  @transient lazy val logger = Logger[this.type]
-
   /** Implement this method to return a score that will be used for summing
     * across all QPA tuples.
     */
