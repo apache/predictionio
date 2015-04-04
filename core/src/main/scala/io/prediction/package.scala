@@ -99,57 +99,57 @@ package io.prediction
 package object controller {
 
   /** Empty data source parameters.
-    * @group General
+    * @group Helper
     */
   type EmptyDataSourceParams = EmptyParams
 
   /** Empty data parameters.
-    * @group General
+    * @group Helper
     */
   type EmptyDataParams = EmptyParams
   
   /** Empty evaluation info.
-    * @group General
+    * @group Helper
     */
   type EmptyEvaluationInfo = EmptyParams
 
   /** Empty preparator parameters.
-    * @group General
+    * @group Helper
     */
   type EmptyPreparatorParams = EmptyParams
 
   /** Empty algorithm parameters.
-    * @group General
+    * @group Helper
     */
   type EmptyAlgorithmParams = EmptyParams
 
   /** Empty serving parameters.
-    * @group General
+    * @group Helper
     */
   type EmptyServingParams = EmptyParams
 
   /** Empty metrics parameters.
-    * @group General
+    * @group Helper
     */
   type EmptyMetricsParams = EmptyParams
 
   /** Empty training data.
-    * @group General
+    * @group Helper
     */
   type EmptyTrainingData = AnyRef
 
   /** Empty prepared data.
-    * @group General
+    * @group Helper
     */
   type EmptyPreparedData = AnyRef
 
   /** Empty model.
-    * @group General
+    * @group Helper
     */
   type EmptyModel = AnyRef
 
   /** Empty actual result.
-    * @group General
+    * @group Helper
     */
   type EmptyActualResult = AnyRef
 

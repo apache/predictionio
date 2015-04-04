@@ -27,7 +27,7 @@ import _root_.java.io.FileOutputStream
 
 /** Controller utilities.
   *
-  * @group General
+  * @group Helper
   */
 object Utils {
   /** Default JSON4S serializers for PredictionIO controllers. */

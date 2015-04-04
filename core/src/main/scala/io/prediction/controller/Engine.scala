@@ -770,60 +770,13 @@ object Engine {
   }
 }
 
-
-/** If you intend to let PredictionIO create workflow and deploy serving
-  * automatically, you will need to implement an object that extends this trait
-  * and return an [[Engine]].
-  *
-  * @group Engine
-  */
-trait EngineFactory {
-  /** Creates an instance of an [[Engine]]. */
-  def apply(): BaseEngine[_, _, _, _]
-
-  /** Override this method to programmatically return engine parameters. */
-  def engineParams(key: String): EngineParams = EngineParams()
-}
-
-/** DEPRECATED. Use [[EngineFactory]] instead.
-  *
-  * @group Engine
-  */
-@deprecated("Use EngineFactory instead.", "0.9.2")
-trait IEngineFactory extends EngineFactory
-
-/** Defines an engine parameters generator.
-  *
-  * Implementations of this trait can be supplied to "pio eval" as the second
-  * argument.
-  *
-  * @group Evaluation
-  */
-trait EngineParamsGenerator {
-  protected[this] var epList: Seq[EngineParams] = _
-  protected[this] var epListSet: Boolean = false
-
-  /** Returns the list of [[EngineParams]] of this [[EngineParamsGenerator]]. */
-  def engineParamsList: Seq[EngineParams] = {
-    assert(epListSet, "EngineParamsList not set")
-    epList
-  }
-
-  /** Sets the list of [[EngineParams]] of this [[EngineParamsGenerator]]. */
-  def engineParamsList_=(l: Seq[EngineParams]) {
-    assert(!epListSet, "EngineParamsList can bet set at most once")
-    epList = Seq(l:_*)
-    epListSet = true
-  }
-}
-
-
 /** Mix in this trait for queries that contain prId (PredictedResultId).
   * This is useful when your engine expects queries to also be associated with
   * prId keys when feedback loop is enabled.
   *
-  * @group General
+  * @group Helper
   */
+@deprecated("To be removed in future releases.", "0.9.2")
 trait WithPrId {
   val prId: String = ""
 }
