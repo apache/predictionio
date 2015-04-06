@@ -35,8 +35,9 @@ To start the event server, run
 $ pio eventserver
 ```
 
-INFO: By default, the Event Server is bound to localhost, which serves only local
-traffic. To serve global traffic, you can use $pio eventserver --ip 0.0.0.0
+INFO: By default, the Event Server is bound to 0.0.0.0, which serves global
+traffic. To tighten security, you may use `pio eventserver --ip 127.0.0.1` to
+serve only local traffic.
 
 ### Check Server Status
 
