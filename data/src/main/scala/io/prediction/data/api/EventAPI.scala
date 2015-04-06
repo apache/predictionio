@@ -511,7 +511,7 @@ object Run {
 
   def main (args: Array[String]) {
     EventServer.createEventServer(EventServerConfig(
-      ip = "localhost",
+      ip = "0.0.0.0",
       port = 7070))
   }
 

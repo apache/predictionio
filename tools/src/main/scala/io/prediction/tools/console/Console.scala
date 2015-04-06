@@ -95,19 +95,19 @@ case class BuildArgs(
   forceGeneratePIOSbt: Boolean = false)
 
 case class DeployArgs(
-  ip: String = "localhost",
+  ip: String = "0.0.0.0",
   port: Int = 8000,
   logUrl: Option[String] = None,
   logPrefix: Option[String] = None)
 
 case class EventServerArgs(
   enabled: Boolean = false,
-  ip: String = "localhost",
+  ip: String = "0.0.0.0",
   port: Int = 7070,
   stats: Boolean = false)
 
 case class DashboardArgs(
-  ip: String = "localhost",
+  ip: String = "0.0.0.0",
   port: Int = 9000)
 
 case class UpgradeArgs(
@@ -297,7 +297,7 @@ object Console extends Logging {
           } text("Engine instance ID."),
           opt[String]("ip") action { (x, c) =>
             c.copy(deploy = c.deploy.copy(ip = x))
-          } text("IP to bind to. Default: localhost"),
+          },
           opt[Int]("port") action { (x, c) =>
             c.copy(deploy = c.deploy.copy(port = x))
           } text("Port to bind to. Default: 8000"),
@@ -306,7 +306,7 @@ object Console extends Logging {
           } text("Enable feedback loop to event server."),
           opt[String]("event-server-ip") action { (x, c) =>
             c.copy(eventServer = c.eventServer.copy(ip = x))
-          } text("Event server IP. Default: localhost"),
+          },
           opt[Int]("event-server-port") action { (x, c) =>
             c.copy(eventServer = c.eventServer.copy(port = x))
           } text("Event server port. Default: 7070"),
@@ -331,7 +331,7 @@ object Console extends Logging {
         } children(
           opt[String]("ip") action { (x, c) =>
             c.copy(deploy = c.deploy.copy(ip = x))
-          } text("IP to unbind from. Default: localhost"),
+          },
           opt[Int]("port") action { (x, c) =>
             c.copy(deploy = c.deploy.copy(port = x))
           } text("Port to unbind from. Default: 8000")
@@ -344,7 +344,7 @@ object Console extends Logging {
         } children(
           opt[String]("ip") action { (x, c) =>
             c.copy(dashboard = c.dashboard.copy(ip = x))
-          } text("IP to bind to. Default: localhost"),
+          },
           opt[Int]("port") action { (x, c) =>
             c.copy(dashboard = c.dashboard.copy(port = x))
           } text("Port to bind to. Default: 9000")
@@ -357,7 +357,7 @@ object Console extends Logging {
         } children(
           opt[String]("ip") action { (x, c) =>
             c.copy(eventServer = c.eventServer.copy(ip = x))
-          } text("IP to bind to. Default: localhost"),
+          },
           opt[Int]("port") action { (x, c) =>
             c.copy(eventServer = c.eventServer.copy(port = x))
           } text("Port to bind to. Default: 7070"),

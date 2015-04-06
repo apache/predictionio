@@ -8,7 +8,7 @@ Deploy an engine instance as a prediction server. This command will pass all
 pass-through arguments to its underlying spark-submit command.
 
   --ip <value>
-      IP to bind to. Default: localhost
+      IP to bind to. Default: 0.0.0.0
   --port <value>
       Port to bind to. Default: 8000
   --engine-instance-id <value>
@@ -18,7 +18,7 @@ pass-through arguments to its underlying spark-submit command.
   --accesskey <value>
       Access key of the App where feedback data will be stored.
   --event-server-ip <value>
-      Event server IP. Default: localhost
+      Event server IP. Default: 0.0.0.0
   --event-server-port <value>
       Event server port. Default: 7070
   --batch <value>

@@ -79,10 +79,10 @@ case class ServerConfig(
   engineInstanceId: String = "",
   engineId: Option[String] = None,
   engineVersion: Option[String] = None,
-  ip: String = "localhost",
+  ip: String = "0.0.0.0",
   port: Int = 8000,
   feedback: Boolean = false,
-  eventServerIp: String = "localhost",
+  eventServerIp: String = "0.0.0.0",
   eventServerPort: Int = 7070,
   accessKey: Option[String] = None,
   logUrl: Option[String] = None,
@@ -116,7 +116,7 @@ object CreateServer extends Logging {
       } text("Engine version.")
       opt[String]("ip") action { (x, c) =>
         c.copy(ip = x)
-      } text("IP to bind to (default: localhost).")
+      }
       opt[Int]("port") action { (x, c) =>
         c.copy(port = x)
       } text("Port to bind to (default: 8000).")
@@ -128,7 +128,7 @@ object CreateServer extends Logging {
       } text("Enable feedback loop to event server.")
       opt[String]("event-server-ip") action { (x, c) =>
         c.copy(eventServerIp = x)
-      } text("Event server IP. Default: localhost")
+      }
       opt[Int]("event-server-port") action { (x, c) =>
         c.copy(eventServerPort = x)
       } text("Event server port. Default: 7070")
