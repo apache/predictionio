@@ -172,10 +172,10 @@ object Template extends Logging {
     try {
       val templatesJson = Source.fromURL(templatesUrl).mkString("")
       val templates = read[List[TemplateEntry]](templatesJson)
-      println("The following is a list of template IDs officially recognized " +
-        "by PredictionIO:")
+      println("The following is a list of template IDs registered on " +
+        "PredictionIO Template Gallery:")
       println()
-      templates.foreach { template =>
+      templates.sortBy(_.repo.toLowerCase).foreach { template =>
         println(template.repo)
       }
       println()
