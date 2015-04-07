@@ -39,6 +39,7 @@ import java.util.zip.ZipInputStream
 case class TemplateArgs(
   directory: String = "",
   repository: String = "",
+  version: Option[String] = None,
   name: Option[String] = None,
   packageName: Option[String] = None,
   email: Option[String] = None)
@@ -263,112 +264,123 @@ object Template extends Logging {
     println(s"Retrieving ${ca.template.repository}")
     val tags = read[List[GitHubTag]](repo.body)
     println(s"There are ${tags.size} tags")
-    tags.headOption.map { tag =>
-      println(s"Using the most recent tag ${tag.name}")
-      val url =
-        s"https://github.com/${ca.template.repository}/archive/${tag.name}.zip"
-      println(s"Going to download $url")
-      val trial = try {
-        httpOptionalProxy(url).asBytes
-      } catch {
-        case e: ConnectException =>
-          githubConnectErrorMessage(e)
-          return 1
-      }
-      val finalTrial = try {
-        trial.location.map { loc =>
-          println(s"Redirecting to $loc")
-          httpOptionalProxy(loc).asBytes
-        } getOrElse trial
-      } catch {
-        case e: ConnectException =>
-          githubConnectErrorMessage(e)
-          return 1
-      }
-      val zipFilename =
-        s"${ca.template.repository.replace('/', '-')}-${tag.name}.zip"
-      FileUtils.writeByteArrayToFile(
-        new File(zipFilename),
-        finalTrial.body)
-      val zis = new ZipInputStream(
-        new BufferedInputStream(new FileInputStream(zipFilename)))
-      val bufferSize = 4096
-      val filesToModify = collection.mutable.ListBuffer[String]()
-      var ze = zis.getNextEntry
-      while (ze != null) {
-        val filenameSegments = ze.getName.split(File.separatorChar)
-        val destFilename = (ca.template.directory +: filenameSegments.tail).
-          mkString(File.separator)
-        if (ze.isDirectory) {
-          new File(destFilename).mkdirs
-        } else {
-          val os = new BufferedOutputStream(
-            new FileOutputStream(destFilename),
-            bufferSize)
-          val data = Array.ofDim[Byte](bufferSize)
-          var count = zis.read(data, 0, bufferSize)
-          while (count != -1) {
-            os.write(data, 0, count)
-            count = zis.read(data, 0, bufferSize)
-          }
-          os.flush()
-          os.close()
 
-          val nameOnly = new File(destFilename).getName
-
-          if (organization != "" &&
-            (nameOnly.endsWith(".scala") ||
-              nameOnly == "build.sbt" ||
-              nameOnly == "engine.json")) {
-            filesToModify += destFilename
-          }
-        }
-        ze = zis.getNextEntry
-      }
-      zis.close()
-      new File(zipFilename).delete
-
-      val engineJsonFile =
-        new File(ca.template.directory + File.separator + "engine.json")
-
-      val engineJson = try {
-        Some(parse(Source.fromFile(engineJsonFile).mkString))
-      } catch {
-        case e: java.io.IOException =>
-          error("Unable to read engine.json. Skipping automatic package " +
-            "name replacement.")
-          None
-        case e: MappingException =>
-          error("Unable to parse engine.json. Skipping automatic package " +
-            "name replacement.")
-          None
-      }
-
-      val engineFactory = engineJson.map { ej =>
-        (ej \ "engineFactory").extractOpt[String]
-      } getOrElse None
-
-      engineFactory.map { ef =>
-        val pkgName = ef.split('.').dropRight(1).mkString(".")
-        println(s"Replacing $pkgName with $organization...")
-
-        filesToModify.foreach { ftm =>
-          println(s"Processing $ftm...")
-          val fileContent = Source.fromFile(ftm).getLines()
-          val processedLines =
-            fileContent.map(_.replaceAllLiterally(pkgName, organization))
-          FileUtils.writeStringToFile(
-            new File(ftm),
-            processedLines.mkString("\n"))
-        }
-      } getOrElse {
-        error("engineFactory is not found in engine.json. Skipping automatic " +
-          "package name replacement.")
-      }
-
-      println(s"Engine template ${ca.template.repository} is now ready at " +
-        ca.template.directory)
+    if (tags.size == 0) {
+      println(s"${ca.template.repository} does not have any tag. Aborting.")
+      return 1
     }
+
+    val tag = ca.template.version.map { v =>
+      tags.find(_.name == v).getOrElse {
+        println(s"${ca.template.repository} does not have tag $v. Aborting.")
+        return 1
+      }
+    } getOrElse tags.head
+
+    println(s"Using tag ${tag.name}")
+    val url =
+      s"https://github.com/${ca.template.repository}/archive/${tag.name}.zip"
+    println(s"Going to download $url")
+    val trial = try {
+      httpOptionalProxy(url).asBytes
+    } catch {
+      case e: ConnectException =>
+        githubConnectErrorMessage(e)
+        return 1
+    }
+    val finalTrial = try {
+      trial.location.map { loc =>
+        println(s"Redirecting to $loc")
+        httpOptionalProxy(loc).asBytes
+      } getOrElse trial
+    } catch {
+      case e: ConnectException =>
+        githubConnectErrorMessage(e)
+        return 1
+    }
+    val zipFilename =
+      s"${ca.template.repository.replace('/', '-')}-${tag.name}.zip"
+    FileUtils.writeByteArrayToFile(
+      new File(zipFilename),
+      finalTrial.body)
+    val zis = new ZipInputStream(
+      new BufferedInputStream(new FileInputStream(zipFilename)))
+    val bufferSize = 4096
+    val filesToModify = collection.mutable.ListBuffer[String]()
+    var ze = zis.getNextEntry
+    while (ze != null) {
+      val filenameSegments = ze.getName.split(File.separatorChar)
+      val destFilename = (ca.template.directory +: filenameSegments.tail).
+        mkString(File.separator)
+      if (ze.isDirectory) {
+        new File(destFilename).mkdirs
+      } else {
+        val os = new BufferedOutputStream(
+          new FileOutputStream(destFilename),
+          bufferSize)
+        val data = Array.ofDim[Byte](bufferSize)
+        var count = zis.read(data, 0, bufferSize)
+        while (count != -1) {
+          os.write(data, 0, count)
+          count = zis.read(data, 0, bufferSize)
+        }
+        os.flush()
+        os.close()
+
+        val nameOnly = new File(destFilename).getName
+
+        if (organization != "" &&
+          (nameOnly.endsWith(".scala") ||
+            nameOnly == "build.sbt" ||
+            nameOnly == "engine.json")) {
+          filesToModify += destFilename
+        }
+      }
+      ze = zis.getNextEntry
+    }
+    zis.close()
+    new File(zipFilename).delete
+
+    val engineJsonFile =
+      new File(ca.template.directory + File.separator + "engine.json")
+
+    val engineJson = try {
+      Some(parse(Source.fromFile(engineJsonFile).mkString))
+    } catch {
+      case e: java.io.IOException =>
+        error("Unable to read engine.json. Skipping automatic package " +
+          "name replacement.")
+        None
+      case e: MappingException =>
+        error("Unable to parse engine.json. Skipping automatic package " +
+          "name replacement.")
+        None
+    }
+
+    val engineFactory = engineJson.map { ej =>
+      (ej \ "engineFactory").extractOpt[String]
+    } getOrElse None
+
+    engineFactory.map { ef =>
+      val pkgName = ef.split('.').dropRight(1).mkString(".")
+      println(s"Replacing $pkgName with $organization...")
+
+      filesToModify.foreach { ftm =>
+        println(s"Processing $ftm...")
+        val fileContent = Source.fromFile(ftm).getLines()
+        val processedLines =
+          fileContent.map(_.replaceAllLiterally(pkgName, organization))
+        FileUtils.writeStringToFile(
+          new File(ftm),
+          processedLines.mkString("\n"))
+      }
+    } getOrElse {
+      error("engineFactory is not found in engine.json. Skipping automatic " +
+        "package name replacement.")
+    }
+
+    println(s"Engine template ${ca.template.repository} is now ready at " +
+      ca.template.directory)
 
     0
   }

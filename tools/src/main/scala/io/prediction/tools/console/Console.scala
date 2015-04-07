@@ -557,6 +557,9 @@ object Console extends Logging {
               arg[String]("<new engine directory>") action { (x, c) =>
                 c.copy(template = c.template.copy(directory = x))
               },
+              opt[String]("version") action { (x, c) =>
+                c.copy(template = c.template.copy(version = Some(x)))
+              },
               opt[String]("name") action { (x, c) =>
                 c.copy(template = c.template.copy(name = Some(x)))
               },
