@@ -26,6 +26,7 @@ import scala.language.implicitConversions
 
 import scala.concurrent.ExecutionContext.Implicits.global // TODO
 
+@deprecated("Use LEvents instead.", "0.9.2")
 object ViewPredicates {
   def getStartTimePredicate(startTimeOpt: Option[DateTime])
   : (Event => Boolean) = {
@@ -64,6 +65,7 @@ object ViewPredicates {
   }
 }
 
+@deprecated("Use LEvents instead.", "0.9.2")
 object ViewAggregators {
   def getDataMapAggregator(): ((Option[DataMap], Event) => Option[DataMap]) = {
     (p, e) => {
@@ -89,7 +91,7 @@ object ViewAggregators {
   }
 }
 
-
+@deprecated("Use LEvents instead.", "0.9.2")
 object EventSeq {
   // Need to
   // >>> import scala.language.implicitConversions
@@ -100,6 +102,7 @@ object EventSeq {
 }
 
 
+@deprecated("Use LEvents instead.", "0.9.2")
 class EventSeq(val events: List[Event]) {
   def filter(
     eventOpt: Option[String] = None,
@@ -128,6 +131,7 @@ class EventSeq(val events: List[Event]) {
 }
 
 
+@deprecated("Use LEvents instead.", "0.9.2")
 class LBatchView(
   val appId: Int,
   val startTime: Option[DateTime],
