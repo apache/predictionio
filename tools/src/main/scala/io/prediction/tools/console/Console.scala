@@ -15,36 +15,36 @@
 
 package io.prediction.tools.console
 
+import java.io.File
+
+import grizzled.slf4j.Logging
 import io.prediction.controller.Utils
 import io.prediction.core.BuildInfo
+import io.prediction.data.api.EventServer
+import io.prediction.data.api.EventServerConfig
 import io.prediction.data.storage.EngineManifest
 import io.prediction.data.storage.EngineManifestSerializer
 import io.prediction.data.storage.Storage
 import io.prediction.data.storage.hbase.upgrade.Upgrade_0_8_3
-import io.prediction.tools.dashboard.Dashboard
-import io.prediction.tools.dashboard.DashboardConfig
-import io.prediction.data.api.EventServer
-import io.prediction.data.api.EventServerConfig
 import io.prediction.tools.RegisterEngine
 import io.prediction.tools.RunServer
 import io.prediction.tools.RunWorkflow
+import io.prediction.tools.dashboard.Dashboard
+import io.prediction.tools.dashboard.DashboardConfig
 import io.prediction.workflow.WorkflowUtils
-
-import grizzled.slf4j.Logging
 import org.apache.commons.io.FileUtils
 import org.apache.hadoop.fs.Path
 import org.json4s._
 import org.json4s.native.JsonMethods._
-import org.json4s.native.Serialization.{read, write}
-import scalaj.http.Http
+import org.json4s.native.Serialization.read
+import org.json4s.native.Serialization.write
 import semverfi._
 
 import scala.collection.JavaConversions._
 import scala.io.Source
 import scala.sys.process._
 import scala.util.Random
-
-import java.io.File
+import scalaj.http.Http
 
 case class ConsoleArgs(
   common: CommonArgs = CommonArgs(),
@@ -741,6 +741,7 @@ object Console extends Logging {
   def version(ca: ConsoleArgs): Unit = println(BuildInfo.version)
 
   def build(ca: ConsoleArgs): Int = {
+    Template.verifyTemplateMinVersion(new File("template.json"))
     compile(ca)
     info("Looking for an engine...")
     val jarFiles = jarFilesForScala
@@ -775,6 +776,7 @@ object Console extends Logging {
   }
 
   def train(ca: ConsoleArgs): Int = {
+    Template.verifyTemplateMinVersion(new File("template.json"))
     withRegisteredManifest(
       ca.common.manifestJson,
       ca.common.engineId,
@@ -797,6 +799,7 @@ object Console extends Logging {
   }
 
   def deploy(ca: ConsoleArgs): Int = {
+    Template.verifyTemplateMinVersion(new File("template.json"))
     withRegisteredManifest(
       ca.common.manifestJson,
       ca.common.engineId,

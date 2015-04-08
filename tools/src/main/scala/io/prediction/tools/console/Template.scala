@@ -15,18 +15,6 @@
 
 package io.prediction.tools.console
 
-import io.prediction.controller.Utils
-
-import grizzled.slf4j.Logging
-import org.apache.commons.io.FileUtils
-import org.json4s._
-import org.json4s.native.JsonMethods._
-import org.json4s.native.Serialization.{ read, write }
-import scalaj.http._
-
-import scala.io.Source
-import scala.sys.process._
-
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.File
@@ -35,6 +23,20 @@ import java.io.FileOutputStream
 import java.net.ConnectException
 import java.net.URI
 import java.util.zip.ZipInputStream
+
+import grizzled.slf4j.Logging
+import io.prediction.controller.Utils
+import io.prediction.core.BuildInfo
+import org.apache.commons.io.FileUtils
+import org.json4s._
+import org.json4s.native.JsonMethods._
+import org.json4s.native.Serialization.read
+import org.json4s.native.Serialization.write
+import semverfi._
+
+import scala.io.Source
+import scala.sys.process._
+import scalaj.http._
 
 case class TemplateArgs(
   directory: String = "",
@@ -61,8 +63,33 @@ case class GitHubCache(
 case class TemplateEntry(
   repo: String)
 
+case class TemplateMetaData(
+  pioVersionMin: Option[String] = None)
+
 object Template extends Logging {
   implicit val formats = Utils.json4sDefaultFormats
+
+  def templateMetaData(templateJson: File): TemplateMetaData = {
+    if (!templateJson.exists) {
+      warn(s"$templateJson does not exist. Template metadata will not be available. " +
+        "(This is safe to ignore if you are not working on a template.)")
+      TemplateMetaData()
+    } else {
+      val jsonString = Source.fromFile(templateJson)(scala.io.Codec.ISO8859).mkString
+      val json = try {
+        parse(jsonString)
+      } catch {
+        case e: org.json4s.ParserUtil.ParseException =>
+          warn(s"$templateJson cannot be parsed. Template metadata will not be available.")
+          return TemplateMetaData()
+      }
+      val pioVersionMin = json \ "pio" \ "version" \ "min"
+      pioVersionMin match {
+        case JString(s) => TemplateMetaData(pioVersionMin = Some(s))
+        case _ => TemplateMetaData()
+      }
+    }
+  }
 
   /** Creates a wrapper that provides the functionality of scalaj.http.Http()
     * with automatic proxy settings handling. The proxy settings will first
@@ -342,7 +369,7 @@ object Template extends Logging {
     new File(zipFilename).delete
 
     val engineJsonFile =
-      new File(ca.template.directory + File.separator + "engine.json")
+      new File(ca.template.directory, "engine.json")
 
     val engineJson = try {
       Some(parse(Source.fromFile(engineJsonFile).mkString))
@@ -379,9 +406,22 @@ object Template extends Logging {
         "package name replacement.")
     }
 
+    verifyTemplateMinVersion(new File(ca.template.directory, "template.json"))
+
     println(s"Engine template ${ca.template.repository} is now ready at " +
       ca.template.directory)
 
     0
   }
+
+  def verifyTemplateMinVersion(templateJsonFile: File): Unit = {
+    val metadata = templateMetaData(templateJsonFile)
+
+    metadata.pioVersionMin.foreach { pvm =>
+      if (Version(BuildInfo.version) < Version(pvm))
+        warn(s"This engine template requires at least PredictionIO $pvm. " +
+          s"The template may not work with PredictionIO ${BuildInfo.version}.")
+    }
+  }
+
 }
