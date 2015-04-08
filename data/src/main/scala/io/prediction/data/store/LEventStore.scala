@@ -26,12 +26,37 @@ import scala.concurrent.TimeoutException
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 
+/** This object provides a set of operation to access Event Store
+  * without going through Spark's parallelization
+  */
 object LEventStore {
 
-  val defaultTimeout = Duration(60, "seconds")
+  private val defaultTimeout = Duration(60, "seconds")
 
   @transient lazy private val eventsDb = Storage.getLEvents()
 
+  /** Reads events of the specified entity. May use this in Algorithm's predict()
+    * or Serving logic to have fast event store access.
+    *
+    * @param appName return events of this app
+    * @param entityType return events of this entityType
+    * @param entityId return events of this entityId
+    * @param channelName return events of this channel (default channel if it's None)
+    * @param eventNames return events with any of these event names.
+    * @param targetEntityType return events of this targetEntityType:
+    *   - None means no restriction on targetEntityType
+    *   - Some(None) means no targetEntityType for this event
+    *   - Some(Some(x)) means targetEntityType should match x.
+    * @param targetEntityId return events of this targetEntityId
+    *   - None means no restriction on targetEntityId
+    *   - Some(None) means no targetEntityId for this event
+    *   - Some(Some(x)) means targetEntityId should match x.
+    * @param startTime return events with eventTime >= startTime
+    * @param untilTime return events with eventTime < untilTime
+    * @param limit Limit number of events. Get all events if None or Some(-1)
+    * @param latest Return latest event first (default true)
+    * @return Either[StorageError, Iterator[Event]]
+    */
   def findSingleEntity(
     appName: String,
     entityType: String,

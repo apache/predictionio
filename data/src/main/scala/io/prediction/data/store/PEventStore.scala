@@ -24,10 +24,33 @@ import org.joda.time.DateTime
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
+/** This object provides a set of operation to access Event Store
+  * with Spark's parallelization
+  */
 object PEventStore {
 
   @transient lazy private val eventsDb = Storage.getPEvents()
 
+  /** Read events from Event Store
+    *
+    * @param appName return events of this app
+    * @param channelName return events of this channel (default channel if it's None)
+    * @param startTime return events with eventTime >= startTime
+    * @param untilTime return events with eventTime < untilTime
+    * @param entityType return events of this entityType
+    * @param entityId return events of this entityId
+    * @param eventNames return events with any of these event names.
+    * @param targetEntityType return events of this targetEntityType:
+    *   - None means no restriction on targetEntityType
+    *   - Some(None) means no targetEntityType for this event
+    *   - Some(Some(x)) means targetEntityType should match x.
+    * @param targetEntityId return events of this targetEntityId
+    *   - None means no restriction on targetEntityId
+    *   - Some(None) means no targetEntityId for this event
+    *   - Some(Some(x)) means targetEntityId should match x.
+    * @param sc Spark context
+    * @return RDD[Event]
+    */
   def find(
     appName: String,
     channelName: Option[String] = None,
@@ -56,7 +79,18 @@ object PEventStore {
 
   }
 
-
+  /** Aggregate properties of entities based on these special events:
+    * \$set, \$unset, \$delete events.
+    *
+    * @param appName use events of this app
+    * @param entityType aggregate properties of the entities of this entityType
+    * @param channelName use events of this channel (default channel if it's None)
+    * @param startTime use events with eventTime >= startTime
+    * @param untilTime use events with eventTime < untilTime
+    * @param required only keep entities with these required properties defined
+    * @param sc Spark context
+    * @return RDD[(String, PropertyMap)] RDD of entityId and PropetyMap pair
+    */
   def aggregateProperties(
     appName: String,
     entityType: String,
