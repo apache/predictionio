@@ -153,56 +153,6 @@ class HBLEvents(val client: HBClient, val namespace: String)
     }
   }
 
-  /** @deprecated */
-  override
-  def futureGetByAppId(appId: Int)(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Iterator[Event]]] = {
-      futureFind(
-        appId = appId,
-        startTime = None,
-        untilTime = None,
-        entityType = None,
-        entityId = None,
-        eventNames = None,
-        limit = None,
-        reversed = None)
-    }
-
-  /** @deprecated */
-  override
-  def futureGetByAppIdAndTime(appId: Int, startTime: Option[DateTime],
-    untilTime: Option[DateTime])(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Iterator[Event]]] = {
-      futureFind(
-        appId = appId,
-        startTime = startTime,
-        untilTime = untilTime,
-        entityType = None,
-        entityId = None,
-        eventNames = None,
-        limit = None,
-        reversed = None)
-  }
-
-  /** @deprecated */
-  override
-  def futureGetByAppIdAndTimeAndEntity(appId: Int,
-    startTime: Option[DateTime],
-    untilTime: Option[DateTime],
-    entityType: Option[String],
-    entityId: Option[String])(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Iterator[Event]]] = {
-      futureFind(
-        appId = appId,
-        startTime = startTime,
-        untilTime = untilTime,
-        entityType = entityType,
-        entityId = entityId,
-        eventNames = None,
-        limit = None,
-        reversed = None)
-  }
-
   override
   def futureFind(
     appId: Int,
@@ -298,25 +248,5 @@ class HBLEvents(val client: HBClient, val namespace: String)
         }
       }
     }
-
-  /** @deprecated */
-  override
-  def futureDeleteByAppId(appId: Int)(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Unit]] = {
-    Future {
-      // TODO: better way to handle range delete
-      val table = getTable(appId)
-      val scan = new Scan()
-      val scanner = table.getScanner(scan)
-      val it = scanner.iterator()
-      while (it.hasNext()) {
-        val result = it.next()
-        table.delete(new Delete(result.getRow()))
-      }
-      scanner.close()
-      table.close()
-      Right(())
-    }
-  }
 
 }

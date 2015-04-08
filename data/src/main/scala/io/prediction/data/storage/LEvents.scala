@@ -97,27 +97,6 @@ trait LEvents {
     Future[Either[StorageError, Boolean]] =
     notImplemented
 
-  /** @deprecated */
-  private[prediction]
-  def futureGetByAppId(appId: Int)(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Iterator[Event]]] = notImplemented
-
-  /* where t >= start and t < untilTime */
-  /** @deprecated */
-  private[prediction]
-  def futureGetByAppIdAndTime(appId: Int, startTime: Option[DateTime],
-    untilTime: Option[DateTime])(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Iterator[Event]]] = notImplemented
-
-  /** @deprecated */
-  private[prediction]
-  def futureGetByAppIdAndTimeAndEntity(appId: Int,
-    startTime: Option[DateTime],
-    untilTime: Option[DateTime],
-    entityType: Option[String],
-    entityId: Option[String])(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Iterator[Event]]] = notImplemented
-
   /** Reads from database and returns a Future of either StorageError or
     * events iterator.
     *
@@ -205,11 +184,6 @@ trait LEvents {
     untilTime: Option[DateTime] = None)(implicit ec: ExecutionContext):
     Future[Either[StorageError, Option[PropertyMap]]] = notImplemented
 
-  /** @deprecated */
-  private[prediction]
-  def futureDeleteByAppId(appId: Int)(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Unit]] = notImplemented
-
   // following is blocking
   private[prediction] def insert(event: Event, appId: Int,
     channelId: Option[Int] = None,
@@ -230,34 +204,6 @@ trait LEvents {
     timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
     Either[StorageError, Boolean] = {
     Await.result(futureDelete(eventId, appId, channelId), timeout)
-  }
-
-  /** @deprecated */
-  private[prediction] def getByAppId(appId: Int,
-    timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
-    Either[StorageError, Iterator[Event]] = {
-    Await.result(futureGetByAppId(appId), timeout)
-  }
-
-  /** @deprecated */
-  private[prediction]
-  def getByAppIdAndTime(appId: Int, startTime: Option[DateTime],
-    untilTime: Option[DateTime],
-    timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
-    Either[StorageError, Iterator[Event]] = {
-    Await.result(futureGetByAppIdAndTime(appId, startTime, untilTime), timeout)
-  }
-
-  /** @deprecated */
-  private[prediction] def getByAppIdAndTimeAndEntity(appId: Int,
-    startTime: Option[DateTime],
-    untilTime: Option[DateTime],
-    entityType: Option[String],
-    entityId: Option[String],
-    timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
-    Either[StorageError, Iterator[Event]] = {
-    Await.result(futureGetByAppIdAndTimeAndEntity(appId, startTime, untilTime,
-      entityType, entityId), timeout)
   }
 
   /** reads from database and returns either StorageError or
@@ -341,6 +287,7 @@ trait LEvents {
     * @param ec ExecutionContext
     * @return Either[StorageError, Iterator[Event]]
     */
+  @deprecated("Use LEventStore.findSingleEntity() instead.", "0.9.2")
   def findSingleEntity(
     appId: Int,
     channelId: Option[Int] = None,
@@ -437,13 +384,6 @@ trait LEvents {
       entityId = entityId,
       startTime = startTime,
       untilTime = untilTime), timeout)
-  }
-
-  /** @deprecated */
-  private[prediction] def deleteByAppId(appId: Int,
-    timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
-    Either[StorageError, Unit] = {
-    Await.result(futureDeleteByAppId(appId), timeout)
   }
 
 }

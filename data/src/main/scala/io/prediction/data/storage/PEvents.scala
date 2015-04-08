@@ -29,7 +29,7 @@ import scala.reflect.ClassTag
   */
 trait PEvents extends Serializable {
 
-  /** @deprecated */
+  @deprecated("Use PEventStore.find() instead.", "0.9.2")
   def getByAppIdAndTimeAndEntity(appId: Int,
     startTime: Option[DateTime],
     untilTime: Option[DateTime],
@@ -65,6 +65,8 @@ trait PEvents extends Serializable {
     * @param sc Spark context
     * @return RDD[Event]
     */
+  // NOTE: Don't delete! make this private[prediction] instead when deprecate
+  @deprecated("Use PEventStore.find() instead.", "0.9.2")
   def find(
     appId: Int,
     channelId: Option[Int] = None,
@@ -88,6 +90,8 @@ trait PEvents extends Serializable {
     * @param sc Spark context
     * @return RDD[(String, PropertyMap)] RDD of entityId and PropetyMap pair
     */
+  // NOTE: Don't delete! make this private[prediction] instead when deprecate
+  @deprecated("Use PEventStore.aggregateProperties() instead.", "0.9.2")
   def aggregateProperties(
     appId: Int,
     channelId: Option[Int] = None,
@@ -101,7 +105,7 @@ trait PEvents extends Serializable {
     * Extract EntityMap[A] from events for the entityType
     * NOTE: it is local EntityMap[A]
     */
-  @Experimental
+  @deprecated("Use PEventStore.aggregateProperties() instead.", "0.9.2")
   def extractEntityMap[A: ClassTag](
     appId: Int,
     entityType: String,
@@ -117,7 +121,6 @@ trait PEvents extends Serializable {
     * @param appId the app ID
     * @param sc Spark Context
     */
-  @Experimental
   private[prediction] def write(events: RDD[Event], appId: Int)(sc: SparkContext): Unit =
     write(events, appId, None)(sc)
 
@@ -129,7 +132,6 @@ trait PEvents extends Serializable {
     * @param channelId  channel ID (default channel if it's None)
     * @param sc Spark Context
     */
-  @Experimental
   private[prediction] def write(
     events: RDD[Event], appId: Int, channelId: Option[Int])(sc: SparkContext): Unit
 

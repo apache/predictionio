@@ -13,7 +13,6 @@
   * limitations under the License.
   */
 
-/* Deprecated */
 package io.prediction.data.view
 
 import io.prediction.data.storage.Event
@@ -26,7 +25,7 @@ import scala.language.implicitConversions
 
 import scala.concurrent.ExecutionContext.Implicits.global // TODO
 
-@deprecated("Use LEvents instead.", "0.9.2")
+@deprecated("Use LEvents or LEventStore instead.", "0.9.2")
 object ViewPredicates {
   def getStartTimePredicate(startTimeOpt: Option[DateTime])
   : (Event => Boolean) = {
@@ -131,7 +130,7 @@ class EventSeq(val events: List[Event]) {
 }
 
 
-@deprecated("Use LEvents instead.", "0.9.2")
+@deprecated("Use LEventStore instead.", "0.9.2")
 class LBatchView(
   val appId: Int,
   val startTime: Option[DateTime],
@@ -139,8 +138,10 @@ class LBatchView(
 
   @transient lazy val eventsDb = Storage.getLEvents()
 
-  @transient lazy val _events = eventsDb.getByAppIdAndTime(appId,
-    startTime, untilTime).right.get.toList
+  @transient lazy val _events = eventsDb.find(
+    appId = appId,
+    startTime = startTime,
+    untilTime = untilTime).right.get.toList
 
   @transient lazy val events: EventSeq = new EventSeq(_events)
 

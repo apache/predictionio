@@ -13,7 +13,6 @@
   * limitations under the License.
   */
 
-/* Deprecated */
 package io.prediction.data.view
 
 import io.prediction.data.storage.hbase.HBPEvents
@@ -165,7 +164,7 @@ private[prediction] object EventOp {
   }
 }
 
-@deprecated("Use PEvents instead.", "0.9.2")
+@deprecated("Use PEvents or PEventStore instead.", "0.9.2")
 class PBatchView(
   val appId: Int,
   val startTime: Option[DateTime],
