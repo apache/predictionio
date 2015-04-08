@@ -130,6 +130,7 @@ trait PEvents extends Serializable {
     * @param sc Spark Context
     */
   @Experimental
-  def write(events: RDD[Event], appId: Int, channelId: Option[Int])(sc: SparkContext): Unit
+  private[prediction] def write(
+    events: RDD[Event], appId: Int, channelId: Option[Int])(sc: SparkContext): Unit
 
 }
