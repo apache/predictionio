@@ -1,5 +1,5 @@
 """
-Import sample data for similar user engine
+Import sample data for recommended user engine
 """
 
 import predictionio
@@ -42,7 +42,7 @@ def import_events(client):
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(
-    description="Import sample data for similar user engine")
+    description="Import sample data for recommended user engine")
   parser.add_argument('--access_key', default='invald_access_key')
   parser.add_argument('--url', default="http://localhost:7070")
 
