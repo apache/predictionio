@@ -15,6 +15,7 @@
 
 package io.prediction.core
 
+import io.prediction.annotation.Experimental   
 import io.prediction.controller.EngineParams
 import io.prediction.controller.Evaluation
 import io.prediction.workflow.WorkflowParams
@@ -40,4 +41,9 @@ trait BaseEvaluatorResult extends Serializable {
   
   /** JSON portion of the rendered evaluator results. */
   def toJSON(): String = ""
+
+  /** :: Experimental ::
+    * Indicate if this result is inserted into database. */
+  @Experimental
+  val noSave: Boolean = false 
 }

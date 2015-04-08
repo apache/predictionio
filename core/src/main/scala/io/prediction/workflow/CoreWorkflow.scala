@@ -124,18 +124,23 @@ object CoreWorkflow {
       engineParamsList,
       evaluator,
       params)
-    val evaluatedEvaluationInstance = evaluationInstance.copy(
-      status = "EVALCOMPLETED",
-      id = evaluationInstanceId,
-      endTime = DateTime.now,
-      evaluatorResults = evaluatorResult.toOneLiner,
-      evaluatorResultsHTML = evaluatorResult.toHTML,
-      evaluatorResultsJSON = evaluatorResult.toJSON
-    )
 
-    logger.info(s"Updating evaluation instance with result: $evaluatorResult")
+    if (evaluatorResult.noSave) { 
+      logger.info(s"This evaluation result is not inserted into database: $evaluatorResult")
+    } else {
+      val evaluatedEvaluationInstance = evaluationInstance.copy(
+        status = "EVALCOMPLETED",
+        id = evaluationInstanceId,
+        endTime = DateTime.now,
+        evaluatorResults = evaluatorResult.toOneLiner,
+        evaluatorResultsHTML = evaluatorResult.toHTML,
+        evaluatorResultsJSON = evaluatorResult.toJSON
+      )
 
-    evaluationInstances.update(evaluatedEvaluationInstance)
+      logger.info(s"Updating evaluation instance with result: $evaluatorResult")
+
+      evaluationInstances.update(evaluatedEvaluationInstance)
+    }
 
     logger.debug("Stop SparkContext")
 
