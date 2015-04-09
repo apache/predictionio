@@ -22,7 +22,6 @@ import akka.util.Timeout
 import io.prediction.data.api.StartServer
 import io.prediction.data.storage.Storage
 import org.json4s.DefaultFormats
-//import org.json4s.ext.JodaTimeSerializers
 
 import java.util.concurrent.TimeUnit
 
@@ -31,14 +30,11 @@ import spray.http.{MediaTypes, StatusCodes}
 import spray.httpx.Json4sSupport
 import spray.routing._
 
-// see EventAPI.scala for reference
 class AdminServiceActor(val commandClient: CommandClient)
   extends HttpServiceActor {
 
   object Json4sProtocol extends Json4sSupport {
     implicit def json4sFormats = DefaultFormats
-    //implicit def json4sFormats: Formats = DefaultFormats.lossless ++
-    //  JodaTimeSerializers.all
   }
 
   import Json4sProtocol._
@@ -118,7 +114,7 @@ class AdminServerActor(val commandClient: CommandClient) extends Actor {
   def receive = {
     case StartServer(host, portNum) => {
       IO(Http) ! Http.Bind(child, interface = host, port = portNum)
-      
+
     }
     case m: Http.Bound => log.info("Bound received. AdminServer is ready.")
     case m: Http.CommandFailed => log.error("Command failed.")
