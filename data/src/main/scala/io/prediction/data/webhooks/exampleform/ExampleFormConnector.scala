@@ -13,8 +13,7 @@
   * limitations under the License.
   */
 
-package io.prediction.data.webhooks.example
-
+package io.prediction.data.webhooks.exampleform
 
 import io.prediction.data.webhooks.FormConnector
 import io.prediction.data.webhooks.ConnectorException
