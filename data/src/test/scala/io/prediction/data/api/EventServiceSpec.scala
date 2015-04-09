@@ -16,6 +16,8 @@
 package io.prediction.data.api
 
 import io.prediction.data.storage.Storage
+import io.prediction.data.webhooks.JsonConnector
+import io.prediction.data.webhooks.FormConnector
 
 import akka.testkit.TestProbe
 import akka.actor.ActorSystem
@@ -33,10 +35,20 @@ class EventServiceSpec extends Specification {
   val system = ActorSystem("EventServiceSpecSystem")
 
   val eventClient = Storage.getLEvents()
-  val accessKeysClient = Storage.getMetaDataAccessKeys
+  val accessKeysClient = Storage.getMetaDataAccessKeys()
+  val channelsClient = Storage.getMetaDataChannels()
+
+  val jsonConnectors: Map[String, JsonConnector] = Map()
+  val formConnectors: Map[String, FormConnector] = Map()
 
   val eventServiceActor = system.actorOf(
-    Props(classOf[EventServiceActor], eventClient, accessKeysClient, true))
+    Props(classOf[EventServiceActor],
+      eventClient,
+      accessKeysClient,
+      channelsClient,
+      jsonConnectors,
+      formConnectors,
+      true))
 
   "GET / request" should {
     "properly produce OK HttpResponses" in {
@@ -54,6 +66,6 @@ class EventServiceSpec extends Specification {
       success
     }
   }
-  
+
   step(system.shutdown())
 }
