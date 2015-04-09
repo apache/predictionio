@@ -25,10 +25,6 @@ import io.prediction.data.storage.DateTimeJson4sSupport
 import io.prediction.data.storage.LEvents
 import io.prediction.data.storage.StorageError
 import io.prediction.data.storage.Storage
-import io.prediction.data.webhooks.JsonConnector
-import io.prediction.data.webhooks.FormConnector
-import io.prediction.data.webhooks.segmentio.SegmentIOConnector
-import io.prediction.data.webhooks.mailchimp.MailChimpConnector
 
 import akka.actor.ActorSystem
 import akka.actor.Actor
@@ -67,8 +63,6 @@ class EventServiceActor(
     val eventClient: LEvents,
     val accessKeysClient: AccessKeys,
     val channelsClient: Channels,
-    val jsonConnectors: Map[String, JsonConnector],
-    val formConnectors: Map[String, FormConnector],
     val stats: Boolean) extends HttpServiceActor {
 
   object Json4sProtocol extends Json4sSupport {
@@ -341,7 +335,6 @@ class EventServiceActor(
                       channelId = channelId,
                       web = web,
                       data = jObj,
-                      connectors = jsonConnectors,
                       eventClient = eventClient,
                       log = log,
                       stats = stats,
@@ -365,7 +358,6 @@ class EventServiceActor(
                     appId = appId,
                     channelId = channelId,
                     web = web,
-                    connectors = jsonConnectors,
                     log = log)
                 }
               }
@@ -393,7 +385,6 @@ class EventServiceActor(
                       channelId = channelId,
                       web = web,
                       data = formData,
-                      connectors = formConnectors,
                       eventClient = eventClient,
                       log = log,
                       stats = stats,
@@ -420,7 +411,6 @@ class EventServiceActor(
                     appId = appId,
                     channelId = channelId,
                     web = web,
-                    connectors = formConnectors,
                     log = log)
                 }
               }
@@ -446,8 +436,6 @@ class EventServerActor(
     val eventClient: LEvents,
     val accessKeysClient: AccessKeys,
     val channelsClient: Channels,
-    val webhooksJsonConnectors: Map[String, JsonConnector],
-    val webhooksFormConnectors: Map[String, FormConnector],
     val stats: Boolean) extends Actor {
   val log = Logging(context.system, this)
   val child = context.actorOf(
@@ -455,8 +443,6 @@ class EventServerActor(
       eventClient,
       accessKeysClient,
       channelsClient,
-      webhooksJsonConnectors,
-      webhooksFormConnectors,
       stats),
     "EventServiceActor")
   implicit val system = context.system
@@ -484,23 +470,12 @@ object EventServer {
     val accessKeysClient = Storage.getMetaDataAccessKeys()
     val channelsClient = Storage.getMetaDataChannels()
 
-    // webhooks
-    val jsonConnectors: Map[String, JsonConnector] = Map(
-      "segmentio" -> SegmentIOConnector
-    )
-
-    val formConnectors: Map[String, FormConnector] = Map(
-      "mailchimp" -> MailChimpConnector
-    )
-
     val serverActor = system.actorOf(
       Props(
         classOf[EventServerActor],
         eventClient,
         accessKeysClient,
         channelsClient,
-        jsonConnectors,
-        formConnectors,
         config.stats),
       "EventServerActor")
     if (config.stats) system.actorOf(Props[StatsActor], "StatsActor")

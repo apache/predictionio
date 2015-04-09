@@ -47,7 +47,6 @@ private[prediction] object Webhooks {
     channelId: Option[Int],
     web: String,
     data: JObject,
-    connectors: Map[String, JsonConnector],
     eventClient: LEvents,
     log: LoggingAdapter,
     stats: Boolean,
@@ -55,7 +54,7 @@ private[prediction] object Webhooks {
   )(implicit ec: ExecutionContext): Future[(StatusCode, Map[String, String])] = {
 
     val eventFuture = Future {
-      connectors.get(web).map { connector =>
+      WebhooksConnectors.json.get(web).map { connector =>
         ConnectorUtil.toEvent(connector, data)
       }
     }
@@ -89,11 +88,10 @@ private[prediction] object Webhooks {
     appId: Int,
     channelId: Option[Int],
     web: String,
-    connectors: Map[String, JsonConnector],
     log: LoggingAdapter
   )(implicit ec: ExecutionContext): Future[(StatusCode, Map[String, String])] = {
     Future {
-      connectors.get(web).map { connector =>
+      WebhooksConnectors.json.get(web).map { connector =>
         (StatusCodes.OK, Map("message" -> "Ok"))
       }.getOrElse {
         val message = s"webhooks connection for ${web} is not supported."
@@ -107,14 +105,13 @@ private[prediction] object Webhooks {
     channelId: Option[Int],
     web: String,
     data: FormData,
-    connectors: Map[String, FormConnector],
     eventClient: LEvents,
     log: LoggingAdapter,
     stats: Boolean,
     statsActorRef: ActorSelection
   )(implicit ec: ExecutionContext): Future[(StatusCode, Map[String, String])] = {
     val eventFuture = Future {
-      connectors.get(web).map { connector =>
+      WebhooksConnectors.form.get(web).map { connector =>
         ConnectorUtil.toEvent(connector, data.fields.toMap)
       }
     }
@@ -148,11 +145,10 @@ private[prediction] object Webhooks {
     appId: Int,
     channelId: Option[Int],
     web: String,
-    connectors: Map[String, FormConnector],
     log: LoggingAdapter
   )(implicit ec: ExecutionContext): Future[(StatusCode, Map[String, String])] = {
     Future {
-      connectors.get(web).map { connector =>
+      WebhooksConnectors.form.get(web).map { connector =>
         (StatusCodes.OK, Map("message" -> "Ok"))
       }.getOrElse {
         val message = s"webhooks connection for ${web} is not supported."
