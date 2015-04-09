@@ -88,6 +88,8 @@ object FileToEvents extends Logging {
       events.write(events = rdd.map(read[Event](_)),
         appId = args.appId,
         channelId = channelId)(sc)
+      info("Events are imported.")
+      info("Done.")
     }
   }
 }
