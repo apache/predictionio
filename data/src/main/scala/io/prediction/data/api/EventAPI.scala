@@ -21,6 +21,7 @@ import io.prediction.data.storage.AccessKeys
 import io.prediction.data.storage.Channels
 import io.prediction.data.storage.Event
 import io.prediction.data.storage.EventJson4sSupport
+import io.prediction.data.storage.DateTimeJson4sSupport
 import io.prediction.data.storage.LEvents
 import io.prediction.data.storage.StorageError
 import io.prediction.data.storage.Storage
@@ -39,7 +40,6 @@ import akka.util.Timeout
 
 import org.json4s.{Formats, DefaultFormats}
 import org.json4s.JObject
-import org.json4s.ext.JodaTimeSerializers
 import org.json4s.native.JsonMethods.parse
 
 import spray.util.LoggingContext
@@ -73,8 +73,10 @@ class EventServiceActor(
 
   object Json4sProtocol extends Json4sSupport {
     implicit def json4sFormats: Formats = DefaultFormats +
-      new EventJson4sSupport.APISerializer ++
-      JodaTimeSerializers.all
+      new EventJson4sSupport.APISerializer +
+      // NOTE: don't use Json4s JodaTimeSerializers since it has issues,
+      // some format not converred, or timezone not correct
+      new DateTimeJson4sSupport.serializer
   }
 
   val log = Logging(context.system, this)
