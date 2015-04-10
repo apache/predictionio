@@ -15,18 +15,9 @@
 
 package io.prediction.controller
 
-import grizzled.slf4j.Logger
-import io.prediction.workflow.PersistentModelManifest
 import io.prediction.workflow.SharedSparkContext
-import io.prediction.workflow.StopAfterPrepareInterruption
-import io.prediction.workflow.StopAfterReadInterruption
-import org.apache.spark.rdd.RDD
-import org.scalatest.Inspectors._
-import org.scalatest.Matchers._
+import io.prediction.workflow.WorkflowParams
 import org.scalatest.FunSuite
-import org.scalatest.Inside
-
-import scala.util.Random
 
 object MetricEvaluatorSuite {
   case class Metric0() extends SumMetric[EmptyParams, Int, Int, Int, Int] {
@@ -36,8 +27,7 @@ object MetricEvaluatorSuite {
   object Evaluation0 extends Evaluation {}
 }
 
-class MetricEvaluatorDevSuite
-extends FunSuite with SharedSparkContext {
+class MetricEvaluatorDevSuite extends FunSuite with SharedSparkContext {
   import io.prediction.controller.MetricEvaluatorSuite._
 
   test("a") {
@@ -59,6 +49,4 @@ extends FunSuite with SharedSparkContext {
       WorkflowParams())
 
   }
-
 }
-
