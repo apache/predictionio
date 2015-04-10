@@ -1,12 +1,13 @@
 #footer {
-
+  float: left;
   display: inline-block;
   justify-content: flex-start;
 
 
 
   background-color: $footer-background-color;
-  width: 100%;
+  width: 800px;
+  margin-left: 300px;
 
   .column {
     padding: 0 30px 0 30px;
