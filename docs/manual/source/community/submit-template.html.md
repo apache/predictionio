@@ -4,20 +4,28 @@ title:  Submitting a Template to Template Gallery
 
 ## Template Guidelines
 
-- Please give your template and GitHub repo a meaningful name
+- Please give your template and GitHub repo a meaningful name (for example, My-MLlibKMeansClustering-Template).
+
+- Please tag your repo for each released version. This is required by Template Gallery.
+
+    For example, tag the release with v0.1.0:
+
+    ```
+    $ git tag -a v0.1.0 -m 'version 0.1.0'
+    ```
 
 - For clarity, the engine template directory structure should be:
 
-  ```
-  data/  # contains sample data or related files
-  project/  # contains the necessary sbt files for build (e.g assembly.sbt)
-  src/  # template source code
-  .gitignore
-  README.md
-  build.sbt
-  engine.json # one or more engine.json
-  template.json
-  ```
+    ```
+    data/  # contains sample data or related files
+    project/  # contains the necessary sbt files for build (e.g assembly.sbt)
+    src/  # template source code
+    .gitignore
+    README.md
+    build.sbt
+    engine.json # one or more engine.json
+    template.json
+    ```
 
 - Try to keep the root directory clean. If you have additional script files or other files, please create new folders for them and provide description.
 
