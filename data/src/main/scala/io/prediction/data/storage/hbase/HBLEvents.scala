@@ -18,8 +18,6 @@ package io.prediction.data.storage.hbase
 import io.prediction.data.storage.Event
 import io.prediction.data.storage.PropertyMap
 import io.prediction.data.storage.LEvents
-import io.prediction.data.storage.LEventAggregator
-import io.prediction.data.storage.StorageException
 import io.prediction.data.storage.hbase.HBEventsUtil.RowKey
 import io.prediction.data.storage.hbase.HBEventsUtil.RowKeyException
 
@@ -192,53 +190,5 @@ class HBLEvents(val client: HBClient, val namespace: String)
         eventsIt
       }
   }
-
-  override
-  def futureAggregateProperties(
-    appId: Int,
-    channelId: Option[Int] = None,
-    entityType: String,
-    startTime: Option[DateTime] = None,
-    untilTime: Option[DateTime] = None,
-    required: Option[Seq[String]] = None)(implicit ec: ExecutionContext):
-    Future[Map[String, PropertyMap]] = {
-      futureFind(
-        appId = appId,
-        channelId = channelId,
-        startTime = startTime,
-        untilTime = untilTime,
-        entityType = Some(entityType),
-        eventNames = Some(LEventAggregator.eventNames)
-      ).map{ eventIt =>
-        val dm = LEventAggregator.aggregateProperties(eventIt)
-        if (required.isDefined) {
-          dm.filter { case (k, v) =>
-            required.get.map(v.contains(_)).reduce(_ && _)
-          }
-        } else dm
-      }
-    }
-
-  override
-  def futureAggregatePropertiesSingle(
-    appId: Int,
-    channelId: Option[Int] = None,
-    entityType: String,
-    entityId: String,
-    startTime: Option[DateTime] = None,
-    untilTime: Option[DateTime] = None)(implicit ec: ExecutionContext):
-    Future[Option[PropertyMap]] = {
-      futureFind(
-        appId = appId,
-        channelId = channelId,
-        startTime = startTime,
-        untilTime = untilTime,
-        entityType = Some(entityType),
-        entityId = Some(entityId),
-        eventNames = Some(LEventAggregator.eventNames)
-      ).map{ eventIt =>
-        LEventAggregator.aggregatePropertiesSingle(eventIt)
-      }
-    }
 
 }

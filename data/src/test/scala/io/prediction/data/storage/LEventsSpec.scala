@@ -46,6 +46,8 @@ class LEventsSpec extends Specification with TestEvents {
     insert test user events ${insertTestUserEvents(eventClient)}
     find user events ${findUserEvents(eventClient)}
     aggregate user properties ${aggregateUserProperties(eventClient)}
+    aggregate one user properties ${aggregateOneUserProperties(eventClient)}
+    aggregate non-existent user properties ${aggregateNonExistentUserProperties(eventClient)}
     init channel ${initChannel(eventClient)}
     insert 2 events to channel ${insertChannel(eventClient)}
     insert 1 event to channel and delete by ID  ${insertAndDeleteChannel(eventClient)}
@@ -136,6 +138,26 @@ class LEventsSpec extends Specification with TestEvents {
     )
 
     result must beEqualTo(expected)
+  }
+
+  def aggregateOneUserProperties(eventClient: LEvents) = {
+    val result: Option[PropertyMap] = eventClient.aggregatePropertiesOfEntity(
+      appId = appId,
+      entityType = "user",
+      entityId = "u1")
+
+    val expected = Some(PropertyMap(u1, u1BaseTime, u1LastTime))
+
+    result must beEqualTo(expected)
+  }
+
+  def aggregateNonExistentUserProperties(eventClient: LEvents) = {
+    val result: Option[PropertyMap] = eventClient.aggregatePropertiesOfEntity(
+      appId = appId,
+      entityType = "user",
+      entityId = "u999999")
+
+    result must beEqualTo(None)
   }
 
   val channelId = 12

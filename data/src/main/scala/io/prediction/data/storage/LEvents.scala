@@ -15,14 +15,15 @@
 
 package io.prediction.data.storage
 
+import io.prediction.annotation.Experimental
+
 import scala.concurrent.Future
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-
-import org.joda.time.DateTime
-
 import scala.concurrent.ExecutionContext
 import scala.concurrent.TimeoutException
+
+import org.joda.time.DateTime
 
 /** Base trait of a data access object that directly returns [[Event]] without
   * going through Spark's parallelization.
@@ -156,9 +157,26 @@ trait LEvents {
     startTime: Option[DateTime] = None,
     untilTime: Option[DateTime] = None,
     required: Option[Seq[String]] = None)(implicit ec: ExecutionContext):
-    Future[Map[String, PropertyMap]] = notImplemented
+    Future[Map[String, PropertyMap]] = {
+      futureFind(
+        appId = appId,
+        channelId = channelId,
+        startTime = startTime,
+        untilTime = untilTime,
+        entityType = Some(entityType),
+        eventNames = Some(LEventAggregator.eventNames)
+      ).map{ eventIt =>
+        val dm = LEventAggregator.aggregateProperties(eventIt)
+        if (required.isDefined) {
+          dm.filter { case (k, v) =>
+            required.get.map(v.contains(_)).reduce(_ && _)
+          }
+        } else dm
+      }
+    }
 
-  /** Experimental.
+  /**
+    * :: Experimental ::
     *
     * Aggregate properties of the specified entity (entityType + entityId)
     * based on these special events:
@@ -174,14 +192,27 @@ trait LEvents {
     * @param ec ExecutionContext
     * @return Future[Option[PropertyMap]]
     */
-  private[prediction] def futureAggregatePropertiesSingle(
+  @Experimental
+  private[prediction] def futureAggregatePropertiesOfEntity(
     appId: Int,
     channelId: Option[Int] = None,
     entityType: String,
     entityId: String,
     startTime: Option[DateTime] = None,
     untilTime: Option[DateTime] = None)(implicit ec: ExecutionContext):
-    Future[Option[PropertyMap]] = notImplemented
+    Future[Option[PropertyMap]] = {
+      futureFind(
+        appId = appId,
+        channelId = channelId,
+        startTime = startTime,
+        untilTime = untilTime,
+        entityType = Some(entityType),
+        entityId = Some(entityId),
+        eventNames = Some(LEventAggregator.eventNames)
+      ).map{ eventIt =>
+        LEventAggregator.aggregatePropertiesSingle(eventIt)
+      }
+    }
 
   // following is blocking
   private[prediction] def insert(event: Event, appId: Int,
@@ -380,7 +411,8 @@ trait LEvents {
       required = required), timeout)
   }
 
-  /** Experimental.
+  /**
+    * :: Experimental ::
     *
     * Aggregate properties of the specified entity (entityType + entityId)
     * based on these special events:
@@ -396,7 +428,8 @@ trait LEvents {
     * @param ec ExecutionContext
     * @return Future[Option[PropertyMap]]
     */
-  private[prediction] def aggregatePropertiesSingle(
+  @Experimental
+  private[prediction] def aggregatePropertiesOfEntity(
     appId: Int,
     channelId: Option[Int] = None,
     entityType: String,
@@ -406,7 +439,7 @@ trait LEvents {
     timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
     Option[PropertyMap] = {
 
-    Await.result(futureAggregatePropertiesSingle(
+    Await.result(futureAggregatePropertiesOfEntity(
       appId = appId,
       channelId = channelId,
       entityType = entityType,
