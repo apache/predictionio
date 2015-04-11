@@ -15,6 +15,8 @@
 
 package io.prediction.data.storage.hbase.upgrade
 
+import io.prediction.annotation.Experimental
+
 import io.prediction.data.storage.Event
 import io.prediction.data.storage.EventValidation
 import io.prediction.data.storage.DataMap
@@ -36,7 +38,8 @@ import org.apache.commons.codec.binary.Base64
 
 import scala.collection.JavaConversions._
 
-/* Experimental */
+/** :: Experimental :: */
+@Experimental
 object HB_0_8_0 {
 
   implicit val formats = DefaultFormats

@@ -15,6 +15,8 @@
 
 package io.prediction.data.storage.hbase.upgrade
 
+import io.prediction.annotation.Experimental
+
 import grizzled.slf4j.Logger
 import io.prediction.data.storage.Storage
 import io.prediction.data.storage.DataMap
@@ -59,7 +61,8 @@ object CheckDistribution {
 
 }
 
-/* Experimental */
+/** :: Experimental :: */
+@Experimental
 object Upgrade_0_8_3 {
   val NameMap = Map(
     "pio_user" -> "user",
