@@ -23,7 +23,14 @@ import scala.reflect.runtime.universe._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
+@deprecated("Use StorageException", "0.9.2")
 private[prediction] case class StorageError(val message: String)
+
+private[prediction] class StorageException(message: String, cause: Throwable)
+  extends Exception(message, cause) {
+
+  def this(message: String) = this(message, null)
+}
 
 /**
  * Backend-agnostic data storage layer with lazy initialization and connection

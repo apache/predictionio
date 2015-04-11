@@ -35,8 +35,6 @@ object CheckDistribution {
   : Map[(String, Option[String]), Int] = {
     eventClient
     .find(appId = appId)
-    .right
-    .get
     .foldLeft(Map[(String, Option[String]), Int]().withDefaultValue(0)) {
       case (m, e) => {
         val k = (e.entityType, e.targetEntityType)
@@ -88,7 +86,7 @@ object Upgrade_0_8_3 {
     "pio_inactive", "pio_price", "pio_rating")
 
   def hasPIOPrefix(eventClient: LEvents, appId: Int): Boolean = {
-    eventClient.find(appId = appId).right.get.filter( e =>
+    eventClient.find(appId = appId).filter( e =>
       (obsEntityTypes.contains(e.entityType) ||
        e.targetEntityType.map(obsEntityTypes.contains(_)).getOrElse(false) ||
        (!e.properties.keySet.forall(!obsProperties.contains(_)))
@@ -97,7 +95,7 @@ object Upgrade_0_8_3 {
   }
 
   def isEmpty(eventClient: LEvents, appId: Int): Boolean =
-    !eventClient.find(appId = appId).right.get.hasNext
+    !eventClient.find(appId = appId).hasNext
 
 
   def upgradeCopy(eventClient: LEvents, fromAppId: Int, toAppId: Int) {
@@ -108,8 +106,6 @@ object Upgrade_0_8_3 {
 
     val events = eventClient
     .find(appId = fromAppId)
-    .right
-    .get
     .zipWithIndex
     .foreach { case (fromEvent, index) => {
       if (index % 50000 == 0) {

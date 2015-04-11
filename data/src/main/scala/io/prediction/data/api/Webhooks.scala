@@ -67,13 +67,15 @@ private[prediction] object Webhooks {
         }
       } else {
         val event = eventOpt.get
-        val data = eventClient.futureInsert(event, appId, channelId).map { r =>
+        val data = eventClient.futureInsert(event, appId, channelId).map { id =>
+          val result = (StatusCodes.Created, Map("eventId" -> s"${id}"))
+          /*
           val result = r match {
             case Left(StorageError(message)) =>
               (StatusCodes.InternalServerError, Map("message" -> message))
             case Right(id) =>
               (StatusCodes.Created, Map("eventId" -> s"${id}"))
-          }
+          }*/
           if (stats) {
             statsActorRef ! Bookkeeping(appId, result._1, event)
           }
@@ -124,13 +126,15 @@ private[prediction] object Webhooks {
         }
       } else {
         val event = eventOpt.get
-        val data = eventClient.futureInsert(event, appId, channelId).map { r =>
+        val data = eventClient.futureInsert(event, appId, channelId).map { id =>
+          val result = (StatusCodes.Created, Map("eventId" -> s"${id}"))
+          /*
           val result = r match {
             case Left(StorageError(message)) =>
               (StatusCodes.InternalServerError, Map("message" -> message))
             case Right(id) =>
               (StatusCodes.Created, Map("eventId" -> s"${id}"))
-          }
+          }*/
           if (stats) {
             statsActorRef ! Bookkeeping(appId, result._1, event)
           }

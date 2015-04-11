@@ -73,30 +73,28 @@ class LEventsSpec extends Specification with TestEvents {
 
     val insertResp = listOfEvents.map { eventClient.insert(_, appId) }
 
-    val insertedEventId: List[String] = insertResp.map { resp =>
-      resp.right.get
-    }
+    val insertedEventId: List[String] = insertResp
 
     val insertedEvent: List[Option[Event]] = listOfEvents.zip(insertedEventId)
       .map { case (e, id) => Some(e.copy(eventId = Some(id))) }
 
     val getResp = insertedEventId.map { id => eventClient.get(id, appId) }
 
-    val getEvents = getResp.map { resp => resp.right.get }
+    val getEvents = getResp
 
     insertedEvent must containTheSameElementsAs(getEvents)
   }
 
   def insertAndDelete(eventClient: LEvents) = {
-    val eventId = eventClient.insert(r2, appId).right.get
+    val eventId = eventClient.insert(r2, appId)
 
-    val resultBefore = eventClient.get(eventId, appId).right.get
+    val resultBefore = eventClient.get(eventId, appId)
 
     val expectedBefore = r2.copy(eventId = Some(eventId))
 
-    val deleteStatus = eventClient.delete(eventId, appId).right.get
+    val deleteStatus = eventClient.delete(eventId, appId)
 
-    val resultAfter = eventClient.get(eventId, appId).right.get
+    val resultAfter = eventClient.get(eventId, appId)
 
     (resultBefore must beEqualTo(Some(expectedBefore))) and
     (deleteStatus must beEqualTo(true)) and
@@ -117,7 +115,6 @@ class LEventsSpec extends Specification with TestEvents {
     val results: List[Event] = eventClient.find(
       appId = appId,
       entityType = Some("user"))
-      .right.get
       .toList
       .map(e => e.copy(eventId = None)) // ignore eventID
 
@@ -131,7 +128,7 @@ class LEventsSpec extends Specification with TestEvents {
 
     val result: Map[String, PropertyMap] = eventClient.aggregateProperties(
       appId = appId,
-      entityType = "user").right.get
+      entityType = "user")
 
     val expected = Map(
       "u1" -> PropertyMap(u1, u1BaseTime, u1LastTime),
@@ -159,15 +156,15 @@ class LEventsSpec extends Specification with TestEvents {
 
   def insertAndDeleteChannel(eventClient: LEvents) = {
 
-    val eventId = eventClient.insert(r2, appId, Some(channelId)).right.get
+    val eventId = eventClient.insert(r2, appId, Some(channelId))
 
-    val resultBefore = eventClient.get(eventId, appId, Some(channelId)).right.get
+    val resultBefore = eventClient.get(eventId, appId, Some(channelId))
 
     val expectedBefore = r2.copy(eventId = Some(eventId))
 
-    val deleteStatus = eventClient.delete(eventId, appId, Some(channelId)).right.get
+    val deleteStatus = eventClient.delete(eventId, appId, Some(channelId))
 
-    val resultAfter = eventClient.get(eventId, appId, Some(channelId)).right.get
+    val resultAfter = eventClient.get(eventId, appId, Some(channelId))
 
     (resultBefore must beEqualTo(Some(expectedBefore))) and
     (deleteStatus must beEqualTo(true)) and
@@ -180,7 +177,6 @@ class LEventsSpec extends Specification with TestEvents {
       appId = appId,
       channelId = Some(channelId)
     )
-    .right.get
     .toList
     .map(e => e.copy(eventId = None)) // ignore eventId
 

@@ -35,6 +35,12 @@ $ sbt/sbt "data/test"
 $ sbt/sbt "data/test-only io.prediction.data.api.EventServiceSpec"
 ```
 
+- test for LEvents
+
+```
+$ sbt/sbt "data/test-only io.prediction.data.storage.LEventsSpec"
+```
+
 - test for ExampleJson and ExampleForm webhooks
 
 ```

@@ -20,6 +20,7 @@ import io.prediction.data.storage.PropertyMap
 import io.prediction.data.storage.LEvents
 import io.prediction.data.storage.LEventAggregator
 import io.prediction.data.storage.StorageError
+import io.prediction.data.storage.StorageException
 import io.prediction.data.storage.hbase.HBEventsUtil.RowKey
 import io.prediction.data.storage.hbase.HBEventsUtil.RowKeyException
 
@@ -102,23 +103,21 @@ class HBLEvents(val client: HBClient, val namespace: String)
   override
   def futureInsert(
     event: Event, appId: Int, channelId: Option[Int])(implicit ec: ExecutionContext):
-    Future[Either[StorageError, String]] = {
+    Future[String] = {
     Future {
       val table = getTable(appId, channelId)
       val (put, rowKey) = HBEventsUtil.eventToPut(event, appId)
       table.put(put)
       table.flushCommits()
       table.close()
-      Right(rowKey.toString)
-    }/* .recover {
-       case e: Exception => Left(StorageError(e.toString))
-    } */
+      rowKey.toString
+    }
   }
 
   override
   def futureGet(
     eventId: String, appId: Int, channelId: Option[Int])(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Option[Event]]] = {
+    Future[Option[Event]] = {
       Future {
         val table = getTable(appId, channelId)
         val rowKey = RowKey(eventId)
@@ -129,27 +128,24 @@ class HBLEvents(val client: HBClient, val namespace: String)
 
         if (!result.isEmpty()) {
           val event = resultToEvent(result, appId)
-          Right(Some(event))
+          Some(event)
         } else {
-          Right(None)
+          None
         }
-      }.recover {
-        case e: RowKeyException => Left(StorageError(e.toString))
-        case e: Exception => throw e
       }
     }
 
   override
   def futureDelete(
     eventId: String, appId: Int, channelId: Option[Int])(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Boolean]] = {
+    Future[Boolean] = {
     Future {
       val table = getTable(appId, channelId)
       val rowKey = RowKey(eventId)
       val exists = table.exists(new Get(rowKey.toBytes))
       table.delete(new Delete(rowKey.toBytes))
       table.close()
-      Right(exists)
+      exists
     }
   }
 
@@ -166,8 +162,9 @@ class HBLEvents(val client: HBClient, val namespace: String)
     targetEntityId: Option[Option[String]] = None,
     limit: Option[Int] = None,
     reversed: Option[Boolean] = None)(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Iterator[Event]]] = {
+    Future[Iterator[Event]] = {
       Future {
+
         val table = getTable(appId, channelId)
 
         val scan = HBEventsUtil.createScan(
@@ -193,7 +190,7 @@ class HBLEvents(val client: HBClient, val namespace: String)
 
         val eventsIt = results.map { resultToEvent(_, appId) }
 
-        Right(eventsIt)
+        eventsIt
       }
   }
 
@@ -205,7 +202,7 @@ class HBLEvents(val client: HBClient, val namespace: String)
     startTime: Option[DateTime] = None,
     untilTime: Option[DateTime] = None,
     required: Option[Seq[String]] = None)(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Map[String, PropertyMap]]] = {
+    Future[Map[String, PropertyMap]] = {
       futureFind(
         appId = appId,
         channelId = channelId,
@@ -213,15 +210,13 @@ class HBLEvents(val client: HBClient, val namespace: String)
         untilTime = untilTime,
         entityType = Some(entityType),
         eventNames = Some(LEventAggregator.eventNames)
-      ).map{ either =>
-        either.right.map{ eventIt =>
-          val dm = LEventAggregator.aggregateProperties(eventIt)
-          if (required.isDefined) {
-            dm.filter { case (k, v) =>
-              required.get.map(v.contains(_)).reduce(_ && _)
-            }
-          } else dm
-        }
+      ).map{ eventIt =>
+        val dm = LEventAggregator.aggregateProperties(eventIt)
+        if (required.isDefined) {
+          dm.filter { case (k, v) =>
+            required.get.map(v.contains(_)).reduce(_ && _)
+          }
+        } else dm
       }
     }
 
@@ -233,7 +228,7 @@ class HBLEvents(val client: HBClient, val namespace: String)
     entityId: String,
     startTime: Option[DateTime] = None,
     untilTime: Option[DateTime] = None)(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Option[PropertyMap]]] = {
+    Future[Option[PropertyMap]] = {
       futureFind(
         appId = appId,
         channelId = channelId,
@@ -242,10 +237,8 @@ class HBLEvents(val client: HBClient, val namespace: String)
         entityType = Some(entityType),
         entityId = Some(entityId),
         eventNames = Some(LEventAggregator.eventNames)
-      ).map{ either =>
-        either.right.map{ eventIt =>
-          LEventAggregator.aggregatePropertiesSingle(eventIt)
-        }
+      ).map{ eventIt =>
+        LEventAggregator.aggregatePropertiesSingle(eventIt)
       }
     }
 

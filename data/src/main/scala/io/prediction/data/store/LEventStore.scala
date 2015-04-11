@@ -57,7 +57,7 @@ object LEventStore {
     * @param latest Return latest event first (default true)
     * @return Either[StorageError, Iterator[Event]]
     */
-  def findSingleEntity(
+  def findByEntity(
     appName: String,
     entityType: String,
     entityId: String,
@@ -69,26 +69,22 @@ object LEventStore {
     untilTime: Option[DateTime] = None,
     limit: Option[Int] = None,
     latest: Boolean = true,
-    timeout: Duration = defaultTimeout): Either[StorageError, Iterator[Event]] = {
+    timeout: Duration = defaultTimeout): Iterator[Event] = {
 
     val (appId, channelId) = Common.appNameToId(appName, channelName)
 
-    try {
-      Await.result(eventsDb.futureFind(
-        appId = appId,
-        channelId = channelId,
-        startTime = startTime,
-        untilTime = untilTime,
-        entityType = Some(entityType),
-        entityId = Some(entityId),
-        eventNames = eventNames,
-        targetEntityType = targetEntityType,
-        targetEntityId = targetEntityId,
-        limit = limit,
-        reversed = Some(latest)), timeout)
-
-    } catch {
-      case e: TimeoutException => Left(StorageError(s"${e}"))
-    }
+    Await.result(eventsDb.futureFind(
+      appId = appId,
+      channelId = channelId,
+      startTime = startTime,
+      untilTime = untilTime,
+      entityType = Some(entityType),
+      entityId = Some(entityId),
+      eventNames = eventNames,
+      targetEntityType = targetEntityType,
+      targetEntityId = targetEntityId,
+      limit = limit,
+      reversed = Some(latest)), timeout)
   }
+
 }
