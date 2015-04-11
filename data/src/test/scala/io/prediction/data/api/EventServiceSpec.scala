@@ -37,17 +37,12 @@ class EventServiceSpec extends Specification {
   val eventClient = Storage.getLEvents()
   val accessKeysClient = Storage.getMetaDataAccessKeys()
   val channelsClient = Storage.getMetaDataChannels()
-
-  val jsonConnectors: Map[String, JsonConnector] = Map()
-  val formConnectors: Map[String, FormConnector] = Map()
-
+  
   val eventServiceActor = system.actorOf(
     Props(classOf[EventServiceActor],
       eventClient,
       accessKeysClient,
       channelsClient,
-      jsonConnectors,
-      formConnectors,
       true))
 
   "GET / request" should {
