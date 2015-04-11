@@ -1,0 +1,45 @@
+root:
+  -
+    body: 'Samples'
+    url: '#'
+    children:
+      -
+        body: 'Typography'
+        url: '/samples/'
+      -
+        body: 'Sizing'
+        url: '/samples/sizing/'
+      -
+        body: 'Tabs'
+        url: '/samples/tabs/'
+      -
+        body: 'Languages'
+        url: '/samples/languages/'
+
+  -
+    body: 'Menu'
+    url: '/samples/level-1/'
+    children:
+      -
+        body: 'Level 2.1'
+        url: '/samples/level-2-1/'
+      -
+        body: 'Level 2.2'
+        url: '/samples/level-2-2/'
+        children:
+          -
+            body: 'Level 3.1 This Title Is Very Long To Test Line Wrap'
+            url: '/samples/level-3-1/'
+            children:
+              -
+                body: 'Level 4.1'
+                url: '/samples/level-4-1/'
+              -
+                body: 'Level 4.2'
+                url: '/samples/level-4-2/'
+              -
+                body: 'Level 4.3'
+                url: '/samples/level-4-3/'
+          -
+            body: 'Level 3.2'
+            url: '/samples/level-3-2/'
