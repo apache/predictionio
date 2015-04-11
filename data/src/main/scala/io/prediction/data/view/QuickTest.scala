@@ -37,7 +37,7 @@ class TestHBLEvents() {
       startTime = None,
       untilTime = None,
       entityType = Some("pio_user"),
-      entityId = Some("3"))/*.right.get*/.toList
+      entityId = Some("3")).toList
     println(r)
   }
 }

@@ -98,8 +98,7 @@ trait LEvents {
     Future[Boolean] =
     notImplemented
 
-  /** Reads from database and returns a Future of either StorageError or
-    * events iterator.
+  /** Reads from database and returns a Future of events iterator.
     *
     * @param appId return events of this app ID
     * @param channelId return events of this channel ID (default channel if it's None)
@@ -121,7 +120,7 @@ trait LEvents {
     *   - return oldest events first if None or Some(false) (default)
     *   - return latest events first if Some(true)
     * @param ec ExecutionContext
-    * @return Future[Either[StorageError, Iterator[Event]]]
+    * @return Future[Iterator[Event]]
     */
   private[prediction] def futureFind(
     appId: Int,
@@ -139,8 +138,7 @@ trait LEvents {
 
   /** Aggregate properties of entities based on these special events:
     * \$set, \$unset, \$delete events.
-    * and returns a Future of either StorageError or a Map of entityId to
-    * properties.
+    * and returns a Future of Map of entityId to properties.
     *
     * @param appId use events of this app ID
     * @param channelId use events of this channel ID (default channel if it's None)
@@ -149,7 +147,7 @@ trait LEvents {
     * @param untilTime use events with eventTime < untilTime
     * @param required only keep entities with these required properties defined
     * @param ec ExecutionContext
-    * @return Future[Either[StorageError, Map[String, PropertyMap]]]
+    * @return Future[Map[String, PropertyMap]]
     */
   private[prediction] def futureAggregateProperties(
     appId: Int,
@@ -165,7 +163,7 @@ trait LEvents {
     * Aggregate properties of the specified entity (entityType + entityId)
     * based on these special events:
     * \$set, \$unset, \$delete events.
-    * and returns a Future of either StorageError or Option[PropertyMap]
+    * and returns a Future of Option[PropertyMap]
     *
     * @param appId use events of this app ID
     * @param channelId use events of this channel ID (default channel if it's None)
@@ -174,7 +172,7 @@ trait LEvents {
     * @param startTime use events with eventTime >= startTime
     * @param untilTime use events with eventTime < untilTime
     * @param ec ExecutionContext
-    * @return Future[Either[StorageError, Option[PropertyMap]]]
+    * @return Future[Option[PropertyMap]]
     */
   private[prediction] def futureAggregatePropertiesSingle(
     appId: Int,
@@ -207,8 +205,7 @@ trait LEvents {
     Await.result(futureDelete(eventId, appId, channelId), timeout)
   }
 
-  /** reads from database and returns either StorageError or
-    * events iterator.
+  /** reads from database and returns events iterator.
     *
     * @param appId return events of this app ID
     * @param channelId return events of this channel ID (default channel if it's None)
@@ -231,7 +228,7 @@ trait LEvents {
     *   - return oldest events first if None or Some(false) (default)
     *   - return latest events first if Some(true)
     * @param ec ExecutionContext
-    * @return Either[StorageError, Iterator[Event]]
+    * @return Iterator[Event]
     */
   private[prediction] def find(
     appId: Int,
@@ -354,8 +351,7 @@ trait LEvents {
 
   /** Aggregate properties of entities based on these special events:
     * \$set, \$unset, \$delete events.
-    * and returns either StorageError or a Map of entityId to
-    * properties.
+    * and returns a Map of entityId to properties.
     *
     * @param appId use events of this app ID
     * @param channelId use events of this channel ID (default channel if it's None)
@@ -364,7 +360,7 @@ trait LEvents {
     * @param untilTime use events with eventTime < untilTime
     * @param required only keep entities with these required properties defined
     * @param ec ExecutionContext
-    * @return Either[StorageError, Map[String, PropertyMap]]
+    * @return Map[String, PropertyMap]
     */
   private[prediction] def aggregateProperties(
     appId: Int,
@@ -389,7 +385,7 @@ trait LEvents {
     * Aggregate properties of the specified entity (entityType + entityId)
     * based on these special events:
     * \$set, \$unset, \$delete events.
-    * and returns either StorageError or Option[PropertyMap]
+    * and returns Option[PropertyMap]
     *
     * @param appId use events of this app ID
     * @param channelId use events of this channel ID
@@ -398,7 +394,7 @@ trait LEvents {
     * @param startTime use events with eventTime >= startTime
     * @param untilTime use events with eventTime < untilTime
     * @param ec ExecutionContext
-    * @return Future[Either[StorageError, Option[PropertyMap]]]
+    * @return Future[Option[PropertyMap]]
     */
   private[prediction] def aggregatePropertiesSingle(
     appId: Int,

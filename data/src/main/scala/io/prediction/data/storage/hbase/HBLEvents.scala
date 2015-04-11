@@ -19,7 +19,6 @@ import io.prediction.data.storage.Event
 import io.prediction.data.storage.PropertyMap
 import io.prediction.data.storage.LEvents
 import io.prediction.data.storage.LEventAggregator
-import io.prediction.data.storage.StorageError
 import io.prediction.data.storage.StorageException
 import io.prediction.data.storage.hbase.HBEventsUtil.RowKey
 import io.prediction.data.storage.hbase.HBEventsUtil.RowKeyException

@@ -23,7 +23,6 @@ import io.prediction.data.storage.Event
 import io.prediction.data.storage.EventJson4sSupport
 import io.prediction.data.storage.DateTimeJson4sSupport
 import io.prediction.data.storage.LEvents
-//import io.prediction.data.storage.StorageError
 import io.prediction.data.storage.Storage
 
 import akka.actor.ActorSystem
@@ -148,21 +147,6 @@ class EventServiceActor(
                       (StatusCodes.NotFound, Map("message" -> "Not Found"))
                     )
                   }
-                  /*
-                  val data = eventClient.futureGet(eventId, appId, channelId).map { r =>
-                    r match {
-                      case Left(StorageError(message)) =>
-                        (StatusCodes.InternalServerError,
-                          Map("message" -> message))
-                      case Right(eventOpt) => {
-                        eventOpt.map( event =>
-                          (StatusCodes.OK, event)
-                        ).getOrElse(
-                          (StatusCodes.NotFound, Map("message" -> "Not Found"))
-                        )
-                      }
-                    }
-                  }*/
                   data
                 }
               }
@@ -185,18 +169,6 @@ class EventServiceActor(
                     } else {
                       (StatusCodes.NotFound, Map("message" -> "Not Found"))
                     }
-                    /*r match {
-                      case Left(StorageError(message)) =>
-                        (StatusCodes.InternalServerError,
-                          Map("message" -> message))
-                      case Right(found) =>
-                        if (found) {
-                          (StatusCodes.OK, Map("message" -> "Found"))
-                        } else {
-                          (StatusCodes.NotFound, Map("message" -> "Not Found"))
-                        }
-                    }*/
-
                   }
                   data
                 }
@@ -221,14 +193,6 @@ class EventServiceActor(
                   log.debug(s"POST events")
                   val data = eventClient.futureInsert(event, appId, channelId).map { id =>
                     val result = (StatusCodes.Created, Map("eventId" -> s"${id}"))
-                    /*val result = r match {
-                      case Left(StorageError(message)) =>
-                        (StatusCodes.InternalServerError,
-                          Map("message" -> message))
-                      case Right(id) =>
-                        (StatusCodes.Created, Map("eventId" -> s"${id}"))
-                    }*/
-
                     if (stats) {
                       statsActorRef ! Bookkeeping(appId, result._1, event)
                     }
@@ -295,18 +259,6 @@ class EventServiceActor(
                             (StatusCodes.NotFound,
                               Map("message" -> "Not Found"))
                           }
-                          /*r match {
-                            case Left(StorageError(message)) =>
-                              (StatusCodes.InternalServerError,
-                                Map("message" -> message))
-                            case Right(eventIter) =>
-                              if (eventIter.hasNext) {
-                                (StatusCodes.OK, eventIter.toArray)
-                              } else {
-                                (StatusCodes.NotFound,
-                                  Map("message" -> "Not Found"))
-                              }
-                          }*/
                         }
                       data
                     }.recover {

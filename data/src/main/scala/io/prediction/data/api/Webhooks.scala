@@ -21,7 +21,6 @@ import io.prediction.data.webhooks.ConnectorUtil
 import io.prediction.data.storage.Event
 import io.prediction.data.storage.EventJson4sSupport
 import io.prediction.data.storage.LEvents
-import io.prediction.data.storage.StorageError
 
 import spray.routing._
 import spray.routing.Directives._
@@ -69,13 +68,7 @@ private[prediction] object Webhooks {
         val event = eventOpt.get
         val data = eventClient.futureInsert(event, appId, channelId).map { id =>
           val result = (StatusCodes.Created, Map("eventId" -> s"${id}"))
-          /*
-          val result = r match {
-            case Left(StorageError(message)) =>
-              (StatusCodes.InternalServerError, Map("message" -> message))
-            case Right(id) =>
-              (StatusCodes.Created, Map("eventId" -> s"${id}"))
-          }*/
+
           if (stats) {
             statsActorRef ! Bookkeeping(appId, result._1, event)
           }
@@ -128,13 +121,7 @@ private[prediction] object Webhooks {
         val event = eventOpt.get
         val data = eventClient.futureInsert(event, appId, channelId).map { id =>
           val result = (StatusCodes.Created, Map("eventId" -> s"${id}"))
-          /*
-          val result = r match {
-            case Left(StorageError(message)) =>
-              (StatusCodes.InternalServerError, Map("message" -> message))
-            case Right(id) =>
-              (StatusCodes.Created, Map("eventId" -> s"${id}"))
-          }*/
+
           if (stats) {
             statsActorRef ! Bookkeeping(appId, result._1, event)
           }

@@ -16,7 +16,6 @@
 package io.prediction.data.store
 
 import io.prediction.data.storage.Storage
-import io.prediction.data.storage.StorageError
 import io.prediction.data.storage.Event
 
 import org.joda.time.DateTime
@@ -55,7 +54,7 @@ object LEventStore {
     * @param untilTime return events with eventTime < untilTime
     * @param limit Limit number of events. Get all events if None or Some(-1)
     * @param latest Return latest event first (default true)
-    * @return Either[StorageError, Iterator[Event]]
+    * @return Iterator[Event]
     */
   def findByEntity(
     appName: String,
