@@ -32,17 +32,6 @@
   }
 }
 
-.active-complementary {
-  #main {
-
-  }
-
-  #table-of-contents {
-    display: block;
-  }
-}
-
-
 @include medium {
   #active-navigation {
     display: none;
@@ -58,23 +47,10 @@
     }
   }
 
-  .active-complementary {
-    #main {
-      margin-left: 0;
-    }
-
-    #nav-main {
-
-    }
-  }
 }
 
 // Large
 @include x-large {
-  #active-complementary {
-    display: none;
-  }
-
   #table-of-contents {
     display: block;
     &.empty {
@@ -82,9 +58,4 @@
     }
   }
 
-  .active-complementary {
-    #nav-main {
-      margin-left: 0;
-    }
-  }
 }

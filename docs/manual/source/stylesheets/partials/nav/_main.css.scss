@@ -4,22 +4,21 @@
   width: 300px;
   position: fixed;
   left: 0;
-  min-height: 100%;
   overflow: auto;
+  bottom: 0;
   top: 90px;
   background-color: $nav-main-background-color;
   ul {
-    margin: 0;
     padding: 0;
+    margin: 0;
     display: inline-block;
     width: 100%;
     list-style-type: none;
-    height: 100%;
-
   }
   a {
     color: $nav-main-link-color;
     box-sizing: border-box;
+    display: table;
     &:hover {
       text-decoration: none;
       background-color: $nav-main-hover-background-color;
@@ -28,13 +27,18 @@
     }
     i.fa {
       display: inline-block;
+      display: table-cell;
       width: 1em;
+    }
+
+    span {
+      display: table-cell;
     }
   }
 
   & > ul {
-
     // Level 1
+    margin-bottom: 50px;
     & > li {
       background-color: $nav-main-level-1-background-color;
       & > a {

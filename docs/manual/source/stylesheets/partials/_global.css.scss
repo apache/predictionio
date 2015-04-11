@@ -10,7 +10,13 @@
 }
 
 .col-main {
-  margin-left: 300px;
+  margin-left: 0;
+}
+
+@include medium {
+  .col-main {
+    margin-left: 300px;
+  }
 }
 
 

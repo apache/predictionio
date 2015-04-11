@@ -38,17 +38,12 @@ $(document).ready(function() {
   });
 
   $('#content').on('click', function(event) {
-    $('body').removeClass('active-navigation active-complementary')
+    $('body').removeClass('active-navigation')
   });
 
   $('#active-navigation').on('click', function(event) {
     event.preventDefault();
-    $('body').toggleClass('active-navigation').removeClass('active-complementary')
-  });
-
-  $('#active-complementary').on('click', function(event) {
-    event.preventDefault();
-    $('body').toggleClass('active-complementary').removeClass('active-navigation')
+    $('body').toggleClass('active-navigation')
   });
 
   if ($('#table-of-contents').is(':empty')) {
