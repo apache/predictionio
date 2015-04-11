@@ -19,7 +19,6 @@ $(document).ready(function() {
     });
   
   // Next Control Initialization
-  */
   $('.jcarousel-control-next')
     .on('jcarouselcontrol:active', function() {
       $(this).removeClass('inactive');
