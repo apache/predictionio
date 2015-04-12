@@ -1,6 +1,6 @@
 # Recommended User Template
 
-This example is based on version v0.1.3 of the Similar Product Engine Template.
+This example is based on version v0.1.3 of the Similar Product Engine Template. The Similar Product Engine Template has been customized to recommend users instead of items.
 
 ## Overview
 
@@ -36,6 +36,10 @@ By default, this template takes the following data from Event Server as Training
 
 The template also supports black-list and white-list. If a white-list is provided, the engine will include only those users in its recommendation.
 Likewise, if a black-list is provided, the engine will exclude those users in its recommendation.
+
+## Documentation
+
+Please refer to http://docs.prediction.io/templates/similarproduct/quickstart/
 
 ## Versions
 
