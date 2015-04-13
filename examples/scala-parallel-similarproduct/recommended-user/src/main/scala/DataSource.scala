@@ -35,50 +35,50 @@ class DataSource(val dsp: DataSourceParams)
       (entityId, user)
     }.cache()
 
-    // get all "user" "view" "viewedUser" events
-    val viewEventsRDD: RDD[ViewEvent] = eventsDb.find(
+    // get all "user" "follow" "followedUser" events
+    val followEventsRDD: RDD[FollowEvent] = eventsDb.find(
       appId = dsp.appId,
       entityType = Some("user"),
-      eventNames = Some(List("view")),
+      eventNames = Some(List("follow")),
       // targetEntityType is optional field of an event.
       targetEntityType = Some(Some("user")))(sc)
       // eventsDb.find() returns RDD[Event]
       .map { event =>
-        val viewEvent = try {
+        val followEvent = try {
           event.event match {
-            case "view" => ViewEvent(
+            case "follow" => FollowEvent(
               user = event.entityId,
-              viewedUser = event.targetEntityId.get,
+              followedUser = event.targetEntityId.get,
               t = event.eventTime.getMillis)
             case _ => throw new Exception(s"Unexpected event $event is read.")
           }
         } catch {
           case e: Exception => {
-            logger.error(s"Cannot convert $event to ViewEvent." +
+            logger.error(s"Cannot convert $event to FollowEvent." +
               s" Exception: $e.")
             throw e
           }
         }
-        viewEvent
+        followEvent
       }.cache()
 
     new TrainingData(
       users = usersRDD,
-      viewEvents = viewEventsRDD
+      followEvents = followEventsRDD
     )
   }
 }
 
 case class User()
 
-case class ViewEvent(user: String, viewedUser: String, t: Long)
+case class FollowEvent(user: String, followedUser: String, t: Long)
 
 class TrainingData(
   val users: RDD[(String, User)],
-  val viewEvents: RDD[ViewEvent]
+  val followEvents: RDD[FollowEvent]
 ) extends Serializable {
   override def toString = {
     s"users: [${users.count()} (${users.take(2).toList}...)]" +
-    s"viewEvents: [${viewEvents.count()}] (${viewEvents.take(2).toList}...)"
+    s"followEvents: [${followEvents.count()}] (${followEvents.take(2).toList}...)"
   }
 }

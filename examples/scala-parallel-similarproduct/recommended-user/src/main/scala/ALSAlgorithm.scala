@@ -42,8 +42,8 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
   @transient lazy val logger = Logger[this.type]
 
   def train(sc: SparkContext, data: PreparedData): ALSModel = {
-    require(data.viewEvents.take(1).nonEmpty,
-      s"viewEvents in PreparedData cannot be empty." +
+    require(data.followEvents.take(1).nonEmpty,
+      s"followEvents in PreparedData cannot be empty." +
       " Please check if DataSource generates TrainingData" +
       " and Preprator generates PreparedData correctly.")
     require(data.users.take(1).nonEmpty,
@@ -59,25 +59,25 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
       (similarUserStringIntMap(id), similarUser)
     }.collectAsMap().toMap
 
-    val mllibRatings = data.viewEvents
+    val mllibRatings = data.followEvents
       .map { r =>
         // Convert user and user String IDs to Int index for MLlib
         val uindex = userStringIntMap.getOrElse(r.user, -1)
-        val iindex = similarUserStringIntMap.getOrElse(r.viewedUser, -1)
+        val iindex = similarUserStringIntMap.getOrElse(r.followedUser, -1)
 
         if (uindex == -1)
           logger.info(s"Couldn't convert nonexistent user ID ${r.user}"
             + " to Int index.")
 
         if (iindex == -1)
-          logger.info(s"Couldn't convert nonexistent viewedUser ID ${r.viewedUser}"
+          logger.info(s"Couldn't convert nonexistent followedUser ID ${r.followedUser}"
             + " to Int index.")
 
         ((uindex, iindex), 1)
       }.filter { case ((u, i), v) =>
         // keep events with valid user and user index
         (u != -1) && (i != -1)
-      }.reduceByKey(_ + _) // aggregate all view events of same user-user pair
+      }
       .map { case ((u, i), v) =>
         // MLlibRating requires integer index for user and user
         MLlibRating(u, i, v)
@@ -87,7 +87,7 @@ class ALSAlgorithm(val ap: ALSAlgorithmParams)
     // MLLib ALS cannot handle empty training data.
     require(mllibRatings.take(1).nonEmpty,
       s"mllibRatings cannot be empty." +
-      " Please check if your events contain valid user and viewedUser ID.")
+      " Please check if your events contain valid user and followedUser ID.")
 
     // seed for MLlib ALS
     val seed = ap.seed.getOrElse(System.nanoTime)

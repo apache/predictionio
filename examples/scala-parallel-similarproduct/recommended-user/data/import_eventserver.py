@@ -25,16 +25,16 @@ def import_events(client):
     )
     count += 1
 
-  # each user randomly views 10 users
+  # each user randomly follows 10 users
   for user_id in user_ids:
-    for viewed_user in random.sample(user_ids, 10):
-      print "User", user_id ,"views User", viewed_user
+    for followed_user in random.sample(user_ids, 10):
+      print "User", user_id ,"follows User", followed_user
       client.create_event(
-        event="view",
+        event="follow",
         entity_type="user",
         entity_id=user_id,
         target_entity_type="user",
-        target_entity_id=viewed_user
+        target_entity_id=followed_user
       )
       count += 1
 

@@ -4,22 +4,23 @@ This example is based on version v0.1.3 of the Similar Product Engine Template. 
 
 The main difference from the original template is the following:
 
-Instead of using user-to-item events to find similar items, user-to-user events are used to find similar users you may also like to view, follow, etc (depending on which events are used in training). By default, view events are used.
+Instead of using user-to-item events to find similar items, user-to-user events are used to find similar users you may also follow, like, etc (depending on which events are used in training and how the events are used). By default, "follow" events are used.
 
 ## Overview
 
 This engine template recommends users that are "similar" to other users.
-Similarity is not defined by the user's attributes but by the user's previous actions. By default, it uses the 'view' action such that user A and B are considered similar if most users who view A also view B.
+Similarity is not defined by the user's attributes but by the user's previous actions. By default, it uses the 'follow' action such that user A and B are considered similar if most users who follows A also follows B.
 
 This template is ideal for recommending users to other users based on their recent actions.
 Use the IDs of the recently viewed users of a customer as the *Query*,
-the engine will predict other users that this customer may also like.
+the engine will predict other users that this customer may also follow or like.
 
 This approach works perfectly for customers who are **first-time visitors** or have not signed in.
 Recommendations are made dynamically in *real-time* based on the most recent user preference you provide in the *Query*.
 You can, therefore, recommend users to visitors without knowing a long history about them.
 
-One can also use this template to build the popular feature of "people you may also like to view, follow, etc** quickly by provide similar users to what you have just viewed or liked.
+One can also use this template to build the popular feature of "people you may also follow, like, etc** quickly by provide similar users to what you have just viewed or followed.
+
 
 ## Usage
 
@@ -28,7 +29,7 @@ One can also use this template to build the popular feature of "people you may a
 By default, this template takes the following data from Event Server as Training Data:
 
 - User *$set* events
-- User *view* User events
+- User *follow* User events
 
 ### Input Query
 
