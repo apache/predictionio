@@ -2,6 +2,10 @@
 
 This example is based on version v0.1.3 of the Similar Product Engine Template. The Similar Product Engine Template has been customized to recommend users instead of items.
 
+The main difference from the original template is the following:
+
+Instead of using user-to-item events to find similar items, user-to-user events are used to find similar users you may also like to view, follow, etc (depending on which events are used in training). By default, view events are used.
+
 ## Overview
 
 This engine template recommends users that are "similar" to other users.
@@ -15,8 +19,7 @@ This approach works perfectly for customers who are **first-time visitors** or h
 Recommendations are made dynamically in *real-time* based on the most recent user preference you provide in the *Query*.
 You can, therefore, recommend users to visitors without knowing a long history about them.
 
-You can also use this template to build the popular feature of Facebook: **"People you may know"** quickly.
-Help your customers find more users by providing them suggestions of users similar to them.
+One can also use this template to build the popular feature of "people you may also like to view, follow, etc** quickly by provide similar users to what you have just viewed or liked.
 
 ## Usage
 
