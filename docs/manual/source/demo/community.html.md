@@ -8,7 +8,7 @@ INFO: If you want to showcase your demo app here, simply edit [this page](https:
 
 ## NoGoodGamez
 
-<img src="/images/showcase/logo-nogoodgamez-158x70.png" alt="NoGoodGamez" class="static" />
+<img src="/images/showcase/nogoodgamez-158x70.png" alt="NoGoodGamez" class="static" />
 
 
 PS3/PS4 game Recommendation built by [pashadude](https://github.com/pashadude/)

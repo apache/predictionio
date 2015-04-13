@@ -1,16 +1,25 @@
 #global {
   min-width: 320px;
-  width: 100%;
-  overflow: hidden;
+  background-color: $global-background-color;
 }
 
 #main {
   background-color: $main-background-color;
   padding: 0 0 25px 0;
+  width: 1100px;
+}
+
+.col-main {
+  margin-left: 0;
+}
+
+@include medium {
+  .col-main {
+    margin-left: 300px;
+  }
 }
 
 
 #page {
-  display: flex;
-  flex-direction: row;
+  margin-top: 90px;
 }

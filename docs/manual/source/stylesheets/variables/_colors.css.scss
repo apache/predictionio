@@ -4,7 +4,7 @@ $link-color: #1ba4d8;
 $border-color: #e3e3e3;
 $header-background-color: #eaf6fc;
 $header-icon-color: #373535;
-$off-canvas-background-color: #f0f0f0;
+$off-canvas-background-color: #ffffff;
 $main-background-color: #ffffff;
 
 // Alerts
@@ -28,7 +28,7 @@ $todo-background-color: #fbc2fb;
 
 // Nav
 $nav-header-link-color: #373535;
-
+$nav-main-background-color: #f0f0f0;
 $nav-main-link-color: #3482ab;
 $nav-main-hover-background-color: #7f93a8;
 $nav-main-hover-link-color: #ffffff;
@@ -70,7 +70,8 @@ $code-inline-background-color: #f0f0f0;
 $code-inline-border-color: $border-color;
 
 // Table of Contents
-$table-of-contents-font-color: #5f5f5f;
+$table-of-contents-font-color: #3482ab;
+$table-of-contents-background-color: #f0f0f0;
 
 // Footer
 $footer-background-color: #2a2b2b;
@@ -120,3 +121,5 @@ $carousel-control-font-color: #ffffff;
 $carousel-control-hover-background-color: #373535;
 
 $tryit-i-color: #3482ab;
+
+$global-background-color: #ffffff;

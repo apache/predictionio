@@ -15,7 +15,7 @@ module TableOfContentsHelpers
     content_without_code = content.gsub(/(```[\s\S]*?```)/, '')
     output = markdown.render(content_without_code)
 
-    content_tag :aside, output, id: 'table-of-contents', role: 'complementary'
+    content_tag :aside, output, id: 'table-of-contents'
   end
 
   private
