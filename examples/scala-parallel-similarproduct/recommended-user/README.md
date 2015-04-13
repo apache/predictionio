@@ -22,6 +22,105 @@ You can, therefore, recommend users to visitors without knowing a long history a
 One can also use this template to build the popular feature of "people you may also follow, like, etc** quickly by provide similar users to what you have just viewed or followed.
 
 
+## Highlights of the modification from original Similar Product Template
+
+### Engine.scala
+
+- change the Query and and Predicted Result to from "items" to "users" and "similarUsers". The "categories" field is removed:
+
+```scala
+case class Query(
+  users: List[String], // MODIFED
+  num: Int,
+  whiteList: Option[Set[String]],
+  blackList: Option[Set[String]]
+) extends Serializable
+
+case class PredictedResult(
+  similarUserScores: Array[similarUserScore] // MODIFED
+) extends Serializable
+
+case class similarUserScore(
+  user: String, // MODIFED
+  score: Double
+) extends Serializable
+```
+
+### DataSource.scala
+
+- Since user-to-user events will be used, itemsRDD is not needed and removed.
+- change from ViewEvent to FollowEvent in Training Data
+- change to read "folow" events
+
+```scala
+    val followEventsRDD: RDD[FollowEvent] = eventsDb.find(
+      appId = dsp.appId,
+      entityType = Some("user"),
+      eventNames = Some(List("follow")),
+      // targetEntityType is optional field of an event.
+      targetEntityType = Some(Some("user")))(sc)
+      // eventsDb.find() returns RDD[Event]
+      .map { event =>
+        val followEvent = try {
+          event.event match {
+            case "follow" => FollowEvent(
+              user = event.entityId,
+              followedUser = event.targetEntityId.get,
+              t = event.eventTime.getMillis)
+            case _ => throw new Exception(s"Unexpected event $event is read.")
+          }
+        } catch {
+          case e: Exception => {
+            logger.error(s"Cannot convert $event to FollowEvent." +
+              s" Exception: $e.")
+            throw e
+          }
+        }
+        followEvent
+      }.cache()
+```
+
+### Preparator.scala
+
+Change to pass the followEvents to Prepared Data.
+
+### Algorithm.scala
+
+Use Spark MLlib algorithm to train the productFeature vector by treating the followed user as the "product".
+
+Modify train to use "followEvents" to create MLlibRating object and remove the code that aggregate number of views:
+
+```scala
+    val mllibRatings = data.followEvents
+      .map { r =>
+        // Convert user and user String IDs to Int index for MLlib
+        val uindex = userStringIntMap.getOrElse(r.user, -1)
+        val iindex = similarUserStringIntMap.getOrElse(r.followedUser, -1)
+
+        if (uindex == -1)
+          logger.info(s"Couldn't convert nonexistent user ID ${r.user}"
+            + " to Int index.")
+
+        if (iindex == -1)
+          logger.info(s"Couldn't convert nonexistent followedUser ID ${r.followedUser}"
+            + " to Int index.")
+
+        ((uindex, iindex), 1)
+      }.filter { case ((u, i), v) =>
+        // keep events with valid user and user index
+        (u != -1) && (i != -1)
+      }
+      //.reduceByKey(_ + _) // aggregate all view events of same user-item pair // NOTE: REMOVED!!
+      .map { case ((u, i), v) =>
+        // MLlibRating requires integer index for user and user
+        MLlibRating(u, i, v)
+      }
+      .cache()
+```
+
+The ALSModel and predict() function is also changed accordingly.
+
+
 ## Usage
 
 ### Event Data Requirements
@@ -43,13 +142,7 @@ Likewise, if a black-list is provided, the engine will exclude those users in it
 
 ## Documentation
 
-Please refer to http://docs.prediction.io/templates/similarproduct/quickstart/
-
-## Versions
-
-### v0.1.0
-
-- initial version
+May refer to http://docs.prediction.io/templates/similarproduct/quickstart/ with difference mentioned above.
 
 ## Development Notes
 
