@@ -36,7 +36,7 @@ configure :development do
   set :scheme, 'http'
   set :host, Middleman::PreviewServer.host rescue 'localhost'
   set :port, Middleman::PreviewServer.port rescue 80
-  Slim::Engine.set_options pretty: true, sort_attrs: false
+  Slim::Engine.set_options pretty: false, sort_attrs: false
   set :debug_assets, true
 end
 
