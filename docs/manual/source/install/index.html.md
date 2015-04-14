@@ -26,7 +26,7 @@ technologies that power PredictionIO.
 
 * Apache Hadoop 2.4.0 (required only if YARN and HDFS are needed)
 * Apache HBase 0.98.6
-* Apache Spark 1.2.0 for Hadoop 2.4
+* Apache Spark 1.3.0 for Hadoop 2.4
 * Elasticsearch 1.4.0
 * Java SE Development Kit 7
 
