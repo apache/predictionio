@@ -281,6 +281,8 @@ Content-Length: 41
 
 URL: `http://localhost:7070/events.json?accessKey=yourAccessKeyString`
 
+Query parameters:
+
 Field | Type | Description
 :---- | :----| :-----
 `accessKey` | String | The Access Key for your App
