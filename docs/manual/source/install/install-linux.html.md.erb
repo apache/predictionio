@@ -15,7 +15,7 @@ so you can skip them.
 
 If you do not want to use the install script above, you can follow the steps
 below to setup PredictionIO and its dependencies. In these instructions we will
-assume you are in your home directory. Whereever you see `/home/abc`, replace it
+assume you are in your home directory. Wherever you see `/home/abc`, replace it
 with your own home directory.
 
 
@@ -36,6 +36,9 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.40-b25, mixed mode)
 Download PredictionIO and extract it.
 
 ```
+$ cd
+$ pwd
+/home/abc
 $ wget https://d8k1yxp8elc6b.cloudfront.net/PredictionIO-<%= data.versions.pio %>.tar.gz
 $ tar zxvf PredictionIO-<%= data.versions.pio %>.tar.gz
 ```
@@ -43,115 +46,37 @@ $ tar zxvf PredictionIO-<%= data.versions.pio %>.tar.gz
 
 ### Installing Dependencies
 
+Let us install dependencies inside a subdirectory of the PredictionIO
+installation. By following this convention, you can use PredictionIO's default
+configuration as is.
+
+```
+$ mkdir PredictionIO-<%= data.versions.pio %>/vendors
+```
+
 
 #### Spark Setup
 
-[Apache Spark](http://spark.apache.org) is the default processing engine for
-PredictionIO. Download and extract it.
-
-```
-$ wget http://d3kbcqa49mib13.cloudfront.net/<%= data.versions.spark_download_filename %>.tgz
-$ tar zxvf <%= data.versions.spark_download_filename %>.tgz
-```
-
-After that, edit `PredictionIO-<%= data.versions.pio %>/conf/pio-env.sh`.
-
-```
-SPARK_HOME=/home/abc/<%= data.versions.spark_download_filename %>
-```
+<%= partial 'shared/install/spark' %>
 
 
 #### Elasticsearch Setup
 
-[Elasticsearch](http://www.elasticsearch.org/) is the default metadata store for
-PredictionIO. Download and extract it.
-
-```
-$ wget https://download.elasticsearch.org/elasticsearch/elasticsearch/<%= data.versions.elasticsearch_download_filename %>.tar.gz
-$ tar zxvf <%= data.versions.elasticsearch_download_filename %>.tar.gz
-```
-
-After that, edit `PredictionIO-<%= data.versions.pio %>/conf/pio-env.sh`.
-
-```
-PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME=/home/abc/<%= data.versions.elasticsearch_download_filename %>
-```
-
-If you are using a shared network, change the `network.host` line in
-`<%= data.versions.elasticsearch_download_filename %>/config/elasticsearch.yml` to `network.host: 127.0.0.1` because by default,
-Elasticsearch looks for other machines on the network upon setup and you may run
-into weird errors if there are other machines that is also running
-Elasticsearch.
-If you are not using the default setting at localhost. You may change the
-following in `PredictionIO-<%= data.versions.pio %>/conf/pio-env.sh` to fit your setup.
-
-```
-PIO_STORAGE_SOURCES_ELASTICSEARCH_TYPE=elasticsearch
-PIO_STORAGE_SOURCES_ELASTICSEARCH_HOSTS=localhost
-PIO_STORAGE_SOURCES_ELASTICSEARCH_PORTS=9300
-```
+<%= partial 'shared/install/elasticsearch' %>
 
 
 #### HBase Setup<a class="anchor" name="hbase">&nbsp;</a>
 
-[HBase](http://hbase.apache.org) is the default event data store for
-PredictionIO. Download and extract it.
+<%= partial 'shared/install/hbase' %>
 
-```
-$ wget http://archive.apache.org/dist/hbase/<%= data.versions.hbase_basename %>/<%= data.versions.hbase_basename %>-<%= data.versions.hbase_variant %>.tar.gz
-$ tar zxvf <%= data.versions.hbase_basename %>-<%= data.versions.hbase_variant %>.tar.gz
-```
-
-After that, edit `PredictionIO-<%= data.versions.pio %>/conf/pio-env.sh`.
-
-```
-PIO_STORAGE_SOURCES_HBASE_HOME=/home/abc/<%= data.versions.hbase_basename %>-<%= data.versions.hbase_variant %>
-```
-
-You will need to at least add a minimal configuration to HBase to start it in
-standalone mode. Details can be found
-[here](http://hbase.apache.org/book/quickstart.html). Here, we are showing a
-sample minimal configuration.
-
-INFO: For production deployment, run a fully distributed HBase configuration.
-
-Edit `<%= data.versions.hbase_basename %>-<%= data.versions.hbase_variant
-%>/conf/hbase-site.xml`.
-
-```
-<configuration>
-  <property>
-    <name>hbase.rootdir</name>
-    <value>file:///home/abc/<%= data.versions.hbase_basename %>-<%= data.versions.hbase_variant %>/data</value>
-  </property>
-  <property>
-    <name>hbase.zookeeper.property.dataDir</name>
-    <value>/home/abc/zookeeper</value>
-  </property>
-</configuration>
-```
-
-INFO: HBase will create `hbase.rootdir` automatically to store its data.
-
-Edit `<%= data.versions.hbase_basename %>-<%= data.versions.hbase_variant
-%>/conf/hbase-env.sh` to set `JAVA_HOME` for the cluster. For example:
-
-```
-export JAVA_HOME=`/usr/lib/jvm/java-8-oracle/jre`
-```
-
-For Mac users, use this instead:
-
-```
-export JAVA_HOME=`/usr/libexec/java_home -v 1.7`
-```
 
 In addition, you must set your environment variable `JAVA_HOME`. For example, in
 `/home/abc/.bashrc` add the following line:
 
 ```
-export JAVA_HOME=`/usr/lib/jvm/java-8-oracle`
+export JAVA_HOME=/usr/lib/jvm/java-8-oracle
 ```
+
 
 <%= partial 'shared/install/dependent_services' %>
 

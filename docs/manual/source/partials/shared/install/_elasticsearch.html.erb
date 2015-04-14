@@ -1,0 +1,29 @@
+[Elasticsearch](http://www.elasticsearch.org/) is the default metadata store for
+PredictionIO. Download and extract it.
+
+```
+$ wget https://download.elasticsearch.org/elasticsearch/elasticsearch/<%= data.versions.elasticsearch_download_filename %>.tar.gz
+$ tar zxvfC <%= data.versions.elasticsearch_download_filename %>.tar.gz PredictionIO-<%= data.versions.pio %>/vendors
+```
+
+INFO: If you decide to install Elasticsearch to another location, you must edit
+`PredictionIO-<%= data.versions.pio %>/conf/pio-env.sh` and change the
+`PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME` variable to point to your own
+Elasticsearch installation.
+
+INFO: If you are using a shared network, change the `network.host` line in
+`PredictionIO-<%= data.versions.pio %>/vendors/<%=
+data.versions.elasticsearch_download_filename %>/config/elasticsearch.yml` to
+`network.host: 127.0.0.1` because by default, Elasticsearch looks for other
+machines on the network upon setup and you may run into weird errors if there
+are other machines that is also running Elasticsearch.
+
+If you are not using the default setting at `localhost`, you may change the
+following in `PredictionIO-<%= data.versions.pio %>/conf/pio-env.sh` to fit your
+setup.
+
+```
+PIO_STORAGE_SOURCES_ELASTICSEARCH_TYPE=elasticsearch
+PIO_STORAGE_SOURCES_ELASTICSEARCH_HOSTS=localhost
+PIO_STORAGE_SOURCES_ELASTICSEARCH_PORTS=9300
+```

@@ -12,7 +12,7 @@ OS=`uname`
 PIO_VERSION=0.9.2
 SPARK_VERSION=1.3.0
 ELASTICSEARCH_VERSION=1.4.4
-HBASE_VERSION=0.98.11
+HBASE_VERSION=1.0.0
 PIO_DIR=$HOME/PredictionIO
 USER_PROFILE=$HOME/.profile
 PIO_FILE=PredictionIO-${PIO_VERSION}.tar.gz
@@ -296,17 +296,16 @@ echo -e "\033[1;32mElasticsearch setup done!\033[0m"
 # HBase
 echo -e "\033[1;36mStarting HBase setup in:\033[0m $hbase_dir"
 if [[ -e hbase-${HBASE_VERSION}-hadoop2-bin.tar.gz ]]; then
-  if confirm "Delete existing hbase-$HBASE_VERSION-hadoop2-bin.tar.gz?"; then
+  if confirm "Delete existing hbase-$HBASE_VERSION-bin.tar.gz?"; then
     rm hbase-${HBASE_VERSION}-hadoop2-bin.tar.gz
   fi
 fi
 if [[ ! -e hbase-${HBASE_VERSION}-hadoop2-bin.tar.gz ]]; then
   echo "Downloading HBase..."
-  curl -O http://archive.apache.org/dist/hbase/hbase-${HBASE_VERSION}/hbase-${HBASE_VERSION}-hadoop2-bin.tar.gz
+  curl -O http://archive.apache.org/dist/hbase/hbase-${HBASE_VERSION}/hbase-${HBASE_VERSION}-bin.tar.gz
 fi
-tar zxf hbase-${HBASE_VERSION}-hadoop2-bin.tar.gz
 rm -rf ${hbase_dir}
-mv hbase-${HBASE_VERSION}-hadoop2 ${hbase_dir}
+tar zxf hbase-${HBASE_VERSION}-bin.tar.gz
 
 echo "Creating default site in: $hbase_dir/conf/hbase-site.xml"
 cat <<EOT > ${hbase_dir}/conf/hbase-site.xml
