@@ -71,4 +71,5 @@ class ESSequences(client: Client, index: String) extends Logging {
         0
     }
   }
+
 }

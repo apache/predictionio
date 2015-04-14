@@ -1,7 +1,7 @@
 Usage: pio eventserver [--ip <value>] [--port <value>] [--stats]
 
   --ip <value>
-      IP to bind to. Default: localhost
+      IP to bind to. Default: 0.0.0.0
   --port <value>
       Port to bind to. Default: 7070
   --stats

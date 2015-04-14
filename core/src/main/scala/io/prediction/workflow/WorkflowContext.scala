@@ -15,64 +15,11 @@
 
 package io.prediction.workflow
 
-import io.prediction.controller.EmptyParams
-import io.prediction.controller.Engine
-import io.prediction.controller.EngineParams
-import io.prediction.controller.IPersistentModel
-import io.prediction.controller.LAlgorithm
-import io.prediction.controller.PAlgorithm
-import io.prediction.controller.Metric
-import io.prediction.controller.Params
-import io.prediction.controller.Utils
-import io.prediction.controller.NiceRendering
-import io.prediction.controller.SanityCheck
-/*
-import io.prediction.controller.java.LJavaDataSource
-import io.prediction.controller.java.LJavaPreparator
-import io.prediction.controller.java.LJavaAlgorithm
-import io.prediction.controller.java.LJavaServing
-import io.prediction.controller.java.JavaEvaluator
-import io.prediction.controller.java.JavaUtils
-import io.prediction.controller.java.JavaEngine
-import io.prediction.controller.java.PJavaAlgorithm
-*/
-import io.prediction.controller.WorkflowParams
-import io.prediction.core.BaseAlgorithm
-import io.prediction.core.BaseDataSource
-import io.prediction.core.BaseEvaluator
-import io.prediction.core.BasePreparator
-import io.prediction.core.BaseServing
-import io.prediction.core.BaseEngine
-import io.prediction.core.Doer
-// import io.prediction.core.LModelAlgorithm
-import io.prediction.data.storage.EngineInstance
-import io.prediction.data.storage.EngineInstances
-import io.prediction.data.storage.Model
-import io.prediction.data.storage.Storage
-
-import com.github.nscala_time.time.Imports.DateTime
-import com.twitter.chill.KryoInjection
-import grizzled.slf4j.{ Logger, Logging }
+import grizzled.slf4j.Logging
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
-import org.apache.spark.rdd.RDD
-import org.json4s._
-import org.json4s.native.Serialization.write
-import org.json4s.native.Serialization.writePretty
 
-
-import scala.collection.JavaConversions._
 import scala.language.existentials
-import scala.reflect.ClassTag
-import scala.reflect.Manifest
-
-import java.io.FileOutputStream
-import java.io.ObjectOutputStream
-import java.io.FileInputStream
-import java.io.ObjectInputStream
-import java.lang.{ Iterable => JIterable }
-import java.util.{ HashMap => JHashMap, Map => JMap }
 
 // FIXME: move to better location.
 object WorkflowContext extends Logging {

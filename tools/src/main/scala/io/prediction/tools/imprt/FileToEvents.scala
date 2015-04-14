@@ -30,6 +30,7 @@ case class FileToEventsArgs(
   env: String = "",
   logFile: String = "",
   appId: Int = 0,
+  channel: Option[String] = None,
   inputPath: String = "",
   verbose: Boolean = false,
   debug: Boolean = false)
@@ -46,6 +47,9 @@ object FileToEvents extends Logging {
       opt[Int]("appid") action { (x, c) =>
         c.copy(appId = x)
       }
+      opt[String]("channel") action { (x, c) =>
+        c.copy(channel = Some(x))
+      }
       opt[String]("input") action { (x, c) =>
         c.copy(inputPath = x)
       }
@@ -57,16 +61,35 @@ object FileToEvents extends Logging {
       }
     }
     parser.parse(args, FileToEventsArgs()) map { args =>
+      // get channelId
+      val channels = Storage.getMetaDataChannels
+      val channelMap = channels.getByAppid(args.appId).map(c => (c.name, c.id)).toMap
+
+      val channelId: Option[Int] = args.channel.map { ch =>
+        if (!channelMap.contains(ch)) {
+          error(s"Channel ${ch} doesn't exist in this app.")
+          sys.exit(1)
+        }
+
+        channelMap(ch)
+      }
+
+      val channelStr = args.channel.map(n => " Channel " + n).getOrElse("")
+
       WorkflowUtils.modifyLogging(verbose = args.verbose)
       @transient lazy implicit val formats = Utils.json4sDefaultFormats +
         new EventJson4sSupport.APISerializer
       val sc = WorkflowContext(
         mode = "Import",
-        batch = "App ID " + args.appId,
+        batch = "App ID " + args.appId + channelStr,
         executorEnv = Runner.envStringToMap(args.env))
       val rdd = sc.textFile(args.inputPath)
       val events = Storage.getPEvents()
-      events.write(rdd.map(read[Event](_)), args.appId)(sc)
+      events.write(events = rdd.map(read[Event](_)),
+        appId = args.appId,
+        channelId = channelId)(sc)
+      info("Events are imported.")
+      info("Done.")
     }
   }
 }

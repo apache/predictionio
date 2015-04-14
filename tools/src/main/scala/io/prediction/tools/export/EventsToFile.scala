@@ -30,6 +30,7 @@ case class EventsToFileArgs(
   env: String = "",
   logFile: String = "",
   appId: Int = 0,
+  channel: Option[String] = None,
   outputPath: String = "",
   format: String = "parquet",
   verbose: Boolean = false,
@@ -47,6 +48,9 @@ object EventsToFile extends Logging {
       opt[Int]("appid") action { (x, c) =>
         c.copy(appId = x)
       }
+      opt[String]("channel") action { (x, c) =>
+        c.copy(channel = Some(x))
+      }
       opt[String]("format") action { (x, c) =>
         c.copy(format = x)
       }
@@ -61,24 +65,40 @@ object EventsToFile extends Logging {
       }
     }
     parser.parse(args, EventsToFileArgs()) map { args =>
+      // get channelId
+      val channels = Storage.getMetaDataChannels
+      val channelMap = channels.getByAppid(args.appId).map(c => (c.name, c.id)).toMap
+
+      val channelId: Option[Int] = args.channel.map { ch =>
+        if (!channelMap.contains(ch)) {
+          error(s"Channel ${ch} doesn't exist in this app.")
+          sys.exit(1)
+        }
+
+        channelMap(ch)
+      }
+
+      val channelStr = args.channel.map(n => " Channel " + n).getOrElse("")
+
       WorkflowUtils.modifyLogging(verbose = args.verbose)
       @transient lazy implicit val formats = Utils.json4sDefaultFormats +
         new EventJson4sSupport.APISerializer
       val sc = WorkflowContext(
         mode = "Export",
-        batch = "App ID " + args.appId,
+        batch = "App ID " + args.appId + channelStr,
         executorEnv = Runner.envStringToMap(args.env))
       val sqlContext = new SQLContext(sc)
       val events = Storage.getPEvents()
-      val eventsRdd = events.find(appId = args.appId)(sc)
+      val eventsRdd = events.find(appId = args.appId, channelId = channelId)(sc)
       val jsonStringRdd = eventsRdd.map(write(_))
       if (args.format == "json") {
         jsonStringRdd.saveAsTextFile(args.outputPath)
       } else {
         val jsonRdd = sqlContext.jsonRDD(jsonStringRdd)
-        info(jsonRdd.schemaString)
         jsonRdd.saveAsParquetFile(args.outputPath)
       }
+      info(s"Events are exported to ${args.outputPath}/.")
+      info("Done.")
     }
   }
 }

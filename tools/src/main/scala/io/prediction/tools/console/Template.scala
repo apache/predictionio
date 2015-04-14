@@ -15,18 +15,6 @@
 
 package io.prediction.tools.console
 
-import io.prediction.controller.Utils
-
-import grizzled.slf4j.Logging
-import org.apache.commons.io.FileUtils
-import org.json4s._
-import org.json4s.native.JsonMethods._
-import org.json4s.native.Serialization.{ read, write }
-import scalaj.http._
-
-import scala.io.Source
-import scala.sys.process._
-
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.File
@@ -36,9 +24,24 @@ import java.net.ConnectException
 import java.net.URI
 import java.util.zip.ZipInputStream
 
+import grizzled.slf4j.Logging
+import io.prediction.controller.Utils
+import io.prediction.core.BuildInfo
+import org.apache.commons.io.FileUtils
+import org.json4s._
+import org.json4s.native.JsonMethods._
+import org.json4s.native.Serialization.read
+import org.json4s.native.Serialization.write
+import semverfi._
+
+import scala.io.Source
+import scala.sys.process._
+import scalaj.http._
+
 case class TemplateArgs(
   directory: String = "",
   repository: String = "",
+  version: Option[String] = None,
   name: Option[String] = None,
   packageName: Option[String] = None,
   email: Option[String] = None)
@@ -60,8 +63,33 @@ case class GitHubCache(
 case class TemplateEntry(
   repo: String)
 
+case class TemplateMetaData(
+  pioVersionMin: Option[String] = None)
+
 object Template extends Logging {
   implicit val formats = Utils.json4sDefaultFormats
+
+  def templateMetaData(templateJson: File): TemplateMetaData = {
+    if (!templateJson.exists) {
+      warn(s"$templateJson does not exist. Template metadata will not be available. " +
+        "(This is safe to ignore if you are not working on a template.)")
+      TemplateMetaData()
+    } else {
+      val jsonString = Source.fromFile(templateJson)(scala.io.Codec.ISO8859).mkString
+      val json = try {
+        parse(jsonString)
+      } catch {
+        case e: org.json4s.ParserUtil.ParseException =>
+          warn(s"$templateJson cannot be parsed. Template metadata will not be available.")
+          return TemplateMetaData()
+      }
+      val pioVersionMin = json \ "pio" \ "version" \ "min"
+      pioVersionMin match {
+        case JString(s) => TemplateMetaData(pioVersionMin = Some(s))
+        case _ => TemplateMetaData()
+      }
+    }
+  }
 
   /** Creates a wrapper that provides the functionality of scalaj.http.Http()
     * with automatic proxy settings handling. The proxy settings will first
@@ -172,10 +200,10 @@ object Template extends Logging {
     try {
       val templatesJson = Source.fromURL(templatesUrl).mkString("")
       val templates = read[List[TemplateEntry]](templatesJson)
-      println("The following is a list of template IDs officially recognized " +
-        "by PredictionIO:")
+      println("The following is a list of template IDs registered on " +
+        "PredictionIO Template Gallery:")
       println()
-      templates.foreach { template =>
+      templates.sortBy(_.repo.toLowerCase).foreach { template =>
         println(template.repo)
       }
       println()
@@ -263,113 +291,137 @@ object Template extends Logging {
     println(s"Retrieving ${ca.template.repository}")
     val tags = read[List[GitHubTag]](repo.body)
     println(s"There are ${tags.size} tags")
-    tags.headOption.map { tag =>
-      println(s"Using the most recent tag ${tag.name}")
-      val url =
-        s"https://github.com/${ca.template.repository}/archive/${tag.name}.zip"
-      println(s"Going to download $url")
-      val trial = try {
-        httpOptionalProxy(url).asBytes
-      } catch {
-        case e: ConnectException =>
-          githubConnectErrorMessage(e)
-          return 1
-      }
-      val finalTrial = try {
-        trial.location.map { loc =>
-          println(s"Redirecting to $loc")
-          httpOptionalProxy(loc).asBytes
-        } getOrElse trial
-      } catch {
-        case e: ConnectException =>
-          githubConnectErrorMessage(e)
-          return 1
-      }
-      val zipFilename =
-        s"${ca.template.repository.replace('/', '-')}-${tag.name}.zip"
-      FileUtils.writeByteArrayToFile(
-        new File(zipFilename),
-        finalTrial.body)
-      val zis = new ZipInputStream(
-        new BufferedInputStream(new FileInputStream(zipFilename)))
-      val bufferSize = 4096
-      val filesToModify = collection.mutable.ListBuffer[String]()
-      var ze = zis.getNextEntry
-      while (ze != null) {
-        val filenameSegments = ze.getName.split(File.separatorChar)
-        val destFilename = (ca.template.directory +: filenameSegments.tail).
-          mkString(File.separator)
-        if (ze.isDirectory) {
-          new File(destFilename).mkdirs
-        } else {
-          val os = new BufferedOutputStream(
-            new FileOutputStream(destFilename),
-            bufferSize)
-          val data = Array.ofDim[Byte](bufferSize)
-          var count = zis.read(data, 0, bufferSize)
-          while (count != -1) {
-            os.write(data, 0, count)
-            count = zis.read(data, 0, bufferSize)
-          }
-          os.flush()
-          os.close()
 
-          val nameOnly = new File(destFilename).getName
-
-          if (organization != "" &&
-            (nameOnly.endsWith(".scala") ||
-              nameOnly == "build.sbt" ||
-              nameOnly == "engine.json")) {
-            filesToModify += destFilename
-          }
-        }
-        ze = zis.getNextEntry
-      }
-      zis.close()
-      new File(zipFilename).delete
-
-      val engineJsonFile =
-        new File(ca.template.directory + File.separator + "engine.json")
-
-      val engineJson = try {
-        Some(parse(Source.fromFile(engineJsonFile).mkString))
-      } catch {
-        case e: java.io.IOException =>
-          error("Unable to read engine.json. Skipping automatic package " +
-            "name replacement.")
-          None
-        case e: MappingException =>
-          error("Unable to parse engine.json. Skipping automatic package " +
-            "name replacement.")
-          None
-      }
-
-      val engineFactory = engineJson.map { ej =>
-        (ej \ "engineFactory").extractOpt[String]
-      } getOrElse None
-
-      engineFactory.map { ef =>
-        val pkgName = ef.split('.').dropRight(1).mkString(".")
-        println(s"Replacing $pkgName with $organization...")
-
-        filesToModify.foreach { ftm =>
-          println(s"Processing $ftm...")
-          val fileContent = Source.fromFile(ftm).getLines()
-          val processedLines =
-            fileContent.map(_.replaceAllLiterally(pkgName, organization))
-          FileUtils.writeStringToFile(
-            new File(ftm),
-            processedLines.mkString("\n"))
-        }
-      } getOrElse {
-        error("engineFactory is not found in engine.json. Skipping automatic " +
-          "package name replacement.")
-      }
-
-      println(s"Engine template ${ca.template.repository} is now ready at " +
-        ca.template.directory)
+    if (tags.size == 0) {
+      println(s"${ca.template.repository} does not have any tag. Aborting.")
+      return 1
     }
+
+    val tag = ca.template.version.map { v =>
+      tags.find(_.name == v).getOrElse {
+        println(s"${ca.template.repository} does not have tag $v. Aborting.")
+        return 1
+      }
+    } getOrElse tags.head
+
+    println(s"Using tag ${tag.name}")
+    val url =
+      s"https://github.com/${ca.template.repository}/archive/${tag.name}.zip"
+    println(s"Going to download $url")
+    val trial = try {
+      httpOptionalProxy(url).asBytes
+    } catch {
+      case e: ConnectException =>
+        githubConnectErrorMessage(e)
+        return 1
+    }
+    val finalTrial = try {
+      trial.location.map { loc =>
+        println(s"Redirecting to $loc")
+        httpOptionalProxy(loc).asBytes
+      } getOrElse trial
+    } catch {
+      case e: ConnectException =>
+        githubConnectErrorMessage(e)
+        return 1
+    }
+    val zipFilename =
+      s"${ca.template.repository.replace('/', '-')}-${tag.name}.zip"
+    FileUtils.writeByteArrayToFile(
+      new File(zipFilename),
+      finalTrial.body)
+    val zis = new ZipInputStream(
+      new BufferedInputStream(new FileInputStream(zipFilename)))
+    val bufferSize = 4096
+    val filesToModify = collection.mutable.ListBuffer[String]()
+    var ze = zis.getNextEntry
+    while (ze != null) {
+      val filenameSegments = ze.getName.split(File.separatorChar)
+      val destFilename = (ca.template.directory +: filenameSegments.tail).
+        mkString(File.separator)
+      if (ze.isDirectory) {
+        new File(destFilename).mkdirs
+      } else {
+        val os = new BufferedOutputStream(
+          new FileOutputStream(destFilename),
+          bufferSize)
+        val data = Array.ofDim[Byte](bufferSize)
+        var count = zis.read(data, 0, bufferSize)
+        while (count != -1) {
+          os.write(data, 0, count)
+          count = zis.read(data, 0, bufferSize)
+        }
+        os.flush()
+        os.close()
+
+        val nameOnly = new File(destFilename).getName
+
+        if (organization != "" &&
+          (nameOnly.endsWith(".scala") ||
+            nameOnly == "build.sbt" ||
+            nameOnly == "engine.json")) {
+          filesToModify += destFilename
+        }
+      }
+      ze = zis.getNextEntry
+    }
+    zis.close()
+    new File(zipFilename).delete
+
+    val engineJsonFile =
+      new File(ca.template.directory, "engine.json")
+
+    val engineJson = try {
+      Some(parse(Source.fromFile(engineJsonFile).mkString))
+    } catch {
+      case e: java.io.IOException =>
+        error("Unable to read engine.json. Skipping automatic package " +
+          "name replacement.")
+        None
+      case e: MappingException =>
+        error("Unable to parse engine.json. Skipping automatic package " +
+          "name replacement.")
+        None
+    }
+
+    val engineFactory = engineJson.map { ej =>
+      (ej \ "engineFactory").extractOpt[String]
+    } getOrElse None
+
+    engineFactory.map { ef =>
+      val pkgName = ef.split('.').dropRight(1).mkString(".")
+      println(s"Replacing $pkgName with $organization...")
+
+      filesToModify.foreach { ftm =>
+        println(s"Processing $ftm...")
+        val fileContent = Source.fromFile(ftm).getLines()
+        val processedLines =
+          fileContent.map(_.replaceAllLiterally(pkgName, organization))
+        FileUtils.writeStringToFile(
+          new File(ftm),
+          processedLines.mkString("\n"))
+      }
+    } getOrElse {
+      error("engineFactory is not found in engine.json. Skipping automatic " +
+        "package name replacement.")
+    }
+
+    verifyTemplateMinVersion(new File(ca.template.directory, "template.json"))
+
+    println(s"Engine template ${ca.template.repository} is now ready at " +
+      ca.template.directory)
 
     0
   }
+
+  def verifyTemplateMinVersion(templateJsonFile: File): Unit = {
+    val metadata = templateMetaData(templateJsonFile)
+
+    metadata.pioVersionMin.foreach { pvm =>
+      if (Version(BuildInfo.version) < Version(pvm))
+        warn(s"This engine template requires at least PredictionIO $pvm. " +
+          s"The template may not work with PredictionIO ${BuildInfo.version}.")
+    }
+  }
+
 }

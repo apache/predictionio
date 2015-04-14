@@ -31,7 +31,7 @@ object EngineParamsList extends EngineParamsGenerator {
 ```
 
 ### Build and run the evaluation
-To run evaluation, the command `pio eval` is used. It takes to
+To run evaluation, the command `pio eval` is used. It takes two
 mandatory parameter, 
 1. the `Evaluation` object, it tells PredictionIO the engine and metric we use
    for the evaluation; and 

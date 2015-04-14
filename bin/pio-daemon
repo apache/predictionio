@@ -20,13 +20,13 @@ search() {
   shift
   for str in $@; do
     if [ "$str" = "$needle" ]; then
-      echo $i
+      echo ${i}
       return
     else
       ((i++))
     fi
   done
-  echo $i
+  echo ${i}
 }
 
 export PIO_HOME="$(cd `dirname $0`/..; pwd)"
@@ -43,6 +43,6 @@ FIRST_HALF="${@:1:$FIRST_SEP}"
 
 SECOND_HALF="${@:$FIRST_SEP+1}"
 
-exec nohup $PIO_HOME/bin/pio-class io.prediction.tools.console.Console $FIRST_HALF --pio-home $PIO_HOME $SECOND_HALF <&- > /dev/null 2>&1 &
+exec nohup ${PIO_HOME}/bin/pio-class io.prediction.tools.console.Console ${FIRST_HALF} --pio-home ${PIO_HOME} ${SECOND_HALF} <&- > /dev/null 2>&1 &
 
-echo $! > $PIDFILE
+echo $! > ${PIDFILE}

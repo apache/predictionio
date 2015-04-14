@@ -15,6 +15,17 @@
 
 package io.prediction.workflow
 
+import io.prediction.controller.Engine
+import io.prediction.controller.Params
+import io.prediction.controller.Utils
+import io.prediction.controller.WithPrId
+import io.prediction.core.BaseAlgorithm
+import io.prediction.core.BaseServing
+import io.prediction.core.Doer
+import io.prediction.data.storage.EngineInstance
+import io.prediction.data.storage.EngineManifest
+import io.prediction.data.storage.Storage
+
 import akka.actor._
 import akka.event.Logging
 import akka.io.IO
@@ -22,24 +33,12 @@ import akka.pattern.ask
 import akka.util.Timeout
 import com.github.nscala_time.time.Imports.DateTime
 import com.google.gson.Gson
+import com.twitter.bijection.Injection
 import com.twitter.chill.KryoBase
 import com.twitter.chill.KryoInjection
 import com.twitter.chill.ScalaKryoInstantiator
+import de.javakaffee.kryoserializers.SynchronizedCollectionsSerializer
 import grizzled.slf4j.Logging
-import io.prediction.controller.Engine
-import io.prediction.controller.Params
-import io.prediction.controller.Utils
-import io.prediction.controller.WithPrId
-import io.prediction.controller.WorkflowParams
-import io.prediction.controller.java.LJavaAlgorithm
-import io.prediction.controller.java.LJavaServing
-import io.prediction.controller.java.PJavaAlgorithm
-import io.prediction.core.BaseAlgorithm
-import io.prediction.core.BaseServing
-import io.prediction.core.Doer
-import io.prediction.data.storage.EngineInstance
-import io.prediction.data.storage.EngineManifest
-import io.prediction.data.storage.Storage
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization.write
@@ -57,14 +56,21 @@ import scala.util.Failure
 import scala.util.Random
 import scala.util.Success
 
-import java.io.PrintWriter
-import java.io.StringWriter
+import java.io.{Serializable, PrintWriter, StringWriter}
 
 class KryoInstantiator(classLoader: ClassLoader) extends ScalaKryoInstantiator {
   override def newKryo(): KryoBase = {
     val kryo = super.newKryo()
     kryo.setClassLoader(classLoader)
+    SynchronizedCollectionsSerializer.registerSerializers(kryo)
     kryo
+  }
+}
+
+object KryoInstantiator extends Serializable {
+  def newKryoInjection : Injection[Any, Array[Byte]] = {
+    val kryoInstantiator = new KryoInstantiator(getClass.getClassLoader)
+    KryoInjection.instance(kryoInstantiator)
   }
 }
 
@@ -73,10 +79,10 @@ case class ServerConfig(
   engineInstanceId: String = "",
   engineId: Option[String] = None,
   engineVersion: Option[String] = None,
-  ip: String = "localhost",
+  ip: String = "0.0.0.0",
   port: Int = 8000,
   feedback: Boolean = false,
-  eventServerIp: String = "localhost",
+  eventServerIp: String = "0.0.0.0",
   eventServerPort: Int = 7070,
   accessKey: Option[String] = None,
   logUrl: Option[String] = None,
@@ -110,7 +116,7 @@ object CreateServer extends Logging {
       } text("Engine version.")
       opt[String]("ip") action { (x, c) =>
         c.copy(ip = x)
-      } text("IP to bind to (default: localhost).")
+      }
       opt[Int]("port") action { (x, c) =>
         c.copy(port = x)
       } text("Port to bind to (default: 8000).")
@@ -122,7 +128,7 @@ object CreateServer extends Logging {
       } text("Enable feedback loop to event server.")
       opt[String]("event-server-ip") action { (x, c) =>
         c.copy(eventServerIp = x)
-      } text("Event server IP. Default: localhost")
+      }
       opt[Int]("event-server-port") action { (x, c) =>
         c.copy(eventServerPort = x)
       } text("Event server port. Default: 7070")
@@ -190,8 +196,7 @@ object CreateServer extends Logging {
 
     val engineParams = engine.engineInstanceToEngineParams(engineInstance)
 
-    val kryoInstantiator = new KryoInstantiator(getClass.getClassLoader)
-    val kryo = KryoInjection.instance(kryoInstantiator)
+    val kryo = KryoInstantiator.newKryoInjection
 
     val modelsFromEngineInstance =
       kryo.invert(modeldata.get(engineInstance.id).get.models).get.
@@ -387,7 +392,6 @@ class ServerActor[Q, P](
   val serverStartTime = DateTime.now
   lazy val gson = new Gson
   val log = Logging(context.system, this)
-  val (javaAlgorithms, scalaAlgorithms) = algorithms.partition(_.isJava)
 
   var requestCount: Int = 0
   var avgServingSec: Double = 0.0
@@ -463,37 +467,16 @@ class ServerActor[Q, P](
               val servingStartTime = DateTime.now
 
               val queryTime = DateTime.now
-              val javaQuery = javaAlgorithms.headOption map { alg =>
-                val queryClass = if (
-                  alg.isInstanceOf[LJavaAlgorithm[_, _, Q, P]]) {
-                  alg.asInstanceOf[LJavaAlgorithm[_, _, Q, P]].queryClass
-                } else {
-                  alg.asInstanceOf[PJavaAlgorithm[_, _, Q, P]].queryClass
-                }
-                gson.fromJson(queryString, queryClass)
-              }
-              val scalaQuery = scalaAlgorithms.headOption map { alg =>
-                Extraction.extract(parse(queryString))(
-                  alg.querySerializer, alg.queryManifest)
-              }
+              val query = Extraction.extract(parse(queryString))(
+                algorithms.head.querySerializer, algorithms.head.queryManifest())
               val predictions = algorithms.zipWithIndex.map { case (a, ai) =>
-                if (a.isJava) {
-                  a.predictBase(models(ai), javaQuery.get)
-                } else {
-                  a.predictBase(models(ai), scalaQuery.get)
-                }
+                a.predictBase(models(ai), query)
               }
-              val r = if (serving.isInstanceOf[LJavaServing[Q, P]]) {
-                val prediction = serving.serveBase(javaQuery.get, predictions)
-                // parse to Json4s JObject for later merging with prId
-                (parse(gson.toJson(prediction)), prediction, javaQuery.get)
-              } else {
-                val prediction = serving.serveBase(scalaQuery.get, predictions)
-                (Extraction.decompose(prediction)(
-                  scalaAlgorithms.head.querySerializer),
-                  prediction,
-                  scalaQuery.get)
-              }
+              val prediction = serving.serveBase(query, predictions)
+              val r = (Extraction.decompose(prediction)(
+                algorithms.head.querySerializer),
+                prediction,
+                query)
               /** Handle feedback to Event Server
                 * Send the following back to the Event Server
                 * - appId
@@ -504,25 +487,27 @@ class ServerActor[Q, P](
                 */
               val result = if (feedbackEnabled) {
                 implicit val formats =
-                  if (!scalaAlgorithms.isEmpty) {
-                    scalaAlgorithms.head.querySerializer
-                  } else {
+                  algorithms.headOption map { alg =>
+                    alg.querySerializer
+                  } getOrElse {
                     Utils.json4sDefaultFormats
                   }
                 // val genPrId = Random.alphanumeric.take(64).mkString
                 def genPrId: String = Random.alphanumeric.take(64).mkString
-                val newPrId = if (r._2.isInstanceOf[WithPrId]) {
-                  val org = r._2.asInstanceOf[WithPrId].prId
-                  if (org.isEmpty) genPrId else org
-                } else genPrId
+                val newPrId = r._2 match {
+                  case id: WithPrId =>
+                    val org = id.prId
+                    if (org.isEmpty) genPrId else org
+                  case _ => genPrId
+                }
 
                 // also save Query's prId as prId of this pio_pr predict events
                 val queryPrId =
-                  if (r._3.isInstanceOf[WithPrId]) {
-                    Map("prId" ->
-                      r._3.asInstanceOf[WithPrId].prId)
-                  } else {
-                    Map()
+                  r._3 match {
+                    case id: WithPrId =>
+                      Map("prId" -> id.prId)
+                    case _ =>
+                      Map()
                   }
                 val data = Map(
                   // "appId" -> dataSourceParams.asInstanceOf[ParamsWithAppId].appId,

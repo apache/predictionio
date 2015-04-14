@@ -103,8 +103,10 @@ INFO: It may take some time (15 seconds or so) for HBase to become ready after y
 
 ### Q: How do I increase the JVM heap size of the Event Server?
 
+Add the `JAVA_OPTS` environmental variable to supply JVM options, e.g.
+
 ```
-$ JAVA_OPTS=-Xmx16g bin/pio eventserver --ip 0.0.0.0 --port 7071
+$ JAVA_OPTS=-Xmx16g bin/pio eventserver ...
 ````
 
 ## Engine Training

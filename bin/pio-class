@@ -25,11 +25,11 @@ SCALA_VERSION=2.10
 FWDIR="$(cd `dirname $0`/..; pwd)"
 
 # Export this as PIO_HOME
-export PIO_HOME="$FWDIR"
+export PIO_HOME="${FWDIR}"
 
-. $FWDIR/bin/load-pio-env.sh
+. ${FWDIR}/bin/load-pio-env.sh
 
-. $FWDIR/bin/semver.sh
+. ${FWDIR}/bin/semver.sh
 
 if [ -z "$1" ]; then
   echo "Usage: pio-class <class> [<args>]" 1>&2
@@ -38,17 +38,17 @@ fi
 
 # Warn if log4j.properties is not present
 if [ ! -f "$FWDIR/conf/log4j.properties" ]; then
-  echo "Warning: log4j.properties is missing from $FWDIR/conf"
+  echo -e "Warning: log4j.properties is missing from $FWDIR/conf\033[0m"
 fi
 
 # Make sure the Apache Spark version meets the prerequisite if it is a binary
 # distribution
-MIN_SPARK_VERSION="1.2.0"
+MIN_SPARK_VERSION="1.3.0"
 if [ -r "$SPARK_HOME/RELEASE" ]; then
-  SPARK_VERSION=`awk '{print $2}' $SPARK_HOME/RELEASE`
-  if semverLT $SPARK_VERSION $MIN_SPARK_VERSION; then
-    echo "You have Apache Spark $SPARK_VERSION at $SPARK_HOME which does not meet the minimum version requirement of $MIN_SPARK_VERSION."
-    echo "Aborting."
+  SPARK_VERSION=`head -n 1 $SPARK_HOME/RELEASE | awk '{print $2}'`
+  if semverLT ${SPARK_VERSION} ${MIN_SPARK_VERSION}; then
+    echo -e "\033[0;31mYou have Apache Spark $SPARK_VERSION at $SPARK_HOME which does not meet the minimum version requirement of $MIN_SPARK_VERSION.\033[0m"
+    echo -e "\033[0;31mAborting.\033[0m"
     exit 1
   fi
 else
@@ -62,18 +62,18 @@ else
   if [ `command -v java` ]; then
     RUNNER="java"
   else
-    echo "JAVA_HOME is not set" >&2
+    echo -e "\033[0;31mJAVA_HOME is not set\033[0m" >&2
     exit 1
   fi
 fi
 
 # Compute classpath using external script
-classpath_output=$($FWDIR/bin/compute-classpath.sh)
+classpath_output=$(${FWDIR}/bin/compute-classpath.sh)
 if [[ "$?" != "0" ]]; then
   echo "$classpath_output"
   exit 1
 else
-  CLASSPATH=$classpath_output
+  CLASSPATH=${classpath_output}
 fi
 
 export CLASSPATH

@@ -15,14 +15,15 @@
 
 package io.prediction.core
 
-import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-import scala.reflect._
+import org.apache.spark.rdd.RDD
 
-abstract class BaseDataSource[TD, EI, Q, A]
-  extends AbstractDoer {
+abstract class BaseDataSource[TD, EI, Q, A] extends AbstractDoer {
+
+  private[prediction]
   def readTrainingBase(sc: SparkContext): TD
 
+  private[prediction]
   def readEvalBase(sc: SparkContext): Seq[(TD, EI, RDD[(Q, A)])]
+
 }

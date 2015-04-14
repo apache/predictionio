@@ -20,8 +20,9 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
 import scala.reflect._
-import scala.reflect.runtime.universe._
-import grizzled.slf4j.Logger
+
+import Numeric.Implicits._   
+import org.apache.spark.util.StatCounter
 
 /** Base class of a [[Metric]].
   *
@@ -35,13 +36,43 @@ import grizzled.slf4j.Logger
 abstract class Metric[EI, Q, P, A, R](implicit rOrder: Ordering[R])
 extends Serializable {
   /** Class name of this [[Metric]]. */
-  def header: String = this.getClass.getName
+  def header: String = this.getClass.getSimpleName
 
   /** Calculates the result of this [[Metric]]. */
   def calculate(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])]): R
 
   /** Comparison function for R's ordering. */
   def compare(r0: R, r1: R): Int = rOrder.compare(r0, r1)
+}
+
+private [prediction] trait StatsMetricHelper[EI, Q, P, A] {
+  def calculate(q: Q, p: P, a: A): Double
+
+  def calculateStats(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])])
+  : StatCounter = {
+    val doubleRDD = sc.union(
+      evalDataSet.map { case (_, qpaRDD) => 
+        qpaRDD.map { case (q, p, a) => calculate(q, p, a) }
+      }
+    )
+   
+    doubleRDD.stats()
+  }
+}
+
+private [prediction] trait StatsOptionMetricHelper[EI, Q, P, A] {
+  def calculate(q: Q, p: P, a: A): Option[Double]
+
+  def calculateStats(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])])
+  : StatCounter = {
+    val doubleRDD = sc.union(
+      evalDataSet.map { case (_, qpaRDD) => 
+        qpaRDD.flatMap { case (q, p, a) => calculate(q, p, a) }
+      }
+    )
+   
+    doubleRDD.stats()
+  }
 }
 
 /** Returns the global average of the score returned by the calculate method.
@@ -54,7 +85,9 @@ extends Serializable {
   * @group Evaluation
   */
 abstract class AverageMetric[EI, Q, P, A]
-extends Metric[EI, Q, P, A, Double] {
+    extends Metric[EI, Q, P, A, Double]
+    with StatsMetricHelper[EI, Q, P, A]
+    with QPAMetric[Q, P, A, Double] {
   /** Implement this method to return a score that will be used for averaging
     * across all QPA tuples.
     */
@@ -62,45 +95,7 @@ extends Metric[EI, Q, P, A, Double] {
 
   def calculate(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])])
   : Double = {
-    // TODO(yipjustin): Parallelize
-    val r: Seq[(Double, Long)] = evalDataSet
-    .map { case (_, qpaRDD) =>
-      val s = qpaRDD.map { case (q, p, a) => calculate(q, p, a) }.reduce(_ + _)
-      val c = qpaRDD.count
-      (s, c)
-    }
-
-    (r.map(_._1).sum / r.map(_._2).sum)
-  }
-}
-
-/** Returns the sum of the score returned by the calculate method.
-  *
-  * @tparam EI Evaluation information
-  * @tparam Q Query
-  * @tparam P Predicted result
-  * @tparam A Actual result
-  *
-  * @group Evaluation
-  */
-abstract class SumMetric[EI, Q, P, A]
-extends Metric[EI, Q, P, A, Double] {
-  /** Implement this method to return a score that will be used for summing
-    * across all QPA tuples.
-    */
-  def calculate(q: Q, p: P, a: A): Double
-
-  def calculate(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])])
-  : Double = {
-    // TODO(yipjustin): Parallelize
-    val r: Seq[Double] = evalDataSet
-    .map { case (_, qpaRDD) => 
-      qpaRDD
-      .map { case (q, p, a) => calculate(q, p, a) }
-      .aggregate[Double](0.0)(_ + _, _ + _) 
-    }
-
-    r.sum
+    calculateStats(sc, evalDataSet).mean
   }
 }
 
@@ -115,7 +110,9 @@ extends Metric[EI, Q, P, A, Double] {
   * @group Evaluation
   */
 abstract class OptionAverageMetric[EI, Q, P, A]
-extends Metric[EI, Q, P, A, Double] {
+    extends Metric[EI, Q, P, A, Double] 
+    with StatsOptionMetricHelper[EI, Q, P, A]
+    with QPAMetric[Q, P, A, Option[Double]] {
   /** Implement this method to return a score that will be used for averaging
     * across all QPA tuples.
     */
@@ -123,26 +120,99 @@ extends Metric[EI, Q, P, A, Double] {
 
   def calculate(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])])
   : Double = {
-    val r: Seq[(Double, Long)] = evalDataSet
-    .par
-    .map { case (_, qpaRDD) =>
-      val scores: RDD[Double]  = qpaRDD
-      .map { case (q, p, a) => calculate(q, p, a) }
-      .filter(!_.isEmpty)
-      .map(_.get)
-
-      scores.aggregate((0.0, 0L))( 
-        (u, v) => (u._1 + v, u._2 + 1),
-        (u, v) => (u._1 + v._1, u._2 + v._2))
-    }
-    .seq
-
-    val c = r.map(_._2).sum
-    if (c > 0) {
-      (r.map(_._1).sum / r.map(_._2).sum)
-    } else {
-      Double.NegativeInfinity
-    }
+    calculateStats(sc, evalDataSet).mean
   }
 }
 
+/** Returns the global stdev of the score returned by the calculate method.
+  *
+  * This method uses [[org.apache.spark.util.StatCounter]] library, a one pass
+  * method is used for calculation.
+  *
+  * @tparam EI Evaluation information
+  * @tparam Q Query
+  * @tparam P Predicted result
+  * @tparam A Actual result
+  *
+  * @group Evaluation
+  */
+abstract class StdevMetric[EI, Q, P, A]
+    extends Metric[EI, Q, P, A, Double]
+    with StatsMetricHelper[EI, Q, P, A]
+    with QPAMetric[Q, P, A, Double] {
+  /** Implement this method to return a score that will be used for calculating
+    * the stdev
+    * across all QPA tuples.
+    */
+  def calculate(q: Q, p: P, a: A): Double
+
+  def calculate(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])])
+  : Double = {
+    calculateStats(sc, evalDataSet).stdev
+  }
+}
+
+/** Returns the global stdev of the non-None score returned by the calculate method.
+  *
+  * This method uses [[org.apache.spark.util.StatCounter]] library, a one pass
+  * method is used for calculation.
+  *
+  * @tparam EI Evaluation information
+  * @tparam Q Query
+  * @tparam P Predicted result
+  * @tparam A Actual result
+  *
+  * @group Evaluation
+  */
+abstract class OptionStdevMetric[EI, Q, P, A]
+    extends Metric[EI, Q, P, A, Double]
+    with StatsOptionMetricHelper[EI, Q, P, A]
+    with QPAMetric[Q, P, A, Option[Double]] {
+  /** Implement this method to return a score that will be used for calculating
+    * the stdev
+    * across all QPA tuples.
+    */
+  def calculate(q: Q, p: P, a: A): Option[Double]
+
+  def calculate(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])])
+  : Double = {
+    calculateStats(sc, evalDataSet).stdev
+  }
+}
+
+/** Returns the sum of the score returned by the calculate method. 
+  *
+  * @tparam EI Evaluation information
+  * @tparam Q Query
+  * @tparam P Predicted result
+  * @tparam A Actual result
+  * @tparam R Result, output of the function calculate, must be Numeric
+  *
+  * @group Evaluation
+  */
+abstract class SumMetric[EI, Q, P, A, R: ClassTag](implicit num: Numeric[R])
+    extends Metric[EI, Q, P, A, R]()(num)
+    with QPAMetric[Q, P, A, R] {
+  /** Implement this method to return a score that will be used for summing
+    * across all QPA tuples.
+    */
+  def calculate(q: Q, p: P, a: A): R
+
+  def calculate(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])])
+  : R = {
+    val union: RDD[R] = sc.union(
+      evalDataSet.map { case (_, qpaRDD) => 
+        qpaRDD.map { case (q, p, a) => calculate(q, p, a) }
+      }
+    )
+
+    union.aggregate[R](num.zero)(_ + _, _ + _)
+  }
+}
+
+
+/** Trait for metric which returns a score based on Query, PredictedResult, and ActualResult.
+  */
+trait QPAMetric[Q, P, A, R] {
+  def calculate(q: Q, p: P, a: A): R
+}

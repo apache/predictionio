@@ -9,13 +9,13 @@
 # License: http://www.apache.org/licenses/LICENSE-2.0
 
 OS=`uname`
-PIO_VERSION=0.9.1
-SPARK_VERSION=1.2.1
+PIO_VERSION=0.9.2
+SPARK_VERSION=1.3.0
 ELASTICSEARCH_VERSION=1.4.4
-HBASE_VERSION=0.98.11
+HBASE_VERSION=1.0.0
 PIO_DIR=$HOME/PredictionIO
 USER_PROFILE=$HOME/.profile
-PIO_FILE=PredictionIO-$PIO_VERSION.tar.gz
+PIO_FILE=PredictionIO-${PIO_VERSION}.tar.gz
 TEMP_DIR=/tmp
 
 # Ask a yes/no question, with a default of "yes".
@@ -23,7 +23,7 @@ confirm () {
   echo -ne $@ "[Y/n] "
   read -r response
 
-  case $response in
+  case ${response} in
     [yY][eE][sS]|[yY]|"")
       true
       ;;
@@ -62,13 +62,13 @@ if [[ "$OS" = "Linux" && $(cat /proc/1/cgroup) == *cpu:/docker/* ]]; then
   # REQUIRED: No user input for Docker!
   echo -e "\033[1;33mDocker detected!\033[0m"
   echo -e "\033[1;33mForcing Docker defaults!\033[0m"
-  pio_dir=$PIO_DIR
-  vendors_dir=$pio_dir/vendors
+  pio_dir=${PIO_DIR}
+  vendors_dir=${pio_dir}/vendors
 
-  spark_dir=$vendors_dir/spark-$SPARK_VERSION
-  elasticsearch_dir=$vendors_dir/elasticsearch-$ELASTICSEARCH_VERSION
-  hbase_dir=$vendors_dir/hbase-$HBASE_VERSION
-  zookeeper_dir=$vendors_dir/zookeeper
+  spark_dir=${vendors_dir}/spark-${SPARK_VERSION}
+  elasticsearch_dir=${vendors_dir}/elasticsearch-${ELASTICSEARCH_VERSION}
+  hbase_dir=${vendors_dir}/hbase-${HBASE_VERSION}
+  zookeeper_dir=${vendors_dir}/zookeeper
 
   echo "--------------------------------------------------------------------------------"
   echo -e "\033[1;32mOK, looks good!\033[0m"
@@ -93,13 +93,13 @@ elif [[ "$1" == "-y" ]]; then
   # Non-interactive
   echo -e "\033[1;33mNon-interactive installation requested!\033[0m"
   echo -e "\033[1;33mForcing defaults!\033[0m"
-  pio_dir=$PIO_DIR
-  vendors_dir=$pio_dir/vendors
+  pio_dir=${PIO_DIR}
+  vendors_dir=${pio_dir}/vendors
 
-  spark_dir=$vendors_dir/spark-$SPARK_VERSION
-  elasticsearch_dir=$vendors_dir/elasticsearch-$ELASTICSEARCH_VERSION
-  hbase_dir=$vendors_dir/hbase-$HBASE_VERSION
-  zookeeper_dir=$vendors_dir/zookeeper
+  spark_dir=${vendors_dir}/spark-${SPARK_VERSION}
+  elasticsearch_dir=${vendors_dir}/elasticsearch-${ELASTICSEARCH_VERSION}
+  hbase_dir=${vendors_dir}/hbase-${HBASE_VERSION}
+  zookeeper_dir=${vendors_dir}/zookeeper
 
   echo "--------------------------------------------------------------------------------"
   echo -e "\033[1;32mOK, looks good!\033[0m"
@@ -114,6 +114,7 @@ elif [[ "$1" == "-y" ]]; then
   # Java Install
   echo -e "\033[1;36mStarting Java install...\033[0m"
 
+  # todo: make java installation platform independant
   sudo apt-get update
   sudo apt-get install openjdk-7-jdk libgfortran3 -y
 
@@ -137,21 +138,21 @@ else
         guess_email=$(git config --global user.email)
       fi
 
-      if [ -n "$guess_email" ]; then
-        read -e -p "Email ($guess_email): " email
+      if [ -n "${guess_email}" ]; then
+        read -e -p "Email (${guess_email}): " email
       else
         read -e -p "Enter email: " email
       fi
       email=${email:-$guess_email}
 
       url="http://direct.prediction.io/$PIO_VERSION/install.json/install/install/$email/"
-      curl --silent $url > /dev/null
+      curl --silent ${url} > /dev/null
     fi
 
-    spark_dir=$vendors_dir/spark-$SPARK_VERSION
-    elasticsearch_dir=$vendors_dir/elasticsearch-$ELASTICSEARCH_VERSION
-    hbase_dir=$vendors_dir/hbase-$HBASE_VERSION
-    zookeeper_dir=$vendors_dir/zookeeper
+    spark_dir=${vendors_dir}/spark-${SPARK_VERSION}
+    elasticsearch_dir=${vendors_dir}/elasticsearch-${ELASTICSEARCH_VERSION}
+    hbase_dir=${vendors_dir}/hbase-${HBASE_VERSION}
+    zookeeper_dir=${vendors_dir}/zookeeper
 
     echo "--------------------------------------------------------------------------------"
     echo -e "\033[1;32mOK, looks good!\033[0m"
@@ -168,10 +169,10 @@ else
   done
 
   # Java Install
-  if [[ $OS = "Linux" ]] && confirm "\033[1mWould you like to install Java?\033[0m"; then
+  if [[ ${OS} = "Linux" ]] && confirm "\033[1mWould you like to install Java?\033[0m"; then
     echo -e "\033[1mSelect your linux distribution:\033[0m"
     select distribution in "Debian/Ubuntu" "Other"; do
-      case $distribution in
+      case ${distribution} in
         "Debian/Ubuntu")
           echo -e "\033[1;36mStarting Java install...\033[0m"
 
@@ -220,120 +221,120 @@ echo "JAVA_HOME is now set to: $JAVA_HOME"
 
 # PredictionIO
 echo -e "\033[1;36mStarting PredictionIO setup in:\033[0m $pio_dir"
-cd $TEMP_DIR
+cd ${TEMP_DIR}
 
 # delete existing tmp file before download again
-if [[ -e  $PIO_FILE ]]; then
+if [[ -e  ${PIO_FILE} ]]; then
   if confirm "Delete existing $PIO_FILE?"; then
-    rm $PIO_FILE
+    rm ${PIO_FILE}
   fi
 fi
 
-if [[ ! -e $PIO_FILE ]]; then
+if [[ ! -e ${PIO_FILE} ]]; then
   echo "Downloading PredictionIO..."
-  curl -O https://d8k1yxp8elc6b.cloudfront.net/$PIO_FILE
+  curl -O https://d8k1yxp8elc6b.cloudfront.net/${PIO_FILE}
 fi
-tar zxf $PIO_FILE
-rm -rf $pio_dir
-mv PredictionIO-$PIO_VERSION $pio_dir
+tar zxf ${PIO_FILE}
+rm -rf ${pio_dir}
+mv PredictionIO-${PIO_VERSION} ${pio_dir}
 
 if [[ $USER ]]; then
-  chown -R $USER $pio_dir
+  chown -R $USER ${pio_dir}
 fi
 
 echo "Updating ~/.profile to include: $pio_dir"
-PATH=$PATH:$pio_dir/bin
-echo "export PATH=\$PATH:$pio_dir/bin" >> $USER_PROFILE
+PATH=$PATH:${pio_dir}/bin
+echo "export PATH=\$PATH:$pio_dir/bin" >> ${USER_PROFILE}
 
 echo -e "\033[1;32mPredictionIO setup done!\033[0m"
 
-mkdir $vendors_dir
+mkdir ${vendors_dir}
 
 # Spark
 echo -e "\033[1;36mStarting Spark setup in:\033[0m $spark_dir"
-if [[ -e spark-$SPARK_VERSION-bin-hadoop2.4.tgz ]]; then
+if [[ -e spark-${SPARK_VERSION}-bin-hadoop2.4.tgz ]]; then
   if confirm "Delete existing spark-$SPARK_VERSION-bin-hadoop2.4.tgz?"; then
-    rm spark-$SPARK_VERSION-bin-hadoop2.4.tgz
+    rm spark-${SPARK_VERSION}-bin-hadoop2.4.tgz
   fi
 fi
-if [[ ! -e spark-$SPARK_VERSION-bin-hadoop2.4.tgz ]]; then
+if [[ ! -e spark-${SPARK_VERSION}-bin-hadoop2.4.tgz ]]; then
   echo "Downloading Spark..."
-  curl -O http://d3kbcqa49mib13.cloudfront.net/spark-$SPARK_VERSION-bin-hadoop2.4.tgz
+  curl -O http://d3kbcqa49mib13.cloudfront.net/spark-${SPARK_VERSION}-bin-hadoop2.4.tgz
 fi
-tar xf spark-$SPARK_VERSION-bin-hadoop2.4.tgz
-rm -rf $spark_dir
-mv spark-$SPARK_VERSION-bin-hadoop2.4 $spark_dir
+tar xf spark-${SPARK_VERSION}-bin-hadoop2.4.tgz
+rm -rf ${spark_dir}
+mv spark-${SPARK_VERSION}-bin-hadoop2.4 ${spark_dir}
 
 echo "Updating: $pio_dir/conf/pio-env.sh"
-$SED_CMD "s|SPARK_HOME=/path_to_apache_spark|SPARK_HOME=$spark_dir|g" $pio_dir/conf/pio-env.sh
+${SED_CMD} "s|SPARK_HOME=.*|SPARK_HOME=$spark_dir|g" ${pio_dir}/conf/pio-env.sh
 
 echo -e "\033[1;32mSpark setup done!\033[0m"
 
 # Elasticsearch
 echo -e "\033[1;36mStarting Elasticsearch setup in:\033[0m $elasticsearch_dir"
-if [[ -e elasticsearch-$ELASTICSEARCH_VERSION.tar.gz ]]; then
+if [[ -e elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz ]]; then
   if confirm "Delete existing elasticsearch-$ELASTICSEARCH_VERSION.tar.gz?"; then
-    rm elasticsearch-$ELASTICSEARCH_VERSION.tar.gz
+    rm elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
   fi
 fi
-if [[ ! -e elasticsearch-$ELASTICSEARCH_VERSION.tar.gz ]]; then
+if [[ ! -e elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz ]]; then
   echo "Downloading Elasticsearch..."
-  curl -O https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-$ELASTICSEARCH_VERSION.tar.gz
+  curl -O https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
 fi
-tar zxf elasticsearch-$ELASTICSEARCH_VERSION.tar.gz
-rm -rf $elasticsearch_dir
-mv elasticsearch-$ELASTICSEARCH_VERSION $elasticsearch_dir
+tar zxf elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
+rm -rf ${elasticsearch_dir}
+mv elasticsearch-${ELASTICSEARCH_VERSION} ${elasticsearch_dir}
 
 echo "Updating: $elasticsearch_dir/config/elasticsearch.yml"
-echo 'network.host: 127.0.0.1' >> $elasticsearch_dir/config/elasticsearch.yml
+echo 'network.host: 127.0.0.1' >> ${elasticsearch_dir}/config/elasticsearch.yml
 
 echo "Updating: $pio_dir/conf/pio-env.sh"
-echo "PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME=$elasticsearch_dir" >> $pio_dir/conf/pio-env.sh
+echo "PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME=$elasticsearch_dir" >> ${pio_dir}/conf/pio-env.sh
 
 echo -e "\033[1;32mElasticsearch setup done!\033[0m"
 
 # HBase
 echo -e "\033[1;36mStarting HBase setup in:\033[0m $hbase_dir"
-if [[ -e hbase-$HBASE_VERSION-hadoop2-bin.tar.gz ]]; then
-  if confirm "Delete existing hbase-$HBASE_VERSION-hadoop2-bin.tar.gz?"; then
-    rm hbase-$HBASE_VERSION-hadoop2-bin.tar.gz
+if [[ -e hbase-${HBASE_VERSION}-bin.tar.gz ]]; then
+  if confirm "Delete existing hbase-$HBASE_VERSION-bin.tar.gz?"; then
+    rm hbase-${HBASE_VERSION}-bin.tar.gz
   fi
 fi
-if [[ ! -e hbase-$HBASE_VERSION-hadoop2-bin.tar.gz ]]; then
+if [[ ! -e hbase-${HBASE_VERSION}-bin.tar.gz ]]; then
   echo "Downloading HBase..."
-  curl -O http://archive.apache.org/dist/hbase/hbase-$HBASE_VERSION/hbase-$HBASE_VERSION-hadoop2-bin.tar.gz
+  curl -O http://archive.apache.org/dist/hbase/hbase-${HBASE_VERSION}/hbase-${HBASE_VERSION}-bin.tar.gz
 fi
-tar zxf hbase-$HBASE_VERSION-hadoop2-bin.tar.gz
-rm -rf $hbase_dir
-mv hbase-$HBASE_VERSION-hadoop2 $hbase_dir
+tar zxf hbase-${HBASE_VERSION}-bin.tar.gz
+rm -rf ${hbase_dir}
+mv hbase-${HBASE_VERSION} ${hbase_dir}
 
 echo "Creating default site in: $hbase_dir/conf/hbase-site.xml"
-cat <<EOT > $hbase_dir/conf/hbase-site.xml
+cat <<EOT > ${hbase_dir}/conf/hbase-site.xml
 <configuration>
   <property>
     <name>hbase.rootdir</name>
-    <value>file://$hbase_dir/data</value>
+    <value>file://${hbase_dir}/data</value>
   </property>
   <property>
     <name>hbase.zookeeper.property.dataDir</name>
-    <value>$zookeeper_dir</value>
+    <value>${zookeeper_dir}</value>
   </property>
 </configuration>
 EOT
 
 echo "Updating: $hbase_dir/conf/hbase-env.sh to include $JAVA_HOME"
-$SED_CMD "s|# export JAVA_HOME=/usr/java/jdk1.6.0/|export JAVA_HOME=$JAVA_HOME|" $hbase_dir/conf/hbase-env.sh
+${SED_CMD} "s|# export JAVA_HOME=/usr/java/jdk1.6.0/|export JAVA_HOME=$JAVA_HOME|" ${hbase_dir}/conf/hbase-env.sh
 
 echo "Updating: $pio_dir/conf/pio-env.sh"
-echo "PIO_STORAGE_SOURCES_HBASE_HOME=$hbase_dir" >> $pio_dir/conf/pio-env.sh
-$SED_CMD "s|HBASE_CONF_DIR=\$PIO_HOME/conf|HBASE_CONF_DIR=$hbase_dir/conf|" $pio_dir/conf/pio-env.sh
+echo "PIO_STORAGE_SOURCES_HBASE_HOME=$hbase_dir" >> ${pio_dir}/conf/pio-env.sh
+${SED_CMD} "s|HBASE_CONF_DIR=\$PIO_HOME/conf|HBASE_CONF_DIR=$hbase_dir/conf|" ${pio_dir}/conf/pio-env.sh
 
 echo -e "\033[1;32mHBase setup done!\033[0m"
 
 echo "Updating permissions on: $vendors_dir"
 
 if [[ $USER ]]; then
-  chown -R $USER $vendors_dir
+  chown -R $USER ${vendors_dir}
 fi
 
 echo -e "\033[1;32mInstallation done!\033[0m"

@@ -20,31 +20,17 @@ import io.prediction.core.BasePreparator
 import io.prediction.core.BaseAlgorithm
 import io.prediction.core.BaseServing
 import io.prediction.core.Doer
-import io.prediction.core.BaseEngine
-import io.prediction.workflow.CreateWorkflow
-import io.prediction.workflow.WorkflowUtils
-import io.prediction.workflow.EngineLanguage
-import io.prediction.workflow.PersistentModelManifest
-import io.prediction.workflow.SparkWorkflowUtils
-import io.prediction.workflow.StopAfterReadInterruption
-import io.prediction.workflow.StopAfterPrepareInterruption
-import io.prediction.data.storage.EngineInstance
 import io.prediction.annotation.Experimental
-import _root_.java.util.NoSuchElementException
-import io.prediction.data.storage.StorageClientException
 
+import grizzled.slf4j.Logger
+import io.prediction.workflow.WorkflowParams
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
 import scala.language.implicitConversions
 
-import org.json4s._
-import org.json4s.native.JsonMethods._
-import org.json4s.native.Serialization.read
-
-import io.prediction.workflow.NameParamsSerializer
-import grizzled.slf4j.Logger
+import _root_.java.util.NoSuchElementException
 
 import scala.collection.mutable.{ HashMap => MutableHashMap }
 
@@ -63,27 +49,27 @@ object FastEvalEngineWorkflow  {
   }
 
   case class PreparatorPrefix(
-    val dataSourceParams: (String, Params),
-    val preparatorParams: (String, Params)) {
+    dataSourceParams: (String, Params),
+    preparatorParams: (String, Params)) {
     def this(ap: AlgorithmsPrefix) = {
       this(ap.dataSourceParams, ap.preparatorParams)
     }
   }
   
   case class AlgorithmsPrefix(
-    val dataSourceParams: (String, Params),
-    val preparatorParams: (String, Params),
-    val algorithmParamsList: Seq[(String, Params)]) {
+    dataSourceParams: (String, Params),
+    preparatorParams: (String, Params),
+    algorithmParamsList: Seq[(String, Params)]) {
     def this(sp: ServingPrefix) = {
       this(sp.dataSourceParams, sp.preparatorParams, sp.algorithmParamsList)
     }
   }
 
   case class ServingPrefix(
-    val dataSourceParams: (String, Params),
-    val preparatorParams: (String, Params),
-    val algorithmParamsList: Seq[(String, Params)],
-    val servingParams: (String, Params)) {
+    dataSourceParams: (String, Params),
+    preparatorParams: (String, Params),
+    algorithmParamsList: Seq[(String, Params)],
+    servingParams: (String, Params)) {
     def this(ep: EngineParams) = this(
       ep.dataSourceParams,
       ep.preparatorParams,

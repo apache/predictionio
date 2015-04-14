@@ -51,7 +51,7 @@ When it finishes successfully, you should see somthing like the following:
 ```
 ==> default: Installation done!
 ==> default: --------------------------------------------------------------------------------
-==> default: Installation of PredictionIO 0.9.1 complete!
+==> default: Installation of PredictionIO <%= data.versions.pio %> complete!
 ==> default: IMPORTANT: You still have to start PredictionIO and dependencies manually:
 ==> default: Run: 'pio-start-all'
 ==> default: Check the status with: 'pio status'
@@ -84,11 +84,6 @@ vagrant@vagrant-ubuntu-trusty-64:~$
 One you've logged into the VM, you can follow the one of the template quickstart
 guides to get started.
 
-INFO: Note that when you run `pio deploy` engine inside the **VM**, you need to
-specify `--ip 0.0.0.0` in order to access the event server and the deployed
-engine from the host machine. Please remember to specify this --ip parameter
-when you follow the quick start.
-
 To run PredictionIO Event Server and dependent services:
 
 ```
@@ -98,7 +93,7 @@ vagrant@vagrant-ubuntu-trusty-64:~$ pio-start-all
 To deploy engine:
 
 ```
-vagrant@vagrant-ubuntu-trusty-64:~/MyRecommendation$ pio deploy --ip 0.0.0.0
+vagrant@vagrant-ubuntu-trusty-64:~/MyRecommendation$ pio deploy
 ```
 
 ### Shutdown and bring up PredictionIO VM again
@@ -127,6 +122,6 @@ When it's ready, you should see the following:
 ==> default: PredictionIO VM is up!
 ==> default: You could run 'pio status' inside VM ('vagrant ssh' to VM first) to confirm if PredictionIO is ready.
 ==> default: IMPORTANT: You still have to start the eventserver manually (inside VM):
-==> default: Run: 'pio eventserver --ip 0.0.0.0'
+==> default: Run: 'pio eventserver'
 ==> default: --------------------------------------------------------------------------------
 ```

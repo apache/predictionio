@@ -15,36 +15,38 @@
 
 package io.prediction.tools.console
 
+import java.io.File
+
+import grizzled.slf4j.Logging
+
 import io.prediction.controller.Utils
 import io.prediction.core.BuildInfo
+import io.prediction.data.api.EventServer
+import io.prediction.data.api.EventServerConfig
 import io.prediction.data.storage.EngineManifest
 import io.prediction.data.storage.EngineManifestSerializer
 import io.prediction.data.storage.Storage
 import io.prediction.data.storage.hbase.upgrade.Upgrade_0_8_3
-import io.prediction.tools.dashboard.Dashboard
-import io.prediction.tools.dashboard.DashboardConfig
-import io.prediction.data.api.EventServer
-import io.prediction.data.api.EventServerConfig
+import io.prediction.tools.admin.{AdminServer, AdminServerConfig}
 import io.prediction.tools.RegisterEngine
 import io.prediction.tools.RunServer
 import io.prediction.tools.RunWorkflow
+import io.prediction.tools.dashboard.Dashboard
+import io.prediction.tools.dashboard.DashboardConfig
 import io.prediction.workflow.WorkflowUtils
-
-import grizzled.slf4j.Logging
 import org.apache.commons.io.FileUtils
 import org.apache.hadoop.fs.Path
 import org.json4s._
 import org.json4s.native.JsonMethods._
-import org.json4s.native.Serialization.{read, write}
-import scalaj.http.Http
+import org.json4s.native.Serialization.read
+import org.json4s.native.Serialization.write
 import semverfi._
 
 import scala.collection.JavaConversions._
 import scala.io.Source
 import scala.sys.process._
 import scala.util.Random
-
-import java.io.File
+import scalaj.http.Http
 
 case class ConsoleArgs(
   common: CommonArgs = CommonArgs(),
@@ -53,6 +55,7 @@ case class ConsoleArgs(
   accessKey: AccessKeyArgs = AccessKeyArgs(),
   deploy: DeployArgs = DeployArgs(),
   eventServer: EventServerArgs = EventServerArgs(),
+  adminServer: AdminServerArgs = AdminServerArgs(),
   dashboard: DashboardArgs = DashboardArgs(),
   upgrade: UpgradeArgs = UpgradeArgs(),
   template: TemplateArgs = TemplateArgs(),
@@ -95,19 +98,23 @@ case class BuildArgs(
   forceGeneratePIOSbt: Boolean = false)
 
 case class DeployArgs(
-  ip: String = "localhost",
+  ip: String = "0.0.0.0",
   port: Int = 8000,
   logUrl: Option[String] = None,
   logPrefix: Option[String] = None)
 
 case class EventServerArgs(
   enabled: Boolean = false,
-  ip: String = "localhost",
+  ip: String = "0.0.0.0",
   port: Int = 7070,
   stats: Boolean = false)
 
+case class AdminServerArgs(
+ip: String = "localhost",
+port: Int = 7071)
+
 case class DashboardArgs(
-  ip: String = "localhost",
+  ip: String = "0.0.0.0",
   port: Int = 9000)
 
 case class UpgradeArgs(
@@ -274,9 +281,9 @@ object Console extends Logging {
           arg[String]("<evaluation-class>") action { (x, c) =>
             c.copy(common = c.common.copy(evaluation = Some(x)))
           },
-          arg[String]("<engine-parameters-generator-class>") action { (x, c) =>
+          arg[String]("[<engine-parameters-generator-class>]") optional() action { (x, c) =>
             c.copy(common = c.common.copy(engineParamsGenerator = Some(x)))
-          },
+          } text("Optional engine parameters generator class, overriding the first argument"),
           opt[String]("batch") action { (x, c) =>
             c.copy(common = c.common.copy(batch = x))
           } text("Batch label of the run.")
@@ -297,7 +304,7 @@ object Console extends Logging {
           } text("Engine instance ID."),
           opt[String]("ip") action { (x, c) =>
             c.copy(deploy = c.deploy.copy(ip = x))
-          } text("IP to bind to. Default: localhost"),
+          },
           opt[Int]("port") action { (x, c) =>
             c.copy(deploy = c.deploy.copy(port = x))
           } text("Port to bind to. Default: 8000"),
@@ -306,10 +313,16 @@ object Console extends Logging {
           } text("Enable feedback loop to event server."),
           opt[String]("event-server-ip") action { (x, c) =>
             c.copy(eventServer = c.eventServer.copy(ip = x))
-          } text("Event server IP. Default: localhost"),
+          },
           opt[Int]("event-server-port") action { (x, c) =>
             c.copy(eventServer = c.eventServer.copy(port = x))
           } text("Event server port. Default: 7070"),
+          opt[Int]("admin-server-port") action { (x, c) =>
+            c.copy(adminServer = c.adminServer.copy(port = x))
+          } text("Admin server port. Default: 7071"),
+          opt[String]("admin-server-port") action { (x, c) =>
+          c.copy(adminServer = c.adminServer.copy(ip = x))
+          } text("Admin server IP. Default: localhost"),
           opt[String]("accesskey") action { (x, c) =>
             c.copy(accessKey = c.accessKey.copy(accessKey = x))
           } text("Access key of the App where feedback data will be stored."),
@@ -331,7 +344,7 @@ object Console extends Logging {
         } children(
           opt[String]("ip") action { (x, c) =>
             c.copy(deploy = c.deploy.copy(ip = x))
-          } text("IP to unbind from. Default: localhost"),
+          },
           opt[Int]("port") action { (x, c) =>
             c.copy(deploy = c.deploy.copy(port = x))
           } text("Port to unbind from. Default: 8000")
@@ -344,7 +357,7 @@ object Console extends Logging {
         } children(
           opt[String]("ip") action { (x, c) =>
             c.copy(dashboard = c.dashboard.copy(ip = x))
-          } text("IP to bind to. Default: localhost"),
+          },
           opt[Int]("port") action { (x, c) =>
             c.copy(dashboard = c.dashboard.copy(port = x))
           } text("Port to bind to. Default: 9000")
@@ -357,13 +370,25 @@ object Console extends Logging {
         } children(
           opt[String]("ip") action { (x, c) =>
             c.copy(eventServer = c.eventServer.copy(ip = x))
-          } text("IP to bind to. Default: localhost"),
+          },
           opt[Int]("port") action { (x, c) =>
             c.copy(eventServer = c.eventServer.copy(port = x))
           } text("Port to bind to. Default: 7070"),
           opt[Unit]("stats") action { (x, c) =>
             c.copy(eventServer = c.eventServer.copy(stats = true))
           }
+        )
+      cmd("adminserver").
+        text("Launch an Admin Server at the specific IP and port.").
+        action { (_, c) =>
+        c.copy(commands = c.commands :+ "adminserver")
+      } children(
+        opt[String]("ip") action { (x, c) =>
+          c.copy(adminServer = c.adminServer.copy(ip = x))
+        } text("IP to bind to. Default: localhost"),
+        opt[Int]("port") action { (x, c) =>
+          c.copy(adminServer = c.adminServer.copy(port = x))
+        } text("Port to bind to. Default: 7071")
         )
       note("")
       cmd("run").
@@ -441,6 +466,16 @@ object Console extends Logging {
               c.copy(commands = c.commands :+ "list")
             },
           note(""),
+          cmd("show").
+            text("Show details of an app.").
+            action { (_, c) =>
+              c.copy(commands = c.commands :+ "show")
+            } children (
+              arg[String]("<name>") action { (x, c) =>
+                c.copy(app = c.app.copy(name = x))
+              } text("Name of the app to be shown.")
+            ),
+          note(""),
           cmd("delete").
             text("Delete an app.").
             action { (_, c) =>
@@ -458,7 +493,39 @@ object Console extends Logging {
             } children(
               arg[String]("<name>") action { (x, c) =>
                 c.copy(app = c.app.copy(name = x))
-              } text("Name of the app whose data to be deleted.")
+              } text("Name of the app whose data to be deleted."),
+              opt[String]("channel") action { (x, c) =>
+                c.copy(app = c.app.copy(dataDeleteChannel = Some(x)))
+              } text("Name of channel whose data to be deleted."),
+              opt[Unit]("all") action { (x, c) =>
+                c.copy(app = c.app.copy(all = true))
+              } text("Delete data of all channels including default")
+            ),
+          note(""),
+          cmd("channel-new").
+            text("Create a new channel for the app.").
+            action { (_, c) =>
+              c.copy(commands = c.commands :+ "channel-new")
+            } children (
+              arg[String]("<name>") action { (x, c) =>
+                c.copy(app = c.app.copy(name = x))
+              } text("App name."),
+              arg[String]("<channel>") action { (x, c) =>
+                c.copy(app = c.app.copy(channel = x))
+              } text ("Channel name to be created.")
+            ),
+          note(""),
+          cmd("channel-delete").
+            text("Delete a channel of the app.").
+            action { (_, c) =>
+              c.copy(commands = c.commands :+ "channel-delete")
+            } children (
+              arg[String]("<name>") action { (x, c) =>
+                c.copy(app = c.app.copy(name = x))
+              } text("App name."),
+              arg[String]("<channel>") action { (x, c) =>
+                c.copy(app = c.app.copy(channel = x))
+              } text ("Channel name to be deleted.")
             )
         )
       note("")
@@ -515,6 +582,9 @@ object Console extends Logging {
               arg[String]("<new engine directory>") action { (x, c) =>
                 c.copy(template = c.template.copy(directory = x))
               },
+              opt[String]("version") action { (x, c) =>
+                c.copy(template = c.template.copy(version = Some(x)))
+              },
               opt[String]("name") action { (x, c) =>
                 c.copy(template = c.template.copy(name = Some(x)))
               },
@@ -542,6 +612,9 @@ object Console extends Logging {
           },
           opt[String]("format") action { (x, c) =>
             c.copy(export = c.export.copy(format = x))
+          },
+          opt[String]("channel") action { (x, c) =>
+            c.copy(export = c.export.copy(channel = Some(x)))
           }
         )
       cmd("import").
@@ -553,6 +626,9 @@ object Console extends Logging {
           },
           opt[String]("input") required() action { (x, c) =>
             c.copy(imprt = c.imprt.copy(inputPath = x))
+          },
+          opt[String]("channel") action { (x, c) =>
+            c.copy(imprt = c.imprt.copy(channel = Some(x)))
           }
         )
     }
@@ -608,6 +684,9 @@ object Console extends Logging {
         case Seq("eventserver") =>
           eventserver(ca)
           0
+        case Seq("adminserver") =>
+          adminserver(ca)
+          0
         case Seq("run") =>
           generateManifestJson(ca.common.manifestJson)
           run(ca)
@@ -620,10 +699,16 @@ object Console extends Logging {
           App.create(ca)
         case Seq("app", "list") =>
           App.list(ca)
+        case Seq("app", "show") =>
+          App.show(ca)
         case Seq("app", "delete") =>
           App.delete(ca)
         case Seq("app", "data-delete") =>
           App.dataDelete(ca)
+        case Seq("app", "channel-new") =>
+          App.channelNew(ca)
+        case Seq("app", "channel-delete") =>
+          App.channelDelete(ca)
         case Seq("accesskey", "new") =>
           AccessKey.create(ca)
         case Seq("accesskey", "list") =>
@@ -673,6 +758,7 @@ object Console extends Logging {
     "train" -> txt.train().toString,
     "deploy" -> txt.deploy().toString,
     "eventserver" -> txt.eventserver().toString,
+    "adminserver" -> txt.adminserver().toString,
     "app" -> txt.app().toString,
     "accesskey" -> txt.accesskey().toString,
     "import" -> txt.imprt().toString,
@@ -684,6 +770,7 @@ object Console extends Logging {
   def version(ca: ConsoleArgs): Unit = println(BuildInfo.version)
 
   def build(ca: ConsoleArgs): Int = {
+    Template.verifyTemplateMinVersion(new File("template.json"))
     compile(ca)
     info("Looking for an engine...")
     val jarFiles = jarFilesForScala
@@ -718,6 +805,7 @@ object Console extends Logging {
   }
 
   def train(ca: ConsoleArgs): Int = {
+    Template.verifyTemplateMinVersion(new File("template.json"))
     withRegisteredManifest(
       ca.common.manifestJson,
       ca.common.engineId,
@@ -740,6 +828,7 @@ object Console extends Logging {
   }
 
   def deploy(ca: ConsoleArgs): Int = {
+    Template.verifyTemplateMinVersion(new File("template.json"))
     withRegisteredManifest(
       ca.common.manifestJson,
       ca.common.engineId,
@@ -793,6 +882,15 @@ object Console extends Logging {
       ip = ca.eventServer.ip,
       port = ca.eventServer.port,
       stats = ca.eventServer.stats))
+  }
+
+  def adminserver(ca: ConsoleArgs): Unit = {
+    info(
+      s"Creating Admin Server at ${ca.adminServer.ip}:${ca.adminServer.port}")
+    AdminServer.createAdminServer(AdminServerConfig(
+      ip = ca.adminServer.ip,
+      port = ca.adminServer.port
+    ))
   }
 
   def undeploy(ca: ConsoleArgs): Int = {
@@ -941,7 +1039,7 @@ object Console extends Logging {
     if (new File(s"${sparkHome}/bin/spark-submit").exists) {
       println(s"Apache Spark")
       println(s"  Installed at: ${sparkHome}")
-      val sparkMinVersion = "1.2.0"
+      val sparkMinVersion = "1.3.0"
       val sparkReleaseFile = new File(s"${sparkHome}/RELEASE")
       if (sparkReleaseFile.exists) {
         val sparkReleaseStrings =

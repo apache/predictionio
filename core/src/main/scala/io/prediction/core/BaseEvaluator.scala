@@ -15,12 +15,12 @@
 
 package io.prediction.core
 
+import io.prediction.annotation.Experimental   
 import io.prediction.controller.EngineParams
 import io.prediction.controller.Evaluation
-import io.prediction.controller.WorkflowParams
-import scala.reflect._
+import io.prediction.workflow.WorkflowParams
+
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
 abstract class BaseEvaluator[EI, Q, P, A, ER <: BaseEvaluatorResult]
@@ -41,4 +41,9 @@ trait BaseEvaluatorResult extends Serializable {
   
   /** JSON portion of the rendered evaluator results. */
   def toJSON(): String = ""
+
+  /** :: Experimental ::
+    * Indicate if this result is inserted into database. */
+  @Experimental
+  val noSave: Boolean = false 
 }

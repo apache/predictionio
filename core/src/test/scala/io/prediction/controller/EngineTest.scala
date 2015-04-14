@@ -1,27 +1,18 @@
 package io.prediction.controller
 
+import io.prediction.workflow.PersistentModelManifest
+import io.prediction.workflow.SharedSparkContext
+import io.prediction.workflow.StopAfterPrepareInterruption
+import io.prediction.workflow.StopAfterReadInterruption
+
+import grizzled.slf4j.Logger
+import io.prediction.workflow.WorkflowParams
+import org.apache.spark.rdd.RDD
+import org.scalatest.Inspectors._
+import org.scalatest.Matchers._
 import org.scalatest.FunSuite
 import org.scalatest.Inside
-import org.scalatest.Matchers._
-import org.scalatest.Inspectors._
 
-import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-import org.apache.spark.SparkConf
-import org.apache.spark.rdd.RDD
-
-import io.prediction.controller._
-import io.prediction.core._
-import io.prediction.workflow.SharedSparkContext
-import io.prediction.workflow.PersistentModelManifest
-import io.prediction.workflow.StopAfterReadInterruption
-import io.prediction.workflow.StopAfterPrepareInterruption
-import grizzled.slf4j.{ Logger, Logging }
-
-import _root_.java.lang.Thread
-
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Suite
 import scala.util.Random
 
 class EngineSuite

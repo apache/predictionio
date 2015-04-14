@@ -6,9 +6,7 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.Suite
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
-import org.apache.spark.rdd.RDD
 
 
 /** Manages a local `sc` {@link SparkContext} variable, correctly stopping it

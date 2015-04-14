@@ -162,8 +162,10 @@ object RunWorkflow extends Logging {
       }) ++
       ca.common.evaluation.map(x => Seq("--evaluation-class", x)).
         getOrElse(Seq()) ++
-      ca.common.engineParamsGenerator.map(x => Seq("--engine-params-generator-class", x)).
-        getOrElse(Seq()) ++
+      // If engineParamsGenerator is specified, it overrides the evaluation.
+      ca.common.engineParamsGenerator.orElse(ca.common.evaluation)
+        .map(x => Seq("--engine-params-generator-class", x))
+        .getOrElse(Seq()) ++ 
       (if (ca.common.batch != "") Seq("--batch", ca.common.batch) else Seq())
     info(s"Submission command: ${sparkSubmit.mkString(" ")}")
     Process(sparkSubmit, None, "SPARK_YARN_USER_ENV" -> pioEnvVars).!

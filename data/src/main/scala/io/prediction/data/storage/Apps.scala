@@ -51,4 +51,5 @@ private[prediction] trait Apps {
 
   /** Delete an App. */
   def delete(id: Int): Boolean
+
 }

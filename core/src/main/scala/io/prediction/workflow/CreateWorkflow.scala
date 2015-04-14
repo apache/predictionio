@@ -15,17 +15,16 @@
 
 package io.prediction.workflow
 
-import com.github.nscala_time.time.Imports._
-import com.google.common.io.ByteStreams
-import grizzled.slf4j.Logging
 import io.prediction.controller.Engine
 import io.prediction.controller.Utils
-import io.prediction.controller.Workflow
-import io.prediction.controller.WorkflowParams
 import io.prediction.core.BaseEngine
 import io.prediction.data.storage.EngineInstance
 import io.prediction.data.storage.EvaluationInstance
 import io.prediction.data.storage.Storage
+
+import com.github.nscala_time.time.Imports._
+import com.google.common.io.ByteStreams
+import grizzled.slf4j.Logging
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path

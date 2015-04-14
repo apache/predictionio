@@ -15,12 +15,8 @@
 
 package io.prediction.workflow
 
-import com.github.nscala_time.time.Imports.DateTime
-import com.twitter.chill.KryoInjection
-import grizzled.slf4j.Logger
 import io.prediction.controller.EngineParams
 import io.prediction.controller.Evaluation
-import io.prediction.controller.WorkflowParams
 import io.prediction.core.BaseEngine
 import io.prediction.core.BaseEvaluator
 import io.prediction.core.BaseEvaluatorResult
@@ -28,6 +24,9 @@ import io.prediction.data.storage.EngineInstance
 import io.prediction.data.storage.EvaluationInstance
 import io.prediction.data.storage.Model
 import io.prediction.data.storage.Storage
+
+import com.github.nscala_time.time.Imports.DateTime
+import grizzled.slf4j.Logger
 
 import scala.language.existentials
 
@@ -67,10 +66,12 @@ object CoreWorkflow {
 
       val instanceId = Storage.getMetaDataEngineInstances
 
+      val kryo = KryoInstantiator.newKryoInjection
+      
       logger.info("Inserting persistent model")
       Storage.getModelDataModels.insert(Model(
         id = engineInstance.id,
-        models = KryoInjection(models)))
+        models = kryo(models)))
 
       logger.info("Updating engine instance")
       val engineInstances = Storage.getMetaDataEngineInstances
@@ -123,18 +124,23 @@ object CoreWorkflow {
       engineParamsList,
       evaluator,
       params)
-    val evaluatedEvaluationInstance = evaluationInstance.copy(
-      status = "EVALCOMPLETED",
-      id = evaluationInstanceId,
-      endTime = DateTime.now,
-      evaluatorResults = evaluatorResult.toOneLiner,
-      evaluatorResultsHTML = evaluatorResult.toHTML,
-      evaluatorResultsJSON = evaluatorResult.toJSON
-    )
 
-    logger.info(s"Updating evaluation instance with result: $evaluatorResult")
+    if (evaluatorResult.noSave) { 
+      logger.info(s"This evaluation result is not inserted into database: $evaluatorResult")
+    } else {
+      val evaluatedEvaluationInstance = evaluationInstance.copy(
+        status = "EVALCOMPLETED",
+        id = evaluationInstanceId,
+        endTime = DateTime.now,
+        evaluatorResults = evaluatorResult.toOneLiner,
+        evaluatorResultsHTML = evaluatorResult.toHTML,
+        evaluatorResultsJSON = evaluatorResult.toJSON
+      )
 
-    evaluationInstances.update(evaluatedEvaluationInstance)
+      logger.info(s"Updating evaluation instance with result: $evaluatorResult")
+
+      evaluationInstances.update(evaluatedEvaluationInstance)
+    }
 
     logger.debug("Stop SparkContext")
 

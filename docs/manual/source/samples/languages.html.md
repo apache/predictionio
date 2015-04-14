@@ -8,10 +8,10 @@ hidden: true
 This is a sample code block with no language.
 
 ```
-$ $PIO_HOME/bin/pio eventserver --ip 0.0.0.0
+$ $PIO_HOME/bin/pio eventserver
 $ cd /path/to/engine
 $ ../bin/pio train
-$ ../bin/pio deploy --ip 0.0.0.0
+$ ../bin/pio deploy
 ```
 
 ## Scala

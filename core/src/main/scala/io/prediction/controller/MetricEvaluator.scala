@@ -15,55 +15,36 @@
 
 package io.prediction.controller
 
-import com.github.nscala_time.time.Imports.DateTime
-import com.twitter.chill.KryoInjection
-import grizzled.slf4j.{ Logger, Logging }
-import io.prediction.core.BaseAlgorithm
-import io.prediction.core.BaseDataSource
-import io.prediction.core.BaseEngine
 import io.prediction.core.BaseEvaluator
 import io.prediction.core.BaseEvaluatorResult
-import io.prediction.core.BasePreparator
-import io.prediction.core.BaseServing
-import io.prediction.core.Doer
-import io.prediction.data.storage.EngineInstance
-import io.prediction.data.storage.EngineInstances
-import io.prediction.data.storage.Model
 import io.prediction.data.storage.Storage
 import io.prediction.workflow.NameParamsSerializer
-import _root_.java.io.FileInputStream
-import _root_.java.io.FileOutputStream
-import _root_.java.io.ObjectInputStream
-import _root_.java.io.ObjectOutputStream
-import _root_.java.io.PrintWriter
-import _root_.java.io.File
-import _root_.java.lang.{ Iterable => JIterable }
-import _root_.java.util.{ HashMap => JHashMap, Map => JMap }
-import org.apache.spark.SparkConf
+
+import com.github.nscala_time.time.Imports.DateTime
+import grizzled.slf4j.Logger
+import io.prediction.workflow.WorkflowParams
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import org.json4s._
 import org.json4s.native.Serialization.write
 import org.json4s.native.Serialization.writePretty
-import scala.collection.JavaConversions._
+
 import scala.language.existentials
-import scala.reflect.ClassTag
-import scala.reflect.Manifest
-import scala.collection.mutable.StringBuilder
+
+import _root_.java.io.PrintWriter
+import _root_.java.io.File
 
 case class MetricScores[R](
-  val score: R, 
-  val otherScores: Seq[Any])
+  score: R,
+  otherScores: Seq[Any])
 
 case class MetricEvaluatorResult[R](
-  val bestScore: MetricScores[R],
-  val bestEngineParams: EngineParams,
-  val bestIdx: Int,
-  val metricHeader: String,
-  val otherMetricHeaders: Seq[String],
-  val engineParamsScores: Seq[(EngineParams, MetricScores[R])],
-  val outputPath: Option[String])
+  bestScore: MetricScores[R],
+  bestEngineParams: EngineParams,
+  bestIdx: Int,
+  metricHeader: String,
+  otherMetricHeaders: Seq[String],
+  engineParamsScores: Seq[(EngineParams, MetricScores[R])],
+  outputPath: Option[String])
 extends BaseEvaluatorResult {
 
   override def toOneLiner(): String = {
@@ -187,7 +168,7 @@ private[prediction] class MetricEvaluator[EI, Q, P, A, R] (
 
     implicit lazy val formats = Utils.json4sDefaultFormats
 
-    logger.info("Writing best variant params to disk ($outputPath)...")
+    logger.info(s"Writing best variant params to disk ($outputPath)...")
     val writer = new PrintWriter(new File(outputPath))
     writer.write(writePretty(variant))
     writer.close
@@ -209,7 +190,7 @@ private[prediction] class MetricEvaluator[EI, Q, P, A, R] (
       (engineParams, metricScores)
     }
     .seq
-
+    
     implicit lazy val formats = Utils.json4sDefaultFormats +
       new NameParamsSerializer
 
@@ -227,7 +208,7 @@ private[prediction] class MetricEvaluator[EI, Q, P, A, R] (
     }
 
     // save engine params if it is set.
-    outputPath.map { path => saveEngineJson(evaluation, bestEngineParams, path) }
+    outputPath.foreach { path => saveEngineJson(evaluation, bestEngineParams, path) }
 
     MetricEvaluatorResult(
       bestScore = bestScore,

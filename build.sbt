@@ -18,7 +18,7 @@ import UnidocKeys._
 
 name := "pio"
 
-version in ThisBuild := "0.9.2-SNAPSHOT"
+version in ThisBuild := "0.9.2"
 
 organization in ThisBuild := "io.prediction"
 
@@ -37,7 +37,7 @@ elasticsearchVersion in ThisBuild := "1.4.4"
 
 json4sVersion in ThisBuild := "3.2.10"
 
-sparkVersion in ThisBuild := "1.2.0"
+sparkVersion in ThisBuild := "1.3.0"
 
 lazy val pioBuildInfoSettings = buildInfoSettings ++ Seq(
   sourceGenerators in Compile <+= buildInfo,
@@ -104,6 +104,7 @@ scalacOptions in (ScalaUnidoc, unidoc) ++= Seq(
     "breeze",
     "html",
     "io.prediction.annotation",
+    "io.prediction.controller.html",
     "io.prediction.controller.java",
     "io.prediction.core",
     "io.prediction.data.api",

@@ -1,13 +1,13 @@
 ### Start PredictionIO and Dependent Services
 
-Simply do `bin/pio-start-all` and you should see something similar to the
-following:
+Simply do `PredictionIO-<%= data.versions.pio %>/bin/pio-start-all` and you
+should see something similar to the following:
 
 ```
-$ bin/pio-start-all
+$ PredictionIO-<%= data.versions.pio %>/bin/pio-start-all
 Starting Elasticsearch...
 Starting HBase...
-starting master, logging to /home/abc/<%= data.versions.hbase_basename %>-<%= data.versions.hbase_dir_suffix %>/bin/../logs/hbase-abc-master-yourhost.local.out
+starting master, logging to /home/abc/PredictionIO-<%= data.versions.pio %>/vendors/<%= data.versions.hbase_basename %>/bin/../logs/hbase-abc-master-yourhost.local.out
 Waiting 10 seconds for HBase to fully initialize...
 Starting PredictionIO Event Server...
 $
@@ -30,4 +30,5 @@ A running setup will have these up and running:
 - org.apache.hadoop.hbase.master.HMaster
 - org.elasticsearch.bootstrap.Elasticsearch
 
-At any time, you can run `pio status` to check the status of the dependencies.
+At any time, you can run `PredictionIO-<%= data.versions.pio %>/bin/pio status`
+to check the status of the dependencies.

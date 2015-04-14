@@ -1,0 +1,52 @@
+[HBase](http://hbase.apache.org) is the default event data store for
+PredictionIO. Download and extract it.
+
+```
+$ wget http://archive.apache.org/dist/hbase/<%= data.versions.hbase_basename %>/<%= data.versions.hbase_basename %>-<%= data.versions.hbase_variant %>.tar.gz
+$ tar zxvfC <%= data.versions.hbase_basename %>-<%= data.versions.hbase_variant %>.tar.gz PredictionIO-<%= data.versions.pio %>/vendors
+```
+
+INFO: If you decide to install HBase to another location, you must edit
+`PredictionIO-<%= data.versions.pio %>/conf/pio-env.sh` and change the
+`PIO_STORAGE_SOURCES_HBASE_HOME` variable to point to your own HBase
+installation.
+
+You will need to at least add a minimal configuration to HBase to start it in
+standalone mode. Details can be found
+[here](http://hbase.apache.org/book/quickstart.html). Here, we are showing a
+sample minimal configuration.
+
+INFO: For production deployment, run a fully distributed HBase configuration.
+
+Edit `PredictionIO-<%= data.versions.pio %>/vendors/<%=
+data.versions.hbase_basename %>/conf/hbase-site.xml`.
+
+```
+<configuration>
+  <property>
+    <name>hbase.rootdir</name>
+    <value>file:///home/abc/PredictionIO-<%= data.versions.pio %>/vendors/<%= data.versions.hbase_basename %>/data</value>
+  </property>
+  <property>
+    <name>hbase.zookeeper.property.dataDir</name>
+    <value>/home/abc/PredictionIO-<%= data.versions.pio %>/vendors/<%= data.versions.hbase_basename %>/zookeeper</value>
+  </property>
+</configuration>
+```
+
+INFO: HBase will create `hbase.rootdir` automatically to store its data.
+
+Edit `PredictionIO-<%= data.versions.pio %>/vendors/<%=
+data.versions.hbase_basename %>/conf/hbase-env.sh` to set `JAVA_HOME` for the
+cluster. For example:
+
+```
+export JAVA_HOME=/usr/lib/jvm/java-8-oracle/jre
+```
+
+For Mac users, use this instead (change `1.8` to `1.7` if you have Java 7
+installed):
+
+```
+export JAVA_HOME=`/usr/libexec/java_home -v 1.8`
+```

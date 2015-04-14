@@ -16,34 +16,9 @@
 package io.prediction.controller
 
 import io.prediction.core.BaseDataSource
-import io.prediction.core.BasePreparator
 import io.prediction.core.BaseAlgorithm
-import io.prediction.core.BaseServing
-import io.prediction.core.Doer
-import io.prediction.core.BaseEngine
-import io.prediction.workflow.CreateWorkflow
-import io.prediction.workflow.WorkflowUtils
-import io.prediction.workflow.EngineLanguage
-import io.prediction.workflow.PersistentModelManifest
-import io.prediction.workflow.SparkWorkflowUtils
-import io.prediction.workflow.StopAfterReadInterruption
-import io.prediction.workflow.StopAfterPrepareInterruption
-import io.prediction.data.storage.EngineInstance
-import _root_.java.util.NoSuchElementException
-import io.prediction.data.storage.StorageClientException
-
-import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-import org.apache.spark.rdd.RDD
 
 import scala.language.implicitConversions
-
-import org.json4s._
-import org.json4s.native.JsonMethods._
-import org.json4s.native.Serialization.read
-
-import io.prediction.workflow.NameParamsSerializer
-import grizzled.slf4j.Logger
 
 /** This class serves as a logical grouping of all required engine's parameters.
   *

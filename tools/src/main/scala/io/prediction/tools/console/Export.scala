@@ -21,11 +21,14 @@ import java.io.File
 
 case class ExportArgs(
   appId: Int = 0,
+  channel: Option[String] = None,
   outputPath: String = "",
   format: String = "json")
 
 object Export {
   def eventsToFile(ca: ConsoleArgs, core: File): Int = {
+    val channelArg = ca.export.channel
+      .map(ch => Seq("--channel", ch)).getOrElse(Seq())
     Runner.runOnSpark(
       "io.prediction.tools.export.EventsToFile",
       Seq(
@@ -34,7 +37,7 @@ object Export {
         "--output",
         ca.export.outputPath,
         "--format",
-        ca.export.format),
+        ca.export.format) ++ channelArg,
       ca,
       core)
   }

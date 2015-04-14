@@ -1,0 +1,353 @@
+---
+title: Evaluation Explained (Recommendation)
+---
+
+A PredictionIO engine is instantiated by a set of parameters, these parameters
+determines which algorithm is used as well as the parameter for the algorithm.
+It naturally raises a question of how to choose the best set of parameters.  The
+evaluation module steamlines the process of tuning the engine to the best
+parameter set and deploy it.
+
+## Evaluation Quick Start
+
+We assume you have run the [Recommendation Quick Start](/templates/recommendation/quickstart/) 
+will skip the data collection / import instructions.
+
+### Edit the AppId
+
+Edit MyRecommendation/src/main/scala/***Evaluation.scala*** to specify the
+*appId* you used to import the data.
+
+```scala
+object ParamsList extends EngineParamsGenerator {
+  private[this] val baseEP = EngineParams(
+    dataSourceParams = DataSourceParams(
+      appId = 21, 
+      ...
+      )
+  ...
+}
+```
+
+### Build and run the evaluation
+
+To run evaluation, the command `pio eval` is used. It takes two
+mandatory parameter, 
+1. the `Evaluation` object, it tells PredictionIO the engine and metric we use
+   for the evaluation; and 
+2. the `EngineParamsGenerator`, it contains a list of engine params to test
+   against. 
+The following command kickstarts the evaluation 
+workflow for the classification template.
+
+```
+$ pio build
+...
+$ pio eval org.template.recommendation.RecommendationEvaluation \
+    org.template.recommendation.EngineParamsList 
+```
+
+You will see the following output:
+
+```
+...
+[INFO 2015-03-31 00:31:53,934] [CoreWorkflow$] runEvaluation started
+...
+[INFO 2015-03-31 00:35:56,782] [CoreWorkflow$] Updating evaluation instance with result: MetricEvaluatorResult:
+  # engine params evaluated: 3
+Optimal Engine Params:
+  {
+  "dataSourceParams":{
+    "":{
+      "appId":19,
+      "evalParams":{
+        "kFold":5,
+        "queryNum":10
+      }
+    }
+  },
+  "preparatorParams":{
+    "":{
+      
+    }
+  },
+  "algorithmParamsList":[
+    {
+      "als":{
+        "rank":10,
+        "numIterations":40,
+        "lambda":0.01,
+        "seed":3
+      }
+    }
+  ],
+  "servingParams":{
+    "":{
+      
+    }
+  }
+}
+Metrics:
+  Precision@K (k=10, threshold=4.0): 0.15205820105820103
+  PositiveCount (threshold=4.0): 5.753333333333333
+  Precision@K (k=10, threshold=2.0): 0.1542777777777778
+  PositiveCount (threshold=2.0): 6.833333333333333
+  Precision@K (k=10, threshold=1.0): 0.15068518518518517
+  PositiveCount (threshold=1.0): 10.006666666666666
+[INFO 2015-03-31 00:36:01,516] [CoreWorkflow$] runEvaluation completed
+
+```
+
+The console prints out the evaluation meric score of each engine params, and finally
+pretty print the optimal engine params. Amongs the 3 engine params we evaluate,
+The second yeilds the best Prediction@k score of ~0.1521.
+
+
+## The Evaluation Design
+
+We assume you have read the [Tuning and Evaluation](/evaluation) section. We
+will cover the evaluation aspects which are specific to the recommendation
+engine.
+
+In recommendation evaluation, the raw data is a sequence of known rating.  A
+rating has 3 components: user, item, and a score. We use the $k-fold$ method for
+evaluation, the raw data is sliced into a sequence of (training, validation)
+data tuple. 
+
+In the validation data, we construct a query for *each user*, and get a list of 
+recommended items from the engine. It is vastly different from the 
+classification tutorial, where there is a one-to-one corresponding between the
+training data point and the validation data point. In this evaluation, 
+our unit of evaluation is *user*, we evaluate the quality of an engine
+using the known rating of a user.
+
+### Key assumptions 
+
+There are multiple assumptions we have to make when we evaluate a 
+recommendation engine:
+
+- Definition of 'good'. We want to quantity if the engine is able to recommend
+items which the user likes, we need to define what is meant by 'good'. In this
+examle, we have two kinds of events: 'rate' and 'buy'. The 'rate' event is 
+associated with a rating value which ranges between 1 to 4, and the 'buy'
+event is mapped to a rating of 4. When we 
+implement the metric, we have to specify a rating threshold, only the rating 
+above the threshold is considered 'good'.
+
+- The absense of complete rating. It is extremely unlikely that the training 
+data contains rating for all user-item tuples. In contrast, of a system containing
+1000 items, a user may only have rated 20 of them, leaving 980 items unrated. There
+is no way for us to certainly tell if the user likes an unrated product.
+When we examinte the evaluation result, it is important for us to keep in mind
+that the final metric is only an approximation of the actual result.
+
+- Recommendation affects user behavior. Suppose you are a e-commerce company and 
+would like to use the recommendation engine to personalize the landing page, 
+the item you show in the langing page directly impacts what the user is going to
+purchase. This is different from weather prediction, whatever the weather
+forecast engine predicts, tomorrow's weather won't be affected.  Therefore, when
+we conduct offline evaluation for recommendation engines, it is possible that
+the final user behavior is dramatically different from the evaluation result.
+However, in the evaluation, for simplicity, we have to assume that user
+behavior is homogenous.
+
+
+## Evaluation Data Generation
+
+### Actual Result
+
+In MyRecommendation/src/main/scala/***Engine.scala***,
+we define the `ActualResult` which represents the user rating for validation. 
+It stores the list of rating in the validation set for a user.
+
+```scala
+case class ActualResult(
+  ratings: Array[Rating]
+) extends Serializable
+```
+
+### Implement Data Generate Method in DataSource
+
+In MyRecommendatin/src/main/scala/***DataSource.scala***,
+the method `readEval` method reads, and selects, data from datastore
+and resturns a sequence of (training, validation) data.
+
+```scala
+case class DataSourceEvalParams(kFold: Int, queryNum: Int)
+
+case class DataSourceParams(
+  appId: Int, 
+  evalParams: Option[DataSourceEvalParams]) extends Params
+
+class DataSource(val dsp: DataSourceParams)
+  extends PDataSource[TrainingData,
+      EmptyEvaluationInfo, Query, ActualResult] {
+
+  @transient lazy val logger = Logger[this.type]
+
+  def getRatings(sc: SparkContext): RDD[Rating] = {
+    val eventsDb = Storage.getPEvents()
+    val eventsRDD: RDD[Event] = eventsDb.find(
+      appId = dsp.appId,
+      entityType = Some("user"),
+      eventNames = Some(List("rate", "buy")), // read "rate" and "buy" event
+      // targetEntityType is optional field of an event.
+      targetEntityType = Some(Some("item")))(sc)
+
+    val ratingsRDD: RDD[Rating] = eventsRDD.map { event =>
+      val rating = try {
+        val ratingValue: Double = event.event match {
+          case "rate" => event.properties.get[Double]("rating")
+          case "buy" => 4.0 // map buy event to rating value of 4
+          case _ => throw new Exception(s"Unexpected event ${event} is read.")
+        }
+        // entityId and targetEntityId is String
+        Rating(event.entityId,
+          event.targetEntityId.get,
+          ratingValue)
+      } catch {
+        case e: Exception => {
+          logger.error(s"Cannot convert ${event} to Rating. Exception: ${e}.")
+          throw e
+        }
+      }
+      rating
+    }.cache()
+
+    ratingsRDD
+  }
+
+  ...
+
+  override
+  def readEval(sc: SparkContext)
+  : Seq[(TrainingData, EmptyEvaluationInfo, RDD[(Query, ActualResult)])] = {
+    require(!dsp.evalParams.isEmpty, "Must specify evalParams")
+    val evalParams = dsp.evalParams.get
+
+    val kFold = evalParams.kFold
+    val ratings: RDD[(Rating, Long)] = getRatings(sc).zipWithUniqueId
+    
+    (0 until kFold).map { idx => {
+      val trainingRatings = ratings.filter(_._2 % kFold != idx).map(_._1)
+      val testingRatings = ratings.filter(_._2 % kFold == idx).map(_._1)
+
+      val testingUsers: RDD[(String, Iterable[Rating])] = testingRatings.groupBy(_.user)
+
+      (new TrainingData(trainingRatings),
+        new EmptyEvaluationInfo(),
+        testingUsers.map { 
+          case (user, ratings) => (Query(user, evalParams.queryNum), ActualResult(ratings.toArray))
+        }
+      )
+    }}
+  }
+}
+```
+
+The evaluation data generate is controlled by two parameters
+in the `DataSourceEvalParams`. The first parameter `kFold` is the number of
+fold we use for evaluation, the second parameter `queryNum` is used for
+query construction. 
+
+
+The `getRating` method is factored out from the `readTraining` method as 
+they both serve the same function of reading from data source and
+perform a user-item action into a rating (lines 22 - 40).
+
+The `readEval` method is a k-fold evaluation implementation.
+We annotate each rating in the raw data by an index (line 54), then
+in each fold, the rating goes to either the training or testing set
+based on the modulus value.
+We group ratings by user, and one query is constructed *for each user* (line 60).
+
+## Evaluation Metrics
+
+In the [evaluation and tuning tutorial](/evaluation/), we use ***Metric*** to
+compute the quality of an engine variant. 
+However, in actual use cases like recommendation, as we have made many 
+assumptions in our model, using a single metric may lead to a biased evaluation.
+We will discuss using multiple
+***Metrics*** to generate a comprehensive evaluation, to generate a more global view 
+of the engine.
+
+### Precision@K
+
+Precision@K measures the portion of *relevant* items amongst the first *k* items.
+Recommendation engine usually wants to make sure the top few items recommended 
+are appealing to the user. Think about Google search, we usually give up after
+looking at the first and second result pages.
+
+### Precision@K Parameters
+
+There are two questions associated with it. 
+
+1. How do we define *relevant*? 
+2. What is a good value of *k*?
+
+Before we answer these questions, we need to understand what constitute a good metric.
+It is like exams, if everyone get full scores, the exam fails its goal to
+determine what the candidates don't know; if everyone fails, the exam fails its goal 
+to determine what the candidates know.
+A good metric should be able to distinguish the good from the bad.
+
+A way to define relevant is to use the notion of rating threshold. If the user 
+rating for an item is higher than certain threshold, we say it is relevant. 
+However, without looking at the data, it is hard to pick a reasonable threshold.
+We can set the threshold be as high as the maximum rating of 4.0, but it may 
+severely limit the relevant set size, and the precision scores will be close to 
+zero or undefined (precision is undefined if there is no relevant data).
+On the other hand, we can set the threshold be as low as the minimum rating, but
+it makes the precision metric uninformative as well since all scores will be close 
+to 1.
+Similar argument applies to picking a good value of *k* too. 
+
+A method to choose a good parameter is *not* to choose one, but instead test
+out *a whole sprectrum of parameters*. If an engine variant is good, it should
+robustly perform well across different metric parameters.
+The evaluation module supports multiple metrics. The following code
+snippets demonstrates a sample usage.
+
+```scala
+object ComprehensiveRecommendationEvaluation extends Evaluation {
+  val ratingThresholds = Seq(0.0, 2.0, 4.0)
+  val ks = Seq(1, 3, 10)
+
+  engineEvaluator = (
+    RecommendationEngine(),
+    MetricEvaluator(
+      metric = PrecisionAtK(k = 3, ratingThreshold = 2.0),
+      otherMetrics = (
+        (for (r <- ratingThresholds) yield PositiveCount(ratingThreshold = r)) ++
+        (for (r <- ratingThresholds; k <- ks) yield PrecisionAtK(k = k, ratingThreshold = r))
+      )))
+}
+```
+
+We have two types of `Metric`s.
+
+- `PositiveCount` is a helper metrics that returns the average 
+number of positive samples for a specific rating threshold, therefore we get some
+idea about the *demographic* of the data. If `PositiveCount` is too low or too
+high for certain threshold, we know that it should not be used.
+We have three thresholds (line 2), and three instances of 
+`PositiveCount` metric are instantiated (line 10), one for each threshold.
+
+- `Precision@K` is the actual metrics we use.
+We have two lists of parameters (lines 2 to 3): `ratingThreshold` defines what rating is good,
+and `k` defines how many items we evaluate in the `PredictedResult`. 
+We generate a list of all combinations (line 11).
+
+These metrics are expecified as `otherMetrics` (lines 9 to 11), they 
+will be calculated and generated on the evaluation UI.
+
+To run this evaluation, you can:
+
+```
+$ pio eval org.template.recommendation.ComprehensiveRecommendationEvaluation \
+  org.template.recommendation.EngineParamsList
+```
+
+
+
+
