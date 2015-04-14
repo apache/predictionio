@@ -6,6 +6,9 @@ root:
       -
         body: 'Welcome to PredictionIO'
         url: '/'
+      -
+        body: 'Release Notes'
+        url: '/release-notes/'
   -
     body: 'Getting Started'
     url: '#'
