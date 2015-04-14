@@ -1,0 +1,10 @@
+- if crumbs
+  #breadcrumbs
+    ul
+      - crumbs.each do |node|
+        li
+          - if crumbs.last == node
+            span.last = node.body
+          - else
+            = link_to node.body, node.url, class: node.css
+            span< &gt;
