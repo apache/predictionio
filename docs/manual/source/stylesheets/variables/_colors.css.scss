@@ -70,19 +70,21 @@ $code-inline-background-color: #f0f0f0;
 $code-inline-border-color: $border-color;
 
 // Table of Contents
-$table-of-contents-font-color: #3482ab;
+$table-of-contents-link-color: #3482ab;
+$table-of-contents-font-color: #828385;
 $table-of-contents-background-color: #f0f0f0;
 
 // Footer
-$footer-background-color: #2a2b2b;
-$footer-link-color: #f0f0f0;
+$footer-background-color: #ffffff;
+$footer-link-color: #828385;
+$footer-link-hover-color: #373535;
 $footer-social-link-color: #828385;
-$footer-social-link-hover-color: #f0f0f0;
+$footer-social-link-hover-color: #373535;
 $footer-heading-2-color: #828385;
 
 // Copyright
-$copyright-font-color: #f0f0f0;
-$copyright-link-color: #f0f0f0;
+$copyright-font-color: #828385;
+$copyright-link-color: #828385;
 
 // Page Title
 $page-title-font-color: #586276;
