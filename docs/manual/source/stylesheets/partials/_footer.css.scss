@@ -38,6 +38,9 @@
 
   a {
     color: $footer-link-color;
+    &:hover {
+      color: $footer-link-hover-color;
+    }
   }
 
   p {

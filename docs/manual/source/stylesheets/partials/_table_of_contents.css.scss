@@ -12,9 +12,10 @@
   }
   ul {
     list-style-type: disc;
-    font-size: 16px;
+    font-size: 14px;
     line-height: 26px;
     color: $table-of-contents-font-color;
+
     ul {
       list-style-type: disc;
       font-size: 14px;
@@ -24,6 +25,6 @@
 
 
   a {
-    color: $table-of-contents-font-color;
+    color: $table-of-contents-link-color;
   }
 }
