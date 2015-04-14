@@ -9,15 +9,21 @@
 
   h1 {
     color: $heading-1-font-color;
+    margin: 24px 0 24px 0;
   }
 
   h2 {
     color: $heading-2-font-color;
     font-weight: 400;
+    font-size: 24px;
+    margin: 24px 0 24px 0;
   }
 
   h3 {
     color: $heading-3-font-color;
+    font-size: 18px;
+    font-weight: 700;
+    margin: 24px 0 0 0;
   }
 
   h4 {
@@ -30,5 +36,9 @@
 
   h6 {
     color: $heading-6-font-color;
+  }
+
+  p {
+    margin: 24px 0 24px 0;
   }
 }
