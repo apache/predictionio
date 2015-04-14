@@ -295,17 +295,18 @@ echo -e "\033[1;32mElasticsearch setup done!\033[0m"
 
 # HBase
 echo -e "\033[1;36mStarting HBase setup in:\033[0m $hbase_dir"
-if [[ -e hbase-${HBASE_VERSION}-hadoop2-bin.tar.gz ]]; then
+if [[ -e hbase-${HBASE_VERSION}-bin.tar.gz ]]; then
   if confirm "Delete existing hbase-$HBASE_VERSION-bin.tar.gz?"; then
-    rm hbase-${HBASE_VERSION}-hadoop2-bin.tar.gz
+    rm hbase-${HBASE_VERSION}-bin.tar.gz
   fi
 fi
-if [[ ! -e hbase-${HBASE_VERSION}-hadoop2-bin.tar.gz ]]; then
+if [[ ! -e hbase-${HBASE_VERSION}-bin.tar.gz ]]; then
   echo "Downloading HBase..."
   curl -O http://archive.apache.org/dist/hbase/hbase-${HBASE_VERSION}/hbase-${HBASE_VERSION}-bin.tar.gz
 fi
-rm -rf ${hbase_dir}
 tar zxf hbase-${HBASE_VERSION}-bin.tar.gz
+rm -rf ${hbase_dir}
+mv hbase-${HBASE_VERSION} ${hbase_dir}
 
 echo "Creating default site in: $hbase_dir/conf/hbase-site.xml"
 cat <<EOT > ${hbase_dir}/conf/hbase-site.xml
