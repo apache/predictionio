@@ -3,8 +3,17 @@ title: Release Notes and News
 ---
 
 ### What's New
+0.9.2 Release | April 14th, 2015 |  [Release Notes](https://predictionio.atlassian.net/jira/secure/ReleaseNote.jspa?projectId=10000&version=13500)
 
-0.9 Release | March 4th, 2015
+
+- channels in the Event Server.
+ 
+- Spark 1.3 
+
+- [Webhook Connector](http://docs.prediction.io/community/contribute-webhook/) Support
+
+
+0.9 Release | March 4th, 2015 | [Release Notes](https://predictionio.atlassian.net/jira/secure/ReleaseNote.jspa?projectId=10000&version=13400)
 
 
 - [Ecommerce Recommmendation Template](http://templates.prediction.io/repositories/7) which includes 1) out-of-stock items support 2) new user recommendation 3) unseen items only. 
@@ -15,15 +24,9 @@ title: Release Notes and News
 
 - start-all, stop-all commands to start and stop all PredictionIO related services. 
 
-0.8.6 | Feb 10th, 2015
+0.8.6 | Feb 10th, 2015 | [Release Notes](https://predictionio.atlassian.net/jira/secure/ReleaseNote.jspa?projectId=10000&version=13300)
 
 - New engine template - [Product Ranking](/../templates/productranking/quickstart/) for personalized product listing. 
 
 - [CloudFormation deployment](/../production/deploy-cloudformation/) available. 
 
-### Release Notes
-
-PredictionIO v0.9 | [Release Note](https://predictionio.atlassian.net/jira/secure/ReleaseNote.jspa?projectId=10000&version=13400)
-
-
-PredictionIO v0.8.6 | [Release Note](https://predictionio.atlassian.net/jira/secure/ReleaseNote.jspa?projectId=10000&version=13300)
