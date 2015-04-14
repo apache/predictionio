@@ -122,9 +122,9 @@ GEM
       rack-test (~> 0.6.2)
       thor (>= 0.15.2, < 2.0)
       tilt (~> 1.4.1, < 2.0)
-    middleman-livereload (3.3.4)
+    middleman-livereload (3.4.2)
       em-websocket (~> 0.5.1)
-      middleman-core (~> 3.2)
+      middleman-core (>= 3.3)
       rack-livereload (~> 0.3.15)
     middleman-minify-html (3.4.0)
       htmlcompressor (~> 0.1.0)
@@ -240,9 +240,9 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  middleman (~> 3.3.7)
+  middleman (~> 3.3.10)
   middleman-autoprefixer
-  middleman-livereload (~> 3.3.4)
+  middleman-livereload (~> 3.4.2)
   middleman-minify-html
   middleman-s3_sync
   middleman-search_engine_sitemap
