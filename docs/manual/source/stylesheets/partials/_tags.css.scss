@@ -12,6 +12,15 @@ a {
   }
 }
 
+// Hack for links with anchors with fixed header!
+:target:before {
+  display: block;
+  content: '';
+  margin-top: -100px;
+  height: 100px;
+  visibility: hidden;
+}
+
 blockquote {
   margin: 0;
   p {
