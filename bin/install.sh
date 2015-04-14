@@ -266,7 +266,7 @@ rm -rf ${spark_dir}
 mv spark-${SPARK_VERSION}-bin-hadoop2.4 ${spark_dir}
 
 echo "Updating: $pio_dir/conf/pio-env.sh"
-${SED_CMD} "s|SPARK_HOME=/path_to_apache_spark|SPARK_HOME=$spark_dir|g" ${pio_dir}/conf/pio-env.sh
+${SED_CMD} "s|SPARK_HOME=.*|SPARK_HOME=$spark_dir|g" ${pio_dir}/conf/pio-env.sh
 
 echo -e "\033[1;32mSpark setup done!\033[0m"
 
