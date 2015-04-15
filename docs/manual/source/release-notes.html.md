@@ -2,6 +2,8 @@
 title: Release Notes and News
 ---
 
+INFO: For upgrade instructions please refer to [this page](/resources/upgrade/).
+
 ### What's New
 
 0.9.2 Release | April 14th, 2015 | [Release Notes](https://predictionio.atlassian.net/jira/secure/ReleaseNote.jspa?projectId=10000&version=13500)

@@ -2,6 +2,7 @@
 title: Upgrade Instructions
 ---
 
+
 This page highlights major changes in each version and upgrade tools.
 
 To upgrade and use new version of PredictionIO, do the following:
@@ -12,7 +13,25 @@ To upgrade and use new version of PredictionIO, do the following:
 
 In addition, please take notes of the following for specific version upgrade:
 
-##Upgrade to 0.9.0
+
+## Upgrade to 0.9.2
+
+The Spark dependency has been upgraded to version 1.3.0. All engines must be
+rebuilt against it in order to work.
+
+Open and edit `build.sbt` of your engine, and look for these two lines:
+
+```scala
+"org.apache.spark" %% "spark-core"    % "1.2.0" % "provided"
+
+"org.apache.spark" %% "spark-mllib"   % "1.2.0" % "provided"
+```
+
+Change `1.2.0` to `1.3.0`, and do a clean rebuild by `pio build --clean`. Your
+engine should now work with the latest Apache Spark.
+
+
+## Upgrade to 0.9.0
 
 0.9.0 has the following new changes:
 
