@@ -159,3 +159,34 @@ pio app channel-delete <app name> <channel name>
 ```
 pio app data-delete <app name> --channel <channel name>
 ```
+
+## Accessing Channel Data in Engine
+
+To acccess channel data, simply specify the channel name when use the PEventStore or LEventStore API. Data is read from from the default channel if channelName is not specified.
+
+For example, read data from default channel:
+
+```scala
+
+    val eventsRDD: RDD[Event] = PEventStore.find(
+      appName = dsp.appName,
+      entityType = Some("user"),
+      eventNames = Some(List("rate", "buy")), // read "rate" and "buy" event
+      // targetEntityType is optional field of an event.
+      targetEntityType = Some(Some("item")))(sc)
+
+```
+
+For examlpe, read data from the channel "CHANNEL_NAME"
+
+```scala
+
+    val eventsRDD: RDD[Event] = PEventStore.find(
+      appName = dsp.appName,
+      channelName = "CHANNEL_NAME", // ADDED
+      entityType = Some("user"),
+      eventNames = Some(List("rate", "buy")), // read "rate" and "buy" event
+      // targetEntityType is optional field of an event.
+      targetEntityType = Some(Some("item")))(sc)
+
+```
