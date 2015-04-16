@@ -2,17 +2,17 @@
 title: Channel
 ---
 
-The Channel allows you more easily to identify, manage and use specific event data if your may collect events from different multiple sources (eg. mobile, website, or third-party webhooks service) for the your application.
+Each App has a default channel (without name) which stores all incoming events. This "default" one is used when channel is not specified.
 
-Note that creating multiple Channels is advanced usage, you don't need to create any in order to use PredictionIO. Each App has a default channel (without name) by default and this is where the event goes to and be read from when new channel is not created or specified.
+You may create additional Channels for the App. Creating multiple Channels is advanced usage. You don't need to create any in order to use PredictionIO. The Channel is associated with one App only and must have unique name within the same App.
+
+Creating multiple Channels allows you more easily to identify, manage and use specific event data if you may collect events from different multiple sources (eg. mobile, website, or third-party webhooks service) for the your application.
 
 (More usage details coming soon...)
 
-## Create Channel
+## Create a new Channel
 
-First you need create one for the app in order to use channel. The channel is associated with one App only and must be unique name within the same App.
-
-For example, to create new channel "myChannel" for app "myApp", run following `pio` command:
+For example, to create a new channel "myChannel" for app "myApp", run following `pio` command:
 
 ```
 pio app channel-new myApp myChannel
@@ -34,7 +34,7 @@ Now "myChannel" is created and ready for collecting data.
 
 ## Collect data through Channel
 
-The Event API support optional `channel` query parameter. This allows you to import and query events of this specific channel. When the `channel` parameter is specified, the data is collected through the default channel.
+The Event API support optional `channel` query parameter. This allows you to import and query events of the specified channel. When the `channel` parameter is not specified, the data is collected through the default channel.
 
 URL: `http://localhost:7070/events.json?accessKey=yourAccessKeyString&channel=yourChannelName`
 
@@ -43,15 +43,17 @@ Query parameters:
 Field | Type | Description
 :---- | :----| :-----
 `accessKey` | String | The Access Key for your App
-`channel` | String | The channel name (optional). Specify this to import data to this channel. **NOTE: 0.9.2** only. Channel must be created first.
+`channel` | String | The channel name (optional). Specify this to import data to this channel. **NOTE: supported in PIO version >= 0.9.2** only. Channel must be created first.
 
 
-For example,  the following import event through the channel named "myChannel" of the corresponding App. For SDK usage, one EventClient should be responsible for collecting data of one specific channel.
+For SDK usage, one EventClient should be responsible for collecting data of one specific channel. The channel name is specified when the EventClient object is instantiated.
+
+For example, the following code import event to "YOUR_CHANNEL" of the corresponding App.
 
 <div class="tabs">
   <div data-tab="Raw HTTP" data-lang="bash">
 ```bash
-$ curl -i -X POST http://localhost:7070/events.json?accessKey=WPgcXKd42FPQpZHVbVeMyqF4CQJUnXQmIMTHhX3ZUrSzvy1KXJjdFUrslifa9rnB&channel=myChannel \
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=YOUR_ACCESS_KEY&channel=YOUR_CHANNEL \
 -H "Content-Type: application/json" \
 -d '{
   "event" : "my_event",
@@ -94,25 +96,30 @@ $ curl -i -X POST http://localhost:7070/events.json?accessKey=WPgcXKd42FPQpZHVbV
 
   </div>
   <div data-tab="Python SDK" data-lang="python">
-(TODO: update me)
-<!--
+
 ```python
-# Second Event
-second_event_properties = {
+from predictionio import EventClient
+from datetime import datetime
+import pytz
+
+# Create a EventClient for "YOUR_CHANNEL"
+client = EventClient('YOUR_ACCESS_KEY', "http://localhost:7070",
+  channel='YOUR_CHANNEL') # default channel if not specified
+
+event_properties = {
     "someProperty" : "value1",
     "anotherProperty" : "value2",
     }
-second_event_response = client.create_event(
+event_response = client.create_event(
     event="my_event",
     entity_type="user",
     entity_id="uid",
     target_entity_type="item",
     target_entity_id="iid",
-    properties=second_event_properties,
+    properties=event_properties,
     event_time=datetime(2014, 12, 13, 21, 38, 45, 618000, pytz.utc))
-```
--->
 
+```
   </div>
   <div data-tab="Ruby SDK" data-lang="ruby">
 (TODO: update me)
