@@ -37,9 +37,9 @@ In addition, new PEventStore and LEventStore API are introduced so that appName 
 
 NOTE: The following changes are not required for using 0.9.2 but it's recommended to upgrade your engine code as described below because the old API will be deprecated.
 
-In **DataSource.scala**:
+#### 1. In **DataSource.scala**:
 
-- remove
+- remove this line of code:
 
     ```scala
     import io.prediction.data.storage.Storage
@@ -51,7 +51,7 @@ In **DataSource.scala**:
     import io.prediction.data.store.PEventStore
     ```
 
-- Change `appId` to `appName` in DataSourceParams
+- Change `appId: Int` to `appName: String` in DataSourceParams
 
     For example,
 
@@ -87,14 +87,16 @@ In **DataSource.scala**:
 
     ```
 
-In **XXXAlgorithm.scala**:
+#### 2. In **XXXAlgorithm.scala**:
 
-If Storage.getLEvents() is also used in Algorithm (such as ALSAlgorithm of E-Commerce Recommendation template), you also need to:
+If Storage.getLEvents() is also used in Algorithm (such as ALSAlgorithm of E-Commerce Recommendation template), you also need to do following:
+
+NOTE: If `io.prediction.data.storage.Storage` is not used at all (such as Recommendation, Similar Product, Classification, Lead Scoring, Product Ranking template), there is no need to change Algorithm and can go to the later **engine.json** section.
 
 - remove `import io.prediction.data.storage.Storage` and replace it by `import io.prediction.data.store.LEventStore`
 - change `appId` to `appName` in the XXXAlgorithmParams class.
 - remove this line of code: `@transient lazy val lEventsDb = Storage.getLEvents()`
-- locate where `LEventStore.findByEntity()` is used, change it to `lEventsDb.findSingleEntity()`:
+- locate where `LEventStore.findByEntity()` is used, change it to `LEventStore.findByEntity()`:
 
     For example, change following code
 
@@ -121,7 +123,7 @@ If Storage.getLEvents() is also used in Algorithm (such as ALSAlgorithm of E-Com
 
     ```scala
       val seenEvents: Iterator[Event] = try { // CHANGED: try catch block is used
-        LEventStore.findByEntity(
+        LEventStore.findByEntity( // CHANGED: new API
           appName = ap.appName, // CHANGED: use appName
           entityType = "user",
           entityId = query.user,
@@ -143,7 +145,7 @@ If Storage.getLEvents() is also used in Algorithm (such as ALSAlgorithm of E-Com
 
     If you are using E-Commerce Recommendation template, please refer to the latest version for other updates related to `LEventStore.findByEntity()`
 
-In **engine.json**:
+#### 3. In **engine.json**:
 
 locate where `appId` is used, change it to `appName` and specify the name of the app instead.
 
