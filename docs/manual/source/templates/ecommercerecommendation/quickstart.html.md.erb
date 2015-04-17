@@ -402,7 +402,7 @@ please update the Python SDK to the latest version.
 
 <%= partial 'shared/quickstart/deploy_enginejson', locals: { engine_name: 'MyECommerceRecommendation' } %>
 
-WARNING: Note that the "algorithms" also has `appId` parameter which needs to match your **App ID** as well:
+WARNING: Note that the "algorithms" also has `appName` parameter which needs to match your **App Name** as well:
 
 ```
   ...
@@ -410,13 +410,15 @@ WARNING: Note that the "algorithms" also has `appId` parameter which needs to ma
     {
       "name": "als",
       "params": {
-        "appId": 1,
+        "appName": "MyApp1",
         ...
       }
     }
   ]
   ...
 ```
+
+NOTE: You may see `appId` in engine.json instead, which means you are using old template. In this case, make sure the `appId` defined in the file match your **App ID**. Alternatively, you can download the latest version of the template or follow our [upgrade instructions](/resources/upgrade/#upgrade-to-0.9.2) to modify the template to use `appName` as parameter.
 
 <%= partial 'shared/quickstart/deploy', locals: { engine_name: 'MyECommerceRecommendation' } %>
 
