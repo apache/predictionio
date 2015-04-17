@@ -183,7 +183,7 @@ For examlpe, read data from the channel "CHANNEL_NAME"
 
     val eventsRDD: RDD[Event] = PEventStore.find(
       appName = dsp.appName,
-      channelName = "CHANNEL_NAME", // ADDED
+      channelName = Some("CHANNEL_NAME"), // ADDED
       entityType = Some("user"),
       eventNames = Some(List("rate", "buy")), // read "rate" and "buy" event
       // targetEntityType is optional field of an event.
