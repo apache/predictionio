@@ -2,8 +2,8 @@
 title: DASE Components Explained (Classification)
 ---
 
-<%= partial 'shared/dase/dase', 
-locals: { 
+<%= partial 'shared/dase/dase',
+locals: {
   template_name: 'Classification Engine Template',
   evaluation_link: '/evaluation/paramtuning/'
 } %>
@@ -73,7 +73,7 @@ method of the class `DataSource` reads, and selects, data from datastore of
 EventServer and it returns `TrainingData`.
 
 ```scala
-case class DataSourceParams(appId: Int) extends Params
+case class DataSourceParams(appName: String) extends Params
 
 class DataSource(val dsp: DataSourceParams)
   extends PDataSource[TrainingData, EmptyEvaluationInfo, Query, EmptyActualResult] {
@@ -82,9 +82,9 @@ class DataSource(val dsp: DataSourceParams)
 
   override
   def readTraining(sc: SparkContext): TrainingData = {
-    val eventsDb = Storage.getPEvents()
-    val labeledPoints: RDD[LabeledPoint] = eventsDb.aggregateProperties(
-      appId = dsp.appId,
+
+    val labeledPoints: RDD[LabeledPoint] = PEventStore.aggregateProperties(
+      appName = dsp.appName,
       entityType = "user",
       // only keep entities with these required properties defined
       required = Some(List("plan", "attr0", "attr1", "attr2")))(sc)
@@ -113,13 +113,12 @@ class DataSource(val dsp: DataSourceParams)
 }
 ```
 
-`Storage.getPEvents()` returns a data access object which you could use to
-access data that is collected through the *Event Server*, and
-`eventsDb.aggregateProperties` aggregates the event records of the 4 properties
+`PEventStore` is an object which provides function to access data that is collected through the *Event Server*, and
+`PEventStore.aggregateProperties` aggregates the event records of the 4 properties
 (attr0, attr1, attr2 and plan) for each user.
 
 PredictionIO automatically loads the parameters of *datasource* specified in
-MyEngine/***engine.json***, including *appId*, to `dsp`.
+MyEngine/***engine.json***, including *appName*, to `dsp`.
 
 In ***engine.json***:
 
@@ -128,7 +127,7 @@ In ***engine.json***:
   ...
   "datasource": {
     "params": {
-      "appId": 2
+      "appName": "MyApp1"
     }
   },
   ...

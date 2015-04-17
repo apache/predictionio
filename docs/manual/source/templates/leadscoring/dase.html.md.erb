@@ -74,15 +74,14 @@ class DataSource(val dsp: DataSourceParams)
 
   override
   def readTraining(sc: SparkContext): TrainingData = {
-    val eventsDb = Storage.getPEvents()
 
-    val viewPage: RDD[(String, Event)] = eventsDb.find(
-      appId = dsp.appId,
+    val viewPage: RDD[(String, Event)] = PEventStore.find(
+      appName = dsp.appName,
       entityType = Some("user"),
       eventNames = Some(Seq("view")),
       // targetEntityType is optional field of an event.
       targetEntityType = Some(Some("page")))(sc)
-      // eventsDb.find() returns RDD[Event]
+      // PEventStore.find() returns RDD[Event]
       .map { event =>
         val sessionId = try {
           event.properties.get[String]("sessionId")
@@ -95,13 +94,13 @@ class DataSource(val dsp: DataSourceParams)
         (sessionId, event)
       }
 
-    val buyItem: RDD[(String, Event)] = eventsDb.find(
-      appId = dsp.appId,
+    val buyItem: RDD[(String, Event)] = PEventStore.find(
+      appName = dsp.appName,
       entityType = Some("user"),
       eventNames = Some(Seq("buy")),
       // targetEntityType is optional field of an event.
       targetEntityType = Some(Some("item")))(sc)
-      // eventsDb.find() returns RDD[Event]
+      // PEventStore.find() returns RDD[Event]
       .map { event =>
         val sessionId = try {
           event.properties.get[String]("sessionId")
@@ -144,7 +143,7 @@ class DataSource(val dsp: DataSourceParams)
 }
 ```
 
-PredictionIO automatically loads the parameters of *datasource* specified in MyLeadScoring/***engine.json***, including *appId*, to `dsp`.
+PredictionIO automatically loads the parameters of *datasource* specified in MyLeadScoring/***engine.json***, including *appName*, to `dsp`.
 
 In ***engine.json***:
 
@@ -153,18 +152,18 @@ In ***engine.json***:
   ...
   "datasource": {
     "params" : {
-      "appId": 1
+      "appName": "MyApp1"
     }
   },
   ...
 }
 ```
 
-In `readTraining()`, `Storage.getPEvents()` returns a data access object which you could use to access data that is collected by PredictionIO Event Server.
+In `readTraining()`, `PEventStore` is an object which provides function to access data that is collected by PredictionIO Event Server.
 
 This Lead Scoring Engine Template requires "view" and "buy" events with `sessionId` in event property.
 
-`eventsDb.find(...)` specifies the events that you want to read. In this case, "user view page" and "user buy item" events are read and then each is mapped to tuple of (sessionId, event). The event are then "cogrouped" by sessionId to find out the information in the session, such as first page view (landing page view), and whether the user converts (buy event), to craete a RDD of Session as TrainingData:
+`PEventStore.find(...)` specifies the events that you want to read. In this case, "user view page" and "user buy item" events are read and then each is mapped to tuple of (sessionId, event). The event are then "cogrouped" by sessionId to find out the information in the session, such as first page view (landing page view), and whether the user converts (buy event), to craete a RDD of Session as TrainingData:
 
 ```scala
 case class Session(
