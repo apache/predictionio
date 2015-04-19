@@ -118,7 +118,6 @@ private[prediction] object SegmentIOConnector extends JsonConnector {
 
   def toEventJson(common: Common, group: Events.Group): String \/ JObject = {
     import org.json4s.JsonDSL._
-    import org.json4s.jackson.JsonMethods._
     val eventProperties =
       ("groupId" → group.groupId) ~
       ("traits" → group.traits)
@@ -240,7 +239,7 @@ object Common {
     country: Option[String] = None,
     latitude: Option[Double] = None,
     longitude: Option[Double] = None,
-    speed: Option[Double] = None
+    speed: Option[Int] = None
   )
 
   private[prediction] case class Network(
@@ -268,7 +267,7 @@ object Common {
     source: Option[String] = None,
     medium: Option[String] = None,
     term: Option[String] = None,
-    context: Option[String] = None
+    content: Option[String] = None
   )
 
   private[prediction] case class App(

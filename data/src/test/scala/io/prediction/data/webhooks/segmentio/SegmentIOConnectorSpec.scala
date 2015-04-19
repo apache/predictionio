@@ -127,8 +127,7 @@ class SegmentIOConnectorSpec extends Specification with ConnectorTestUtil {
           |}
         """.stripMargin
 
-      //check(SegmentIOConnector, group, expected)
-      1 ==== 1
+      check(SegmentIOConnector, group, expected)
     }
 
     "convert group to event JSON" in {
