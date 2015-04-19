@@ -24,6 +24,8 @@ import org.json4s.JObject
 import org.json4s.native.Serialization.read
 import org.json4s.native.Serialization.write
 
+import scalaz.\/
+
 
 private[prediction] object ConnectorUtil {
 
@@ -35,8 +37,8 @@ private[prediction] object ConnectorUtil {
   // Event object so that the Event object formation is consistent
   // by enforcing JSON format
 
-  def toEvent(connector: JsonConnector, data: JObject): Event = {
-    read[Event](write(connector.toEventJson(data)))
+  def toEvent(connector: JsonConnector, data: JObject): String \/ Event = {
+    connector.toEventJson(data).map(e ⇒ read[Event](write(e)))
   }
 
   def toEvent(connector: FormConnector, data: Map[String, String]): Event = {

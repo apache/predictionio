@@ -16,11 +16,14 @@
 package io.prediction.data.webhooks.examplejson
 
 import io.prediction.data.webhooks.JsonConnector
-import io.prediction.data.webhooks.ConnectorException
 
 import org.json4s.Formats
 import org.json4s.DefaultFormats
 import org.json4s.JObject
+
+import scala.util.{Failure, Success, Try}
+import scalaz.\/
+import scalaz.Scalaz._
 
 /** Example JsonConnector with following types of webhooks JSON input:
   *
@@ -61,34 +64,24 @@ private[prediction] object ExampleJsonConnector extends JsonConnector {
 
   implicit val json4sFormats: Formats = DefaultFormats
 
-  override def toEventJson(data: JObject): JObject = {
-    val common = try {
-      data.extract[Common]
-    } catch {
-      case e: Exception => throw new ConnectorException(
-        s"Cannot extract Common field from ${data}. ${e.getMessage()}", e)
-    }
-
-    val json = try {
+  override def toEventJson(data: JObject): String \/ JObject = {
+    (Try(data.extract[Common]) match {
+      case Success(common) ⇒ common.right
+      case Failure(e) ⇒
+        s"Cannot extract Common field from ${data }. ${e.getMessage() }".left
+    }).flatMap { common ⇒
       common.`type` match {
         case "userAction" =>
           toEventJson(common = common, userAction = data.extract[UserAction])
         case "userActionItem" =>
           toEventJson(common = common, userActionItem = data.extract[UserActionItem])
         case x: String =>
-          throw new ConnectorException(
-            s"Cannot convert unknown type '${x}' to Event JSON.")
+          s"Cannot convert unknown type '${x }' to Event JSON.".left
       }
-    } catch {
-      case e: ConnectorException => throw e
-      case e: Exception => throw new ConnectorException(
-        s"Cannot convert ${data} to eventJson. ${e.getMessage()}", e)
     }
-
-    json
   }
 
-  def toEventJson(common: Common, userAction: UserAction): JObject = {
+  def toEventJson(common: Common, userAction: UserAction): String \/ JObject = {
     import org.json4s.JsonDSL._
 
     // map to EventAPI JSON
@@ -102,10 +95,13 @@ private[prediction] object ExampleJsonConnector extends JsonConnector {
         ("anotherProperty1" -> userAction.anotherProperty1) ~
         ("anotherProperty2" -> userAction.anotherProperty2)
       ))
-    json
+    json.right
   }
 
-  def toEventJson(common: Common, userActionItem: UserActionItem): JObject = {
+  def toEventJson(
+    common: Common,
+    userActionItem: UserActionItem
+  ): String \/ JObject = {
     import org.json4s.JsonDSL._
 
     // map to EventAPI JSON
@@ -121,7 +117,7 @@ private[prediction] object ExampleJsonConnector extends JsonConnector {
         ("anotherPropertyA" -> userActionItem.anotherPropertyA) ~
         ("anotherPropertyB" -> userActionItem.anotherPropertyB)
       ))
-    json
+    json.right
   }
 
   // Common required fields
