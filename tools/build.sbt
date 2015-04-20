@@ -32,6 +32,8 @@ libraryDependencies ++= Seq(
   "org.json4s"             %% "json4s-ext"     % json4sVersion.value,
   "org.scalaj"             %% "scalaj-http"    % "1.1.0",
   "org.spark-project.akka" %% "akka-actor"     % "2.3.4-spark",
+  "io.spray" %% "spray-testkit" % "1.3.2" % "test",
+  "org.specs2" %% "specs2" % "2.3.13" % "test",
   "org.spark-project.akka" %% "akka-slf4j"     % "2.3.4-spark")
 
 excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
@@ -43,6 +45,9 @@ excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
     case _ => false
   }}
 }
+
+// skip test in assembly
+test in assembly := {}
 
 outputPath in assembly := baseDirectory.value.getAbsoluteFile.getParentFile /
   "assembly" / ("pio-assembly-" + version.value + ".jar")

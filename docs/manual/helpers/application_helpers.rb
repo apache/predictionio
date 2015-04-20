@@ -24,11 +24,11 @@ module ApplicationHelpers
     base + path
   end
 
-  def link_to_with_active(body, url)
+  def link_to_with_active(body, url, options = {})
     if url == current_page.url
-      link_to body, url, class: 'active'
+      link_to body, url, options.merge(class: [options[:class], 'active'].join(' '))
     else
-      link_to body, url
+      link_to body, url, options
     end
   end
 end

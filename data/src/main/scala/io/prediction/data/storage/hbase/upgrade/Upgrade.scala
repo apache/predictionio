@@ -15,13 +15,16 @@
 
 package io.prediction.data.storage.hbase.upgrade
 
+import io.prediction.annotation.Experimental
+
 import io.prediction.data.storage.Storage
 import io.prediction.data.storage.hbase.HBLEvents
 import io.prediction.data.storage.hbase.HBEventsUtil
 
 import scala.collection.JavaConversions._
 
-/* Experimental */
+/** :: Experimental :: */
+@Experimental
 object Upgrade {
 
   def main(args: Array[String]) {

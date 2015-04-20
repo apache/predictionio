@@ -16,6 +16,7 @@
 package io.prediction.data.api
 
 import io.prediction.data.webhooks.ConnectorException
+import io.prediction.data.storage.StorageException
 
 import spray.routing._
 import spray.routing.Directives._
@@ -61,9 +62,13 @@ object Common {
       val msg = s"${e.getMessage()}"
       complete(StatusCodes.BadRequest, Map("message" -> msg))
     }
+    case e: StorageException => {
+      val msg = s"${e.getMessage()}"
+      complete(StatusCodes.InternalServerError, Map("message" -> msg))
+    }
     case e: Exception => {
       val msg = s"${e.getMessage()}"
-      complete(StatusCodes.BadRequest, Map("message" -> msg))
+      complete(StatusCodes.InternalServerError, Map("message" -> msg))
     }
   }
 }

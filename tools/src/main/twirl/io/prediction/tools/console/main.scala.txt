@@ -47,5 +47,6 @@ The following are experimental development commands:
     run           Launch a driver program
     eval          Kick off an evaluation using an engine
     dashboard     Launch an evaluation dashboard
+    adminserver   Launch an Admin Server
 
 See 'pio help <command>' to read about a specific subcommand.

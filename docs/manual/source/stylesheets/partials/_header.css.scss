@@ -4,7 +4,12 @@
   background-color: $header-background-color;
   border-bottom: 1px solid $border-color;
   display: inline-block;
+  box-sizing: border-box;
   width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
 
   .logo {
     width: 200px;

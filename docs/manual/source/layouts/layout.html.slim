@@ -7,10 +7,11 @@ html
       = partial 'header'
       #page.container
         = partial 'nav/main'
-        main#main role="main" data-swiftype-index="true"
-          = partial 'page_title'
-          #content
-            = yield
+        main#main data-swiftype-index="true"
+          .col-main
+            = partial 'page_title'
+            #content
+              = yield
         == table_of_contents(current_page)
       = partial 'footer'
       = partial 'copyright'

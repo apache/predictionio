@@ -18,6 +18,7 @@ package io.prediction.controller
 import io.prediction.core.BaseAlgorithm
 import io.prediction.workflow.PersistentModelManifest
 import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
 import scala.reflect._

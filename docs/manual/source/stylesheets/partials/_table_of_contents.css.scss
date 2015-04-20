@@ -1,23 +1,30 @@
 #table-of-contents {
-  border-left: 1px solid $border-color;
   box-sizing: border-box;
+  width: 280px;
+  position: fixed;
+  top: 90px;
+  left: 1100px;
   & > ul {
-    margin: 20px 20px 20px 20px;
+    padding: 20px 40px 30px 40px;
+    margin: 25px;
+    background-color: $table-of-contents-background-color;
+
   }
   ul {
     list-style-type: disc;
-    padding: 0;
-    padding-left: 20px;
-    font-size: 16px;
+    font-size: 14px;
     line-height: 26px;
     color: $table-of-contents-font-color;
+
     ul {
       list-style-type: disc;
       font-size: 14px;
       line-height: 24px;
     }
   }
+
+
   a {
-    color: $table-of-contents-font-color;
+    color: $table-of-contents-link-color;
   }
 }

@@ -45,5 +45,5 @@ trait BaseEvaluatorResult extends Serializable {
   /** :: Experimental ::
     * Indicate if this result is inserted into database. */
   @Experimental
-  val noSave: Boolean = false
+  val noSave: Boolean = false 
 }

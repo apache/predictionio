@@ -4,7 +4,7 @@ $link-color: #1ba4d8;
 $border-color: #e3e3e3;
 $header-background-color: #eaf6fc;
 $header-icon-color: #373535;
-$off-canvas-background-color: #f0f0f0;
+$off-canvas-background-color: #ffffff;
 $main-background-color: #ffffff;
 
 // Alerts
@@ -28,7 +28,7 @@ $todo-background-color: #fbc2fb;
 
 // Nav
 $nav-header-link-color: #373535;
-
+$nav-main-background-color: #f0f0f0;
 $nav-main-link-color: #3482ab;
 $nav-main-hover-background-color: #7f93a8;
 $nav-main-hover-link-color: #ffffff;
@@ -70,18 +70,21 @@ $code-inline-background-color: #f0f0f0;
 $code-inline-border-color: $border-color;
 
 // Table of Contents
-$table-of-contents-font-color: #5f5f5f;
+$table-of-contents-link-color: #3482ab;
+$table-of-contents-font-color: #828385;
+$table-of-contents-background-color: #f0f0f0;
 
 // Footer
-$footer-background-color: #2a2b2b;
-$footer-link-color: #f0f0f0;
+$footer-background-color: #ffffff;
+$footer-link-color: #828385;
+$footer-link-hover-color: #373535;
 $footer-social-link-color: #828385;
-$footer-social-link-hover-color: #f0f0f0;
+$footer-social-link-hover-color: #373535;
 $footer-heading-2-color: #828385;
 
 // Copyright
-$copyright-font-color: #f0f0f0;
-$copyright-link-color: #f0f0f0;
+$copyright-font-color: #828385;
+$copyright-link-color: #828385;
 
 // Page Title
 $page-title-font-color: #586276;
@@ -120,3 +123,5 @@ $carousel-control-font-color: #ffffff;
 $carousel-control-hover-background-color: #373535;
 
 $tryit-i-color: #3482ab;
+
+$global-background-color: #ffffff;

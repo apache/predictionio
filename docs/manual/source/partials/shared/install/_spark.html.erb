@@ -1,0 +1,11 @@
+[Apache Spark](http://spark.apache.org) is the default processing engine for
+PredictionIO. Download and extract it.
+
+```
+$ wget http://d3kbcqa49mib13.cloudfront.net/<%= data.versions.spark_download_filename %>.tgz
+$ tar zxvfC <%= data.versions.spark_download_filename %>.tgz PredictionIO-<%= data.versions.pio %>/vendors
+```
+
+INFO: If you decide to install Apache Spark to another location, you must edit
+`PredictionIO-<%= data.versions.pio %>/conf/pio-env.sh` and change the
+`SPARK_HOME` variable to point to your own Apache Spark installation.

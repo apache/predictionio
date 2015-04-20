@@ -1,15 +1,11 @@
 $(document).ready(function() {
-  /*
-  Carousel initialization
-  */
+  // Carousel Initialization
   $('.jcarousel')
     .jcarousel({
       // Options go here
     });
   
-  /*
-  Prev control initialization
-  */
+  // Prev Control Initialization
   $('.jcarousel-control-prev')
     .on('jcarouselcontrol:active', function() {
       $(this).removeClass('inactive');
@@ -22,9 +18,7 @@ $(document).ready(function() {
       target: '-=1'
     });
   
-  /*
-  Next control initialization
-  */
+  // Next Control Initialization
   $('.jcarousel-control-next')
     .on('jcarouselcontrol:active', function() {
       $(this).removeClass('inactive');
@@ -37,9 +31,7 @@ $(document).ready(function() {
       target: '+=1'
     });
   
-  /*
-  Pagination initialization
-  */
+  // Pagination Initialization
   $('.jcarousel-pagination')
     .on('jcarouselpagination:active', 'li', function() {
       $(this).addClass('active');
@@ -49,7 +41,6 @@ $(document).ready(function() {
     })
     .jcarouselPagination({
       // Options go here
-  
       'item': function(page, carouselItems) {
         return '<li><a href="#' + page + '">' + page + '</a></li>';
       }

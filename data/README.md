@@ -35,6 +35,19 @@ $ sbt/sbt "data/test"
 $ sbt/sbt "data/test-only io.prediction.data.api.EventServiceSpec"
 ```
 
+- test for LEvents
+
+```
+$ sbt/sbt "data/test-only io.prediction.data.storage.LEventsSpec"
+```
+
+- test for ExampleJson and ExampleForm webhooks
+
+```
+$ sbt/sbt "data/test-only io.prediction.data.webhooks.examplejson.ExampleJsonConnectorSpec"
+$ sbt/sbt "data/test-only io.prediction.data.webhooks.exampleform.ExampleFormConnectorSpec"
+```
+
 ### Upgrade from 0.8.0/0.8.1 to 0.8.2
 
 Experimental upgrade tool (Upgrade HBase schema from 0.8.0/0.8.1 to 0.8.2)

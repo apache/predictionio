@@ -1,0 +1,201 @@
+root:
+  -
+    body: 'PredictionIO Docs'
+    url: '/'
+    children:
+      -
+        body: 'Welcome to PredictionIO'
+        url: '/'
+  -
+    body: 'Getting Started'
+    url: '#'
+    children:
+      -
+        body: 'A Quick Intro'
+        url: '/start/'
+      -
+        body: 'Installing PredictionIO'
+        url: '/install/'
+      -
+        body: 'Downloading an Engine Template'
+        url: '/start/download/'
+      -
+        body: 'Deploying Your First Engine'
+        url: '/start/deploy/'
+      -
+        body: 'Customizing the Engine'
+        url: '/start/customize/'
+  -
+    body: 'Integrating with Your App'
+    url: '#'
+    children:
+      -
+        body: 'App Integration Overview'
+        url: '/appintegration/'
+      -
+        body: 'List of SDKs'
+        url: '/sdk/'
+  -
+    body: 'Deploying an Engine'
+    url: '#'
+    children:
+      -
+        body: 'Deploying as a Web Service'
+        url: '/deploy/'
+      -
+        body: 'Engine Command-line Interface'
+        url: '/cli/#engine-commands'
+      -
+        body: 'Setting Engine Parameters'
+        url: '/deploy/engineparams/'
+      -
+        body: 'Deploying Multiple Engine Variants'
+        url: '/deploy/enginevariants/'
+  -
+    body: 'Customizing an Engine'
+    url: '#'
+    children:
+      -
+        body: 'Learning DASE'
+        url: '/customize/'
+      -
+        body: 'Troubleshooting Engine Development'
+        url: '/customize/troubleshooting/'
+      -
+        body: 'Engine Scala APIs'
+        url: '/api/current/#package'
+  -
+    body: 'Collecting and Analyzing Data'
+    url: '#'
+    children:
+      -
+        body: 'Event Server Overview'
+        url: '/datacollection/'
+      -
+        body: 'Event Server Command-line Interface'
+        url: '/cli/#event-server-commands'
+      -
+        body: 'Collecting Data with REST/SDKs'
+        url: '/datacollection/eventapi/'
+      -
+        body: 'Unifying Multichannel Data with Webhooks'
+        url: '/datacollection/webhooks/'
+      -
+        body: 'Importing Data in Batch'
+        url: '/datacollection/batchimport/'
+      -
+        body: 'Using Analytics Tools'
+        url: '/datacollection/analytics/'
+  -
+    body: 'Choosing an Algorithm(s)'
+    url: '#'
+    children:
+      -
+        body: 'Built-in Algorithm Libraries'
+        url: '/algorithm/'
+      -
+        body: 'Switching to Another Algorithm'
+        url: '/algorithm/switch/'
+      -
+        body: 'Combining Multiple Algorithms'
+        url: '/algorithm/multiple/'
+      -
+        body: 'Adding Your Own Algorithms'
+        url: '/algorithm/custom/'
+  -
+    body: 'ML Tuning and Evaluation'
+    url: '#'
+    children:
+      -
+        body: 'Overview'
+        url: '/evaluation/'
+      -
+        body: 'Hyperparameter Tuning'
+        url: '/evaluation/paramtuning/'
+      -
+        body: 'Evaluation Dashboard'
+        url: '/evaluation/evaluationdashboard/'
+      -
+        body: 'Choosing Evaluation Metrics'
+        url: '/evaluation/metricchoose/'
+      -
+        body: 'Building Evaluation Metrics'
+        url: '/evaluation/metricbuild/'
+  -
+    body: 'System Architecture'
+    url: '#'
+    children:
+      -
+        body: 'Architecture Overview'
+        url: '/system/'
+      -
+        body: 'Production Deployment with Cloudformation'
+        url: '/system/deploy-cloudformation/'
+      -
+        body: 'Using Another Datastore'
+        url: '/system/anotherdatastore'
+  -
+    body: 'Engine Template Gallery'
+    url: '#'
+    children:
+      -
+        body: 'Browse'
+        url: 'http://templates.prediction.io'
+      -
+        body: 'Submit your Engine as a Template'
+        url: '/community/submit-template/'
+  -
+    body: 'Demo Tutorials'
+    url: '#'
+    children:
+      -
+        body: 'Tapster - Similar Product Template'
+        url: '/demo/tapster/'
+      -
+        body: 'Community Contributed Demo'
+        url: '/demo/community/'
+  -
+    body: 'Getting Involved'
+    url: '#'
+    children:
+      -
+        body: 'Contribute Code'
+        url: '/community/contribute-code/'
+      -
+        body: 'Contribute Documentation'
+        url: '/community/contribute-documentation/'
+      -
+        body: 'Contribute a SDK'
+        url: '/community/contribute-sdk/'
+      -
+        body: 'Contribute a Webhook'
+        url: '/community/contribute-webhook/'
+      -
+        body: 'Community Projects'
+        url: '/community/projects/'
+  -
+    body: 'Getting Help'
+    url: '#'
+    children:
+      -
+        body: 'FAQs'
+        url: '/resources/faq/'
+      -
+        body: 'Community Support'
+        url: '/support/'
+      -
+        body: 'Enterprise Support'
+        url: '/support/#enterprise-support'
+  -
+    body: 'Resources'
+    url: '#'
+    children:
+      -
+        body: 'Developing Engines with IntelliJ IDEA'
+        url: '/resources/intellij/'
+      -
+        body: 'Upgrade Instructions'
+        url: '/resources/upgrade/'
+      -
+        body: 'Glossary'
+        url: '/resources/glossary/'

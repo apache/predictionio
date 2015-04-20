@@ -142,6 +142,14 @@ class DataMap (
     */
   def toJObject(): JObject = JObject(toList())
 
+  /** Converts this DataMap to case class of type T.
+    *
+    * @return the object of type T.
+    */
+  def extract[T: Manifest]: T = {
+    toJObject().extract[T]
+  }
+
   override
   def toString: String = s"DataMap(${fields})"
 

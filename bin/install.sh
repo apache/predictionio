@@ -9,10 +9,10 @@
 # License: http://www.apache.org/licenses/LICENSE-2.0
 
 OS=`uname`
-PIO_VERSION=0.9.1
-SPARK_VERSION=1.2.1
+PIO_VERSION=0.9.2
+SPARK_VERSION=1.3.0
 ELASTICSEARCH_VERSION=1.4.4
-HBASE_VERSION=0.98.11
+HBASE_VERSION=1.0.0
 PIO_DIR=$HOME/PredictionIO
 USER_PROFILE=$HOME/.profile
 PIO_FILE=PredictionIO-${PIO_VERSION}.tar.gz
@@ -266,7 +266,7 @@ rm -rf ${spark_dir}
 mv spark-${SPARK_VERSION}-bin-hadoop2.4 ${spark_dir}
 
 echo "Updating: $pio_dir/conf/pio-env.sh"
-${SED_CMD} "s|SPARK_HOME=/path_to_apache_spark|SPARK_HOME=$spark_dir|g" ${pio_dir}/conf/pio-env.sh
+${SED_CMD} "s|SPARK_HOME=.*|SPARK_HOME=$spark_dir|g" ${pio_dir}/conf/pio-env.sh
 
 echo -e "\033[1;32mSpark setup done!\033[0m"
 
@@ -295,18 +295,18 @@ echo -e "\033[1;32mElasticsearch setup done!\033[0m"
 
 # HBase
 echo -e "\033[1;36mStarting HBase setup in:\033[0m $hbase_dir"
-if [[ -e hbase-${HBASE_VERSION}-hadoop2-bin.tar.gz ]]; then
-  if confirm "Delete existing hbase-$HBASE_VERSION-hadoop2-bin.tar.gz?"; then
-    rm hbase-${HBASE_VERSION}-hadoop2-bin.tar.gz
+if [[ -e hbase-${HBASE_VERSION}-bin.tar.gz ]]; then
+  if confirm "Delete existing hbase-$HBASE_VERSION-bin.tar.gz?"; then
+    rm hbase-${HBASE_VERSION}-bin.tar.gz
   fi
 fi
-if [[ ! -e hbase-${HBASE_VERSION}-hadoop2-bin.tar.gz ]]; then
+if [[ ! -e hbase-${HBASE_VERSION}-bin.tar.gz ]]; then
   echo "Downloading HBase..."
-  curl -O http://archive.apache.org/dist/hbase/hbase-${HBASE_VERSION}/hbase-${HBASE_VERSION}-hadoop2-bin.tar.gz
+  curl -O http://archive.apache.org/dist/hbase/hbase-${HBASE_VERSION}/hbase-${HBASE_VERSION}-bin.tar.gz
 fi
-tar zxf hbase-${HBASE_VERSION}-hadoop2-bin.tar.gz
+tar zxf hbase-${HBASE_VERSION}-bin.tar.gz
 rm -rf ${hbase_dir}
-mv hbase-${HBASE_VERSION}-hadoop2 ${hbase_dir}
+mv hbase-${HBASE_VERSION} ${hbase_dir}
 
 echo "Creating default site in: $hbase_dir/conf/hbase-site.xml"
 cat <<EOT > ${hbase_dir}/conf/hbase-site.xml

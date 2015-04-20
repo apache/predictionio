@@ -97,6 +97,8 @@ object EventsToFile extends Logging {
         val jsonRdd = sqlContext.jsonRDD(jsonStringRdd)
         jsonRdd.saveAsParquetFile(args.outputPath)
       }
+      info(s"Events are exported to ${args.outputPath}/.")
+      info("Done.")
     }
   }
 }

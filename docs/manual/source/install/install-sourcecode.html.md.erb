@@ -2,6 +2,9 @@
 title: Installing PredictionIO from Source Code
 ---
 
+INFO: Assuming you are following the directory structure in the followoing,
+replace `/home/abc` with your own home directory wherever you see it.
+
 ## Building
 
 Run the following to download and build PredictionIO from its source code.
@@ -24,110 +27,48 @@ PredictionIO-<%= data.versions.pio %>/conf/pio-env.sh
 PredictionIO binary distribution created at PredictionIO-<%= data.versions.pio %>.tar.gz
 ```
 
+Extract the binary distribution you have just built.
+
+```
+$ tar zxvf PredictionIO-<%= data.versions.pio %>.tar.gz
+```
+
 
 ## Installing Dependencies
 
+Let us install dependencies inside a subdirectory of the PredictionIO
+installation. By following this convention, you can use PredictionIO's default
+configuration as is.
+
+```
+$ mkdir PredictionIO-<%= data.versions.pio %>/vendors
+```
+
+
 ### Spark Setup
 
-Apache Spark is the default processing engine for PredictionIO. Download [Apache
-Spark release 1.2.0 package hadoop2.4](http://spark.apache.org/downloads.html).
+<%= partial 'shared/install/spark' %>
 
-
-```
-$ wget http://d3kbcqa49mib13.cloudfront.net/<%= data.versions.spark_download_filename %>.tgz
-$ tar zxvf <%= data.versions.spark_download_filename %>.tgz
-```
-
-Copy the configuration template `conf/pio-env.sh.template` to `conf/pio-env.sh`
-in your PredictionIO installation directory. After that, edit `conf/pio-env.sh`
-and point `SPARK_HOME` to the location where you extracted Apache Spark.
-
-```
-SPARK_HOME=/home/abc/Downloads/<%= data.versions.spark_download_filename %>
-```
 
 ### Storage Setup
 
 #### Elasticsearch Setup
 
-By default, PredictionIO uses Elasticsearch at localhost as the data store to
-store its metadata. Simply download and install
-[Elasticsearch](http://www.elasticsearch.org/), which looks like this:
+<%= partial 'shared/install/elasticsearch' %>
 
-```
-$ wget https://download.elasticsearch.org/elasticsearch/elasticsearch/<%= data.versions.elasticsearch_download_filename %>.tar.gz
-$ tar zxvf <%= data.versions.elasticsearch_download_filename %>.tar.gz
-$ cd <%= data.versions.elasticsearch_download_filename %>
-```
-
-If you are using a shared network, change the `network.host` line in
-`config/elasticsearch.yml` to `network.host: 127.0.0.1` because by default,
-Elasticsearch looks for other machines on the network upon setup and you may run
-into weird errors if there are other machines that is also running
-Elasticsearch.
-
-If you are not using the default setting at localhost. You may change the following in ```conf/pio-env.sh``` to fit your setup.
-
-WARNING: Make sure to set `PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME` unless you do
-not plan to use `bin/pio-start-all`, e.g. you have a custom HBase setup.
-
-```
-PIO_STORAGE_SOURCES_ELASTICSEARCH_TYPE=elasticsearch
-PIO_STORAGE_SOURCES_ELASTICSEARCH_HOSTS=localhost
-PIO_STORAGE_SOURCES_ELASTICSEARCH_PORTS=9300
-PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME=/path/to/elasticsearch
-```
 
 #### <a name="hbase"></a>HBase Setup
 
-By default, PredictionIO's Data API uses [HBase](http://hbase.apache.org/) at localhost as the data store
-for event data.
+<%= partial 'shared/install/hbase' %>
+
+
+In addition, you must set your environment variable `JAVA_HOME`. For example, in
+`/home/abc/.bashrc` add the following line:
 
 ```
-$ wget https://archive.apache.org/dist/hbase/<%= data.versions.hbase_basename %>/<%= data.versions.hbase_basename %>-<%= data.versions.hbase_variant %>.tar.gz
-$ tar zxvf <%= data.versions.hbase_basename %>-<%= data.versions.hbase_variant %>.tar.gz
-$ cd <%= data.versions.hbase_basename %>-<%= data.versions.hbase_dir_suffix %>
+export JAVA_HOME=/usr/lib/jvm/java-8-oracle
 ```
 
-You will need to at least add a minimal configuration to HBase to start it in
-standalone mode. Details can be found
-[here](http://hbase.apache.org/book/quickstart.html). Here, we are showing a
-sample minimal configuration.
-
-> For production deployment, run a fully distributed HBase configuration.
-
-Edit `/path/to/hbase/conf/hbase-site.xml` and configure the local **data**
-directories for HBase and ZooKeeper. These directories should be empty the first
-time you launch PredictionIO.
-
-```
-<configuration>
-  <property>
-    <name>hbase.rootdir</name>
-    <value>file:///path/to/hbase-data-dir</value>
-  </property>
-  <property>
-    <name>hbase.zookeeper.property.dataDir</name>
-    <value>/path/to/zookeeper-data-dir</value>
-  </property>
-</configuration>
-```
-
-Edit `/path/to/hbase/conf/hbase-env.sh` to set `JAVA_HOME` for the cluster. For
-Mac users it would be
-
-```
-export JAVA_HOME=`/usr/libexec/java_home -v 1.7`
-```
-
-Navigate back to your PredictionIO's installation directory and edit
-`conf/pio-env.sh` add the path to HBase's root and config directories:
-
-```
-HBASE_CONF_DIR=/path/to/hbase/conf
-...
-PIO_STORAGE_SOURCES_HBASE_HOME=/path/to/hbase
-```
 
 <%= partial 'shared/install/dependent_services' %>
 

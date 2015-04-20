@@ -18,6 +18,7 @@ package io.prediction.tools.console
 import java.io.File
 
 import grizzled.slf4j.Logging
+
 import io.prediction.controller.Utils
 import io.prediction.core.BuildInfo
 import io.prediction.data.api.EventServer
@@ -26,6 +27,7 @@ import io.prediction.data.storage.EngineManifest
 import io.prediction.data.storage.EngineManifestSerializer
 import io.prediction.data.storage.Storage
 import io.prediction.data.storage.hbase.upgrade.Upgrade_0_8_3
+import io.prediction.tools.admin.{AdminServer, AdminServerConfig}
 import io.prediction.tools.RegisterEngine
 import io.prediction.tools.RunServer
 import io.prediction.tools.RunWorkflow
@@ -53,6 +55,7 @@ case class ConsoleArgs(
   accessKey: AccessKeyArgs = AccessKeyArgs(),
   deploy: DeployArgs = DeployArgs(),
   eventServer: EventServerArgs = EventServerArgs(),
+  adminServer: AdminServerArgs = AdminServerArgs(),
   dashboard: DashboardArgs = DashboardArgs(),
   upgrade: UpgradeArgs = UpgradeArgs(),
   template: TemplateArgs = TemplateArgs(),
@@ -105,6 +108,10 @@ case class EventServerArgs(
   ip: String = "0.0.0.0",
   port: Int = 7070,
   stats: Boolean = false)
+
+case class AdminServerArgs(
+ip: String = "localhost",
+port: Int = 7071)
 
 case class DashboardArgs(
   ip: String = "0.0.0.0",
@@ -310,6 +317,12 @@ object Console extends Logging {
           opt[Int]("event-server-port") action { (x, c) =>
             c.copy(eventServer = c.eventServer.copy(port = x))
           } text("Event server port. Default: 7070"),
+          opt[Int]("admin-server-port") action { (x, c) =>
+            c.copy(adminServer = c.adminServer.copy(port = x))
+          } text("Admin server port. Default: 7071"),
+          opt[String]("admin-server-port") action { (x, c) =>
+          c.copy(adminServer = c.adminServer.copy(ip = x))
+          } text("Admin server IP. Default: localhost"),
           opt[String]("accesskey") action { (x, c) =>
             c.copy(accessKey = c.accessKey.copy(accessKey = x))
           } text("Access key of the App where feedback data will be stored."),
@@ -364,6 +377,18 @@ object Console extends Logging {
           opt[Unit]("stats") action { (x, c) =>
             c.copy(eventServer = c.eventServer.copy(stats = true))
           }
+        )
+      cmd("adminserver").
+        text("Launch an Admin Server at the specific IP and port.").
+        action { (_, c) =>
+        c.copy(commands = c.commands :+ "adminserver")
+      } children(
+        opt[String]("ip") action { (x, c) =>
+          c.copy(adminServer = c.adminServer.copy(ip = x))
+        } text("IP to bind to. Default: localhost"),
+        opt[Int]("port") action { (x, c) =>
+          c.copy(adminServer = c.adminServer.copy(port = x))
+        } text("Port to bind to. Default: 7071")
         )
       note("")
       cmd("run").
@@ -659,6 +684,9 @@ object Console extends Logging {
         case Seq("eventserver") =>
           eventserver(ca)
           0
+        case Seq("adminserver") =>
+          adminserver(ca)
+          0
         case Seq("run") =>
           generateManifestJson(ca.common.manifestJson)
           run(ca)
@@ -730,6 +758,7 @@ object Console extends Logging {
     "train" -> txt.train().toString,
     "deploy" -> txt.deploy().toString,
     "eventserver" -> txt.eventserver().toString,
+    "adminserver" -> txt.adminserver().toString,
     "app" -> txt.app().toString,
     "accesskey" -> txt.accesskey().toString,
     "import" -> txt.imprt().toString,
@@ -853,6 +882,15 @@ object Console extends Logging {
       ip = ca.eventServer.ip,
       port = ca.eventServer.port,
       stats = ca.eventServer.stats))
+  }
+
+  def adminserver(ca: ConsoleArgs): Unit = {
+    info(
+      s"Creating Admin Server at ${ca.adminServer.ip}:${ca.adminServer.port}")
+    AdminServer.createAdminServer(AdminServerConfig(
+      ip = ca.adminServer.ip,
+      port = ca.adminServer.port
+    ))
   }
 
   def undeploy(ca: ConsoleArgs): Int = {

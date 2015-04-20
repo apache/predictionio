@@ -213,6 +213,7 @@ case class AlgorithmParams(
   minSupport: Double,
   minConfidence: Double,
   minLift: Double,
+  minBasketSize: Int,
   maxNumRulesPerCond: Int // max number of rules per condition
   ) extends Params
 
@@ -225,6 +226,7 @@ Parameter description:
 - **minSupport**: The minimum required *support* for the item set to be considered as rule (valid range is 0 to 1). It's the percentage of the item set appearing among all transcations. This is used to filter out infrequent item set. For example, setting to 0.1 means that the item set must appear in 10 % of all transactions.
 - **minConfidence**: The minimum *confidence* required for the rules (valid range is 0 to 1). The confidence indicates the probability of the condition and conseuquence appear in the same transaction. For example, if A appears in 30 transactions and the item set [A, B] appears in 20 transactions, then the rule "A implies B" has confidence of 0.66.
 - **minLift**: The minimum *lift* required for the rule. It should be set to 1 to find high quality rule. It's the confidence of the rule divided by the support of the consequence. It is used to filter out rules that the consequence is very frequent anyway regardless of the condition.
+- **minBasketSize**: The minimum number of items in basket to be considered by algorithm. This value must be at least 2.
 - **maxNumRulesPerCond**: Maximum number of rules generated per condition and stored in the model. By default, the top rules are sorted by *lift* score.
 
 The values of these parameters can be specified in *algorithms* of
@@ -242,6 +244,7 @@ MyComplementaryPurchase/***engine.json***:
         "minSupport": 0.1,
         "minConfidence": 0.6,
         "minLift" : 1.0,
+        "minBasketSize" : 2,
         "maxNumRulesPerCond": 5
       }
     }

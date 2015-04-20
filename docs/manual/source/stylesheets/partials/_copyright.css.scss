@@ -1,6 +1,7 @@
 #copyright {
   display: inline-block;
-  width: 100%;
+  width: 800px;
+  margin-left: 0;
   background-color: $footer-background-color;
   text-align: center;
   color: $copyright-font-color;
@@ -13,5 +14,12 @@
   .logo {
     margin-top: 10px;
     display: inline-block;
+  }
+}
+
+
+@include medium {
+  #copyright {
+    margin-left: 300px;
   }
 }

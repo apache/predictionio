@@ -18,8 +18,6 @@ package io.prediction.data.storage.hbase
 import io.prediction.data.storage.Event
 import io.prediction.data.storage.PropertyMap
 import io.prediction.data.storage.LEvents
-import io.prediction.data.storage.LEventAggregator
-import io.prediction.data.storage.StorageError
 import io.prediction.data.storage.hbase.HBEventsUtil.RowKey
 import io.prediction.data.storage.hbase.HBEventsUtil.RowKeyException
 
@@ -102,23 +100,21 @@ class HBLEvents(val client: HBClient, val namespace: String)
   override
   def futureInsert(
     event: Event, appId: Int, channelId: Option[Int])(implicit ec: ExecutionContext):
-    Future[Either[StorageError, String]] = {
+    Future[String] = {
     Future {
       val table = getTable(appId, channelId)
       val (put, rowKey) = HBEventsUtil.eventToPut(event, appId)
       table.put(put)
       table.flushCommits()
       table.close()
-      Right(rowKey.toString)
-    }/* .recover {
-       case e: Exception => Left(StorageError(e.toString))
-    } */
+      rowKey.toString
+    }
   }
 
   override
   def futureGet(
     eventId: String, appId: Int, channelId: Option[Int])(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Option[Event]]] = {
+    Future[Option[Event]] = {
       Future {
         val table = getTable(appId, channelId)
         val rowKey = RowKey(eventId)
@@ -129,78 +125,25 @@ class HBLEvents(val client: HBClient, val namespace: String)
 
         if (!result.isEmpty()) {
           val event = resultToEvent(result, appId)
-          Right(Some(event))
+          Some(event)
         } else {
-          Right(None)
+          None
         }
-      }.recover {
-        case e: RowKeyException => Left(StorageError(e.toString))
-        case e: Exception => throw e
       }
     }
 
   override
   def futureDelete(
     eventId: String, appId: Int, channelId: Option[Int])(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Boolean]] = {
+    Future[Boolean] = {
     Future {
       val table = getTable(appId, channelId)
       val rowKey = RowKey(eventId)
       val exists = table.exists(new Get(rowKey.toBytes))
       table.delete(new Delete(rowKey.toBytes))
       table.close()
-      Right(exists)
+      exists
     }
-  }
-
-  /** @deprecated */
-  override
-  def futureGetByAppId(appId: Int)(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Iterator[Event]]] = {
-      futureFind(
-        appId = appId,
-        startTime = None,
-        untilTime = None,
-        entityType = None,
-        entityId = None,
-        eventNames = None,
-        limit = None,
-        reversed = None)
-    }
-
-  /** @deprecated */
-  override
-  def futureGetByAppIdAndTime(appId: Int, startTime: Option[DateTime],
-    untilTime: Option[DateTime])(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Iterator[Event]]] = {
-      futureFind(
-        appId = appId,
-        startTime = startTime,
-        untilTime = untilTime,
-        entityType = None,
-        entityId = None,
-        eventNames = None,
-        limit = None,
-        reversed = None)
-  }
-
-  /** @deprecated */
-  override
-  def futureGetByAppIdAndTimeAndEntity(appId: Int,
-    startTime: Option[DateTime],
-    untilTime: Option[DateTime],
-    entityType: Option[String],
-    entityId: Option[String])(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Iterator[Event]]] = {
-      futureFind(
-        appId = appId,
-        startTime = startTime,
-        untilTime = untilTime,
-        entityType = entityType,
-        entityId = entityId,
-        eventNames = None,
-        limit = None,
-        reversed = None)
   }
 
   override
@@ -216,8 +159,9 @@ class HBLEvents(val client: HBClient, val namespace: String)
     targetEntityId: Option[Option[String]] = None,
     limit: Option[Int] = None,
     reversed: Option[Boolean] = None)(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Iterator[Event]]] = {
+    Future[Iterator[Event]] = {
       Future {
+
         val table = getTable(appId, channelId)
 
         val scan = HBEventsUtil.createScan(
@@ -243,80 +187,8 @@ class HBLEvents(val client: HBClient, val namespace: String)
 
         val eventsIt = results.map { resultToEvent(_, appId) }
 
-        Right(eventsIt)
+        eventsIt
       }
-  }
-
-  override
-  def futureAggregateProperties(
-    appId: Int,
-    channelId: Option[Int] = None,
-    entityType: String,
-    startTime: Option[DateTime] = None,
-    untilTime: Option[DateTime] = None,
-    required: Option[Seq[String]] = None)(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Map[String, PropertyMap]]] = {
-      futureFind(
-        appId = appId,
-        channelId = channelId,
-        startTime = startTime,
-        untilTime = untilTime,
-        entityType = Some(entityType),
-        eventNames = Some(LEventAggregator.eventNames)
-      ).map{ either =>
-        either.right.map{ eventIt =>
-          val dm = LEventAggregator.aggregateProperties(eventIt)
-          if (required.isDefined) {
-            dm.filter { case (k, v) =>
-              required.get.map(v.contains(_)).reduce(_ && _)
-            }
-          } else dm
-        }
-      }
-    }
-
-  override
-  def futureAggregatePropertiesSingle(
-    appId: Int,
-    channelId: Option[Int] = None,
-    entityType: String,
-    entityId: String,
-    startTime: Option[DateTime] = None,
-    untilTime: Option[DateTime] = None)(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Option[PropertyMap]]] = {
-      futureFind(
-        appId = appId,
-        channelId = channelId,
-        startTime = startTime,
-        untilTime = untilTime,
-        entityType = Some(entityType),
-        entityId = Some(entityId),
-        eventNames = Some(LEventAggregator.eventNames)
-      ).map{ either =>
-        either.right.map{ eventIt =>
-          LEventAggregator.aggregatePropertiesSingle(eventIt)
-        }
-      }
-    }
-
-  /** @deprecated */
-  override
-  def futureDeleteByAppId(appId: Int)(implicit ec: ExecutionContext):
-    Future[Either[StorageError, Unit]] = {
-    Future {
-      // TODO: better way to handle range delete
-      val table = getTable(appId)
-      val scan = new Scan()
-      val scanner = table.getScanner(scan)
-      val it = scanner.iterator()
-      while (it.hasNext()) {
-        val result = it.next()
-        table.delete(new Delete(result.getRow()))
-      }
-      scanner.close()
-      table.close()
-      Right(())
-    }
   }
 
 }

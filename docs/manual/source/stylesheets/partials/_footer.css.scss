@@ -1,12 +1,15 @@
-#footer {
 
+
+#footer {
+  float: left;
   display: inline-block;
   justify-content: flex-start;
 
 
 
   background-color: $footer-background-color;
-  width: 100%;
+  width: 800px;
+  margin-left: 0;
 
   .column {
     padding: 0 30px 0 30px;
@@ -35,6 +38,9 @@
 
   a {
     color: $footer-link-color;
+    &:hover {
+      color: $footer-link-hover-color;
+    }
   }
 
   p {
@@ -53,6 +59,7 @@
   #footer {
     display: flex;
     justify-content: space-between;
+    margin-left: 300px;
   }
   .column {
     width: auto;
