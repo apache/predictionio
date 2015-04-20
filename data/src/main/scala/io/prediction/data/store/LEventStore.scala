@@ -83,7 +83,8 @@ object LEventStore {
       targetEntityType = targetEntityType,
       targetEntityId = targetEntityId,
       limit = limit,
-      reversed = Some(latest)), timeout)
+      reversed = Some(latest)),
+      timeout)
   }
 
   /** Reads events generically. If entityType or entityId is not specified, it
@@ -109,7 +110,6 @@ object LEventStore {
     * @param startTime return events with eventTime >= startTime
     * @param untilTime return events with eventTime < untilTime
     * @param limit Limit number of events. Get all events if None or Some(-1)
-    * @param latest Return latest event first (default true)
     * @return Iterator[Event]
     */
   def find(
@@ -123,7 +123,6 @@ object LEventStore {
     startTime: Option[DateTime] = None,
     untilTime: Option[DateTime] = None,
     limit: Option[Int] = None,
-    latest: Boolean = true,
     timeout: Duration = defaultTimeout): Iterator[Event] = {
 
     val (appId, channelId) = Common.appNameToId(appName, channelName)
@@ -138,8 +137,7 @@ object LEventStore {
       eventNames = eventNames,
       targetEntityType = targetEntityType,
       targetEntityId = targetEntityId,
-      limit = limit,
-      reversed = Some(latest)), timeout)
+      limit = limit), timeout)
   }
 
 }
