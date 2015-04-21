@@ -144,6 +144,9 @@ class Engine[TD, EI, PD, Q, P, A](
     val preparator = Doer(preparatorClassMap(preparatorName), preparatorParams)
 
     val algoParamsList = engineParams.algorithmParamsList
+    require(
+      algoParamsList.size > 0,
+      "EngineParams.algorithmParamsList must have at least 1 element.")
 
     val algorithms = algoParamsList.map { case (algoName, algoParams) =>
       Doer(algorithmClassMap(algoName), algoParams)
@@ -298,6 +301,9 @@ class Engine[TD, EI, PD, Q, P, A](
     val preparator = Doer(preparatorClassMap(preparatorName), preparatorParams)
 
     val algoParamsList = engineParams.algorithmParamsList
+    require(
+      algoParamsList.size > 0,
+      "EngineParams.algorithmParamsList must have at least 1 element.")
 
     val algorithms = algoParamsList.map { case (algoName, algoParams) => {
       try {
