@@ -6,6 +6,16 @@ Here is a list of demo tutorials for PredictionIO.
 
 INFO: If you want to showcase your demo app here, simply edit [this page](https://github.com/PredictionIO/PredictionIO/blob/livedoc/docs/manual/source/community/showcase.html.md) and submit a pull request.
 
+
+## Tapster iOS Demo
+
+Similar product recommendation in an iOS Swift app built by [Minh-Tu Le](https://github.com/minhtule)
+
+URL: https://github.com/minhtule/Tapster-iOS-Demo
+
+Tutorial: https://github.com/minhtule/Tapster-iOS-Demo/blob/master/TUTORIAL.md
+
+
 ## NoGoodGamez
 
 <img src="/images/showcase/nogoodgamez-158x70.png" alt="NoGoodGamez" class="static" />
