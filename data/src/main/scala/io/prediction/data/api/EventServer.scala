@@ -15,60 +15,49 @@
 
 package io.prediction.data.api
 
-import io.prediction.data.Utils
-import io.prediction.data.storage.AccessKey
-import io.prediction.data.storage.AccessKeys
-import io.prediction.data.storage.Channels
-import io.prediction.data.storage.Event
-import io.prediction.data.storage.EventJson4sSupport
-import io.prediction.data.storage.DateTimeJson4sSupport
-import io.prediction.data.storage.LEvents
-import io.prediction.data.storage.Storage
-
-import akka.actor.ActorSystem
-import akka.actor.Actor
-import akka.actor.Props
-import akka.io.IO
-import akka.event.Logging
-import akka.pattern.ask
-import akka.util.Timeout
-
-import org.json4s.{Formats, DefaultFormats}
-import org.json4s.JObject
-import org.json4s.native.JsonMethods.parse
-
-import spray.util.LoggingContext
-import spray.can.Http
-import spray.http.HttpCharsets
-import spray.http.HttpEntity
-import spray.http.HttpResponse
-import spray.http.MediaTypes
-import spray.http.StatusCodes
-import spray.http.StatusCode
-import spray.http.FormData
-import spray.httpx.Json4sSupport
-import spray.httpx.unmarshalling.Unmarshaller
-import spray.routing._
-import spray.routing.authentication.Authentication
-import spray.routing.Directives._
-
-import scala.concurrent.{ExecutionContext, Future}
-
 import java.util.concurrent.TimeUnit
 
-import com.github.nscala_time.time.Imports.DateTime
+import akka.actor.Actor
+import akka.actor.ActorSystem
+import akka.actor.Props
+import akka.event.Logging
+import akka.io.IO
+import akka.pattern.ask
+import akka.util.Timeout
+import io.prediction.data.Utils
+import io.prediction.data.storage.AccessKeys
+import io.prediction.data.storage.Channels
+import io.prediction.data.storage.DateTimeJson4sSupport
+import io.prediction.data.storage.Event
+import io.prediction.data.storage.EventJson4sSupport
+import io.prediction.data.storage.LEvents
+import io.prediction.data.storage.Storage
+import org.json4s.DefaultFormats
+import org.json4s.Formats
+import org.json4s.JObject
+import org.json4s.native.JsonMethods.parse
+import spray.can.Http
+import spray.http.FormData
+import spray.http.MediaTypes
+import spray.http.StatusCodes
+import spray.httpx.Json4sSupport
+import spray.routing._
+import spray.routing.authentication.Authentication
+
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
 class EventServiceActor(
     val eventClient: LEvents,
     val accessKeysClient: AccessKeys,
     val channelsClient: Channels,
-    val stats: Boolean) extends HttpServiceActor {
+    val config: EventServerConfig) extends HttpServiceActor {
 
   object Json4sProtocol extends Json4sSupport {
     implicit def json4sFormats: Formats = DefaultFormats +
       new EventJson4sSupport.APISerializer +
       // NOTE: don't use Json4s JodaTimeSerializers since it has issues,
-      // some format not converred, or timezone not correct
+      // some format not converted, or timezone not correct
       new DateTimeJson4sSupport.serializer
   }
 
@@ -83,6 +72,8 @@ class EventServiceActor(
 
   val jsonPath = """(.+)\.json$""".r
   val formPath = """(.+)$""".r
+
+  val pluginContext = EventServerPluginContext(log)
 
   case class AuthData(appId: Int, channelId: Option[Int])
 
@@ -100,7 +91,7 @@ class EventServiceActor(
               if (channelMap.contains(ch)) {
                 Right(AuthData(k.appid, Some(channelMap(ch))))
               } else {
-                Left(ChannelRejection(s"Invalid channel '${ch}'."))
+                Left(ChannelRejection(s"Invalid channel '$ch'."))
               }
             }.getOrElse{
               Right(AuthData(k.appid, None))
@@ -116,6 +107,7 @@ class EventServiceActor(
   }
 
   val statsActorRef = context.actorSelection("/user/StatsActor")
+  val pluginsActorRef = context.actorSelection("/user/PluginsActor")
 
   val route: Route =
     pathSingleSlash {
@@ -124,6 +116,59 @@ class EventServiceActor(
       get {
         respondWithMediaType(MediaTypes.`application/json`) {
           complete(Map("status" -> "alive"))
+        }
+      }
+    } ~
+    path("plugins.json") {
+      import Json4sProtocol._
+      get {
+        respondWithMediaType(MediaTypes.`application/json`) {
+          complete {
+            Map("plugins" -> Map(
+              "inputblockers" -> pluginContext.inputBlockers.map { case (n, p) =>
+                n -> Map(
+                  "name" -> p.pluginName,
+                  "description" -> p.pluginDescription,
+                  "class" -> p.getClass.getName)
+              },
+              "inputsniffers" -> pluginContext.inputSniffers.map { case (n, p) =>
+                n -> Map(
+                  "name" -> p.pluginName,
+                  "description" -> p.pluginDescription,
+                  "class" -> p.getClass.getName)
+              }
+            ))
+          }
+        }
+      }
+    } ~
+    path("plugins" / Segments) { segments =>
+      get {
+        handleExceptions(Common.exceptionHandler) {
+          authenticate(withAccessKey) { authData =>
+            respondWithMediaType(MediaTypes.`application/json`) {
+              complete {
+                val pluginArgs = segments.drop(2)
+                val pluginType = segments(0)
+                val pluginName = segments(1)
+                pluginType match {
+                  case EventServerPlugin.inputBlocker =>
+                    pluginContext.inputBlockers(pluginName).handleREST(
+                      authData.appId,
+                      authData.channelId,
+                      pluginArgs)
+                  case EventServerPlugin.inputSniffer =>
+                    pluginsActorRef ? PluginsActor.HandleREST(
+                      appId = authData.appId,
+                      channelId = authData.channelId,
+                      pluginName = pluginName,
+                      pluginArgs = pluginArgs) map {
+                      _.asInstanceOf[String]
+                    }
+                }
+              }
+            }
+          }
         }
       }
     } ~
@@ -191,9 +236,18 @@ class EventServiceActor(
               entity(as[Event]) { event =>
                 complete {
                   log.debug(s"POST events")
+                  pluginContext.inputBlockers.values.foreach(
+                    _.process(EventInfo(
+                      appId = appId,
+                      channelId = channelId,
+                      event = event), pluginContext))
                   val data = eventClient.futureInsert(event, appId, channelId).map { id =>
+                    pluginsActorRef ! EventInfo(
+                      appId = appId,
+                      channelId = channelId,
+                      event = event)
                     val result = (StatusCodes.Created, Map("eventId" -> s"${id}"))
-                    if (stats) {
+                    if (config.stats) {
                       statsActorRef ! Bookkeeping(appId, result._1, event)
                     }
                     result
@@ -283,7 +337,7 @@ class EventServiceActor(
             authenticate(withAccessKey) { authData =>
               val appId = authData.appId
               respondWithMediaType(MediaTypes.`application/json`) {
-                if (stats) {
+                if (config.stats) {
                   complete {
                     statsActorRef ? GetStats(appId) map {
                       _.asInstanceOf[Map[String, StatsSnapshot]]
@@ -321,7 +375,7 @@ class EventServiceActor(
                       data = jObj,
                       eventClient = eventClient,
                       log = log,
-                      stats = stats,
+                      stats = config.stats,
                       statsActorRef = statsActorRef)
                   }
                 }
@@ -371,7 +425,7 @@ class EventServiceActor(
                       data = formData,
                       eventClient = eventClient,
                       log = log,
-                      stats = stats,
+                      stats = config.stats,
                       statsActorRef = statsActorRef)
                   }
                 }
@@ -412,22 +466,20 @@ class EventServiceActor(
 
 
 /* message */
-case class StartServer(
-  val host: String,
-  val port: Int)
+case class StartServer(host: String, port: Int)
 
 class EventServerActor(
     val eventClient: LEvents,
     val accessKeysClient: AccessKeys,
     val channelsClient: Channels,
-    val stats: Boolean) extends Actor {
+    val config: EventServerConfig) extends Actor {
   val log = Logging(context.system, this)
   val child = context.actorOf(
     Props(classOf[EventServiceActor],
       eventClient,
       accessKeysClient,
       channelsClient,
-      stats),
+      config),
     "EventServiceActor")
   implicit val system = context.system
 
@@ -444,6 +496,7 @@ class EventServerActor(
 case class EventServerConfig(
   ip: String = "localhost",
   port: Int = 7070,
+  plugins: String = "plugins",
   stats: Boolean = false)
 
 object EventServer {
@@ -460,20 +513,19 @@ object EventServer {
         eventClient,
         accessKeysClient,
         channelsClient,
-        config.stats),
+        config),
       "EventServerActor")
     if (config.stats) system.actorOf(Props[StatsActor], "StatsActor")
+    system.actorOf(Props[PluginsActor], "PluginsActor")
     serverActor ! StartServer(config.ip, config.port)
-    system.awaitTermination
+    system.awaitTermination()
   }
 }
 
 object Run {
-
-  def main (args: Array[String]) {
+  def main(args: Array[String]) {
     EventServer.createEventServer(EventServerConfig(
       ip = "0.0.0.0",
       port = 7070))
   }
-
 }

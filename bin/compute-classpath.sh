@@ -24,6 +24,8 @@ FWDIR="$(cd `dirname $0`/..; pwd)"
 # Build up classpath
 CLASSPATH="${FWDIR}/conf"
 
+CLASSPATH="$CLASSPATH:${FWDIR}/plugins/*"
+
 ASSEMBLY_DIR="${FWDIR}/assembly"
 
 if [ -n "$JAVA_HOME" ]; then
