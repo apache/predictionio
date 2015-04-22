@@ -255,12 +255,11 @@ private[prediction] object MailChimpConnector extends FormConnector {
 
     val json =
       ("event" -> "cleaned") ~
-      ("entityType" -> "user") ~
-      ("entityId" -> data("data[campaign_id]")) ~
-      ("targetEntityType" -> "list") ~
-      ("targetEntityId" -> data("data[list_id]")) ~
+      ("entityType" -> "list") ~
+      ("entityId" -> data("data[list_id]")) ~
       ("eventTime" -> eventTime) ~
       ("properties" -> (
+        ("campaignId" -> data("data[campaign_id]")) ~
         ("reason" -> data("data[reason]")) ~
         ("email" -> data("data[email]"))
       ))
@@ -288,7 +287,7 @@ private[prediction] object MailChimpConnector extends FormConnector {
 
     val json =
       ("event" -> "campaign") ~
-      ("entityType" -> "user") ~
+      ("entityType" -> "campaign") ~
       ("entityId" -> data("data[id]")) ~
       ("targetEntityType" -> "list") ~
       ("targetEntityId" -> data("data[list_id]")) ~

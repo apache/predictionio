@@ -204,11 +204,10 @@ class MailChimpConnectorSpec extends Specification with ConnectorTestUtil {
       val expected = """
         {
           "event" : "cleaned",
-          "entityType" : "user",
-          "entityId" : "4fjk2ma9xd",
-          "targetEntityType" : "list",
-          "targetEntityId" : "a6b5da1054",
+          "entityType" : "list",
+          "entityId" : "a6b5da1054",
           "properties" : {
+            "campaignId" : "4fjk2ma9xd",
             "reason" : "hard",
             "email" : "api+cleaned@mailchimp.com"
           },
@@ -235,7 +234,7 @@ class MailChimpConnectorSpec extends Specification with ConnectorTestUtil {
       val expected = """
         {
           "event" : "campaign",
-          "entityType" : "user",
+          "entityType" : "campaign",
           "entityId" : "5aa2102003",
           "targetEntityType" : "list",
           "targetEntityId" : "a6b5da1054",
