@@ -32,7 +32,6 @@ import akka.io.IO
 import akka.pattern.ask
 import akka.util.Timeout
 import com.github.nscala_time.time.Imports.DateTime
-import com.google.gson.Gson
 import com.twitter.bijection.Injection
 import com.twitter.chill.KryoBase
 import com.twitter.chill.KryoInjection
@@ -390,7 +389,6 @@ class ServerActor[Q, P](
     val serving: BaseServing[Q, P],
     val servingParams: Params) extends Actor with HttpService {
   val serverStartTime = DateTime.now
-  lazy val gson = new Gson
   val log = Logging(context.system, this)
 
   var requestCount: Int = 0
@@ -465,16 +463,25 @@ class ServerActor[Q, P](
           entity(as[String]) { queryString =>
             try {
               val servingStartTime = DateTime.now
-
+              val jsonExtractorOption = JsonExtractorOption.Both
               val queryTime = DateTime.now
-              val query = Extraction.extract(parse(queryString))(
-                algorithms.head.querySerializer, algorithms.head.queryManifest())
+              val query = JsonExtractor.extract(
+                jsonExtractorOption,
+                queryString,
+                algorithms.head.queryClass,
+                algorithms.head.querySerializer,
+                algorithms.head.gsonTypeAdpaterFactories
+              )
               val predictions = algorithms.zipWithIndex.map { case (a, ai) =>
                 a.predictBase(models(ai), query)
               }
               val prediction = serving.serveBase(query, predictions)
-              val r = (Extraction.decompose(prediction)(
-                algorithms.head.querySerializer),
+              val predictionJValue = JsonExtractor.toJValue(
+                jsonExtractorOption,
+                prediction,
+                algorithms.head.querySerializer,
+                algorithms.head.gsonTypeAdpaterFactories)
+              val r = (predictionJValue,
                 prediction,
                 query)
               /** Handle feedback to Event Server

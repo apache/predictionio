@@ -15,8 +15,10 @@
 
 package io.prediction.core
 
+import com.google.gson.TypeAdapterFactory
 import io.prediction.controller.Params
 import io.prediction.controller.Utils
+import net.jodah.typetools.TypeResolver
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
@@ -24,6 +26,7 @@ import scala.reflect._
 
 trait BaseQuerySerializer {
   @transient lazy val querySerializer = Utils.json4sDefaultFormats
+  @transient lazy val gsonTypeAdpaterFactories = Seq.empty[TypeAdapterFactory]
 }
 
 abstract class BaseAlgorithm[PD, M, Q : Manifest, P]
@@ -49,4 +52,9 @@ abstract class BaseAlgorithm[PD, M, Q : Manifest, P]
     modelId: String,
     algoParams: Params,
     bm: Any): Any = Unit
+
+  private[prediction] def queryClass = {
+    val types = TypeResolver.resolveRawArguments(classOf[BaseAlgorithm[PD, M, Q, P]], getClass)
+    types(2).asInstanceOf[Class[Q]]
+  }
 }

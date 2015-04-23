@@ -36,6 +36,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.api.java.JavaRDDLike
 import org.apache.spark.rdd.RDD
 import org.json4s.JsonAST.JValue
+import org.json4s.MappingException
 import org.json4s._
 import org.json4s.native.JsonMethods._
 
@@ -142,25 +143,15 @@ object WorkflowUtils extends Logging {
       EmptyParams()
     } else {
       val apClass = pClass.head
-      language match {
-        case EngineLanguage.Java => try {
-          gson.fromJson(json, apClass)
-        } catch {
-          case e: JsonSyntaxException =>
-            error(s"Unable to extract parameters for ${apClass.getName} from " +
-              s"JSON string: ${json}. Aborting workflow.")
-            throw e
-        }
-        case EngineLanguage.Scala => try {
-          Extraction.extract(parse(json), reflect.TypeInfo(apClass, None)).
-            asInstanceOf[Params]
-        } catch {
-          case me: MappingException => {
-            error(s"Unable to extract parameters for ${apClass.getName} from " +
-              s"JSON string: ${json}. Aborting workflow.")
-            throw me
-          }
-        }
+      try {
+        JsonExtractor.extract(JsonExtractorOption.Both, json, apClass).asInstanceOf[Params]
+      } catch {
+        case e@(_: MappingException | _: JsonSyntaxException) =>
+          error(
+            s"Unable to extract parameters for ${apClass.getName} from " +
+              s"JSON string: $json. Aborting workflow.",
+            e)
+          throw e
       }
     }
   }
@@ -174,20 +165,18 @@ object WorkflowUtils extends Logging {
       case JField(f, _) => f == field
       case _ => false
     } map { jv =>
-      implicit lazy val formats = Utils.json4sDefaultFormats +
-        new NameParamsSerializer
+      implicit lazy val formats = Utils.json4sDefaultFormats + new NameParamsSerializer
       val np: NameParams = try {
         jv._2.extract[NameParams]
       } catch {
-        case e: Exception => {
-          error(s"Unable to extract ${field} name and params ${jv}")
+        case e: Exception =>
+          error(s"Unable to extract $field name and params $jv")
           throw e
-        }
       }
       val extractedParams = np.params.map { p =>
         try {
           if (!classMap.contains(np.name)) {
-            error(s"Unable to find ${field} class with name '${np.name}'" +
+            error(s"Unable to find $field class with name '${np.name}'" +
               " defined in Engine.")
             sys.exit(1)
           }
@@ -196,10 +185,9 @@ object WorkflowUtils extends Logging {
             compact(render(p)),
             classMap(np.name))
         } catch {
-          case e: Exception => {
-            error(s"Unable to extract ${field} params ${p}")
+          case e: Exception =>
+            error(s"Unable to extract $field params $p")
             throw e
-          }
         }
       }.getOrElse(EmptyParams())
 
@@ -396,9 +384,9 @@ class UpgradeCheckRunner(
 
   def run(): Unit = {
     val url = if (engine == "") {
-      s"${versionsHost}${version}/${component}.json"
+      s"$versionsHost$version/$component.json"
     } else {
-      s"${versionsHost}${version}/${component}/${engine}.json"
+      s"$versionsHost$version/$component/$engine.json"
     }
     try {
       val upgradeData = Source.fromURL(url)

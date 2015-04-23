@@ -15,22 +15,21 @@
 
 package io.prediction.workflow
 
+import com.github.nscala_time.time.Imports._
+import com.google.common.io.ByteStreams
+import grizzled.slf4j.Logging
 import io.prediction.controller.Engine
-import io.prediction.controller.Utils
 import io.prediction.core.BaseEngine
 import io.prediction.data.storage.EngineInstance
 import io.prediction.data.storage.EvaluationInstance
 import io.prediction.data.storage.Storage
-
-import com.github.nscala_time.time.Imports._
-import com.google.common.io.ByteStreams
-import grizzled.slf4j.Logging
+import io.prediction.workflow.JsonExtractorOption.Both
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
-import org.json4s._
-import org.json4s.native.JsonMethods._
-import org.json4s.native.Serialization.write
+import org.json4s.JValue
+import org.json4s.JString
+import org.json4s.native.JsonMethods.parse
 
 import scala.language.existentials
 
@@ -56,9 +55,6 @@ object CreateWorkflow extends Logging {
     logFile: Option[String] = None)
 
   case class AlgorithmParams(name: String, params: JValue)
-
-  implicit lazy val formats = Utils.json4sDefaultFormats +
-    new NameParamsSerializer
 
   val hadoopConf = new Configuration
   val hdfs = FileSystem.get(hadoopConf)
@@ -181,7 +177,7 @@ object CreateWorkflow extends Logging {
         WorkflowUtils.getEvaluation(ec, getClass.getClassLoader)._2
       } catch {
         case e @ (_: ClassNotFoundException | _: NoSuchMethodException) =>
-          error(s"Unable to obtain evaluation ${ec}. Aborting workflow.", e)
+          error(s"Unable to obtain evaluation $ec. Aborting workflow.", e)
           sys.exit(1)
       }
     }
@@ -191,7 +187,7 @@ object CreateWorkflow extends Logging {
         WorkflowUtils.getEngineParamsGenerator(epg, getClass.getClassLoader)._2
       } catch {
         case e @ (_: ClassNotFoundException | _: NoSuchMethodException) =>
-          error(s"Unable to obtain engine parameters generator ${epg}. " +
+          error(s"Unable to obtain engine parameters generator $epg. " +
             "Aborting workflow.", e)
           sys.exit(1)
       }
@@ -239,13 +235,13 @@ object CreateWorkflow extends Logging {
         engineVariant = variantId,
         engineFactory = engineFactory,
         evaluatorClass = wfc.evaluationClass.getOrElse(""),
-        batch = (if (wfc.batch == "") engineFactory else wfc.batch),
+        batch = if (wfc.batch == "") engineFactory else wfc.batch,
         env = pioEnvVars,
         sparkConf = workflowParams.sparkEnv,
-        dataSourceParams = write(engineParams.dataSourceParams),
-        preparatorParams = write(engineParams.preparatorParams),
-        algorithmsParams = write(engineParams.algorithmParamsList),
-        servingParams = write(engineParams.servingParams),
+        dataSourceParams = JsonExtractor.paramToJson(Both, engineParams.dataSourceParams),
+        preparatorParams = JsonExtractor.paramToJson(Both, engineParams.preparatorParams),
+        algorithmsParams = JsonExtractor.paramsToJson(Both, engineParams.algorithmParamsList),
+        servingParams = JsonExtractor.paramToJson(Both, engineParams.servingParams),
         evaluatorParams = "",
         evaluatorResults = "",
         evaluatorResultsHTML = "",
