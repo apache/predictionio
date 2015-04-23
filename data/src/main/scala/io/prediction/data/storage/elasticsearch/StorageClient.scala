@@ -31,7 +31,7 @@ class StorageClient(val config: StorageClientConfig) extends BaseStorageClient
   override val prefix = "ES"
   val client = try {
     val settings = ImmutableSettings.settingsBuilder()
-      .put("cluster.name", config.properties.getOrElse("PIO_STORAGE_SOURCES_ELASTICSEARCH_DATABASE", "elasticsearch"))
+      .put("cluster.name", config.properties.getOrElse("PIO_STORAGE_SOURCES_ELASTICSEARCH_CLUSTERNAME", "elasticsearch"))
     val transportClient = new TransportClient(settings)
     (config.hosts zip config.ports) foreach { hp =>
       transportClient.addTransportAddress(
