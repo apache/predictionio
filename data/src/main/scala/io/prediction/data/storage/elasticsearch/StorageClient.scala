@@ -20,6 +20,7 @@ import org.elasticsearch.client.Client
 import org.elasticsearch.client.transport.TransportClient
 import org.elasticsearch.common.transport.InetSocketTransportAddress
 import org.elasticsearch.transport.ConnectTransportException
+import org.elasticsearch.common.settings.ImmutableSettings
 
 import io.prediction.data.storage.BaseStorageClient
 import io.prediction.data.storage.StorageClientConfig
@@ -29,7 +30,9 @@ class StorageClient(val config: StorageClientConfig) extends BaseStorageClient
     with Logging {
   override val prefix = "ES"
   val client = try {
-    val transportClient = new TransportClient()
+    val settings = ImmutableSettings.settingsBuilder()
+      .put("cluster.name", config.properties.getOrElse("PIO_STORAGE_SOURCES_ELASTICSEARCH_CLUSTERNAME", "elasticsearch"))
+    val transportClient = new TransportClient(settings)
     (config.hosts zip config.ports) foreach { hp =>
       transportClient.addTransportAddress(
         new InetSocketTransportAddress(hp._1, hp._2))
