@@ -15,26 +15,26 @@
 
 package io.prediction.data.webhooks.segmentio
 
-import io.prediction.data.webhooks.JsonConnector
+import io.prediction.data.webhooks.{ConnectorException, JsonConnector}
 import org.json4s._
-
-import scala.util.{Failure, Success, Try}
-import scalaz.Scalaz._
-import scalaz.\/
 
 private[prediction] object SegmentIOConnector extends JsonConnector {
 
   implicit val json4sFormats: Formats = DefaultFormats
 
   override
-  def toEventJson(data: JObject): String \/ JObject = {
+  def toEventJson(data: JObject): JObject = {
     // TODO: check segmentio API version
 
-    (Try(data.extract[Common]) match {
-      case Success(common) ⇒ common.right
-      case Failure(e) ⇒
-        s"Cannot extract Common field from $data. ${e.getMessage }".left
-    }).flatMap { common ⇒
+    val common = try {
+      data.extract[Common]
+    } catch {
+      case e: Throwable ⇒ throw new ConnectorException(
+        s"Cannot extract Common field from $data. ${e.getMessage}", e
+      )
+    }
+
+    try {
       common.`type` match {
         case "identify" ⇒
           toEventJson(
@@ -73,21 +73,26 @@ private[prediction] object SegmentIOConnector extends JsonConnector {
           )
 
         case _ ⇒
-          s"Cannot convert unknown type ${common.`type` } to event JSON.".left
+          throw new ConnectorException(
+            s"Cannot convert unknown type ${common.`type`} to event JSON."
+          )
       }
+    } catch {
+      case e: ConnectorException => throw e
+      case e: Exception =>
+        throw new ConnectorException(
+          s"Cannot convert $data to event JSON. ${e.getMessage}", e
+        )
     }
   }
 
-  def toEventJson(
-    common: Common,
-    identify: Events.Identify
-  ): String \/ JObject = {
+  def toEventJson(common: Common, identify: Events.Identify ): JObject = {
     import org.json4s.JsonDSL._
     val eventProperties = "traits" → identify.traits
     toJson(common, eventProperties)
   }
 
-  def toEventJson(common: Common, track: Events.Track): String \/ JObject = {
+  def toEventJson(common: Common, track: Events.Track): JObject = {
     import org.json4s.JsonDSL._
     val eventProperties =
       ("properties" → track.properties) ~
@@ -95,12 +100,12 @@ private[prediction] object SegmentIOConnector extends JsonConnector {
     toJson(common, eventProperties)
   }
 
-  def toEventJson(common: Common, alias: Events.Alias): String \/ JObject = {
+  def toEventJson(common: Common, alias: Events.Alias): JObject = {
     import org.json4s.JsonDSL._
     toJson(common, "previousId" → alias.previousId)
   }
 
-  def toEventJson(common: Common, screen: Events.Screen): String \/ JObject = {
+  def toEventJson(common: Common, screen: Events.Screen): JObject = {
     import org.json4s.JsonDSL._
     val eventProperties =
       ("name" → screen.name) ~
@@ -108,7 +113,7 @@ private[prediction] object SegmentIOConnector extends JsonConnector {
     toJson(common, eventProperties)
   }
 
-  def toEventJson(common: Common, page: Events.Page): String \/ JObject = {
+  def toEventJson(common: Common, page: Events.Page): JObject = {
     import org.json4s.JsonDSL._
     val eventProperties =
       ("name" → page.name) ~
@@ -116,7 +121,7 @@ private[prediction] object SegmentIOConnector extends JsonConnector {
     toJson(common, eventProperties)
   }
 
-  def toEventJson(common: Common, group: Events.Group): String \/ JObject = {
+  def toEventJson(common: Common, group: Events.Group): JObject = {
     import org.json4s.JsonDSL._
     val eventProperties =
       ("groupId" → group.groupId) ~
@@ -124,50 +129,41 @@ private[prediction] object SegmentIOConnector extends JsonConnector {
     toJson(common, eventProperties)
   }
 
-  private def toJson(
-    common: Common,
-    props: JObject
-  ): \/[String, JsonAST.JObject] = {
-    commonToJson(common).flatMap { commonFields ⇒
-      properties(common, props).map {
-        p ⇒ JObject(("properties" → p) :: commonFields.obj)
-      }
-    }
+  private def toJson(common: Common, props: JObject): JsonAST.JObject = {
+    val commonFields = commonToJson(common)
+    JObject(("properties" → properties(common, props)) :: commonFields.obj)
   }
 
-  private def properties(common: Common, eventProps: JObject) = {
+  private def properties(common: Common, eventProps: JObject): JObject = {
     import org.json4s.JsonDSL._
-    val contextOpt =
-      common.context.map { context ⇒
-        Try(Extraction.decompose(context)) match {
-          case Success(c) ⇒ c.right
-          case Failure(e) ⇒
-            (s"failed to print context object `${common.context }` " +
-              s"to json. ${e.getMessage } ").left
-        }
+    common.context map { context ⇒
+      try {
+        ("context" → Extraction.decompose(context)) ~ eventProps
+      } catch {
+        case e: Throwable ⇒
+          throw new ConnectorException(
+            s"Cannot convert $context to event JSON. ${e.getMessage }", e
+          )
       }
-
-    contextOpt match {
-      case Some(context) ⇒
-          context.map(cx ⇒ ("context" → cx) ~ eventProps)
-
-      case None ⇒ eventProps.right
-    }
+    } getOrElse eventProps
   }
 
-  private def commonToJson(common: Common): String \/ JObject =
+  private def commonToJson(common: Common): JObject =
     commonToJson(common, common.`type`)
 
-  private def commonToJson(common: Common, typ: String): String \/ JObject = {
+  private def commonToJson(common: Common, typ: String): JObject = {
     import org.json4s.JsonDSL._
-      common.userId.orElse(common.anonymousId)
-      .toRightDisjunction(
-          "there was no `userId` or `anonymousId` in the common fields."
-        ).map { userId ⇒
-        ("event" → typ) ~
-        ("entityType" → "user") ~
-        ("entityId" → userId) ~
-        ("eventTime" → common.timestamp)
+      common.userId.orElse(common.anonymousId) match {
+        case Some(userId) ⇒
+          ("event" → typ) ~
+            ("entityType" → "user") ~
+            ("entityId" → userId) ~
+            ("eventTime" → common.timestamp)
+
+        case None ⇒
+          throw new ConnectorException(
+            "there was no `userId` or `anonymousId` in the common fields."
+          )
       }
   }
 }

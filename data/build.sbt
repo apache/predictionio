@@ -15,8 +15,6 @@
 name := "data"
 
 libraryDependencies ++= Seq(
-  // we can't use 7.1.1(latest) because 7.0.6 is used in specs2-2.3.13
-  "org.scalaz"             %% "scalaz-core"     % "7.0.6",
   "commons-codec"           % "commons-codec"  % "1.9",
   "io.spray"               %% "spray-can"      % "1.3.2",
   "io.spray"               %% "spray-routing"  % "1.3.2",

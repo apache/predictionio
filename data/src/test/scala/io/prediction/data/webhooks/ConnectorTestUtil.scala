@@ -32,13 +32,8 @@ trait ConnectorTestUtil extends Specification {
     val originalJson = parse(original).asInstanceOf[JObject]
     val eventJson = parse(event).asInstanceOf[JObject]
     // write and parse back to discard any JNothing field
-    connector.toEventJson(originalJson).fold(
-      e ⇒ failure(e),
-      json ⇒ {
-        val result = parse(write(json)).asInstanceOf[JObject]
-        result.obj must containTheSameElementsAs(eventJson.obj)
-      }
-    )
+    val result = parse(write(connector.toEventJson(originalJson))).asInstanceOf[JObject]
+    result.obj must containTheSameElementsAs(eventJson.obj)
   }
 
   def check(connector: FormConnector, original: Map[String, String], event: String) = {

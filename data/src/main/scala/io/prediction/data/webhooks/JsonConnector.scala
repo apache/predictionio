@@ -17,8 +17,6 @@ package io.prediction.data.webhooks
 
 import org.json4s.JObject
 
-import scalaz.\/
-
 /** Connector for Webhooks connection */
 private[prediction] trait JsonConnector {
 
@@ -28,6 +26,6 @@ private[prediction] trait JsonConnector {
     * @param data original JObject recevived through webhooks
     * @return Event JObject
    */
-  def toEventJson(data: JObject): String \/ JObject
+  def toEventJson(data: JObject): JObject
 
 }

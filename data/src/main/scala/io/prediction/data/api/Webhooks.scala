@@ -15,12 +15,26 @@
 
 package io.prediction.data.api
 
-import akka.actor.ActorSelection
-import akka.event.LoggingAdapter
-import io.prediction.data.storage.LEvents
+import io.prediction.data.webhooks.JsonConnector
+import io.prediction.data.webhooks.FormConnector
 import io.prediction.data.webhooks.ConnectorUtil
+import io.prediction.data.storage.Event
+import io.prediction.data.storage.EventJson4sSupport
+import io.prediction.data.storage.LEvents
+
+import spray.routing._
+import spray.routing.Directives._
+import spray.http.StatusCodes
+import spray.http.StatusCode
+import spray.http.FormData
+import spray.httpx.Json4sSupport
+
+import org.json4s.Formats
+import org.json4s.DefaultFormats
 import org.json4s.JObject
-import spray.http.{FormData, StatusCode, StatusCodes}
+
+import akka.event.LoggingAdapter
+import akka.actor.ActorSelection
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -39,30 +53,28 @@ private[prediction] object Webhooks {
   )(implicit ec: ExecutionContext): Future[(StatusCode, Map[String, String])] = {
 
     val eventFuture = Future {
-      WebhooksConnectors.json.get(web).map(ConnectorUtil.toEvent(_, data))
+      WebhooksConnectors.json.get(web).map { connector =>
+        ConnectorUtil.toEvent(connector, data)
+      }
     }
 
     eventFuture.flatMap { eventOpt =>
       if (eventOpt.isEmpty) {
-        Future successful {
-          val message = s"webhooks connection for $web is not supported."
+        Future {
+          val message = s"webhooks connection for ${web} is not supported."
           (StatusCodes.NotFound, Map("message" -> message))
         }
       } else {
-        eventOpt.get.fold(
-          error ⇒
-            Future successful {
-              (StatusCodes.BadRequest: StatusCode, Map("error" → error))
-            },
-          event ⇒
-            eventClient.futureInsert(event, appId, channelId).map { id =>
-              if (stats) {
-                statsActorRef ! Bookkeeping(appId, StatusCodes.Created, event)
-              }
+        val event = eventOpt.get
+        val data = eventClient.futureInsert(event, appId, channelId).map { id =>
+          val result = (StatusCodes.Created, Map("eventId" -> s"${id}"))
 
-              (StatusCodes.Created, Map("eventId" -> s"${id }"))
-            }
-        )
+          if (stats) {
+            statsActorRef ! Bookkeeping(appId, result._1, event)
+          }
+          result
+        }
+        data
       }
     }
   }
