@@ -119,10 +119,10 @@ event_client.create_event('my_event', 'user', 'uid',
 
 Importing events from a file can be done easily using the command line
 interface. Assuming that `pio` be in your search path, your App ID be `123`, and
-the input file `events.json` be in your current working directory:
+the input file `my_events.json` be in your current working directory:
 
 ```bash
-$ pio import --appid 123 --input events.json
+$ pio import --appid 123 --input my_events.json
 ```
 
 After a brief while, the tool should return to the console without any error.
