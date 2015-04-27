@@ -107,7 +107,7 @@ object App extends Logging {
     apps.getByName(ca.app.name) map { app =>
       info(s"    App Name: ${app.name}")
       info(s"      App ID: ${app.id}")
-      info(s" Description: ${app.description}")
+      info(s" Description: ${app.description.getOrElse("")}")
       val keys = accessKeys.getByAppid(app.id)
 
       var firstKey = true
@@ -142,13 +142,14 @@ object App extends Logging {
 
   def delete(ca: ConsoleArgs): Int = {
     val apps = Storage.getMetaDataApps
+    val accesskeys = Storage.getMetaDataAccessKeys
     val channels = Storage.getMetaDataChannels
     val events = Storage.getLEvents()
     val status = apps.getByName(ca.app.name) map { app =>
       info(s"The following app (including all channels) will be deleted. Are you sure?")
       info(s"    App Name: ${app.name}")
       info(s"      App ID: ${app.id}")
-      info(s" Description: ${app.description}")
+      info(s" Description: ${app.description.getOrElse("")}")
       val chans = channels.getByAppid(app.id)
       var firstChan = true
       val titleName = "Channel Name"
@@ -184,6 +185,12 @@ object App extends Logging {
           if (delChannelStatus.filter(_ != 0).isEmpty) {
             val r = if (events.remove(app.id)) {
               info(s"Removed Event Store for this app ID: ${app.id}")
+              accesskeys.getByAppid(app.id) foreach { key =>
+                if (accesskeys.delete(key.key))
+                  info(s"Removed access key ${key.key}")
+                else
+                  error(s"Error removing access key ${key.key}")
+              }
               if (apps.delete(app.id)) {
                 info(s"Deleted app ${app.name}.")
                 0
