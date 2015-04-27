@@ -17,7 +17,6 @@ package io.prediction.data.storage
 
 import com.github.nscala_time.time.Imports._
 import org.json4s._
-import org.json4s.native.Serialization
 
 /**
  * EngineInstance object.
@@ -35,14 +34,15 @@ import org.json4s.native.Serialization
  * @param evaluatorClass Name of evaluator class of the evaluation of this instance.
  * @param batch A batch label of the engine instance.
  * @param env The environment in which the instance was created.
+ * @param sparkConf Custom Spark configuration of the instance.
  * @param dataSourceParams Data source parameters of the instance.
  * @param preparatorParams Preparator parameters of the instance.
  * @param algorithmsParams Algorithms parameters of the instance.
  * @param servingParams Serving parameters of the instance.
- * @param metricsParams Metrics parameters of the instance.
- * @param multipleMetricsResults Results of metrics on all data sets.
- * @param multipleMetricsResultsHTML HTML results of metrics on all data sets.
- * @param multipleMetricsResultsJSON JSON results of metrics on all data sets.
+ * @param evaluatorParams Evaluator parameters of the instance.
+ * @param evaluatorResults Results of the evaluator.
+ * @param evaluatorResultsHTML HTML results of the evaluator.
+ * @param evaluatorResultsJSON JSON results of the evaluator.
  */
 private[prediction] case class EngineInstance(
   id: String,
@@ -65,11 +65,6 @@ private[prediction] case class EngineInstance(
   evaluatorResults: String,
   evaluatorResultsHTML: String,
   evaluatorResultsJSON: String)
-  /*
-  multipleMetricsResults: String,
-  multipleMetricsResultsHTML: String,
-  multipleMetricsResultsJSON: String)
-  */
 
 /**
  * Base trait for implementations that interact with EngineInstances in the

@@ -16,24 +16,26 @@
 package io.prediction.data.storage.elasticsearch
 
 import grizzled.slf4j.Logging
-import org.elasticsearch.client.Client
-import org.elasticsearch.client.transport.TransportClient
-import org.elasticsearch.common.transport.InetSocketTransportAddress
-import org.elasticsearch.transport.ConnectTransportException
-import org.elasticsearch.common.settings.ImmutableSettings
-
 import io.prediction.data.storage.BaseStorageClient
 import io.prediction.data.storage.StorageClientConfig
 import io.prediction.data.storage.StorageClientException
+import org.elasticsearch.client.transport.TransportClient
+import org.elasticsearch.common.settings.ImmutableSettings
+import org.elasticsearch.common.transport.InetSocketTransportAddress
+import org.elasticsearch.transport.ConnectTransportException
 
 class StorageClient(val config: StorageClientConfig) extends BaseStorageClient
     with Logging {
   override val prefix = "ES"
   val client = try {
+    val hosts = config.properties.get("HOSTS").
+      map(_.split(",").toSeq).getOrElse(Seq("localhost"))
+    val ports = config.properties.get("PORTS").
+      map(_.split(",").toSeq.map(_.toInt)).getOrElse(Seq(9300))
     val settings = ImmutableSettings.settingsBuilder()
-      .put("cluster.name", config.properties.getOrElse("PIO_STORAGE_SOURCES_ELASTICSEARCH_CLUSTERNAME", "elasticsearch"))
+      .put("cluster.name", config.properties.getOrElse("CLUSTERNAME", "elasticsearch"))
     val transportClient = new TransportClient(settings)
-    (config.hosts zip config.ports) foreach { hp =>
+    (hosts zip ports) foreach { hp =>
       transportClient.addTransportAddress(
         new InetSocketTransportAddress(hp._1, hp._2))
     }

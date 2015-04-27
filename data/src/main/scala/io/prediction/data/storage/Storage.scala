@@ -17,14 +17,12 @@ package io.prediction.data.storage
 
 import grizzled.slf4j.Logging
 
-import scala.collection.JavaConversions._
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.existentials
 import scala.reflect.runtime.universe._
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 @deprecated("Use StorageException", "0.9.2")
-private[prediction] case class StorageError(val message: String)
+private[prediction] case class StorageError(message: String)
 
 private[prediction] class StorageException(message: String, cause: Throwable)
   extends Exception(message, cause) {
@@ -66,14 +64,9 @@ object Storage extends Logging {
     try {
       val keyedPath = sourcesPrefixPath(k)
       val sourceType = sys.env(prefixPath(keyedPath, "TYPE"))
-      // hosts and ports are to be deprecated
-      val hosts = sys.env(prefixPath(keyedPath, "HOSTS")).split(',')
-      val ports = sys.env(prefixPath(keyedPath, "PORTS")).split(',').
-        map(_.toInt)
-      val props = sys.env.filter(t => t._1.startsWith(keyedPath))
+      val props = sys.env.filter(t => t._1.startsWith(keyedPath)).map(
+        t => t._1.replace(s"${keyedPath}_", "") -> t._2)
       val clientConfig = StorageClientConfig(
-        hosts = hosts,
-        ports = ports,
         properties = props,
         parallel = parallel,
         test = test)
@@ -81,8 +74,7 @@ object Storage extends Logging {
       Some(ClientMeta(sourceType, client))
     } catch {
       case e: Throwable =>
-        error(s"Error initializing storage client for source ${k}")
-        error(e.getMessage)
+        error(s"Error initializing storage client for source ${k}", e)
         errors += 1
         None
     }
@@ -198,7 +190,15 @@ object Storage extends Logging {
     val clazz = try {
       Class.forName(className)
     } catch {
-      case e: ClassNotFoundException => Class.forName(rawClassName)
+      case e: ClassNotFoundException =>
+        try {
+          Class.forName(rawClassName)
+        } catch {
+          case e: ClassNotFoundException =>
+            throw new StorageClientException("No storage backend " +
+              "implementation can be found (tried both " +
+              s"$className and $rawClassName)")
+        }
     }
     val constructor = clazz.getConstructors()(0)
     try {
@@ -215,7 +215,7 @@ object Storage extends Logging {
           " Number of existing constructor arguments: " +
           constructor.getParameterTypes.size + "." +
           s" Storage source name: ${sourceName}." +
-          s" Exception message: ${e.getMessage}).")
+          s" Exception message: ${e.getMessage}).", e)
         errors += 1
         throw e
       case e: java.lang.reflect.InvocationTargetException =>
@@ -302,8 +302,6 @@ private[prediction] trait BaseStorageClient {
 }
 
 private[prediction] case class StorageClientConfig(
-  hosts: Seq[String] = Seq(), // deprecated
-  ports: Seq[Int] = Seq(), // deprecated
   parallel: Boolean = false, // parallelized access (RDD)?
   test: Boolean = false, // test mode config
   properties: Map[String, String] = Map())

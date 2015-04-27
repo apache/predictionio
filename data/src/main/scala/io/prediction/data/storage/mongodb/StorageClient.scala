@@ -17,7 +17,6 @@ package io.prediction.data.storage.mongodb
 
 import com.mongodb.casbah.Imports._
 import grizzled.slf4j.Logging
-
 import io.prediction.data.storage.BaseStorageClient
 import io.prediction.data.storage.StorageClientConfig
 import io.prediction.data.storage.StorageClientException
@@ -25,8 +24,12 @@ import io.prediction.data.storage.StorageClientException
 class StorageClient(val config: StorageClientConfig) extends BaseStorageClient
     with Logging {
   override val prefix = "Mongo"
+  val hosts = config.properties.get("HOSTS").
+    map(_.split(",").toSeq).getOrElse(Seq("localhost"))
+  val ports = config.properties.get("PORTS").
+    map(_.split(",").toSeq.map(_.toInt)).getOrElse(Seq(27017))
   val client = try {
-    val addresses = (config.hosts zip config.ports).map(hp =>
+    val addresses = (hosts zip ports).map(hp =>
       new ServerAddress(hp._1, hp._2)
     ).toList
     MongoClient(addresses)

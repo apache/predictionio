@@ -13,28 +13,28 @@
   * limitations under the License.
   */
 
-package io.prediction.data.storage.localfs
-
-import java.io.File
+package io.prediction.data.storage.jdbc
 
 import grizzled.slf4j.Logging
 import io.prediction.data.storage.BaseStorageClient
 import io.prediction.data.storage.StorageClientConfig
 import io.prediction.data.storage.StorageClientException
+import scalikejdbc._
 
-class StorageClient(val config: StorageClientConfig) extends BaseStorageClient
-    with Logging {
-  override val prefix = "LocalFS"
-  val f = new File(
-    config.properties.getOrElse("PATH", config.properties("HOSTS")))
-  if (f.exists) {
-    if (!f.isDirectory) throw new StorageClientException(
-      s"${f} already exists but it is not a directory!")
-    if (!f.canWrite) throw new StorageClientException(
-      s"${f} already exists but it is not writable!")
-  } else {
-    if (!f.mkdirs) throw new StorageClientException(
-      s"${f} does not exist and automatic creation failed!")
-  }
-  val client = f
+class StorageClient(val config: StorageClientConfig)
+  extends BaseStorageClient with Logging {
+  override val prefix = "JDBC"
+
+  if (!config.properties.contains("URL"))
+    throw new StorageClientException("The URL variable is not set!")
+  if (!config.properties.contains("USERNAME"))
+    throw new StorageClientException("The USERNAME variable is not set!")
+  if (!config.properties.contains("PASSWORD"))
+    throw new StorageClientException("The PASSWORD variable is not set!")
+
+  ConnectionPool.singleton(
+    config.properties("URL"),
+    config.properties("USERNAME"),
+    config.properties("PASSWORD"))
+  val client = config.properties("URL")
 }

@@ -34,7 +34,7 @@ private[prediction] case class App(
  * store.
  */
 private[prediction] trait Apps {
-  /** Insert a new App. Returns a generated app ID. */
+  /** Insert a new App. Returns a generated app ID if the supplied app ID is 0. */
   def insert(app: App): Option[Int]
 
   /** Get an App by app ID. */
