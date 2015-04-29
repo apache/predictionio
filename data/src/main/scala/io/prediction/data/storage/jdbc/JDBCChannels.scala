@@ -21,12 +21,13 @@ import io.prediction.data.storage.Channels
 import io.prediction.data.storage.StorageClientConfig
 import scalikejdbc._
 
-class JDBCChannels(client: String, config: StorageClientConfig, database: String)
+class JDBCChannels(client: String, config: StorageClientConfig, prefix: String)
   extends Channels with Logging {
+  val tableName = JDBCUtils.prefixTableName(prefix, "channels")
   DB autoCommit { implicit session =>
     try {
       sql"""
-      create table channels (
+      create table $tableName (
         id serial not null primary key,
         name text not null,
         appid integer not null)""".execute().apply()
@@ -38,9 +39,9 @@ class JDBCChannels(client: String, config: StorageClientConfig, database: String
   def insert(channel: Channel): Option[Int] = DB localTx { implicit session =>
     try {
       val q = if (channel.id == 0)
-        sql"INSERT INTO channels (name, appid) VALUES(${channel.name}, ${channel.appid})"
+        sql"INSERT INTO $tableName (name, appid) VALUES(${channel.name}, ${channel.appid})"
       else
-        sql"INSERT INTO channels VALUES(${channel.id}, ${channel.name}, ${channel.appid})"
+        sql"INSERT INTO $tableName VALUES(${channel.id}, ${channel.name}, ${channel.appid})"
       Some(q.updateAndReturnGeneratedKey().apply().toInt)
     } catch {
       case e: Exception =>
@@ -51,7 +52,7 @@ class JDBCChannels(client: String, config: StorageClientConfig, database: String
 
   def get(id: Int): Option[Channel] = DB localTx { implicit session =>
     try {
-      sql"SELECT id, name, appid FROM channels WHERE id = $id".
+      sql"SELECT id, name, appid FROM $tableName WHERE id = $id".
         map(resultToChannel).single().apply()
     } catch {
       case e: Exception =>
@@ -62,7 +63,7 @@ class JDBCChannels(client: String, config: StorageClientConfig, database: String
 
   def getByAppid(appid: Int): Seq[Channel] = DB localTx { implicit session =>
     try {
-      sql"SELECT id, name, appid FROM channels WHERE appid = $appid".
+      sql"SELECT id, name, appid FROM $tableName WHERE appid = $appid".
         map(resultToChannel).list().apply()
     } catch {
       case e: Exception =>
@@ -74,7 +75,7 @@ class JDBCChannels(client: String, config: StorageClientConfig, database: String
   def update(channel: Channel): Boolean = DB localTx { implicit session =>
     try {
       sql"""
-      UPDATE channels SET
+      UPDATE $tableName SET
         name = ${channel.name},
         appid = ${channel.appid}
       WHERE id = ${channel.id}""".update().apply()
@@ -88,7 +89,7 @@ class JDBCChannels(client: String, config: StorageClientConfig, database: String
 
   def delete(id: Int): Boolean = DB localTx { implicit session =>
     try {
-      sql"DELETE FROM channels WHERE id = $id".update().apply()
+      sql"DELETE FROM $tableName WHERE id = $id".update().apply()
       true
     } catch {
       case e: Exception =>

@@ -21,12 +21,13 @@ import io.prediction.data.storage.EngineManifests
 import io.prediction.data.storage.StorageClientConfig
 import scalikejdbc._
 
-class JDBCEngineManifests(client: String, config: StorageClientConfig, database: String)
+class JDBCEngineManifests(client: String, config: StorageClientConfig, prefix: String)
   extends EngineManifests with Logging {
+  val tableName = JDBCUtils.prefixTableName(prefix, "enginemanifests")
   DB autoCommit { implicit session =>
     try {
       sql"""
-      create table enginemanifests (
+      create table $tableName (
         id text not null primary key,
         version text not null,
         name text not null,
@@ -41,7 +42,7 @@ class JDBCEngineManifests(client: String, config: StorageClientConfig, database:
   def insert(m: EngineManifest): Unit = DB localTx { implicit session =>
     try {
       sql"""
-      INSERT INTO enginemanifests VALUES(
+      INSERT INTO $tableName VALUES(
         ${m.id},
         ${m.version},
         ${m.name},
@@ -63,7 +64,7 @@ class JDBCEngineManifests(client: String, config: StorageClientConfig, database:
         description,
         files,
         enginefactory
-      FROM enginemanifests WHERE id = $id AND version = $version""".
+      FROM $tableName WHERE id = $id AND version = $version""".
         map(resultToEngineManifest).single().apply()
     } catch {
       case e: Exception =>
@@ -82,7 +83,7 @@ class JDBCEngineManifests(client: String, config: StorageClientConfig, database:
         description,
         files,
         enginefactory
-      FROM enginemanifests""".map(resultToEngineManifest).list().apply()
+      FROM $tableName""".map(resultToEngineManifest).list().apply()
     } catch {
       case e: Exception =>
         error(e.getMessage, e)
@@ -93,7 +94,7 @@ class JDBCEngineManifests(client: String, config: StorageClientConfig, database:
   def update(m: EngineManifest, upsert: Boolean = false): Unit = DB localTx { implicit session =>
     try {
       val r = sql"""
-      update enginemanifests set
+      update $tableName set
         name = ${m.name},
         description = ${m.description},
         files = ${m.files.mkString(",")},
@@ -114,7 +115,7 @@ class JDBCEngineManifests(client: String, config: StorageClientConfig, database:
 
   def delete(id: String, version: String): Unit = DB localTx { implicit session =>
     try {
-      sql"DELETE FROM enginemanifests WHERE id = $id AND version = $version".
+      sql"DELETE FROM $tableName WHERE id = $id AND version = $version".
         update().apply()
     } catch {
       case e: Exception =>

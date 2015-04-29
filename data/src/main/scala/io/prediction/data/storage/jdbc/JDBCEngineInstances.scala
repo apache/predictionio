@@ -21,32 +21,33 @@ import io.prediction.data.storage.EngineInstances
 import io.prediction.data.storage.StorageClientConfig
 import scalikejdbc._
 
-class JDBCEngineInstances(client: String, config: StorageClientConfig, database: String)
+class JDBCEngineInstances(client: String, config: StorageClientConfig, prefix: String)
   extends EngineInstances with Logging {
+  val tableName = JDBCUtils.prefixTableName(prefix, "engineinstances")
   DB autoCommit { implicit session =>
     try {
       sql"""
-      create table engineinstances (
+      create table $tableName (
         id text not null primary key,
         status text not null,
-        starttime timestamp not null,
-        endtime timestamp not null,
-        engineid text not null,
-        engineversion text not null,
-        enginevariant text not null,
-        enginefactory text not null,
-        evaluatorclass text not null,
+        startTime timestamp not null,
+        endTime timestamp not null,
+        engineId text not null,
+        engineVersion text not null,
+        engineVariant text not null,
+        engineFactory text not null,
+        evaluatorClass text not null,
         batch text not null,
         env text not null,
-        sparkconf text not null,
-        datasourceparams text not null,
-        preparatorparams text not null,
-        algorithmsparams text not null,
-        servingparams text not null,
-        evaluatorparams text not null,
-        evaluatorresults text not null,
-        evaluatorresultshtml text not null,
-        evaluatorresultsjson text)""".execute().apply()
+        sparkConf text not null,
+        datasourceParams text not null,
+        preparatorParams text not null,
+        algorithmsParams text not null,
+        servingParams text not null,
+        evaluatorParams text not null,
+        evaluatorResults text not null,
+        evaluatorResultsHTML text not null,
+        evaluatorResultsJSON text)""".execute().apply()
     } catch {
       case e: Exception => debug(e.getMessage, e)
     }
@@ -56,7 +57,7 @@ class JDBCEngineInstances(client: String, config: StorageClientConfig, database:
     try {
       val id = java.util.UUID.randomUUID().toString
       sql"""
-      INSERT INTO engineinstances VALUES(
+      INSERT INTO $tableName VALUES(
         $id,
         ${i.status},
         ${i.startTime},
@@ -91,25 +92,25 @@ class JDBCEngineInstances(client: String, config: StorageClientConfig, database:
       SELECT
         id,
         status,
-        starttime,
-        endtime,
-        engineid,
-        engineversion,
-        enginevariant,
-        enginefactory,
-        evaluatorclass,
+        startTime,
+        endTime,
+        engineId,
+        engineVersion,
+        engineVariant,
+        engineFactory,
+        evaluatorClass,
         batch,
         env,
-        sparkconf,
-        datasourceparams,
-        preparatorparams,
-        algorithmsparams,
-        servingparams,
-        evaluatorparams,
-        evaluatorresults,
-        evaluatorresultshtml,
-        evaluatorresultsjson
-      FROM engineinstances WHERE id = $id""".map(resultToEngineInstance).
+        sparkConf,
+        datasourceParams,
+        preparatorParams,
+        algorithmsParams,
+        servingParams,
+        evaluatorParams,
+        evaluatorResults,
+        evaluatorResultsHTML,
+        evaluatorResultsJSON
+      FROM $tableName WHERE id = $id""".map(resultToEngineInstance).
         single().apply()
     } catch {
       case e: Exception =>
@@ -124,25 +125,25 @@ class JDBCEngineInstances(client: String, config: StorageClientConfig, database:
       SELECT
         id,
         status,
-        starttime,
-        endtime,
-        engineid,
-        engineversion,
-        enginevariant,
-        enginefactory,
-        evaluatorclass,
+        startTime,
+        endTime,
+        engineId,
+        engineVersion,
+        engineVariant,
+        engineFactory,
+        evaluatorClass,
         batch,
         env,
-        sparkconf,
-        datasourceparams,
-        preparatorparams,
-        algorithmsparams,
-        servingparams,
-        evaluatorparams,
-        evaluatorresults,
-        evaluatorresultshtml,
-        evaluatorresultsjson
-      FROM engineinstances""".map(resultToEngineInstance).list().apply()
+        sparkConf,
+        datasourceParams,
+        preparatorParams,
+        algorithmsParams,
+        servingParams,
+        evaluatorParams,
+        evaluatorResults,
+        evaluatorResultsHTML,
+        evaluatorResultsJSON
+      FROM $tableName""".map(resultToEngineInstance).list().apply()
     } catch {
       case e: Exception =>
         error(e.getMessage, e)
@@ -166,31 +167,31 @@ class JDBCEngineInstances(client: String, config: StorageClientConfig, database:
       SELECT
         id,
         status,
-        starttime,
-        endtime,
-        engineid,
-        engineversion,
-        enginevariant,
-        enginefactory,
-        evaluatorclass,
+        startTime,
+        endTime,
+        engineId,
+        engineVersion,
+        engineVariant,
+        engineFactory,
+        evaluatorClass,
         batch,
         env,
-        sparkconf,
-        datasourceparams,
-        preparatorparams,
-        algorithmsparams,
-        servingparams,
-        evaluatorparams,
-        evaluatorresults,
-        evaluatorresultshtml,
-        evaluatorresultsjson
-      FROM engineinstances
+        sparkConf,
+        datasourceParams,
+        preparatorParams,
+        algorithmsParams,
+        servingParams,
+        evaluatorParams,
+        evaluatorResults,
+        evaluatorResultsHTML,
+        evaluatorResultsJSON
+      FROM $tableName
       WHERE
         status = 'COMPLETED' AND
-        engineid = $engineId AND
-        engineversion = $engineVersion AND
-        enginevariant = $engineVariant
-      ORDER BY starttime DESC""".
+        engineId = $engineId AND
+        engineVersion = $engineVersion AND
+        engineVariant = $engineVariant
+      ORDER BY startTime DESC""".
         map(resultToEngineInstance).list().apply()
     } catch {
       case e: Exception =>
@@ -205,28 +206,28 @@ class JDBCEngineInstances(client: String, config: StorageClientConfig, database:
       SELECT
         id,
         status,
-        starttime,
-        endtime,
-        engineid,
-        engineversion,
-        enginevariant,
-        enginefactory,
-        evaluatorclass,
+        startTime,
+        endTime,
+        engineId,
+        engineVersion,
+        engineVariant,
+        engineFactory,
+        evaluatorClass,
         batch,
         env,
-        sparkconf,
-        datasourceparams,
-        preparatorparams,
-        algorithmsparams,
-        servingparams,
-        evaluatorparams,
-        evaluatorresults,
-        evaluatorresultshtml,
-        evaluatorresultsjson
-      FROM engineinstances
+        sparkConf,
+        datasourceParams,
+        preparatorParams,
+        algorithmsParams,
+        servingParams,
+        evaluatorParams,
+        evaluatorResults,
+        evaluatorResultsHTML,
+        evaluatorResultsJSON
+      FROM $tableName
       WHERE
         status = 'EVALCOMPLETED'
-      ORDER BY starttime DESC""".
+      ORDER BY startTime DESC""".
         map(resultToEngineInstance).list().apply()
     } catch {
       case e: Exception =>
@@ -239,26 +240,26 @@ class JDBCEngineInstances(client: String, config: StorageClientConfig, database:
   def update(i: EngineInstance): Unit = DB localTx { implicit session =>
     try {
       sql"""
-      update engineinstances set
+      update $tableName set
         status = ${i.status},
-        starttime = ${i.startTime},
-        endtime = ${i.endTime},
-        engineid = ${i.engineId},
-        engineversion = ${i.engineVersion},
-        enginevariant = ${i.engineVariant},
-        enginefactory = ${i.engineFactory},
-        evaluatorclass = ${i.evaluatorClass},
+        startTime = ${i.startTime},
+        endTime = ${i.endTime},
+        engineId = ${i.engineId},
+        engineVersion = ${i.engineVersion},
+        engineVariant = ${i.engineVariant},
+        engineFactory = ${i.engineFactory},
+        evaluatorClass = ${i.evaluatorClass},
         batch = ${i.batch},
         env = ${JDBCUtils.mapToString(i.env)},
-        sparkconf = ${JDBCUtils.mapToString(i.sparkConf)},
-        datasourceparams = ${i.dataSourceParams},
-        preparatorparams = ${i.preparatorParams},
-        algorithmsparams = ${i.algorithmsParams},
-        servingparams = ${i.servingParams},
-        evaluatorparams = ${i.evaluatorParams},
-        evaluatorresults = ${i.evaluatorResults},
-        evaluatorresultshtml = ${i.evaluatorResultsHTML},
-        evaluatorresultsjson = ${i.evaluatorResultsJSON}
+        sparkConf = ${JDBCUtils.mapToString(i.sparkConf)},
+        datasourceParams = ${i.dataSourceParams},
+        preparatorParams = ${i.preparatorParams},
+        algorithmsParams = ${i.algorithmsParams},
+        servingParams = ${i.servingParams},
+        evaluatorParams = ${i.evaluatorParams},
+        evaluatorResults = ${i.evaluatorResults},
+        evaluatorResultsHTML = ${i.evaluatorResultsHTML},
+        evaluatorResultsJSON = ${i.evaluatorResultsJSON}
       where id = ${i.id}""".update().apply()
     } catch {
       case e: Exception =>
@@ -270,7 +271,7 @@ class JDBCEngineInstances(client: String, config: StorageClientConfig, database:
   /** Delete a EngineInstance. */
   def delete(id: String): Unit = DB localTx { implicit session =>
     try {
-      sql"DELETE FROM engineinstances WHERE id = $id".update().apply()
+      sql"DELETE FROM $tableName WHERE id = $id".update().apply()
     } catch {
       case e: Exception =>
         error(e.getMessage, e)
@@ -281,23 +282,23 @@ class JDBCEngineInstances(client: String, config: StorageClientConfig, database:
     EngineInstance(
       id = rs.string("id"),
       status = rs.string("status"),
-      startTime = rs.jodaDateTime("starttime"),
-      endTime = rs.jodaDateTime("endtime"),
-      engineId = rs.string("engineid"),
-      engineVersion = rs.string("engineversion"),
-      engineVariant = rs.string("enginevariant"),
-      engineFactory = rs.string("enginefactory"),
-      evaluatorClass = rs.string("evaluatorclass"),
+      startTime = rs.jodaDateTime("startTime"),
+      endTime = rs.jodaDateTime("endTime"),
+      engineId = rs.string("engineId"),
+      engineVersion = rs.string("engineVersion"),
+      engineVariant = rs.string("engineVariant"),
+      engineFactory = rs.string("engineFactory"),
+      evaluatorClass = rs.string("evaluatorClass"),
       batch = rs.string("batch"),
       env = JDBCUtils.stringToMap(rs.string("env")),
-      sparkConf = JDBCUtils.stringToMap(rs.string("sparkconf")),
-      dataSourceParams = rs.string("datasourceparams"),
-      preparatorParams = rs.string("preparatorparams"),
-      algorithmsParams = rs.string("algorithmsparams"),
-      servingParams = rs.string("servingparams"),
-      evaluatorParams = rs.string("evaluatorparams"),
-      evaluatorResults = rs.string("evaluatorresults"),
-      evaluatorResultsHTML = rs.string("evaluatorresultshtml"),
-      evaluatorResultsJSON = rs.string("evaluatorresultsjson"))
+      sparkConf = JDBCUtils.stringToMap(rs.string("sparkConf")),
+      dataSourceParams = rs.string("datasourceParams"),
+      preparatorParams = rs.string("preparatorParams"),
+      algorithmsParams = rs.string("algorithmsParams"),
+      servingParams = rs.string("servingParams"),
+      evaluatorParams = rs.string("evaluatorParams"),
+      evaluatorResults = rs.string("evaluatorResults"),
+      evaluatorResultsHTML = rs.string("evaluatorResultsHTML"),
+      evaluatorResultsJSON = rs.string("evaluatorResultsJSON"))
   }
 }

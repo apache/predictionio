@@ -22,11 +22,13 @@ import io.prediction.data.storage.StorageClientConfig
 import scalikejdbc._
 
 /** JDBC implementation of Apps. */
-class JDBCApps(client: String, config: StorageClientConfig, database: String) extends Apps with Logging {
+class JDBCApps(client: String, config: StorageClientConfig, prefix: String)
+  extends Apps with Logging {
+  val tableName = JDBCUtils.prefixTableName(prefix, "apps")
   DB autoCommit { implicit session =>
     try {
       sql"""
-      create table apps (
+      create table $tableName (
         id serial not null primary key,
         name text not null,
         description text)""".execute.apply()
@@ -39,11 +41,11 @@ class JDBCApps(client: String, config: StorageClientConfig, database: String) ex
     try {
       val q = if (app.id == 0)
         sql"""
-        insert into apps (name, description) values(${app.name}, ${app.description})
+        insert into $tableName (name, description) values(${app.name}, ${app.description})
         """
       else
         sql"""
-        insert into apps values(${app.id}, ${app.name}, $app{description}())
+        insert into $tableName values(${app.id}, ${app.name}, $app{description}())
         """
       Some(q.updateAndReturnGeneratedKey().apply().toInt)
     } catch {
@@ -55,7 +57,7 @@ class JDBCApps(client: String, config: StorageClientConfig, database: String) ex
 
   def get(id: Int): Option[App] = DB readOnly { implicit session =>
     try {
-      sql"SELECT id, name, description FROM apps WHERE id = ${id}".map(rs =>
+      sql"SELECT id, name, description FROM $tableName WHERE id = ${id}".map(rs =>
         App(
           id = rs.int("id"),
           name = rs.string("name"),
@@ -70,7 +72,7 @@ class JDBCApps(client: String, config: StorageClientConfig, database: String) ex
 
   def getByName(name: String): Option[App] = DB readOnly { implicit session =>
     try {
-      sql"SELECT id, name, description FROM apps WHERE name = ${name}".map(rs =>
+      sql"SELECT id, name, description FROM $tableName WHERE name = ${name}".map(rs =>
         App(
           id = rs.int("id"),
           name = rs.string("name"),
@@ -85,7 +87,7 @@ class JDBCApps(client: String, config: StorageClientConfig, database: String) ex
 
   def getAll(): Seq[App] = DB readOnly { implicit session =>
     try {
-      sql"SELECT id, name, description FROM apps".map(rs =>
+      sql"SELECT id, name, description FROM $tableName".map(rs =>
         App(
           id = rs.int("id"),
           name = rs.string("name"),
@@ -101,7 +103,7 @@ class JDBCApps(client: String, config: StorageClientConfig, database: String) ex
   def update(app: App): Boolean = DB localTx { implicit session =>
     try {
       sql"""
-      update apps set name = ${app.name}, description = ${app.description}
+      update $tableName set name = ${app.name}, description = ${app.description}
       where id = ${app.id}""".update().apply()
       true
     } catch {
@@ -113,7 +115,7 @@ class JDBCApps(client: String, config: StorageClientConfig, database: String) ex
 
   def delete(id: Int): Boolean = DB localTx { implicit session =>
     try {
-      sql"DELETE FROM apps WHERE id = $id".update().apply()
+      sql"DELETE FROM $tableName WHERE id = $id".update().apply()
       true
     } catch {
       case e: Exception =>

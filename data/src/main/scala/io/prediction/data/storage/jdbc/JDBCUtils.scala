@@ -15,6 +15,8 @@
 
 package io.prediction.data.storage.jdbc
 
+import scalikejdbc._
+
 object JDBCUtils {
   def driverType(url: String): String = {
     val capture = """jdbc:([^:]+):""".r
@@ -43,6 +45,9 @@ object JDBCUtils {
   }
 
   def generateId: String = java.util.UUID.randomUUID().toString.replace("-", "")
+
+  def prefixTableName(prefix: String, table: String): SQLSyntax =
+    sqls.createUnsafely(s"${prefix}_$table")
 
   def eventTableName(namespace: String, appId: Int, channelId: Option[Int]): String =
     s"${namespace}_${appId}${channelId.map("_" + _).getOrElse("")}"

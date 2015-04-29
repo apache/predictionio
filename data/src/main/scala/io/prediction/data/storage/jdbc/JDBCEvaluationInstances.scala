@@ -21,12 +21,13 @@ import io.prediction.data.storage.EvaluationInstances
 import io.prediction.data.storage.StorageClientConfig
 import scalikejdbc._
 
-class JDBCEvaluationInstances(client: String, config: StorageClientConfig, database: String)
+class JDBCEvaluationInstances(client: String, config: StorageClientConfig, prefix: String)
   extends EvaluationInstances with Logging {
+  val tableName = JDBCUtils.prefixTableName(prefix, "evaluationinstances")
   DB autoCommit { implicit session =>
     try {
       sql"""
-      create table evaluationinstances (
+      create table $tableName (
         id text not null primary key,
         status text not null,
         startTime timestamp not null,
@@ -48,7 +49,7 @@ class JDBCEvaluationInstances(client: String, config: StorageClientConfig, datab
     try {
       val id = java.util.UUID.randomUUID().toString
       sql"""
-      INSERT INTO evaluationinstances VALUES(
+      INSERT INTO $tableName VALUES(
         $id,
         ${i.status},
         ${i.startTime},
@@ -85,7 +86,7 @@ class JDBCEvaluationInstances(client: String, config: StorageClientConfig, datab
         evaluatorResults,
         evaluatorResultsHTML,
         evaluatorResultsJSON
-      FROM evaluationinstances WHERE id = $id
+      FROM $tableName WHERE id = $id
       """.map(resultToEvaluationInstance).single().apply()
     } catch {
       case e: Exception =>
@@ -110,7 +111,7 @@ class JDBCEvaluationInstances(client: String, config: StorageClientConfig, datab
         evaluatorResults,
         evaluatorResultsHTML,
         evaluatorResultsJSON
-      FROM evaluationinstances
+      FROM $tableName
       """.map(resultToEvaluationInstance).list().apply()
     } catch {
       case e: Exception =>
@@ -135,7 +136,7 @@ class JDBCEvaluationInstances(client: String, config: StorageClientConfig, datab
         evaluatorResults,
         evaluatorResultsHTML,
         evaluatorResultsJSON
-      FROM evaluationinstances
+      FROM $tableName
       WHERE
         status = 'EVALCOMPLETED'
       ORDER BY starttime DESC
@@ -150,7 +151,7 @@ class JDBCEvaluationInstances(client: String, config: StorageClientConfig, datab
   def update(i: EvaluationInstance): Unit = DB localTx { implicit session =>
     try {
       sql"""
-      update evaluationinstances set
+      update $tableName set
         status = ${i.status},
         startTime = ${i.startTime},
         endTime = ${i.endTime},
@@ -173,7 +174,7 @@ class JDBCEvaluationInstances(client: String, config: StorageClientConfig, datab
   /** Delete a EngineInstance. */
   def delete(id: String): Unit = DB localTx { implicit session =>
     try {
-      sql"DELETE FROM evaluationinstances WHERE id = $id".update().apply()
+      sql"DELETE FROM $tableName WHERE id = $id".update().apply()
     } catch {
       case e: Exception =>
         error(e.getMessage, e)
