@@ -41,4 +41,9 @@ object JDBCUtils {
       y(0) -> y(1)
     }.toMap[String, String]
   }
+
+  def generateId: String = java.util.UUID.randomUUID().toString.replace("-", "")
+
+  def eventTableName(namespace: String, appId: Int, channelId: Option[Int]): String =
+    s"${namespace}_${appId}${channelId.map("_" + _).getOrElse("")}"
 }

@@ -77,7 +77,7 @@ class JDBCPEvents(client: String, config: StorageClientConfig, namespace: String
         prId,
         creationTime,
         creationTimeZone
-      from ${JDBCEventsUtil.tableName(namespace, appId, channelId)}
+      from ${JDBCUtils.eventTableName(namespace, appId, channelId)}
       where eventTime >= to_timestamp(?) and eventTime < to_timestamp(?)
       $entityTypeClause
       $entityIdClause
@@ -110,11 +110,11 @@ class JDBCPEvents(client: String, config: StorageClientConfig, namespace: String
 
   def write(events: RDD[Event], appId: Int, channelId: Option[Int])(sc: SparkContext): Unit = {
     @transient lazy val tableName =
-      sqls.createUnsafely(JDBCEventsUtil.tableName(namespace, appId, channelId))
+      sqls.createUnsafely(JDBCUtils.eventTableName(namespace, appId, channelId))
     events.foreachPartition { events =>
       val batchParams = events.map { event =>
         Seq(
-          event.eventId.getOrElse(JDBCEventsUtil.generateId),
+          event.eventId.getOrElse(JDBCUtils.generateId),
           event.event,
           event.entityType,
           event.entityId,

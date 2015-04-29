@@ -37,7 +37,7 @@ class JDBCLEvents(client: String, config: StorageClientConfig, namespace: String
     DB autoCommit { implicit session =>
       try {
         SQL(s"""
-        create table ${JDBCEventsUtil.tableName(namespace, appId, channelId)} (
+        create table ${JDBCUtils.eventTableName(namespace, appId, channelId)} (
           id varchar(32) not null primary key,
           event text not null,
           entityType text not null,
@@ -65,7 +65,7 @@ class JDBCLEvents(client: String, config: StorageClientConfig, namespace: String
     DB autoCommit { implicit session =>
       try {
         SQL(s"""
-        drop table ${JDBCEventsUtil.tableName(namespace, appId, channelId)}
+        drop table ${JDBCUtils.eventTableName(namespace, appId, channelId)}
         """).execute().apply()
         true
       } catch {
@@ -80,8 +80,8 @@ class JDBCLEvents(client: String, config: StorageClientConfig, namespace: String
   def futureInsert(event: Event, appId: Int, channelId: Option[Int])(
     implicit ec: ExecutionContext): Future[String] = Future {
     DB localTx { implicit session =>
-      val id = event.eventId.getOrElse(JDBCEventsUtil.generateId)
-      val tableName = sqls.createUnsafely(JDBCEventsUtil.tableName(namespace, appId, channelId))
+      val id = event.eventId.getOrElse(JDBCUtils.generateId)
+      val tableName = sqls.createUnsafely(JDBCUtils.eventTableName(namespace, appId, channelId))
       try {
         sql"""
         insert into $tableName values(
@@ -112,7 +112,7 @@ class JDBCLEvents(client: String, config: StorageClientConfig, namespace: String
   def futureGet(eventId: String, appId: Int, channelId: Option[Int])(
     implicit ec: ExecutionContext): Future[Option[Event]] = Future {
     DB readOnly { implicit session =>
-      val tableName = sqls.createUnsafely(JDBCEventsUtil.tableName(namespace, appId, channelId))
+      val tableName = sqls.createUnsafely(JDBCUtils.eventTableName(namespace, appId, channelId))
       try {
         sql"""
         select
@@ -143,7 +143,7 @@ class JDBCLEvents(client: String, config: StorageClientConfig, namespace: String
   def futureDelete(eventId: String, appId: Int, channelId: Option[Int])(
     implicit ec: ExecutionContext): Future[Boolean] = Future {
     DB localTx { implicit session =>
-      val tableName = sqls.createUnsafely(JDBCEventsUtil.tableName(namespace, appId, channelId))
+      val tableName = sqls.createUnsafely(JDBCUtils.eventTableName(namespace, appId, channelId))
       try {
         sql"""
         delete from $tableName where id = $eventId
@@ -172,7 +172,7 @@ class JDBCLEvents(client: String, config: StorageClientConfig, namespace: String
     )(implicit ec: ExecutionContext): Future[Iterator[Event]] = Future {
     DB readOnly { implicit session =>
       try {
-        val tableName = sqls.createUnsafely(JDBCEventsUtil.tableName(namespace, appId, channelId))
+        val tableName = sqls.createUnsafely(JDBCUtils.eventTableName(namespace, appId, channelId))
         val whereClause = sqls.toAndConditionOpt(
           startTime.map(x => sqls"startTime >= $x"),
           untilTime.map(x => sqls"endTime < $x"),
