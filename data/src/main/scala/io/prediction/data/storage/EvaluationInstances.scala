@@ -18,23 +18,22 @@ package io.prediction.data.storage
 import com.github.nscala_time.time.Imports._
 import org.json4s._
 
-/**
- * EvaluationInstance object.
- *
- * Stores meta information for each evaluation instance.
- *
- * @param id Instance ID.
- * @param status Status of this instance.
- * @param startTime Start time of this instance.
- * @param endTime End time of this instance.
- * @param evaluationClass Evaluation class name of this instance.
- * @param engineParamsGeneratorClass Engine parameters generator class name of this instance.
- * @param batch Batch label of this instance.
- * @param env The environment in which this instance was created.
- * @param evaluatorResults Results of the evaluator.
- * @param evaluatorResultsHTML HTML results of the evaluator.
- * @param evaluatorResultsJSON JSON results of the evaluator.
- */
+/** EvaluationInstance object.
+  *
+  * Stores meta information for each evaluation instance.
+  *
+  * @param id Instance ID.
+  * @param status Status of this instance.
+  * @param startTime Start time of this instance.
+  * @param endTime End time of this instance.
+  * @param evaluationClass Evaluation class name of this instance.
+  * @param engineParamsGeneratorClass Engine parameters generator class name of this instance.
+  * @param batch Batch label of this instance.
+  * @param env The environment in which this instance was created.
+  * @param evaluatorResults Results of the evaluator.
+  * @param evaluatorResultsHTML HTML results of the evaluator.
+  * @param evaluatorResultsJSON JSON results of the evaluator.
+  */
 private[prediction] case class EvaluationInstance(
   id: String = "",
   status: String = "",

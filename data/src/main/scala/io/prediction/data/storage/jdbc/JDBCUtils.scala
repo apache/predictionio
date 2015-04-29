@@ -30,4 +30,15 @@ object JDBCUtils {
       case _ => ""
     }
   }
+
+  def mapToString(m: Map[String, String]): String = {
+    m.map(t => s"${t._1}=${t._2}").mkString(",")
+  }
+
+  def stringToMap(str: String): Map[String, String] = {
+    str.split(",").map { x =>
+      val y = x.split("=")
+      y(0) -> y(1)
+    }.toMap[String, String]
+  }
 }
