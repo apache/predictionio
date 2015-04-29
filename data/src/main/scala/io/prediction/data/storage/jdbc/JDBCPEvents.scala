@@ -43,7 +43,17 @@ class JDBCPEvents(client: String, namespace: String) extends PEvents {
     targetEntityId: Option[Option[String]] = None)(sc: SparkContext): RDD[Event] = {
     val lower = startTime.map(_.getMillis).getOrElse(0.toLong)
     val upper = untilTime.map(_.getMillis).getOrElse((DateTime.now + 100.years).getMillis)
-    val par = scala.math.min(new Duration(upper - lower).getStandardDays, 100).toInt
+    val par = scala.math.min(new Duration(upper - lower).getStandardDays, 10).toInt
+    val entityTypeClause = entityType.map(x => s"and entityType = '$x'").getOrElse("")
+    val entityIdClause = entityId.map(x => s"and entityId = '$x'").getOrElse("")
+    val eventNamesClause =
+      eventNames.map("and (" + _.map(y => s"event = '$y'").mkString(" or ") + ")").getOrElse("")
+    val targetEntityTypeClause = targetEntityType.map(
+      _.map(x => s"and targetEntityType = '$x'"
+    ).getOrElse("and targetEntityType is null")).getOrElse("")
+    val targetEntityIdClause = targetEntityId.map(
+      _.map(x => s"and targetEntityId = '$x'"
+    ).getOrElse("and targetEntityId is null")).getOrElse("")
     new JdbcRDD(
       sc,
       () => {
@@ -66,6 +76,11 @@ class JDBCPEvents(client: String, namespace: String) extends PEvents {
         creationTimeZone
       from ${JDBCEventsUtil.tableName(namespace, appId, channelId)}
       where eventTime >= to_timestamp(?) and eventTime < to_timestamp(?)
+      $entityTypeClause
+      $entityIdClause
+      $eventNamesClause
+      $targetEntityTypeClause
+      $targetEntityIdClause
       """.replace("\n", " "),
       lower,
       upper,

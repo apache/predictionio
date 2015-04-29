@@ -182,8 +182,8 @@ class JDBCLEvents(client: String, namespace: String) extends LEvents with Loggin
               Some(sqls"event = $y")
             ): _*)
           ).getOrElse(None),
-          targetEntityType.map(x => x.map(y => sqls"targetEntityType = $y").getOrElse(sqls"targetEntityType = NULL")),
-          targetEntityId.map(x => x.map(y => sqls"targetEntityId = $y").getOrElse(sqls"targetEntityId = NULL"))
+          targetEntityType.map(x => x.map(y => sqls"targetEntityType = $y").getOrElse(sqls"targetEntityType IS NULL")),
+          targetEntityId.map(x => x.map(y => sqls"targetEntityId = $y").getOrElse(sqls"targetEntityId IS NULL"))
         ).map(sqls.where(_)).getOrElse(sqls"")
         val orderByClause = reversed.map(x =>
           if (x) sqls"eventTime desc" else sqls"eventTime asc"
