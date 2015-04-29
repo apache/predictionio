@@ -18,9 +18,10 @@ package io.prediction.data.storage.jdbc
 import grizzled.slf4j.Logging
 import io.prediction.data.storage.EngineManifest
 import io.prediction.data.storage.EngineManifests
+import io.prediction.data.storage.StorageClientConfig
 import scalikejdbc._
 
-class JDBCEngineManifests(client: String, database: String)
+class JDBCEngineManifests(client: String, config: StorageClientConfig, database: String)
   extends EngineManifests with Logging {
   DB autoCommit { implicit session =>
     try {

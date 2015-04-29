@@ -22,6 +22,7 @@ import com.github.nscala_time.time.Imports._
 import io.prediction.data.storage.DataMap
 import io.prediction.data.storage.Event
 import io.prediction.data.storage.PEvents
+import io.prediction.data.storage.StorageClientConfig
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.JdbcRDD
 import org.apache.spark.rdd.RDD
@@ -29,7 +30,7 @@ import org.json4s.JObject
 import org.json4s.native.Serialization
 import scalikejdbc._
 
-class JDBCPEvents(client: String, namespace: String) extends PEvents {
+class JDBCPEvents(client: String, config: StorageClientConfig, namespace: String) extends PEvents {
   @transient private implicit lazy val formats = org.json4s.DefaultFormats
   def find(
     appId: Int,
@@ -43,7 +44,9 @@ class JDBCPEvents(client: String, namespace: String) extends PEvents {
     targetEntityId: Option[Option[String]] = None)(sc: SparkContext): RDD[Event] = {
     val lower = startTime.map(_.getMillis).getOrElse(0.toLong)
     val upper = untilTime.map(_.getMillis).getOrElse((DateTime.now + 100.years).getMillis)
-    val par = scala.math.min(new Duration(upper - lower).getStandardDays, 10).toInt
+    val par = scala.math.min(
+      new Duration(upper - lower).getStandardDays,
+      config.properties.getOrElse("PARTITIONS", "4").toLong).toInt
     val entityTypeClause = entityType.map(x => s"and entityType = '$x'").getOrElse("")
     val entityIdClause = entityId.map(x => s"and entityId = '$x'").getOrElse("")
     val eventNamesClause =

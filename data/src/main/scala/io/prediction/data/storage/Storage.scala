@@ -55,8 +55,11 @@ object Storage extends Logging {
 
   if (sourceKeys.size == 0) warn("There is no properly configured data source.")
 
-  private case class ClientMeta(sourceType: String, client: BaseStorageClient)
-  private case class DataObjectMeta(sourceName: String, databaseName: String)
+  private case class ClientMeta(
+    sourceType: String,
+    client: BaseStorageClient,
+    config: StorageClientConfig)
+  private case class DataObjectMeta(sourceName: String, namespace: String)
 
   private val s2cm = scala.collection.mutable.Map[String, Option[ClientMeta]]()
   private def updateS2CM(k: String, parallel: Boolean, test: Boolean):
@@ -71,7 +74,7 @@ object Storage extends Logging {
         parallel = parallel,
         test = test)
       val client = getClient(clientConfig, sourceType)
-      Some(ClientMeta(sourceType, client))
+      Some(ClientMeta(sourceType, client, clientConfig))
     } catch {
       case e: Throwable =>
         error(s"Error initializing storage client for source ${k}", e)
@@ -127,7 +130,7 @@ object Storage extends Logging {
         if (sourceKeys.contains(sourceName)) {
           r -> DataObjectMeta(
             sourceName = sourceName,
-            databaseName = name)
+            namespace = name)
         } else {
           error(s"$sourceName is not a configured storage source.")
           r -> DataObjectMeta("", "")
@@ -162,19 +165,19 @@ object Storage extends Logging {
     (implicit tag: TypeTag[T]): T = {
     val repoDOMeta = repositoriesToDataObjectMeta(repo)
     val repoDOSourceName = repoDOMeta.sourceName
-    getDataObject[T](repoDOSourceName, repoDOMeta.databaseName, test = test)
+    getDataObject[T](repoDOSourceName, repoDOMeta.namespace, test = test)
   }
 
   private[prediction]
   def getPDataObject[T](repo: String)(implicit tag: TypeTag[T]): T = {
     val repoDOMeta = repositoriesToDataObjectMeta(repo)
     val repoDOSourceName = repoDOMeta.sourceName
-    getPDataObject[T](repoDOSourceName, repoDOMeta.databaseName)
+    getPDataObject[T](repoDOSourceName, repoDOMeta.namespace)
   }
 
   private[prediction] def getDataObject[T](
       sourceName: String,
-      databaseName: String,
+      namespace: String,
       parallel: Boolean = false,
       test: Boolean = false)(implicit tag: TypeTag[T]): T = {
     val clientMeta = sourcesToClientMeta(sourceName, parallel, test) getOrElse {
@@ -182,7 +185,7 @@ object Storage extends Logging {
         s"Data source $sourceName was not properly initialized.")
     }
     val sourceType = clientMeta.sourceType
-    val ctorArgs = dataObjectCtorArgs(clientMeta.client, databaseName)
+    val ctorArgs = dataObjectCtorArgs(clientMeta.client, namespace)
     val classPrefix = clientMeta.client.prefix
     val originalClassName = tag.tpe.toString.split('.')
     val rawClassName = sourceType + "." + classPrefix + originalClassName.last
@@ -230,8 +233,8 @@ object Storage extends Logging {
 
   private def dataObjectCtorArgs(
       client: BaseStorageClient,
-      dbName: String): Seq[AnyRef] = {
-    Seq(client.client, dbName)
+      namespace: String): Seq[AnyRef] = {
+    Seq(client.client, client.config, namespace)
   }
 
   private[prediction] def verifyAllDataObjects(): Unit = {

@@ -16,11 +16,12 @@
 package io.prediction.data.storage.mongodb
 
 import com.mongodb.casbah.Imports._
-
-import io.prediction.data.storage.{ EngineManifest, EngineManifests }
+import io.prediction.data.storage.StorageClientConfig
+import io.prediction.data.storage.EngineManifest
+import io.prediction.data.storage.EngineManifests
 
 /** MongoDB implementation of EngineManifests. */
-class MongoEngineManifests(client: MongoClient, dbname: String)
+class MongoEngineManifests(client: MongoClient, config: StorageClientConfig, dbname: String)
   extends EngineManifests {
   private val db = client(dbname)
   private val coll = db("engineManifests")

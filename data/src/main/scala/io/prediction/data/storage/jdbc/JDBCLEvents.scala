@@ -19,6 +19,7 @@ import grizzled.slf4j.Logging
 import io.prediction.data.storage.DataMap
 import io.prediction.data.storage.Event
 import io.prediction.data.storage.LEvents
+import io.prediction.data.storage.StorageClientConfig
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.json4s.JObject
@@ -29,7 +30,7 @@ import scalikejdbc._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
-class JDBCLEvents(client: String, namespace: String) extends LEvents with Logging {
+class JDBCLEvents(client: String, config: StorageClientConfig, namespace: String) extends LEvents with Logging {
   implicit val formats = org.json4s.DefaultFormats
 
   def init(appId: Int, channelId: Option[Int] = None): Boolean = {

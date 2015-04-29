@@ -16,24 +16,21 @@
 package io.prediction.data.storage.elasticsearch
 
 import grizzled.slf4j.Logging
+import io.prediction.data.storage.EngineManifestSerializer
+import io.prediction.data.storage.StorageClientConfig
+import io.prediction.data.storage.EngineManifest
+import io.prediction.data.storage.EngineManifests
 import org.elasticsearch.ElasticsearchException
 import org.elasticsearch.client.Client
 import org.json4s._
-import org.json4s.native.Serialization
-import org.json4s.native.Serialization.{ read, write }
+import org.json4s.native.Serialization.read
+import org.json4s.native.Serialization.write
 
-import scala.collection.JavaConversions._
-import scala.concurrent.Await
-import scala.concurrent.duration._
-
-import io.prediction.data.storage.{ EngineManifest, EngineManifests }
-import io.prediction.data.storage.EngineManifestSerializer
-
-class ESEngineManifests(client: Client, index: String) extends EngineManifests
-    with Logging {
+class ESEngineManifests(client: Client, config: StorageClientConfig, index: String)
+  extends EngineManifests with Logging {
   implicit val formats = DefaultFormats + new EngineManifestSerializer
   private val estype = "engine_manifests"
-  private def esid(id: String, version: String) = s"${id} ${version}"
+  private def esid(id: String, version: String) = s"$id $version"
 
   def insert(engineManifest: EngineManifest): Unit = {
     val json = write(engineManifest)
@@ -62,7 +59,7 @@ class ESEngineManifests(client: Client, index: String) extends EngineManifests
 
   def getAll(): Seq[EngineManifest] = {
     try {
-      var builder = client.prepareSearch()
+      val builder = client.prepareSearch()
       ESUtils.getAll[EngineManifest](client, builder)
     } catch {
       case e: ElasticsearchException =>
@@ -76,8 +73,7 @@ class ESEngineManifests(client: Client, index: String) extends EngineManifests
 
   def delete(id: String, version: String): Unit = {
     try {
-      val response = client.prepareDelete(index, estype, esid(id, version)).
-        execute().actionGet()
+      client.prepareDelete(index, estype, esid(id, version)).execute().actionGet()
     } catch {
       case e: ElasticsearchException => error(e.getMessage)
     }

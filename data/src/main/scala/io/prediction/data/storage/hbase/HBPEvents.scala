@@ -16,47 +16,32 @@
 package io.prediction.data.storage.hbase
 
 import io.prediction.data.storage.Event
-import io.prediction.data.storage.DataMap
-import io.prediction.data.storage.PropertyMap
 import io.prediction.data.storage.PEvents
-import io.prediction.data.storage.PEventAggregator
-import io.prediction.data.storage.EntityMap
-import io.prediction.data.storage.BiMap
-
+import io.prediction.data.storage.StorageClientConfig
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.Result
+import org.apache.hadoop.hbase.io.ImmutableBytesWritable
+import org.apache.hadoop.hbase.mapreduce.PIOHBaseUtil
 import org.apache.hadoop.hbase.mapreduce.TableInputFormat
 import org.apache.hadoop.hbase.mapreduce.TableOutputFormat
-import org.apache.hadoop.hbase.mapreduce.PIOHBaseUtil
-import org.apache.hadoop.hbase.TableNotFoundException
-import org.apache.hadoop.hbase.io.ImmutableBytesWritable
-import org.apache.hadoop.mapreduce.OutputFormat
 import org.apache.hadoop.io.Writable
-
-import org.joda.time.DateTime
-import org.joda.time.DateTimeZone
-
-import grizzled.slf4j.Logging
-
-import scala.reflect.ClassTag
-
+import org.apache.hadoop.mapreduce.OutputFormat
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import org.joda.time.DateTime
 
-import org.apache.spark.SparkContext._
-
-class HBPEvents(client: HBClient, namespace: String) extends PEvents {
+class HBPEvents(client: HBClient, config: StorageClientConfig, namespace: String) extends PEvents {
 
   def checkTableExists(appId: Int, channelId: Option[Int]): Unit = {
     if (!client.admin.tableExists(HBEventsUtil.tableName(namespace, appId, channelId))) {
       if (channelId.nonEmpty) {
-        logger.error(s"The appId ${appId} with channelId ${channelId} does not exist." +
+        logger.error(s"The appId $appId with channelId $channelId does not exist." +
           s" Please use valid appId and channelId.")
-        throw new Exception(s"HBase table not found for appId ${appId}" +
-          s" with channelId ${channelId}.")
+        throw new Exception(s"HBase table not found for appId $appId" +
+          s" with channelId $channelId.")
       } else {
-        logger.error(s"The appId ${appId} does not exist. Please use valid appId.")
-        throw new Exception(s"HBase table not found for appId ${appId}.")
+        logger.error(s"The appId $appId does not exist. Please use valid appId.")
+        throw new Exception(s"HBase table not found for appId $appId.")
       }
     }
   }

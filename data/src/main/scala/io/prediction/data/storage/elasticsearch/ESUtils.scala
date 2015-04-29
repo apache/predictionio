@@ -16,7 +16,6 @@
 package io.prediction.data.storage.elasticsearch
 
 import org.elasticsearch.action.search.SearchRequestBuilder
-import org.elasticsearch.action.search.SearchResponse
 import org.elasticsearch.client.Client
 import org.elasticsearch.common.unit.TimeValue
 import org.json4s.Formats

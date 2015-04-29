@@ -15,22 +15,22 @@
 
 package io.prediction.data.storage.hdfs
 
-import io.prediction.data.storage.Model
-import io.prediction.data.storage.Models
+import java.io.IOException
 
 import com.google.common.io.ByteStreams
 import grizzled.slf4j.Logging
+import io.prediction.data.storage.Model
+import io.prediction.data.storage.Models
+import io.prediction.data.storage.StorageClientConfig
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 
-import java.io.IOException
-
-class HDFSModels(fs: FileSystem, prefix: String)
+class HDFSModels(fs: FileSystem, config: StorageClientConfig, prefix: String)
   extends Models with Logging {
 
   def insert(i: Model): Unit = {
     try {
-      val fsdos = fs.create(new Path(s"${prefix}${i.id}"))
+      val fsdos = fs.create(new Path(s"$prefix${i.id}"))
       fsdos.write(i.models)
       fsdos.close
     } catch {
@@ -40,7 +40,7 @@ class HDFSModels(fs: FileSystem, prefix: String)
 
   def get(id: String): Option[Model] = {
     try {
-      val p = new Path(s"${prefix}${id}")
+      val p = new Path(s"$prefix$id")
       Some(Model(
         id = id,
         models = ByteStreams.toByteArray(fs.open(p))))
@@ -52,7 +52,7 @@ class HDFSModels(fs: FileSystem, prefix: String)
   }
 
   def delete(id: String): Unit = {
-    val p = new Path(s"${prefix}${id}")
+    val p = new Path(s"$prefix$id")
     if (!fs.delete(p, false)) {
       error(s"Unable to delete ${fs.makeQualified(p).toString}!")
     }
