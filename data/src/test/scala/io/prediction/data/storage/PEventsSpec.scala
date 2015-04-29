@@ -42,6 +42,16 @@ class PEventsSpec extends Specification with TestEvents {
     dbName
   )
 
+  def jdbcLocal = Storage.getDataObject[LEvents](
+    StorageTestUtils.jdbcSourceName,
+    dbName
+  )
+
+  def jdbcPar = Storage.getDataObject[PEvents](
+    StorageTestUtils.jdbcSourceName,
+    dbName
+  )
+
   def stopSpark = {
     sc.stop()
   }
@@ -50,8 +60,9 @@ class PEventsSpec extends Specification with TestEvents {
 
   PredictionIO Storage PEvents Specification
 
-    Events can be implemented by:
-    - HBEvents ${hbPEvents}
+    PEvents can be implemented by:
+    - HBPEvents ${hbPEvents}
+    - JDBCPEvents ${jdbcPEvents}
     - (stop Spark) ${Step(sc.stop())}
 
   """
@@ -64,13 +75,22 @@ class PEventsSpec extends Specification with TestEvents {
 
   """
 
+  def jdbcPEvents = sequential ^ s2"""
+
+    JDBCPEvents should
+    - behave like any PEvents implementation ${events(jdbcLocal, jdbcPar)}
+    - (table cleanup) ${Step(StorageTestUtils.dropJDBCTable(s"${dbName}_$appId"))}
+    - (table cleanup) ${Step(StorageTestUtils.dropJDBCTable(s"${dbName}_${appId}_$channelId"))}
+
+  """
+
   def events(localEventClient: LEvents, parEventClient: PEvents) = sequential ^ s2"""
 
     - (init test) ${initTest(localEventClient)}
     - (insert test events) ${insertTestEvents(localEventClient)}
     find in default ${find(parEventClient)}
     find in channel ${findChannel(parEventClient)}
-    aggreagte user properties in defualt ${aggregateUserProperties(parEventClient)}
+    aggregate user properties in default ${aggregateUserProperties(parEventClient)}
     aggregate user properties in channel ${aggregateUserPropertiesChannel(parEventClient)}
     write to default ${write(parEventClient)}
     write to channel ${writeChannel(parEventClient)}

@@ -16,30 +16,13 @@
 package io.prediction.data.storage
 
 import io.prediction.data.storage.hbase.HBLEvents
-
-import com.mongodb.casbah.Imports._
-import org.elasticsearch.client.Client
+import scalikejdbc._
 
 object StorageTestUtils {
-  val elasticsearchSourceName = "ELASTICSEARCH"
-  val mongodbSourceName = "MONGODB"
   val hbaseSourceName = "HBASE"
+  val jdbcSourceName = "PGSQL"
 
-  def dropElasticsearchIndex(indexName: String) = {
-    /*
-    Storage.getClient(elasticsearchSourceName).get.client.asInstanceOf[Client].
-      admin.indices.prepareDelete(indexName).get
-    */
-  }
-
-  def dropMongoDatabase(dbName: String) = {
-    /*
-    Storage.getClient(mongodbSourceName).get.client.asInstanceOf[MongoClient].
-      dropDatabase(dbName)
-      */
-  }
-
-  def dropHBaseNamespace(namespace: String) = {
+  def dropHBaseNamespace(namespace: String): Unit = {
     val eventDb = Storage.getDataObject[LEvents](hbaseSourceName, namespace)
       .asInstanceOf[HBLEvents]
     val admin = eventDb.client.admin
@@ -51,5 +34,9 @@ object StorageTestUtils {
 
     //Only empty namespaces (no tables) can be removed.
     admin.deleteNamespace(namespace)
+  }
+
+  def dropJDBCTable(table: String): Unit = DB autoCommit { implicit s =>
+    SQL(s"drop table $table").execute().apply()
   }
 }

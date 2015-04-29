@@ -24,15 +24,23 @@ class LEventsSpec extends Specification with TestEvents {
   PredictionIO Storage LEvents Specification
 
     Events can be implemented by:
-    - HBEvents ${hbEvents}
+    - HBLEvents ${hbEvents}
+    - JDBCLEvents ${jdbcLEvents}
 
   """
 
   def hbEvents = sequential ^ s2"""
 
-    HBEvents should
-    - behave like any Events implementation ${events(hbDO)}
+    HBLEvents should
+    - behave like any LEvents implementation ${events(hbDO)}
     - (table cleanup) ${Step(StorageTestUtils.dropHBaseNamespace(dbName))}
+
+  """
+
+  def jdbcLEvents = sequential ^ s2"""
+
+    JDBCLEvents should
+    - behave like any LEvents implementation ${events(jdbcDO)}
 
   """
 
@@ -64,6 +72,7 @@ class LEventsSpec extends Specification with TestEvents {
     dbName
   )
 
+  def jdbcDO = Storage.getDataObject[LEvents](StorageTestUtils.jdbcSourceName, dbName)
 
   def initDefault(eventClient: LEvents) = {
     eventClient.init(appId)
