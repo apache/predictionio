@@ -15,28 +15,15 @@
 
 package io.prediction.data.storage.elasticsearch
 
-import io.prediction.data.storage.EngineInstance
-import io.prediction.data.storage.EngineInstances
-import io.prediction.data.storage.EngineInstanceSerializer
-
-import com.github.nscala_time.time.Imports._
-import com.google.common.io.BaseEncoding
 import grizzled.slf4j.Logging
+import io.prediction.data.storage.StorageClientConfig
 import org.elasticsearch.ElasticsearchException
 import org.elasticsearch.client.Client
-import org.elasticsearch.index.query.FilterBuilders._
-import org.elasticsearch.search.sort.SortBuilders._
-import org.elasticsearch.search.sort.SortOrder
-import org.json4s._
 import org.json4s.JsonDSL._
+import org.json4s._
 import org.json4s.native.JsonMethods._
-import org.json4s.native.Serialization.{ read, write }
 
-import scala.collection.JavaConversions._
-import scala.concurrent.Await
-import scala.concurrent.duration._
-
-class ESSequences(client: Client, index: String) extends Logging {
+class ESSequences(client: Client, config: StorageClientConfig, index: String) extends Logging {
   implicit val formats = DefaultFormats
   private val estype = "sequences"
 
@@ -71,5 +58,4 @@ class ESSequences(client: Client, index: String) extends Logging {
         0
     }
   }
-
 }

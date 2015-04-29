@@ -15,20 +15,23 @@
 
 package io.prediction.data.storage
 
+import grizzled.slf4j.Logger
+import io.prediction.annotation.DeveloperApi
 import io.prediction.annotation.Experimental
-
-import org.joda.time.DateTime
-
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import org.joda.time.DateTime
 
 import scala.reflect.ClassTag
 
-/** Base trait of a data access object that returns [[Event]] related RDD data
+/** :: DeveloperApi ::
+  *
+  * Base trait of a data access object that returns [[Event]] related RDD data
   * structure.
   */
+@DeveloperApi
 trait PEvents extends Serializable {
-
+  @transient protected lazy val logger = Logger[this.type]
   @deprecated("Use PEventStore.find() instead.", "0.9.2")
   def getByAppIdAndTimeAndEntity(appId: Int,
     startTime: Option[DateTime],
@@ -45,7 +48,9 @@ trait PEvents extends Serializable {
       )(sc)
     }
 
-  /** Read from database and return the events.
+  /** :: DeveloperApi ::
+    *
+    * Read from database and return the events.
     *
     * @param appId return events of this app ID
     * @param channelId return events of this channel ID (default channel if it's None)
@@ -65,8 +70,9 @@ trait PEvents extends Serializable {
     * @param sc Spark context
     * @return RDD[Event]
     */
-  // NOTE: Don't delete! make this private[prediction] instead when deprecate
+  // NOTE: The deprecation here is for
   @deprecated("Use PEventStore.find() instead.", "0.9.2")
+  @DeveloperApi
   def find(
     appId: Int,
     channelId: Option[Int] = None,
@@ -99,32 +105,72 @@ trait PEvents extends Serializable {
     startTime: Option[DateTime] = None,
     untilTime: Option[DateTime] = None,
     required: Option[Seq[String]] = None)
-    (sc: SparkContext): RDD[(String, PropertyMap)]
+    (sc: SparkContext): RDD[(String, PropertyMap)] = {
+    val eventRDD = find(
+      appId = appId,
+      channelId = channelId,
+      startTime = startTime,
+      untilTime = untilTime,
+      entityType = Some(entityType),
+      eventNames = Some(PEventAggregator.eventNames))(sc)
+
+    val dmRDD = PEventAggregator.aggregateProperties(eventRDD)
+
+    required map { r =>
+      dmRDD.filter { case (k, v) =>
+        r.map(v.contains(_)).reduce(_ && _)
+      }
+    } getOrElse dmRDD
+  }
 
   /** :: Experimental ::
     * Extract EntityMap[A] from events for the entityType
     * NOTE: it is local EntityMap[A]
     */
   @deprecated("Use PEventStore.aggregateProperties() instead.", "0.9.2")
+  @Experimental
   def extractEntityMap[A: ClassTag](
     appId: Int,
     entityType: String,
     startTime: Option[DateTime] = None,
     untilTime: Option[DateTime] = None,
     required: Option[Seq[String]] = None)
-    (sc: SparkContext)(extract: DataMap => A): EntityMap[A]
+    (sc: SparkContext)(extract: DataMap => A): EntityMap[A] = {
+    val idToData: Map[String, A] = aggregateProperties(
+      appId = appId,
+      entityType = entityType,
+      startTime = startTime,
+      untilTime = untilTime,
+      required = required
+    )(sc).map{ case (id, dm) =>
+      try {
+        (id, extract(dm))
+      } catch {
+        case e: Exception => {
+          logger.error(s"Failed to get extract entity from DataMap $dm of " +
+            s"entityId $id.", e)
+          throw e
+        }
+      }
+    }.collectAsMap.toMap
 
-  /** :: Experimental ::
+    new EntityMap(idToData)
+  }
+
+  /** :: DeveloperApi ::
+    *
     * Write events to database
     *
     * @param events RDD of Event
     * @param appId the app ID
     * @param sc Spark Context
     */
-  private[prediction] def write(events: RDD[Event], appId: Int)(sc: SparkContext): Unit =
+  @DeveloperApi
+  def write(events: RDD[Event], appId: Int)(sc: SparkContext): Unit =
     write(events, appId, None)(sc)
 
-  /** :: Experimental ::
+  /** :: DeveloperApi ::
+    *
     * Write events to database
     *
     * @param events RDD of Event
@@ -132,7 +178,6 @@ trait PEvents extends Serializable {
     * @param channelId  channel ID (default channel if it's None)
     * @param sc Spark Context
     */
-  private[prediction] def write(
-    events: RDD[Event], appId: Int, channelId: Option[Int])(sc: SparkContext): Unit
-
+  @DeveloperApi
+  def write(events: RDD[Event], appId: Int, channelId: Option[Int])(sc: SparkContext): Unit
 }

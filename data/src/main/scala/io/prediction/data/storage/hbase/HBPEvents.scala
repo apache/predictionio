@@ -16,48 +16,32 @@
 package io.prediction.data.storage.hbase
 
 import io.prediction.data.storage.Event
-import io.prediction.data.storage.DataMap
-import io.prediction.data.storage.PropertyMap
 import io.prediction.data.storage.PEvents
-import io.prediction.data.storage.PEventAggregator
-import io.prediction.data.storage.EntityMap
-import io.prediction.data.storage.BiMap
-
+import io.prediction.data.storage.StorageClientConfig
 import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.Result
+import org.apache.hadoop.hbase.io.ImmutableBytesWritable
+import org.apache.hadoop.hbase.mapreduce.PIOHBaseUtil
 import org.apache.hadoop.hbase.mapreduce.TableInputFormat
 import org.apache.hadoop.hbase.mapreduce.TableOutputFormat
-import org.apache.hadoop.hbase.mapreduce.PIOHBaseUtil
-import org.apache.hadoop.hbase.TableNotFoundException
-import org.apache.hadoop.hbase.io.ImmutableBytesWritable
-import org.apache.hadoop.mapreduce.OutputFormat
 import org.apache.hadoop.io.Writable
-
-import org.joda.time.DateTime
-import org.joda.time.DateTimeZone
-
-import grizzled.slf4j.Logging
-
-import scala.reflect.ClassTag
-
+import org.apache.hadoop.mapreduce.OutputFormat
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import org.joda.time.DateTime
 
-import org.apache.spark.SparkContext._
-
-class HBPEvents(client: HBClient, namespace: String)
-  extends PEvents with Logging {
+class HBPEvents(client: HBClient, config: StorageClientConfig, namespace: String) extends PEvents {
 
   def checkTableExists(appId: Int, channelId: Option[Int]): Unit = {
     if (!client.admin.tableExists(HBEventsUtil.tableName(namespace, appId, channelId))) {
-      if (channelId.isDefined) {
-        error(s"The appId ${appId} with channelId ${channelId} does not exist." +
+      if (channelId.nonEmpty) {
+        logger.error(s"The appId $appId with channelId $channelId does not exist." +
           s" Please use valid appId and channelId.")
-        throw new Exception(s"HBase table not found for appId ${appId}" +
-          s" with channelId ${channelId}.")
+        throw new Exception(s"HBase table not found for appId $appId" +
+          s" with channelId $channelId.")
       } else {
-        error(s"The appId ${appId} does not exist. Please use valid appId.")
-        throw new Exception(s"HBase table not found for appId ${appId}.")
+        logger.error(s"The appId $appId does not exist. Please use valid appId.")
+        throw new Exception(s"HBase table not found for appId $appId.")
       }
     }
   }
@@ -103,79 +87,6 @@ class HBPEvents(client: HBClient, namespace: String)
       }
 
     rdd
-  }
-
-  override
-  def aggregateProperties(
-    appId: Int,
-    channelId: Option[Int] = None,
-    entityType: String,
-    startTime: Option[DateTime] = None,
-    untilTime: Option[DateTime] = None,
-    required: Option[Seq[String]] = None)
-    (sc: SparkContext): RDD[(String, PropertyMap)] = {
-
-    checkTableExists(appId, channelId)
-
-    val eventRDD = find(
-      appId = appId,
-      channelId = channelId,
-      startTime = startTime,
-      untilTime = untilTime,
-      entityType = Some(entityType),
-      eventNames = Some(PEventAggregator.eventNames))(sc)
-
-    val dmRDD = try {
-      PEventAggregator.aggregateProperties(eventRDD)
-    } catch {
-      case e: TableNotFoundException => {
-        if (channelId.isDefined) {
-          error(s"The appId ${appId} with channelId ${channelId} does not exist." +
-            s" Please use valid appId and channelId.")
-        } else {
-          error(s"The appId ${appId} does not exist. Please use valid appId.")
-        }
-        throw e
-      }
-      case e: Exception => throw e
-    }
-
-    if (required.isDefined) {
-      dmRDD.filter { case (k, v) =>
-        required.get.map(v.contains(_)).reduce(_ && _)
-      }
-    } else dmRDD
-
-  }
-
-  override
-  def extractEntityMap[A: ClassTag](
-    appId: Int,
-    entityType: String,
-    startTime: Option[DateTime] = None,
-    untilTime: Option[DateTime] = None,
-    required: Option[Seq[String]] = None)
-    (sc: SparkContext)(extract: DataMap => A): EntityMap[A] = {
-
-    val idToData: Map[String, A] = aggregateProperties(
-      appId = appId,
-      entityType = entityType,
-      startTime = startTime,
-      untilTime = untilTime,
-      required = required
-    )(sc).map{ case (id, dm) =>
-      try {
-        (id, extract(dm))
-      } catch {
-        case e: Exception => {
-          logger.error(s"Failed to get extract entity from DataMap ${dm} of" +
-            s" entityId ${id}. Exception: ${e}.")
-          throw e
-        }
-      }
-    }.collectAsMap.toMap
-
-    new EntityMap(idToData)
   }
 
   override

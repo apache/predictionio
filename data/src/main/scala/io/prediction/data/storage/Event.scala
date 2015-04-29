@@ -43,7 +43,7 @@ case class Event(
   val targetEntityId: Option[String] = None,
   val properties: DataMap = DataMap(), // default empty
   val eventTime: DateTime = DateTime.now,
-  val tags: Seq[String] = Seq(),
+  val tags: Seq[String] = Nil,
   val prId: Option[String] = None,
   val creationTime: DateTime = DateTime.now
 ) {

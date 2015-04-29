@@ -18,9 +18,10 @@ package io.prediction.data.storage.jdbc
 import grizzled.slf4j.Logging
 import io.prediction.data.storage.EngineInstance
 import io.prediction.data.storage.EngineInstances
+import io.prediction.data.storage.StorageClientConfig
 import scalikejdbc._
 
-class JDBCEngineInstances(client: String, database: String)
+class JDBCEngineInstances(client: String, config: StorageClientConfig, database: String)
   extends EngineInstances with Logging {
   DB autoCommit { implicit session =>
     try {
@@ -66,8 +67,8 @@ class JDBCEngineInstances(client: String, database: String)
         ${i.engineFactory},
         ${i.evaluatorClass},
         ${i.batch},
-        ${mapToString(i.env)},
-        ${mapToString(i.sparkConf)},
+        ${JDBCUtils.mapToString(i.env)},
+        ${JDBCUtils.mapToString(i.sparkConf)},
         ${i.dataSourceParams},
         ${i.preparatorParams},
         ${i.algorithmsParams},
@@ -248,8 +249,8 @@ class JDBCEngineInstances(client: String, database: String)
         enginefactory = ${i.engineFactory},
         evaluatorclass = ${i.evaluatorClass},
         batch = ${i.batch},
-        env = ${mapToString(i.env)},
-        sparkconf = ${mapToString(i.sparkConf)},
+        env = ${JDBCUtils.mapToString(i.env)},
+        sparkconf = ${JDBCUtils.mapToString(i.sparkConf)},
         datasourceparams = ${i.dataSourceParams},
         preparatorparams = ${i.preparatorParams},
         algorithmsparams = ${i.algorithmsParams},
@@ -288,8 +289,8 @@ class JDBCEngineInstances(client: String, database: String)
       engineFactory = rs.string("enginefactory"),
       evaluatorClass = rs.string("evaluatorclass"),
       batch = rs.string("batch"),
-      env = stringToMap(rs.string("env")),
-      sparkConf = stringToMap(rs.string("sparkconf")),
+      env = JDBCUtils.stringToMap(rs.string("env")),
+      sparkConf = JDBCUtils.stringToMap(rs.string("sparkconf")),
       dataSourceParams = rs.string("datasourceparams"),
       preparatorParams = rs.string("preparatorparams"),
       algorithmsParams = rs.string("algorithmsparams"),
@@ -298,16 +299,5 @@ class JDBCEngineInstances(client: String, database: String)
       evaluatorResults = rs.string("evaluatorresults"),
       evaluatorResultsHTML = rs.string("evaluatorresultshtml"),
       evaluatorResultsJSON = rs.string("evaluatorresultsjson"))
-  }
-
-  def mapToString(m: Map[String, String]): String = {
-    m.map(t => s"${t._1}=${t._2}").mkString(",")
-  }
-
-  def stringToMap(str: String): Map[String, String] = {
-    str.split(",").map { x =>
-      val y = x.split("=")
-      y(0) -> y(1)
-    }.toMap[String, String]
   }
 }

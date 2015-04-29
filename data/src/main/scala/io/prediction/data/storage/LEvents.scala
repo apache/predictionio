@@ -15,6 +15,7 @@
 
 package io.prediction.data.storage
 
+import io.prediction.annotation.DeveloperApi
 import io.prediction.annotation.Experimental
 
 import scala.concurrent.Future
@@ -25,81 +26,113 @@ import scala.concurrent.TimeoutException
 
 import org.joda.time.DateTime
 
-/** Base trait of a data access object that directly returns [[Event]] without
+/** :: DeveloperApi ::
+  * Base trait of a data access object that directly returns [[Event]] without
   * going through Spark's parallelization.
   */
+@DeveloperApi
 trait LEvents {
-
-  private def notImplemented(implicit ec: ExecutionContext) = Future {
-    throw new StorageException("Not implemented.")
-  }
-
   val defaultTimeout = Duration(60, "seconds")
 
-  /** Initialize Event Store for the appId.
-    * initialization routine to be called when app is first created.
-    * return true if succeed or false if fail.
+  /** :: DeveloperApi ::
+    * Initialize Event Store for an app ID and optionally a channel ID.
+    * This routine is to be called when an app is first created.
+    *
     * @param appId App ID
-    * @param channelId Channel ID
-    * @return status. true if succeeded; false if failed.
+    * @param channelId Optional channel ID
+    * @return true if initialization was successful; false otherwise.
     */
-  private[prediction] def init(appId: Int, channelId: Option[Int] = None): Boolean = {
-    throw new Exception("init() is not implemented.")
-    false
-  }
+  @DeveloperApi
+  def init(appId: Int, channelId: Option[Int] = None): Boolean
 
-  /** Remove Event Store for this appId
+  /** :: DeveloperApi ::
+    * Remove Event Store for an app ID and optional channel ID.
+    *
     * @param appId App ID
-    * @param channelId Channel ID
-    * @return status. true if succeeded; false if failed.
+    * @param channelId Optional channel ID
+    * @return true if removal was successful; false otherwise.
     */
-  private[prediction] def remove(appId: Int, channelId: Option[Int] = None): Boolean = {
-    throw new Exception("remove() is not implemented.")
-    false
-  }
+  @DeveloperApi
+  def remove(appId: Int, channelId: Option[Int] = None): Boolean
 
-  /** Close this Event Store interface object.
-   * (Eg. close connection, release resources)
-   */
-  private[prediction] def close(): Unit = {
-    throw new Exception("close() is not implemented.")
-    ()
-  }
+  /** :: DeveloperApi ::
+    * Close this Event Store interface object, e.g. close connection, release
+    * resources, etc.
+    */
+  @DeveloperApi
+  def close(): Unit
 
-  /* auxiliary */
-  private[prediction]
+  /** :: DeveloperApi ::
+    * Insert an [[Event]] in a non-blocking fashion.
+    *
+    * @param event An [[Event]] to be inserted
+    * @param appId App ID for the [[Event]] to be inserted to
+    */
+  @DeveloperApi
   def futureInsert(event: Event, appId: Int)(implicit ec: ExecutionContext):
     Future[String] = futureInsert(event, appId, None)
 
-  private[prediction]
+  /** :: DeveloperApi ::
+    * Insert an [[Event]] in a non-blocking fashion.
+    *
+    * @param event An [[Event]] to be inserted
+    * @param appId App ID for the [[Event]] to be inserted to
+    * @param channelId Optional channel ID for the [[Event]] to be inserted to
+    */
+  @DeveloperApi
   def futureInsert(
-    event: Event, appId: Int, channelId: Option[Int])(implicit ec: ExecutionContext):
-    Future[String] =
-    notImplemented
+    event: Event, appId: Int, channelId: Option[Int])(implicit ec: ExecutionContext): Future[String]
 
-  /* auxiliary */
-  private[prediction]
+  /** :: DeveloperApi ::
+    * Get an [[Event]] in a non-blocking fashion.
+    *
+    * @param eventId ID of the [[Event]]
+    * @param appId ID of the app that contains the [[Event]]
+    */
+  @DeveloperApi
   def futureGet(eventId: String, appId: Int)(implicit ec: ExecutionContext):
     Future[Option[Event]] = futureGet(eventId, appId, None)
 
-  private[prediction]
+  /** :: DeveloperApi ::
+    * Get an [[Event]] in a non-blocking fashion.
+    *
+    * @param eventId ID of the [[Event]]
+    * @param appId ID of the app that contains the [[Event]]
+    * @param channelId Optional channel ID that contains the [[Event]]
+    */
+  @DeveloperApi
   def futureGet(
-    eventId: String, appId: Int, channelId: Option[Int])(implicit ec: ExecutionContext):
-    Future[Option[Event]] =
-    notImplemented
+      eventId: String,
+      appId: Int,
+      channelId: Option[Int]
+    )(implicit ec: ExecutionContext): Future[Option[Event]]
 
-  /* auxiliary */
-  private[prediction]
+  /** :: DeveloperApi ::
+    * Delete an [[Event]] in a non-blocking fashion.
+    *
+    * @param eventId ID of the [[Event]]
+    * @param appId ID of the app that contains the [[Event]]
+    */
+  @DeveloperApi
   def futureDelete(eventId: String, appId: Int)(implicit ec: ExecutionContext):
     Future[Boolean] = futureDelete(eventId, appId, None)
 
-  private[prediction]
+  /** :: DeveloperApi ::
+    * Delete an [[Event]] in a non-blocking fashion.
+    *
+    * @param eventId ID of the [[Event]]
+    * @param appId ID of the app that contains the [[Event]]
+    * @param channelId Optional channel ID that contains the [[Event]]
+    */
+  @DeveloperApi
   def futureDelete(
-    eventId: String, appId: Int, channelId: Option[Int])(implicit ec: ExecutionContext):
-    Future[Boolean] =
-    notImplemented
+      eventId: String,
+      appId: Int,
+      channelId: Option[Int]
+    )(implicit ec: ExecutionContext): Future[Boolean]
 
-  /** Reads from database and returns a Future of events iterator.
+  /** :: DeveloperApi ::
+    * Reads from database and returns a Future of Iterator of [[Event]]s.
     *
     * @param appId return events of this app ID
     * @param channelId return events of this channel ID (default channel if it's None)
@@ -123,19 +156,20 @@ trait LEvents {
     * @param ec ExecutionContext
     * @return Future[Iterator[Event]]
     */
-  private[prediction] def futureFind(
-    appId: Int,
-    channelId: Option[Int] = None,
-    startTime: Option[DateTime] = None,
-    untilTime: Option[DateTime] = None,
-    entityType: Option[String] = None,
-    entityId: Option[String] = None,
-    eventNames: Option[Seq[String]] = None,
-    targetEntityType: Option[Option[String]] = None,
-    targetEntityId: Option[Option[String]] = None,
-    limit: Option[Int] = None,
-    reversed: Option[Boolean] = None)(implicit ec: ExecutionContext):
-    Future[Iterator[Event]] = notImplemented
+  @DeveloperApi
+  def futureFind(
+      appId: Int,
+      channelId: Option[Int] = None,
+      startTime: Option[DateTime] = None,
+      untilTime: Option[DateTime] = None,
+      entityType: Option[String] = None,
+      entityId: Option[String] = None,
+      eventNames: Option[Seq[String]] = None,
+      targetEntityType: Option[Option[String]] = None,
+      targetEntityId: Option[Option[String]] = None,
+      limit: Option[Int] = None,
+      reversed: Option[Boolean] = None
+    )(implicit ec: ExecutionContext): Future[Iterator[Event]]
 
   /** Aggregate properties of entities based on these special events:
     * \$set, \$unset, \$delete events.

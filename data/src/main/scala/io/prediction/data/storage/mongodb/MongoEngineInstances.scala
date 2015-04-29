@@ -15,14 +15,15 @@
 
 package io.prediction.data.storage.mongodb
 
-import io.prediction.data.storage.{ EngineInstance, EngineInstances }
-
+import com.github.nscala_time.time.Imports._
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala._
-import com.github.nscala_time.time.Imports._
+import io.prediction.data.storage.StorageClientConfig
+import io.prediction.data.storage.EngineInstance
+import io.prediction.data.storage.EngineInstances
 
 /** MongoDB implementation of EngineInstances. */
-class MongoEngineInstances(client: MongoClient, dbname: String)
+class MongoEngineInstances(client: MongoClient, config: StorageClientConfig, dbname: String)
   extends EngineInstances {
   private val db = client(dbname)
   private val engineInstanceColl = db("engineInstances")

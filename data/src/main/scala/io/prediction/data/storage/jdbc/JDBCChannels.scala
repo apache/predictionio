@@ -18,9 +18,10 @@ package io.prediction.data.storage.jdbc
 import grizzled.slf4j.Logging
 import io.prediction.data.storage.Channel
 import io.prediction.data.storage.Channels
+import io.prediction.data.storage.StorageClientConfig
 import scalikejdbc._
 
-class JDBCChannels(client: String, database: String)
+class JDBCChannels(client: String, config: StorageClientConfig, database: String)
   extends Channels with Logging {
   DB autoCommit { implicit session =>
     try {

@@ -18,12 +18,13 @@ package io.prediction.data.storage.jdbc
 import grizzled.slf4j.Logging
 import io.prediction.data.storage.AccessKey
 import io.prediction.data.storage.AccessKeys
+import io.prediction.data.storage.StorageClientConfig
 import scalikejdbc._
 
 import scala.util.Random
 
 /** JDBC implementation of AccessKeys. */
-class JDBCAccessKeys(client: String, database: String)
+class JDBCAccessKeys(client: String, config: StorageClientConfig, database: String)
   extends AccessKeys with Logging {
   DB autoCommit { implicit session =>
     try {

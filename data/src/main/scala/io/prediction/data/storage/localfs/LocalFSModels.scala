@@ -15,18 +15,18 @@
 
 package io.prediction.data.storage.localfs
 
-import io.prediction.data.storage.Model
-import io.prediction.data.storage.Models
-
-import grizzled.slf4j.Logging
-
-import scala.io.Source
-
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 
-class LocalFSModels(f: File, prefix: String)
+import grizzled.slf4j.Logging
+import io.prediction.data.storage.Model
+import io.prediction.data.storage.Models
+import io.prediction.data.storage.StorageClientConfig
+
+import scala.io.Source
+
+class LocalFSModels(f: File, config: StorageClientConfig, prefix: String)
   extends Models with Logging {
 
   def insert(i: Model): Unit = {
