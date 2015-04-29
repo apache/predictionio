@@ -47,18 +47,13 @@ class MongoEngineInstances(client: MongoClient, config: StorageClientConfig, dbn
       "engineVersion"          -> i.engineVersion,
       "engineVariant"          -> i.engineVariant,
       "engineFactory"          -> i.engineFactory,
-      "metricsClass"           -> i.evaluatorClass,
       "batch"                  -> i.batch,
       "env"                    -> i.env,
       "sparkConf"              -> i.sparkConf,
       "dataSourceParams"       -> i.dataSourceParams,
       "preparatorParams"       -> i.preparatorParams,
       "algorithmsParams"       -> i.algorithmsParams,
-      "servingParams"          -> i.servingParams,
-      "metricsParams"          -> i.evaluatorParams,
-      "multipleMetricsResults" -> i.evaluatorResults,
-      "multipleMetricsResultsHTML" -> i.evaluatorResultsHTML,
-      "multipleMetricsResultsJSON" -> i.evaluatorResultsJSON)
+      "servingParams"          -> i.servingParams)
     engineInstanceColl.save(obj)
     id
   }
@@ -97,13 +92,6 @@ class MongoEngineInstances(client: MongoClient, config: StorageClientConfig, dbn
       engineVersion,
       engineVariant).headOption
 
-  def getEvalCompleted(): Seq[EngineInstance] = {
-    engineInstanceColl.find(MongoDBObject("status" -> "EVALCOMPLETED")).sort(
-      MongoDBObject("startTime" -> -1)).map {
-        dbObjToEngineInstance(_)
-      }.toSeq
-  }
-
   def update(i: EngineInstance): Unit = {
     val obj = MongoDBObject(
       "_id"                    -> i.id,
@@ -114,18 +102,13 @@ class MongoEngineInstances(client: MongoClient, config: StorageClientConfig, dbn
       "engineVersion"          -> i.engineVersion,
       "engineVariant"          -> i.engineVariant,
       "engineFactory"          -> i.engineFactory,
-      "metricsClass"           -> i.evaluatorClass,
       "batch"                  -> i.batch,
       "env"                    -> i.env,
       "sparkConf"              -> i.sparkConf,
       "dataSourceParams"       -> i.dataSourceParams,
       "preparatorParams"       -> i.preparatorParams,
       "algorithmsParams"       -> i.algorithmsParams,
-      "servingParams"          -> i.servingParams,
-      "metricsParams"          -> i.evaluatorParams,
-      "multipleMetricsResults" -> i.evaluatorResults,
-      "multipleMetricsResultsHTML" -> i.evaluatorResultsHTML,
-      "multipleMetricsResultsJSON" -> i.evaluatorResultsJSON)
+      "servingParams"          -> i.servingParams)
     engineInstanceColl.save(obj)
   }
 
@@ -142,18 +125,11 @@ class MongoEngineInstances(client: MongoClient, config: StorageClientConfig, dbn
       engineVersion = dbObj.as[String]("engineVersion"),
       engineVariant = dbObj.as[String]("engineVariant"),
       engineFactory = dbObj.as[String]("engineFactory"),
-      evaluatorClass = dbObj.as[String]("metricsClass"),
       batch = dbObj.as[String]("batch"),
       env = dbObj.as[Map[String, String]]("env"),
       sparkConf = dbObj.as[Map[String, String]]("sparkConf"),
       dataSourceParams = dbObj.as[String]("dataSourceParams"),
       preparatorParams = dbObj.as[String]("preparatorParams"),
       algorithmsParams = dbObj.as[String]("algorithmsParams"),
-      servingParams = dbObj.as[String]("servingParams"),
-      evaluatorParams = dbObj.as[String]("metricsParams"),
-      evaluatorResults = dbObj.as[String]("multipleMetricsResults"),
-      evaluatorResultsHTML =
-        dbObj.as[String]("multipleMetricsResultsHTML"),
-      evaluatorResultsJSON =
-        dbObj.as[String]("multipleMetricsResultsJSON"))
+      servingParams = dbObj.as[String]("servingParams"))
 }

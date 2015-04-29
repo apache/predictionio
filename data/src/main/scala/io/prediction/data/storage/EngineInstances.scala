@@ -18,32 +18,26 @@ package io.prediction.data.storage
 import com.github.nscala_time.time.Imports._
 import org.json4s._
 
-/**
- * EngineInstance object.
- *
- * Stores parameters, model, and evaluation results for each engine instance.
- *
- * @param id Engine instance ID.
- * @param status Status of the engine instance.
- * @param startTime Start time of the training/evaluation.
- * @param endTime End time of the training/evaluation.
- * @param engineId Engine ID of the instance.
- * @param engineVersion Engine version of the instance.
- * @param engineVariant Engine variant ID of the instance.
- * @param engineFactory Engine factory class for the instance.
- * @param evaluatorClass Name of evaluator class of the evaluation of this instance.
- * @param batch A batch label of the engine instance.
- * @param env The environment in which the instance was created.
- * @param sparkConf Custom Spark configuration of the instance.
- * @param dataSourceParams Data source parameters of the instance.
- * @param preparatorParams Preparator parameters of the instance.
- * @param algorithmsParams Algorithms parameters of the instance.
- * @param servingParams Serving parameters of the instance.
- * @param evaluatorParams Evaluator parameters of the instance.
- * @param evaluatorResults Results of the evaluator.
- * @param evaluatorResultsHTML HTML results of the evaluator.
- * @param evaluatorResultsJSON JSON results of the evaluator.
- */
+/** EngineInstance object.
+  *
+  * Stores parameters, model, and evaluation results for each engine instance.
+  *
+  * @param id Engine instance ID.
+  * @param status Status of the engine instance.
+  * @param startTime Start time of the training/evaluation.
+  * @param endTime End time of the training/evaluation.
+  * @param engineId Engine ID of the instance.
+  * @param engineVersion Engine version of the instance.
+  * @param engineVariant Engine variant ID of the instance.
+  * @param engineFactory Engine factory class for the instance.
+  * @param batch A batch label of the engine instance.
+  * @param env The environment in which the instance was created.
+  * @param sparkConf Custom Spark configuration of the instance.
+  * @param dataSourceParams Data source parameters of the instance.
+  * @param preparatorParams Preparator parameters of the instance.
+  * @param algorithmsParams Algorithms parameters of the instance.
+  * @param servingParams Serving parameters of the instance.
+  */
 private[prediction] case class EngineInstance(
   id: String,
   status: String,
@@ -53,23 +47,17 @@ private[prediction] case class EngineInstance(
   engineVersion: String,
   engineVariant: String,
   engineFactory: String,
-  evaluatorClass: String,
   batch: String,
   env: Map[String, String],
   sparkConf: Map[String, String],
   dataSourceParams: String,
   preparatorParams: String,
   algorithmsParams: String,
-  servingParams: String,
-  evaluatorParams: String,
-  evaluatorResults: String,
-  evaluatorResultsHTML: String,
-  evaluatorResultsJSON: String)
+  servingParams: String)
 
-/**
- * Base trait for implementations that interact with EngineInstances in the
- * backend app data store.
- */
+/** Base trait for implementations that interact with EngineInstances in the
+  * backend app data store.
+  */
 private[prediction] trait EngineInstances {
   /** Insert a new EngineInstance. */
   def insert(i: EngineInstance): String
@@ -94,11 +82,6 @@ private[prediction] trait EngineInstances {
     engineVersion: String,
     engineVariant: String): Seq[EngineInstance]
 
-  /** Get instances that are produced by evaluation and have run to completion,
-    * reverse sorted by the start time.
-    */
-  def getEvalCompleted(): Seq[EngineInstance]
-
   /** Update a EngineInstance. */
   def update(i: EngineInstance): Unit
 
@@ -120,18 +103,13 @@ private[prediction] class EngineInstanceSerializer
           engineVersion = "",
           engineVariant = "",
           engineFactory = "",
-          evaluatorClass = "",
           batch = "",
           env = Map(),
           sparkConf = Map(),
           dataSourceParams = "",
           preparatorParams = "",
           algorithmsParams = "",
-          servingParams = "",
-          evaluatorParams = "",
-          evaluatorResults = "",
-          evaluatorResultsHTML = "",
-          evaluatorResultsJSON = "")
+          servingParams = "")
       fields.foldLeft(seed) { case (i, field) =>
         field match {
           case JField("id", JString(id)) => i.copy(id = id)
@@ -148,8 +126,6 @@ private[prediction] class EngineInstanceSerializer
             i.copy(engineVariant = engineVariant)
           case JField("engineFactory", JString(engineFactory)) =>
             i.copy(engineFactory = engineFactory)
-          case JField("metricsClass", JString(evaluatorClass)) =>
-            i.copy(evaluatorClass = evaluatorClass)
           case JField("batch", JString(batch)) => i.copy(batch = batch)
           case JField("env", env) =>
             i.copy(env = Extraction.extract[Map[String, String]](env))
@@ -163,17 +139,6 @@ private[prediction] class EngineInstanceSerializer
             i.copy(algorithmsParams = algorithmsParams)
           case JField("servingParams", JString(servingParams)) =>
             i.copy(servingParams = servingParams)
-          case JField("metricsParams", JString(evaluatorParams)) =>
-            i.copy(evaluatorParams = evaluatorParams)
-          case JField("multipleMetricsResults",
-            JString(evaluatorResults)) =>
-              i.copy(evaluatorResults = evaluatorResults)
-          case JField("multipleMetricsResultsHTML",
-            JString(evaluatorResultsHTML)) =>
-              i.copy(evaluatorResultsHTML = evaluatorResultsHTML)
-          case JField("multipleMetricsResultsJSON",
-            JString(evaluatorResultsJSON)) =>
-              i.copy(evaluatorResultsJSON = evaluatorResultsJSON)
           case _ => i
         }
       }
@@ -189,7 +154,6 @@ private[prediction] class EngineInstanceSerializer
         JField("engineVersion", JString(i.engineVersion)) ::
         JField("engineVariant", JString(i.engineVariant)) ::
         JField("engineFactory", JString(i.engineFactory)) ::
-        JField("metricsClass", JString(i.evaluatorClass)) ::
         JField("batch", JString(i.batch)) ::
         JField("env", Extraction.decompose(i.env)(DefaultFormats)) ::
         JField("sparkConf", Extraction.decompose(i.sparkConf)(DefaultFormats)) ::
@@ -197,13 +161,6 @@ private[prediction] class EngineInstanceSerializer
         JField("preparatorParams", JString(i.preparatorParams)) ::
         JField("algorithmsParams", JString(i.algorithmsParams)) ::
         JField("servingParams", JString(i.servingParams)) ::
-        JField("metricsParams", JString(i.evaluatorParams)) ::
-        JField("multipleMetricsResults",
-          JString(i.evaluatorResults)) ::
-        JField("multipleMetricsResultsHTML",
-          JString(i.evaluatorResultsHTML)) ::
-        JField("multipleMetricsResultsJSON",
-          JString(i.evaluatorResultsJSON)) ::
         Nil)
   }
 ))

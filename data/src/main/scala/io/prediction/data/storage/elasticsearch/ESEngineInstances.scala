@@ -55,8 +55,6 @@ class ESEngineInstances(client: Client, config: StorageClientConfig, index: Stri
             ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
           ("engineFactory" ->
             ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
-          ("metricsClass" ->
-            ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
           ("batch" ->
             ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
           ("dataSourceParams" ->
@@ -67,15 +65,7 @@ class ESEngineInstances(client: Client, config: StorageClientConfig, index: Stri
             ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
           ("servingParams" ->
             ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
-          ("metricsParams" ->
-            ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
-          ("status" -> ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
-          ("multipleMetricsResults" ->
-            ("type" -> "string") ~ ("index" -> "no")) ~
-          ("multipleMetricsResultsHTML" ->
-            ("type" -> "string") ~ ("index" -> "no")) ~
-          ("multipleMetricsResultsJSON" ->
-            ("type" -> "string") ~ ("index" -> "no"))))
+          ("status" -> ("type" -> "string") ~ ("index" -> "not_analyzed"))))
     indices.preparePutMapping(index).setType(estype).
       setSource(compact(render(json))).get
   }
@@ -146,19 +136,6 @@ class ESEngineInstances(client: Client, config: StorageClientConfig, index: Stri
       engineId,
       engineVersion,
       engineVariant).headOption
-
-  def getEvalCompleted(): Seq[EngineInstance] = {
-    try {
-      val builder = client.prepareSearch(index).setTypes(estype).setPostFilter(
-        termFilter("status", "EVALCOMPLETED")).
-        addSort("startTime", SortOrder.DESC)
-      ESUtils.getAll[EngineInstance](client, builder)
-    } catch {
-      case e: ElasticsearchException =>
-        error(e.getMessage)
-        Seq()
-    }
-  }
 
   def update(i: EngineInstance): Unit = {
     try {

@@ -36,18 +36,13 @@ class JDBCEngineInstances(client: String, config: StorageClientConfig, prefix: S
         engineVersion text not null,
         engineVariant text not null,
         engineFactory text not null,
-        evaluatorClass text not null,
         batch text not null,
         env text not null,
         sparkConf text not null,
         datasourceParams text not null,
         preparatorParams text not null,
         algorithmsParams text not null,
-        servingParams text not null,
-        evaluatorParams text not null,
-        evaluatorResults text not null,
-        evaluatorResultsHTML text not null,
-        evaluatorResultsJSON text)""".execute().apply()
+        servingParams text not null)""".execute().apply()
     } catch {
       case e: Exception => debug(e.getMessage, e)
     }
@@ -66,18 +61,13 @@ class JDBCEngineInstances(client: String, config: StorageClientConfig, prefix: S
         ${i.engineVersion},
         ${i.engineVariant},
         ${i.engineFactory},
-        ${i.evaluatorClass},
         ${i.batch},
         ${JDBCUtils.mapToString(i.env)},
         ${JDBCUtils.mapToString(i.sparkConf)},
         ${i.dataSourceParams},
         ${i.preparatorParams},
         ${i.algorithmsParams},
-        ${i.servingParams},
-        ${i.evaluatorParams},
-        ${i.evaluatorResults},
-        ${i.evaluatorResultsHTML},
-        ${i.evaluatorResultsJSON})""".update().apply()
+        ${i.servingParams})""".update().apply()
       id
     } catch {
       case e: Exception =>
@@ -98,18 +88,13 @@ class JDBCEngineInstances(client: String, config: StorageClientConfig, prefix: S
         engineVersion,
         engineVariant,
         engineFactory,
-        evaluatorClass,
         batch,
         env,
         sparkConf,
         datasourceParams,
         preparatorParams,
         algorithmsParams,
-        servingParams,
-        evaluatorParams,
-        evaluatorResults,
-        evaluatorResultsHTML,
-        evaluatorResultsJSON
+        servingParams
       FROM $tableName WHERE id = $id""".map(resultToEngineInstance).
         single().apply()
     } catch {
@@ -131,18 +116,13 @@ class JDBCEngineInstances(client: String, config: StorageClientConfig, prefix: S
         engineVersion,
         engineVariant,
         engineFactory,
-        evaluatorClass,
         batch,
         env,
         sparkConf,
         datasourceParams,
         preparatorParams,
         algorithmsParams,
-        servingParams,
-        evaluatorParams,
-        evaluatorResults,
-        evaluatorResultsHTML,
-        evaluatorResultsJSON
+        servingParams
       FROM $tableName""".map(resultToEngineInstance).list().apply()
     } catch {
       case e: Exception =>
@@ -173,18 +153,13 @@ class JDBCEngineInstances(client: String, config: StorageClientConfig, prefix: S
         engineVersion,
         engineVariant,
         engineFactory,
-        evaluatorClass,
         batch,
         env,
         sparkConf,
         datasourceParams,
         preparatorParams,
         algorithmsParams,
-        servingParams,
-        evaluatorParams,
-        evaluatorResults,
-        evaluatorResultsHTML,
-        evaluatorResultsJSON
+        servingParams
       FROM $tableName
       WHERE
         status = 'COMPLETED' AND
@@ -200,43 +175,6 @@ class JDBCEngineInstances(client: String, config: StorageClientConfig, prefix: S
     }
   }
 
-  def getEvalCompleted(): Seq[EngineInstance] = DB localTx { implicit s =>
-    try {
-      sql"""
-      SELECT
-        id,
-        status,
-        startTime,
-        endTime,
-        engineId,
-        engineVersion,
-        engineVariant,
-        engineFactory,
-        evaluatorClass,
-        batch,
-        env,
-        sparkConf,
-        datasourceParams,
-        preparatorParams,
-        algorithmsParams,
-        servingParams,
-        evaluatorParams,
-        evaluatorResults,
-        evaluatorResultsHTML,
-        evaluatorResultsJSON
-      FROM $tableName
-      WHERE
-        status = 'EVALCOMPLETED'
-      ORDER BY startTime DESC""".
-        map(resultToEngineInstance).list().apply()
-    } catch {
-      case e: Exception =>
-        error(e.getMessage, e)
-        Seq()
-    }
-  }
-
-  /** Update a EngineInstance. */
   def update(i: EngineInstance): Unit = DB localTx { implicit session =>
     try {
       sql"""
@@ -248,18 +186,13 @@ class JDBCEngineInstances(client: String, config: StorageClientConfig, prefix: S
         engineVersion = ${i.engineVersion},
         engineVariant = ${i.engineVariant},
         engineFactory = ${i.engineFactory},
-        evaluatorClass = ${i.evaluatorClass},
         batch = ${i.batch},
         env = ${JDBCUtils.mapToString(i.env)},
         sparkConf = ${JDBCUtils.mapToString(i.sparkConf)},
         datasourceParams = ${i.dataSourceParams},
         preparatorParams = ${i.preparatorParams},
         algorithmsParams = ${i.algorithmsParams},
-        servingParams = ${i.servingParams},
-        evaluatorParams = ${i.evaluatorParams},
-        evaluatorResults = ${i.evaluatorResults},
-        evaluatorResultsHTML = ${i.evaluatorResultsHTML},
-        evaluatorResultsJSON = ${i.evaluatorResultsJSON}
+        servingParams = ${i.servingParams}
       where id = ${i.id}""".update().apply()
     } catch {
       case e: Exception =>
@@ -288,17 +221,12 @@ class JDBCEngineInstances(client: String, config: StorageClientConfig, prefix: S
       engineVersion = rs.string("engineVersion"),
       engineVariant = rs.string("engineVariant"),
       engineFactory = rs.string("engineFactory"),
-      evaluatorClass = rs.string("evaluatorClass"),
       batch = rs.string("batch"),
       env = JDBCUtils.stringToMap(rs.string("env")),
       sparkConf = JDBCUtils.stringToMap(rs.string("sparkConf")),
       dataSourceParams = rs.string("datasourceParams"),
       preparatorParams = rs.string("preparatorParams"),
       algorithmsParams = rs.string("algorithmsParams"),
-      servingParams = rs.string("servingParams"),
-      evaluatorParams = rs.string("evaluatorParams"),
-      evaluatorResults = rs.string("evaluatorResults"),
-      evaluatorResultsHTML = rs.string("evaluatorResultsHTML"),
-      evaluatorResultsJSON = rs.string("evaluatorResultsJSON"))
+      servingParams = rs.string("servingParams"))
   }
 }
