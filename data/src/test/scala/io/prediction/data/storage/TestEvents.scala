@@ -16,6 +16,7 @@
 package io.prediction.data.storage
 
 import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
 
 trait TestEvents {
 
@@ -220,6 +221,43 @@ trait TestEvents {
       }"""
     ),
     eventTime = DateTime.now
+  )
+
+  // timezone
+  val tz1 = Event(
+    event = "my_event",
+    entityType = "my_entity_type",
+    entityId = "my_entity_id0",
+    targetEntityType = Some("my_target_entity_type"),
+    targetEntityId = Some("my_target_entity_id"),
+    properties = DataMap(
+      """{
+        "prop1" : 1,
+        "prop2" : "value2",
+        "prop3" : [1, 2, 3],
+        "prop4" : true,
+        "prop5" : ["a", "b", "c"],
+        "prop6" : 4.56
+      }"""
+    ),
+    eventTime = new DateTime(12345678, DateTimeZone.forID("-08:00")),
+    prId = Some("my_prid")
+  )
+
+  val tz2 = Event(
+    event = "my_event",
+    entityType = "my_entity_type",
+    entityId = "my_entity_id1",
+    eventTime = new DateTime(12345678, DateTimeZone.forID("+02:00")),
+    prId = Some("my_prid")
+  )
+
+  val tz3 = Event(
+    event = "my_event",
+    entityType = "my_entity_type",
+    entityId = "my_entity_id2",
+    eventTime = new DateTime(12345678, DateTimeZone.forID("+08:00")),
+    prId = Some("my_prid")
   )
 
 }

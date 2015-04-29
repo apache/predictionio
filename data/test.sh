@@ -116,6 +116,46 @@ testdata='{
 
 checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
 
+# different time zone
+testdata='{
+  "event" : "my_event_tzone",
+  "entityType" : "my_entity_type",
+  "entityId" : "my_entity_id",
+  "eventTime" : "2004-12-13T21:39:45.618-08:00"
+}'
+
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
+
+testdata='{
+  "event" : "my_event_tzone",
+  "entityType" : "my_entity_type",
+  "entityId" : "my_entity_id",
+  "eventTime" : "2004-12-13T21:39:45.618+02:00"
+}'
+
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 201
+
+# invalid timezone
+testdata='{
+  "event" : "my_event_tzone",
+  "entityType" : "my_entity_type",
+  "entityId" : "my_entity_id",
+  "eventTime" : "2004-12-13T21:39:45.618ABC"
+}'
+
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
+
+
+# invalid timezone
+testdata='{
+  "event" : "my_event_tzone",
+  "entityType" : "my_entity_type",
+  "entityId" : "my_entity_id",
+  "eventTime" : "2004-12-13T21:39:45.618+1"
+}'
+
+checkPOST "/events.json?accessKey=$accessKey" "$testdata" 400
+
 # no properties
 testdata='{
   "event" : "my_event",

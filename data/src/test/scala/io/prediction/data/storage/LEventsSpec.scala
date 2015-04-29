@@ -42,6 +42,7 @@ class LEventsSpec extends Specification with TestEvents {
 
     init default ${initDefault(eventClient)}
     insert 3 test events and get back by event ID ${insertAndGetEvents(eventClient)}
+    insert 3 test events with timezone and get back by event ID ${insertAndGetTimezone(eventClient)}
     insert and delete by ID ${insertAndDelete(eventClient)}
     insert test user events ${insertTestUserEvents(eventClient)}
     find user events ${findUserEvents(eventClient)}
@@ -72,6 +73,23 @@ class LEventsSpec extends Specification with TestEvents {
 
     // events from TestEvents trait
     val listOfEvents = List(r1,r2,r3)
+
+    val insertResp = listOfEvents.map { eventClient.insert(_, appId) }
+
+    val insertedEventId: List[String] = insertResp
+
+    val insertedEvent: List[Option[Event]] = listOfEvents.zip(insertedEventId)
+      .map { case (e, id) => Some(e.copy(eventId = Some(id))) }
+
+    val getResp = insertedEventId.map { id => eventClient.get(id, appId) }
+
+    val getEvents = getResp
+
+    insertedEvent must containTheSameElementsAs(getEvents)
+  }
+
+  def insertAndGetTimezone(eventClient: LEvents) = {
+    val listOfEvents = List(tz1, tz2, tz3)
 
     val insertResp = listOfEvents.map { eventClient.insert(_, appId) }
 
