@@ -128,7 +128,7 @@ object RunServer extends Logging {
     info(s"Submission command: ${sparkSubmit.mkString(" ")}")
 
     val proc =
-      Process(sparkSubmit, None, "SPARK_YARN_USER_ENV" -> pioEnvVars).run()
+      Process(sparkSubmit, None, "CLASSPATH" -> "", "SPARK_YARN_USER_ENV" -> pioEnvVars).run()
     Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
       def run(): Unit = {
         proc.destroy()

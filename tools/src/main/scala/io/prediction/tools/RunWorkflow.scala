@@ -168,6 +168,6 @@ object RunWorkflow extends Logging {
         .getOrElse(Seq()) ++ 
       (if (ca.common.batch != "") Seq("--batch", ca.common.batch) else Seq())
     info(s"Submission command: ${sparkSubmit.mkString(" ")}")
-    Process(sparkSubmit, None, "SPARK_YARN_USER_ENV" -> pioEnvVars).!
+    Process(sparkSubmit, None, "CLASSPATH" -> "", "SPARK_YARN_USER_ENV" -> pioEnvVars).!
   }
 }
