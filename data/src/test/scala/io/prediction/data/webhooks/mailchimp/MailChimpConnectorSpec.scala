@@ -38,7 +38,7 @@ class MailChimpConnectorSpec extends Specification with ConnectorTestUtil {
         "data[merges][EMAIL]" -> "api@mailchimp.com",
         "data[merges][FNAME]" -> "MailChimp",
         "data[merges][LNAME]" -> "API",
-        "data[merges][INTERESTS]" -> "Group1,Group2",
+        "data[merges][INTERESTS]" -> "Group1,Group2", //optional
         "data[ip_opt]" -> "10.20.10.30",
         "data[ip_signup]" -> "10.20.10.30"
       )
@@ -84,7 +84,7 @@ class MailChimpConnectorSpec extends Specification with ConnectorTestUtil {
         "data[merges][EMAIL]" -> "api+unsub@mailchimp.com",
         "data[merges][FNAME]" -> "MailChimp",
         "data[merges][LNAME]" -> "API",
-        "data[merges][INTERESTS]" -> "Group1,Group2",
+        "data[merges][INTERESTS]" -> "Group1,Group2", //optional 
         "data[ip_opt]" -> "10.20.10.30",
         "data[campaign_id]" -> "cb398d21d2"
       )
@@ -130,7 +130,7 @@ class MailChimpConnectorSpec extends Specification with ConnectorTestUtil {
         "data[merges][EMAIL]" -> "api@mailchimp.com",
         "data[merges][FNAME]" -> "MailChimp",
         "data[merges][LNAME]" -> "API",
-        "data[merges][INTERESTS]" -> "Group1,Group2",
+        "data[merges][INTERESTS]" -> "Group1,Group2", //optional
         "data[ip_opt]" -> "10.20.10.30"
       )
 

@@ -76,7 +76,7 @@ private[prediction] object MailChimpConnector extends FormConnector {
     "data[merges][LNAME]": "API",
     "data[merges][INTERESTS]": "Group1,Group2",
     "data[ip_opt]": "10.20.10.30",
-    "data[ip_signup]": "10.20.10.30"
+    "data[ip_signup]": "10.20.10.30"    
     */
 
     // convert to ISO8601 format
@@ -97,7 +97,7 @@ private[prediction] object MailChimpConnector extends FormConnector {
           ("EMAIL" -> data("data[merges][EMAIL]")) ~
           ("FNAME" -> data("data[merges][FNAME]"))) ~
           ("LNAME" -> data("data[merges][LNAME]")) ~
-          ("INTERESTS" -> data("data[merges][INTERESTS]"))
+          ("INTERESTS" -> data.get("data[merges][INTERESTS]"))
         )) ~
         ("ip_opt" -> data("data[ip_opt]")) ~
         ("ip_signup" -> data("data[ip_signup]")
@@ -150,7 +150,7 @@ private[prediction] object MailChimpConnector extends FormConnector {
           ("EMAIL" -> data("data[merges][EMAIL]")) ~
           ("FNAME" -> data("data[merges][FNAME]"))) ~
           ("LNAME" -> data("data[merges][LNAME]")) ~
-          ("INTERESTS" -> data("data[merges][INTERESTS]"))
+          ("INTERESTS" -> data.get("data[merges][INTERESTS]"))
         )) ~
         ("ip_opt" -> data("data[ip_opt]")) ~
         ("campaign_id" -> data("data[campaign_id]")
@@ -174,7 +174,7 @@ private[prediction] object MailChimpConnector extends FormConnector {
     "data[merges][EMAIL]": "api@mailchimp.com",
     "data[merges][FNAME]": "MailChimp",
     "data[merges][LNAME]": "API",
-    "data[merges][INTERESTS]": "Group1,Group2",
+    "data[merges][INTERESTS]": "Group1,Group2", \\OPTIONAL
     "data[ip_opt]": "10.20.10.30"
     */
 
@@ -195,7 +195,7 @@ private[prediction] object MailChimpConnector extends FormConnector {
           ("EMAIL" -> data("data[merges][EMAIL]")) ~
           ("FNAME" -> data("data[merges][FNAME]"))) ~
           ("LNAME" -> data("data[merges][LNAME]")) ~
-          ("INTERESTS" -> data("data[merges][INTERESTS]"))
+          ("INTERESTS" -> data.get("data[merges][INTERESTS]"))
         )) ~
         ("ip_opt" -> data("data[ip_opt]")
       ))
