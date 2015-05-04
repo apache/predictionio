@@ -1,8 +1,16 @@
+##########
+# This is .travis.yml configuration file specifically for master and develop branch.
+# The travis job should contains only unit and integration tests.
+#
+# To avoid this file from being overwritten by .travis.yml from other branches,
+# please add the following to your local git config:
+#   git config merge.ours.driver true
+##########
+
 branches:
   only:
     - master
     - develop
-    - livedoc
 
 language: scala
 
@@ -30,39 +38,14 @@ before_script:
   - psql -c 'create database predictionio;' -U postgres
   - ./bin/travis/pio-start-travis
 
-# Install ruby 2.2.0 for building doc
-  - rvm install ruby-2.2.0
-  - rvm use ruby-2.2.0
-
-# Bundle install for building doc
-  - cd docs/manual
-  - bundle install
-
 script:
-# Build doc
-  - bundle exec middleman build
-
 # Run all unit tests
-  - cd $PIO_HOME
   - sbt test
 
 after_script:
   - ./bin/travis/pio-stop-travis
 
 deploy:
-  - provider: s3
-    access_key_id:
-      secure: "PxUW6LxwsJ2UlakxsPtkgIwbE949QyJbDF31IdjDIVX5H7KLWA0xkpECj+DXW7/lODsuGLxi02w4Y+KE0Ujo27ovnQAu2F1D6NDGn+D/JIu/wqjRJ4OOOg65j/06zyj5jzWMckLh6wYKABMiInsWiXtr4ehLS6pHVyJVXaLuBPE="
-    secret_access_key:
-      secure: "L3TXxQJZutXrXROf89dTiMuvcnsQ88F+cSqpddhafy4O3agyTMyJcHozizCaKI+VuJVZnUrip/joo4b85PSC8xjU4G7/lOIAoiSyQZU/f4RqUTFyl9ppTHQq2CyZKZy1qhqmBegRcWTy6TLV3JNXzKq+0fgl6/HekUMBuNX98yM="
-    bucket: docs.prediction.io
-    region: us-east-1
-    skip_cleanup: true
-    endpoint: docs.prediction.io.s3-website-us-east-1.amazonaws.com
-    local-dir: build
-    detect_encoding: true
-    on:
-      branch: livedoc
   - provider: s3
     access_key_id:
       secure: "PxUW6LxwsJ2UlakxsPtkgIwbE949QyJbDF31IdjDIVX5H7KLWA0xkpECj+DXW7/lODsuGLxi02w4Y+KE0Ujo27ovnQAu2F1D6NDGn+D/JIu/wqjRJ4OOOg65j/06zyj5jzWMckLh6wYKABMiInsWiXtr4ehLS6pHVyJVXaLuBPE="
