@@ -55,7 +55,7 @@ elif [ -r "$SPARK_HOME/RELEASE" ]; then
     exit 1
   fi
 else
-  echo "\033[0;35m$SPARK_HOME is probably an Apache Spark development tree. Please make sure you are using at least $MIN_SPARK_VERSION.\033[0m"
+  echo -e "\033[0;35m$SPARK_HOME is probably an Apache Spark development tree. Please make sure you are using at least $MIN_SPARK_VERSION.\033[0m"
 fi
 
 # Find the java binary
