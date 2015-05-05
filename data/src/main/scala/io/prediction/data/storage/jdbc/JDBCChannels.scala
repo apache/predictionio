@@ -38,10 +38,11 @@ class JDBCChannels(client: String, config: StorageClientConfig, prefix: String)
 
   def insert(channel: Channel): Option[Int] = DB localTx { implicit session =>
     try {
-      val q = if (channel.id == 0)
+      val q = if (channel.id == 0) {
         sql"INSERT INTO $tableName (name, appid) VALUES(${channel.name}, ${channel.appid})"
-      else
+      } else {
         sql"INSERT INTO $tableName VALUES(${channel.id}, ${channel.name}, ${channel.appid})"
+      }
       Some(q.updateAndReturnGeneratedKey().apply().toInt)
     } catch {
       case e: Exception =>

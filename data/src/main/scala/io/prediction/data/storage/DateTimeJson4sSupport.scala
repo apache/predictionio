@@ -34,7 +34,7 @@ private[prediction] object DateTimeJson4sSupport {
     case jv: JValue => DataUtils.stringToDateTime(jv.extract[String])
   }
 
-  class serializer extends CustomSerializer[DateTime](format => (
+  class Serializer extends CustomSerializer[DateTime](format => (
     deserializeFromJValue, serializeToJValue))
 
 }

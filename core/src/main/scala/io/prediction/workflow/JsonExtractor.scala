@@ -23,7 +23,7 @@ import io.prediction.controller.Utils
 import io.prediction.workflow.JsonExtractorOption.JsonExtractorOption
 import org.json4s.Extraction
 import org.json4s.Formats
-import org.json4s.JsonAST.JArray
+import org.json4s.JsonAST.{JArray, JValue}
 import org.json4s.native.JsonMethods.compact
 import org.json4s.native.JsonMethods.parse
 import org.json4s.native.JsonMethods.render
@@ -36,7 +36,7 @@ object JsonExtractor {
     extractorOption: JsonExtractorOption,
     o: Any,
     json4sFormats: Formats = Utils.json4sDefaultFormats,
-    gsonTypeAdapterFactories: Seq[TypeAdapterFactory] = Seq.empty[TypeAdapterFactory]) = {
+    gsonTypeAdapterFactories: Seq[TypeAdapterFactory] = Seq.empty[TypeAdapterFactory]): JValue = {
 
     extractorOption match {
       case JsonExtractorOption.Both =>
@@ -58,7 +58,7 @@ object JsonExtractor {
     json: String,
     clazz: Class[T],
     json4sFormats: Formats = Utils.json4sDefaultFormats,
-    gsonTypeAdapterFactories: Seq[TypeAdapterFactory] = Seq.empty[TypeAdapterFactory]) = {
+    gsonTypeAdapterFactories: Seq[TypeAdapterFactory] = Seq.empty[TypeAdapterFactory]): T = {
 
     extractorOption match {
       case JsonExtractorOption.Both =>
