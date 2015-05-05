@@ -35,6 +35,6 @@ class StorageClient(val config: StorageClientConfig) extends BaseStorageClient
     MongoClient(addresses)
   } catch {
     case e: MongoException =>
-      throw new StorageClientException(e.getMessage)
+      throw new StorageClientException(e.getMessage, e)
   }
 }

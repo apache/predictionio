@@ -42,6 +42,6 @@ class StorageClient(val config: StorageClientConfig) extends BaseStorageClient
     transportClient
   } catch {
     case e: ConnectTransportException =>
-      throw new StorageClientException(e.getMessage)
+      throw new StorageClientException(e.getMessage, e)
   }
 }

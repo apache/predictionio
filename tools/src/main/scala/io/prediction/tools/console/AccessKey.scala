@@ -15,8 +15,7 @@
 
 package io.prediction.tools.console
 
-import io.prediction.data.storage.{AccessKey => StorageAccessKey}
-import io.prediction.data.storage.Storage
+import io.prediction.data.storage
 
 import grizzled.slf4j.Logging
 
@@ -26,10 +25,10 @@ case class AccessKeyArgs(
 
 object AccessKey extends Logging {
   def create(ca: ConsoleArgs): Int = {
-    val apps = Storage.getMetaDataApps
+    val apps = storage.Storage.getMetaDataApps
     apps.getByName(ca.app.name) map { app =>
-      val accessKeys = Storage.getMetaDataAccessKeys
-      val accessKey = accessKeys.insert(StorageAccessKey(
+      val accessKeys = storage.Storage.getMetaDataAccessKeys
+      val accessKey = accessKeys.insert(storage.AccessKey(
         key = "",
         appid = app.id,
         events = ca.accessKey.events))
@@ -49,11 +48,11 @@ object AccessKey extends Logging {
   def list(ca: ConsoleArgs): Int = {
     val keys =
       if (ca.app.name == "") {
-        Storage.getMetaDataAccessKeys.getAll
+        storage.Storage.getMetaDataAccessKeys.getAll
       } else {
-        val apps = Storage.getMetaDataApps
+        val apps = storage.Storage.getMetaDataApps
         apps.getByName(ca.app.name) map { app =>
-          Storage.getMetaDataAccessKeys.getByAppid(app.id)
+          storage.Storage.getMetaDataAccessKeys.getByAppid(app.id)
         } getOrElse {
           error(s"App ${ca.app.name} does not exist. Aborting.")
           return 1
@@ -71,7 +70,7 @@ object AccessKey extends Logging {
   }
 
   def delete(ca: ConsoleArgs): Int = {
-    if (Storage.getMetaDataAccessKeys.delete(ca.accessKey.accessKey)) {
+    if (storage.Storage.getMetaDataAccessKeys.delete(ca.accessKey.accessKey)) {
       info(s"Deleted access key ${ca.accessKey.accessKey}.")
       0
     } else {

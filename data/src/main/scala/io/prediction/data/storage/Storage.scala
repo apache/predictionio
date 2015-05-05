@@ -16,33 +16,101 @@
 package io.prediction.data.storage
 
 import grizzled.slf4j.Logging
+import io.prediction.annotation.DeveloperApi
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.existentials
 import scala.reflect.runtime.universe._
 
+/** :: DeveloperApi ::
+  * Any storage backend drivers will need to implement this trait with exactly
+  * '''StorageClient''' as the class name. PredictionIO storage layer will look
+  * for this class when it instantiates the actual backend for use by higher
+  * level storage access APIs.
+  */
+@DeveloperApi
+trait BaseStorageClient {
+  /** Configuration of the '''StorageClient''' */
+  val config: StorageClientConfig
+
+  /** The actual client object. This could be a database connection or any kind
+    * of database access object.
+    */
+  val client: AnyRef
+
+  /** Set a prefix for storage class discovery. As an example, if this prefix
+    * is set as ''JDBC'', when the storage layer instantiates an implementation
+    * of [[Apps]], it will try to look for a class named ''JDBCApps''.
+    */
+  val prefix: String = ""
+}
+
+/** :: DeveloperApi ::
+  * A wrapper of storage client configuration that will be populated by
+  * PredictionIO automatically, and passed to the StorageClient during
+  * instantiation.
+  *
+  * @param parallel This is set to true by PredictionIO when the storage client
+  *                 is instantiated in a parallel data source.
+  * @param test This is set to true by PredictionIO when tests are being run.
+  * @param properties This is populated by PredictionIO automatically from
+  *                   environmental configuration variables. If you have these
+  *                   variables,
+  *                   - PIO_STORAGE_SOURCES_PGSQL_TYPE=jdbc
+  *                   - PIO_STORAGE_SOURCES_PGSQL_USERNAME=abc
+  *                   - PIO_STOARGE_SOURCES_PGSQL_PASSWORD=xyz
+  *
+  *                   this field will be filled as a map of string to string:
+  *                   - TYPE -> jdbc
+  *                   - USERNAME -> abc
+  *                   - PASSWORD -> xyz
+  */
+@DeveloperApi
+case class StorageClientConfig(
+  parallel: Boolean = false, // parallelized access (RDD)?
+  test: Boolean = false, // test mode config
+  properties: Map[String, String] = Map())
+
+/** :: DeveloperApi ::
+  * Thrown when a StorageClient runs into an exceptional condition
+  *
+  * @param message Exception error message
+  * @param cause The underlying exception that caused the exception
+  */
+@DeveloperApi
+class StorageClientException(message: String, cause: Throwable)
+  extends RuntimeException(message, cause)
+
 @deprecated("Use StorageException", "0.9.2")
 private[prediction] case class StorageError(message: String)
 
-private[prediction] class StorageException(message: String, cause: Throwable)
+/** :: DeveloperApi ::
+  * Thrown by data access objects when they run into exceptional conditions
+  *
+  * @param message Exception error message
+  * @param cause The underlying exception that caused the exception
+  */
+@DeveloperApi
+class StorageException(message: String, cause: Throwable)
   extends Exception(message, cause) {
 
   def this(message: String) = this(message, null)
 }
 
-/**
- * Backend-agnostic data storage layer with lazy initialization and connection
- * pooling. Use this object when you need to interface with Event Store in your
- * engine.
- */
+/** Backend-agnostic data storage layer with lazy initialization. Use this
+  * object when you need to interface with Event Store in your engine.
+  */
 object Storage extends Logging {
+  private case class ClientMeta(
+    sourceType: String,
+    client: BaseStorageClient,
+    config: StorageClientConfig)
+
+  private case class DataObjectMeta(sourceName: String, namespace: String)
+
   private var errors = 0
 
-  private def prefixPath(prefix: String, body: String) = s"${prefix}_${body}"
-
   private val sourcesPrefix = "PIO_STORAGE_SOURCES"
-  private def sourcesPrefixPath(body: String) =
-    prefixPath(sourcesPrefix, body)
 
   private val sourceTypesRegex = """PIO_STORAGE_SOURCES_([^_]+)_TYPE""".r
 
@@ -55,40 +123,7 @@ object Storage extends Logging {
 
   if (sourceKeys.size == 0) warn("There is no properly configured data source.")
 
-  private case class ClientMeta(
-    sourceType: String,
-    client: BaseStorageClient,
-    config: StorageClientConfig)
-  private case class DataObjectMeta(sourceName: String, namespace: String)
-
   private val s2cm = scala.collection.mutable.Map[String, Option[ClientMeta]]()
-  private def updateS2CM(k: String, parallel: Boolean, test: Boolean):
-    Option[ClientMeta] = {
-    try {
-      val keyedPath = sourcesPrefixPath(k)
-      val sourceType = sys.env(prefixPath(keyedPath, "TYPE"))
-      val props = sys.env.filter(t => t._1.startsWith(keyedPath)).map(
-        t => t._1.replace(s"${keyedPath}_", "") -> t._2)
-      val clientConfig = StorageClientConfig(
-        properties = props,
-        parallel = parallel,
-        test = test)
-      val client = getClient(clientConfig, sourceType)
-      Some(ClientMeta(sourceType, client, clientConfig))
-    } catch {
-      case e: Throwable =>
-        error(s"Error initializing storage client for source ${k}", e)
-        errors += 1
-        None
-    }
-  }
-  private def sourcesToClientMeta(
-      source: String,
-      parallel: Boolean,
-      test: Boolean): Option[ClientMeta] = {
-    val sourceName = if (parallel) s"parallel-${source}" else source
-    s2cm.getOrElseUpdate(sourceName, updateS2CM(source, parallel, test))
-  }
 
   /** Reference to the app data repository. */
   private val EventDataRepository = "EVENTDATA"
@@ -96,8 +131,6 @@ object Storage extends Logging {
   private val MetaDataRepository = "METADATA"
 
   private val repositoriesPrefix = "PIO_STORAGE_REPOSITORIES"
-  private def repositoriesPrefixPath(body: String) =
-    prefixPath(repositoriesPrefix, body)
 
   private val repositoryNamesRegex =
     """PIO_STORAGE_REPOSITORIES_([^_]+)_NAME""".r
@@ -143,6 +176,28 @@ object Storage extends Logging {
       }
     ).toMap
 
+  if (errors > 0) {
+    error(s"There were $errors configuration errors. Exiting.")
+    sys.exit(errors)
+  }
+
+  // End of constructor and field definitions and begin method definitions
+
+  private def prefixPath(prefix: String, body: String) = s"${prefix}_$body"
+
+  private def sourcesPrefixPath(body: String) = prefixPath(sourcesPrefix, body)
+
+  private def repositoriesPrefixPath(body: String) =
+    prefixPath(repositoriesPrefix, body)
+
+  private def sourcesToClientMeta(
+      source: String,
+      parallel: Boolean,
+      test: Boolean): Option[ClientMeta] = {
+    val sourceName = if (parallel) s"parallel-$source" else source
+    s2cm.getOrElseUpdate(sourceName, updateS2CM(source, parallel, test))
+  }
+
   private def getClient(
       clientConfig: StorageClientConfig,
       pkg: String): BaseStorageClient = {
@@ -157,6 +212,27 @@ object Storage extends Logging {
           newInstance(clientConfig).asInstanceOf[BaseStorageClient]
       case e: java.lang.reflect.InvocationTargetException =>
         throw e.getCause
+    }
+  }
+
+  private def updateS2CM(k: String, parallel: Boolean, test: Boolean):
+  Option[ClientMeta] = {
+    try {
+      val keyedPath = sourcesPrefixPath(k)
+      val sourceType = sys.env(prefixPath(keyedPath, "TYPE"))
+      val props = sys.env.filter(t => t._1.startsWith(keyedPath)).map(
+        t => t._1.replace(s"${keyedPath}_", "") -> t._2)
+      val clientConfig = StorageClientConfig(
+        properties = props,
+        parallel = parallel,
+        test = test)
+      val client = getClient(clientConfig, sourceType)
+      Some(ClientMeta(sourceType, client, clientConfig))
+    } catch {
+      case e: Throwable =>
+        error(s"Error initializing storage client for source ${k}", e)
+        errors += 1
+        None
     }
   }
 
@@ -182,7 +258,7 @@ object Storage extends Logging {
       test: Boolean = false)(implicit tag: TypeTag[T]): T = {
     val clientMeta = sourcesToClientMeta(sourceName, parallel, test) getOrElse {
       throw new StorageClientException(
-        s"Data source $sourceName was not properly initialized.")
+        s"Data source $sourceName was not properly initialized.", null)
     }
     val sourceType = clientMeta.sourceType
     val ctorArgs = dataObjectCtorArgs(clientMeta.client, namespace)
@@ -200,7 +276,7 @@ object Storage extends Logging {
           case e: ClassNotFoundException =>
             throw new StorageClientException("No storage backend " +
               "implementation can be found (tried both " +
-              s"$className and $rawClassName)")
+              s"$className and $rawClassName)", e)
         }
     }
     val constructor = clazz.getConstructors()(0)
@@ -238,23 +314,26 @@ object Storage extends Logging {
   }
 
   private[prediction] def verifyAllDataObjects(): Unit = {
-    println("  Verifying Meta Data Backend")
+    info("Verifying Meta Data Backend (Source: " +
+      s"${repositoriesToDataObjectMeta(MetaDataRepository).sourceName})...")
     getMetaDataEngineManifests()
     getMetaDataEngineInstances()
     getMetaDataEvaluationInstances()
     getMetaDataApps()
     getMetaDataAccessKeys()
-    println("  Verifying Model Data Backend")
+    info("Verifying Model Data Backend (Source: " +
+      s"${repositoriesToDataObjectMeta(ModelDataRepository).sourceName})...")
     getModelDataModels()
-    println("  Verifying Event Data Backend")
+    info("Verifying Event Data Backend (Source: " +
+      s"${repositoriesToDataObjectMeta(EventDataRepository).sourceName})...")
     val eventsDb = getLEvents(test = true)
-    println("  Test write Event Store (App Id 0)")
+    info("Test writing to Event Store (App Id 0)...")
     // use appId=0 for testing purpose
     eventsDb.init(0)
     eventsDb.insert(Event(
-      event="test",
-      entityType="test",
-      entityId="test"), 0)
+      event = "test",
+      entityType = "test",
+      entityId = "test"), 0)
     eventsDb.remove(0)
     eventsDb.close()
   }
@@ -292,22 +371,14 @@ object Storage extends Logging {
   def getPEvents(): PEvents =
     getPDataObject[PEvents](EventDataRepository)
 
-  if (errors > 0) {
-    error(s"There were $errors configuration errors. Exiting.")
-    sys.exit(errors)
-  }
+  def config: Map[String, Map[String, Map[String, String]]] = Map(
+    "sources" -> s2cm.toMap.map { case (source, clientMeta) =>
+      source -> clientMeta.map { cm =>
+        Map(
+          "type" -> cm.sourceType,
+          "config" -> cm.config.properties.map(t => s"${t._1} -> ${t._2}").mkString(", ")
+        )
+      }.getOrElse(Map.empty)
+    }
+  )
 }
-
-private[prediction] trait BaseStorageClient {
-  val config: StorageClientConfig
-  val client: AnyRef
-  val prefix: String = ""
-}
-
-private[prediction] case class StorageClientConfig(
-  parallel: Boolean = false, // parallelized access (RDD)?
-  test: Boolean = false, // test mode config
-  properties: Map[String, String] = Map())
-
-private[prediction] class StorageClientException(msg: String)
-    extends RuntimeException(msg)
