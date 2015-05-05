@@ -25,7 +25,6 @@ import org.joda.time.DateTime
 import scala.reflect.ClassTag
 
 /** :: DeveloperApi ::
-  *
   * Base trait of a data access object that returns [[Event]] related RDD data
   * structure.
   */
@@ -49,7 +48,6 @@ trait PEvents extends Serializable {
     }
 
   /** :: DeveloperApi ::
-    *
     * Read from database and return the events.
     *
     * @param appId return events of this app ID
@@ -158,7 +156,6 @@ trait PEvents extends Serializable {
   }
 
   /** :: DeveloperApi ::
-    *
     * Write events to database
     *
     * @param events RDD of Event
@@ -170,7 +167,6 @@ trait PEvents extends Serializable {
     write(events, appId, None)(sc)
 
   /** :: DeveloperApi ::
-    *
     * Write events to database
     *
     * @param events RDD of Event
