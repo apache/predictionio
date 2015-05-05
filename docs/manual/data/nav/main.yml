@@ -51,6 +51,9 @@ root:
           -
             body: 'Ruby SDK'
             url: '/sdk/ruby/'
+          -
+            body: 'Community Powered SDKs'
+            url: '/sdk/community/'
   -
     body: 'Deploying an Engine'
     url: '#'
