@@ -1,10 +1,10 @@
-/** Copyright 2014 TappingStone, Inc.
+/** Copyright 2015 TappingStone, Inc.
   *
   * Licensed under the Apache License, Version 2.0 (the "License");
   * you may not use this file except in compliance with the License.
   * You may obtain a copy of the License at
   *
-  * http://www.apache.org/licenses/LICENSE-2.0
+  *     http://www.apache.org/licenses/LICENSE-2.0
   *
   * Unless required by applicable law or agreed to in writing, software
   * distributed under the License is distributed on an "AS IS" BASIS,
@@ -67,8 +67,9 @@ class CommandClient(
     } getOrElse {
       appClient.get(req.id) map {
         app2 =>
-          GeneralResponse(0, s"App ID ${app2.id} already exists and maps to the app '${app2.name}'. " +
-            "Aborting.")
+          GeneralResponse(0, 
+              s"App ID ${app2.id} already exists and maps to the app '${app2.name}'. " +
+              "Aborting.")
       } getOrElse {
         val appid = appClient.insert(App(
           id = Option(req.id).getOrElse(0),
@@ -112,7 +113,8 @@ class CommandClient(
     new AppListResponse(1, "Successful retrieved app list.", appsRes)
   }
 
-  def futureAppDataDelete(appName: String)(implicit ec: ExecutionContext): Future[GeneralResponse] = Future {
+  def futureAppDataDelete(appName: String)
+      (implicit ec: ExecutionContext): Future[GeneralResponse] = Future {
     val response = appClient.getByName(appName) map { app =>
       val data = if (eventClient.remove(app.id)) {
         GeneralResponse(1, s"Removed Event Store for this app ID: ${app.id}")
@@ -134,7 +136,8 @@ class CommandClient(
     response
   }
 
-  def futureAppDelete(appName: String)(implicit ec: ExecutionContext): Future[GeneralResponse] = Future {
+  def futureAppDelete(appName: String)
+      (implicit ec: ExecutionContext): Future[GeneralResponse] = Future {
 
     val response = appClient.getByName(appName) map { app =>
       val data = if (eventClient.remove(app.id)) {
@@ -153,7 +156,8 @@ class CommandClient(
     response
   }
 
-  def futureTrain(req: TrainRequest)(implicit ec: ExecutionContext): Future[GeneralResponse] = Future {
-    return null;
+  def futureTrain(req: TrainRequest)
+      (implicit ec: ExecutionContext): Future[GeneralResponse] = Future {
+    null
   }
 }

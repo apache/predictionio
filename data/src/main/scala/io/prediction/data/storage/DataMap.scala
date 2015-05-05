@@ -39,7 +39,7 @@ class DataMap (
   val fields: Map[String, JValue]
 ) extends Serializable {
   @transient lazy implicit private val formats = DefaultFormats +
-    new DateTimeJson4sSupport.serializer
+    new DateTimeJson4sSupport.Serializer
 
   /** Check the existence of a required property name. Throw an exception if
     * it does not exist.

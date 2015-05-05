@@ -418,9 +418,10 @@ object Template extends Logging {
     val metadata = templateMetaData(templateJsonFile)
 
     metadata.pioVersionMin.foreach { pvm =>
-      if (Version(BuildInfo.version) < Version(pvm))
+      if (Version(BuildInfo.version) < Version(pvm)) {
         warn(s"This engine template requires at least PredictionIO $pvm. " +
           s"The template may not work with PredictionIO ${BuildInfo.version}.")
+      }
     }
   }
 

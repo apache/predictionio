@@ -183,10 +183,11 @@ object App extends Logging {
             val r = if (events.remove(app.id)) {
               info(s"Removed Event Store for this app ID: ${app.id}")
               accesskeys.getByAppid(app.id) foreach { key =>
-                if (accesskeys.delete(key.key))
+                if (accesskeys.delete(key.key)) {
                   info(s"Removed access key ${key.key}")
-                else
+                } else {
                   error(s"Error removing access key ${key.key}")
+                }
               }
               if (apps.delete(app.id)) {
                 info(s"Deleted app ${app.name}.")
@@ -261,34 +262,37 @@ object App extends Logging {
           val events = storage.Storage.getLEvents()
           // remove table
           val r1 = if (events.remove(app.id, channelId)) {
-            if (channelId.isDefined)
+            if (channelId.isDefined) {
               info(s"Removed Event Store for this channel ID: ${channelId.get}")
-            else
+            } else {
               info(s"Removed Event Store for this app ID: ${app.id}")
+            }
             0
           } else {
-            if (channelId.isDefined)
+            if (channelId.isDefined) {
               error(s"Error removing Event Store for this channel.")
-            else
+            } else {
               error(s"Error removing Event Store for this app.")
-
+            }
             1
           }
           // re-create table
           val dbInit = events.init(app.id, channelId)
           val r2 = if (dbInit) {
-            if (channelId.isDefined)
+            if (channelId.isDefined) {
               info(s"Initialized Event Store for this channel ID: ${channelId.get}.")
-            else
+            } else {
               info(s"Initialized Event Store for this app ID: ${app.id}.")
+            }
             0
           } else {
-            if (channelId.isDefined)
+            if (channelId.isDefined) {
               error(s"Unable to initialize Event Store for this channel ID:" +
                 s" ${channelId.get}.")
-            else
+            } else {
               error(s"Unable to initialize Event Store for this appId:" +
                 s" ${app.id}.")
+            }
             1
           }
           events.close()

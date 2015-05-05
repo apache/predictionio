@@ -1,4 +1,4 @@
-/** Copyright 2014 TappingStone, Inc.
+/** Copyright 2015 TappingStone, Inc.
   *
   * Licensed under the Apache License, Version 2.0 (the "License");
   * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import akka.io.IO
 import akka.util.Timeout
 import io.prediction.data.api.StartServer
 import io.prediction.data.storage.Storage
-import org.json4s.DefaultFormats
+import org.json4s.{Formats, DefaultFormats}
 
 import java.util.concurrent.TimeUnit
 
@@ -30,11 +30,13 @@ import spray.http.{MediaTypes, StatusCodes}
 import spray.httpx.Json4sSupport
 import spray.routing._
 
+import scala.concurrent.ExecutionContext
+
 class AdminServiceActor(val commandClient: CommandClient)
   extends HttpServiceActor {
 
   object Json4sProtocol extends Json4sSupport {
-    implicit def json4sFormats = DefaultFormats
+    implicit def json4sFormats: Formats = DefaultFormats
   }
 
   import Json4sProtocol._
@@ -43,8 +45,8 @@ class AdminServiceActor(val commandClient: CommandClient)
 
   // we use the enclosing ActorContext's or ActorSystem's dispatcher for our
   // Futures
-  implicit def executionContext = actorRefFactory.dispatcher
-  implicit val timeout = Timeout(5, TimeUnit.SECONDS)
+  implicit def executionContext: ExecutionContext = actorRefFactory.dispatcher
+  implicit val timeout: Timeout = Timeout(5, TimeUnit.SECONDS)
 
   // for better message response
   val rejectionHandler = RejectionHandler {
@@ -100,7 +102,7 @@ class AdminServiceActor(val commandClient: CommandClient)
             }
           }
       }
-  def receive = runRoute(route)
+  def receive: Actor.Receive = runRoute(route)
 }
 
 class AdminServerActor(val commandClient: CommandClient) extends Actor {
@@ -111,7 +113,7 @@ class AdminServerActor(val commandClient: CommandClient) extends Actor {
 
   implicit val system = context.system
 
-  def receive = {
+  def receive: PartialFunction[Any, Unit] = {
     case StartServer(host, portNum) => {
       IO(Http) ! Http.Bind(child, interface = host, port = portNum)
 
@@ -128,7 +130,7 @@ case class AdminServerConfig(
 )
 
 object AdminServer {
-  def createAdminServer(config: AdminServerConfig) = {
+  def createAdminServer(config: AdminServerConfig): Unit = {
     implicit val system = ActorSystem("AdminServerSystem")
 
     val commandClient = new CommandClient(

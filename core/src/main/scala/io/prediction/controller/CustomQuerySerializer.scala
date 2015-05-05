@@ -34,3 +34,4 @@ trait CustomQuerySerializer extends BaseQuerySerializer
   */
 @deprecated("Use CustomQuerySerializer instead.", "0.9.2")
 trait WithQuerySerializer extends CustomQuerySerializer
+
