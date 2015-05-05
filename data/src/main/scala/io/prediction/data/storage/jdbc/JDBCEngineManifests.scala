@@ -101,10 +101,11 @@ class JDBCEngineManifests(client: String, config: StorageClientConfig, prefix: S
         enginefactory = ${m.engineFactory}
       where id = ${m.id} and version = ${m.version}""".update().apply()
       if (r == 0) {
-        if (upsert)
+        if (upsert) {
           insert(m)
-        else
+        } else {
           error("Cannot find a record to update, and upsert is not enabled.")
+        }
       }
     } catch {
       case e: Exception =>

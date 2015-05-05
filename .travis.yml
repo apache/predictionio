@@ -39,6 +39,9 @@ before_script:
   - ./bin/travis/pio-start-travis
 
 script:
+# Run stylecheck
+  - sbt scalastyle
+
 # Run all unit tests
   - sbt test
 

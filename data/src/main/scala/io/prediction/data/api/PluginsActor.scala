@@ -24,7 +24,7 @@ class PluginsActor() extends Actor {
 
   val pluginContext = EventServerPluginContext(log)
 
-  def receive = {
+  def receive: PartialFunction[Any, Unit] = {
     case e: EventInfo =>
       pluginContext.inputSniffers.values.foreach(_.process(e, pluginContext))
     case h: PluginsActor.HandleREST =>
@@ -49,3 +49,4 @@ object PluginsActor {
     channelId: Option[Int],
     pluginArgs: Seq[String])
 }
+

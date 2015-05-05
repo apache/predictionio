@@ -30,7 +30,10 @@ import scalikejdbc._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
-class JDBCLEvents(client: String, config: StorageClientConfig, namespace: String) extends LEvents with Logging {
+class JDBCLEvents(
+    client: String, 
+    config: StorageClientConfig, 
+    namespace: String) extends LEvents with Logging {
   implicit val formats = org.json4s.DefaultFormats
 
   def init(appId: Int, channelId: Option[Int] = None): Boolean = {
@@ -183,8 +186,10 @@ class JDBCLEvents(client: String, config: StorageClientConfig, namespace: String
               Some(sqls"event = $y")
             ): _*)
           ).getOrElse(None),
-          targetEntityType.map(x => x.map(y => sqls"targetEntityType = $y").getOrElse(sqls"targetEntityType IS NULL")),
-          targetEntityId.map(x => x.map(y => sqls"targetEntityId = $y").getOrElse(sqls"targetEntityId IS NULL"))
+          targetEntityType.map(x => x.map(y => sqls"targetEntityType = $y")
+              .getOrElse(sqls"targetEntityType IS NULL")),
+          targetEntityId.map(x => x.map(y => sqls"targetEntityId = $y")
+              .getOrElse(sqls"targetEntityId IS NULL"))
         ).map(sqls.where(_)).getOrElse(sqls"")
         val orderByClause = reversed.map(x =>
           if (x) sqls"eventTime desc" else sqls"eventTime asc"

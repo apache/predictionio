@@ -58,7 +58,7 @@ class EventServiceActor(
       new EventJson4sSupport.APISerializer +
       // NOTE: don't use Json4s JodaTimeSerializers since it has issues,
       // some format not converted, or timezone not correct
-      new DateTimeJson4sSupport.serializer
+      new DateTimeJson4sSupport.Serializer
   }
 
   val log = Logging(context.system, this)
@@ -413,7 +413,7 @@ class EventServiceActor(
               val channelId = authData.channelId
               respondWithMediaType(MediaTypes.`application/json`) {
                 entity(as[FormData]){ formData =>
-                  //log.debug(formData.toString)
+                  // log.debug(formData.toString)
                   complete {
                     // respond with JSON
                     import Json4sProtocol._

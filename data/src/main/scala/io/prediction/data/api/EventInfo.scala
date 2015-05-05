@@ -21,3 +21,4 @@ case class EventInfo(
   appId: Int,
   channelId: Option[Int],
   event: Event)
+
