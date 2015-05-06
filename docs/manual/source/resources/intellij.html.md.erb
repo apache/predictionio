@@ -35,12 +35,19 @@ IDEA if asked to do so.
 
 ### Setting Up the Engine Directory
 
-From IntelliJ IDEA, choose *File* > *New* > *Project from Existing Sources...*.
-When asked to select a directory to import, browse to the engine directory and
-proceed. Make sure you pick *Import project from external model* > *SBT*, then
-proceed to finish.
+Create an engine directory from a template. This requires that you install a 
+template that you wish to start from or modify.
+Follow template [install](/start/download) and [deploy](/start/deploy) instructions
+or go through the [Quick Start](/templates/recommendation/quickstart/) if you are 
+planning to modify a recommender. Make sure to build, train, and deploy the 
+engine to make sure all is configured properly.
 
-You should be able to make everything compile at this point. To run and debug
+From IntelliJ IDEA, choose *File* > *New* > *Project from Existing Sources...*.
+When asked to select a directory to import, browse to the engine directory that you 
+downloaded too and proceed. Make sure you pick *Import project from external model* > *SBT*, 
+then proceed to finish.
+
+You should be able to build the project at this point. To run and debug
 PredictionIO server, continue on to the rest of the steps.
 
 INFO: If you are running on OS X, you will need to do the following due to
@@ -66,12 +73,12 @@ add the following two JARs:
 
 -   `pio-assembly-<%= data.versions.pio %>.jar`
 
-    This JAR can be found inside the `lib` directory of your PredictionIO
+    This JAR can be found inside the `assembly` or `lib` directory of your PredictionIO
     installation directory.
 
 -   `spark-assembly-<%= data.versions.spark %>-hadoop2.4.0.jar`
 
-    This JAR can be found inside the `lib` directory of your Apache Spark
+    This JAR can be found inside the `assembly` or `lib` directory of your Apache Spark
     installation directory.
 
 
