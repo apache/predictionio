@@ -23,7 +23,7 @@ import io.prediction.core.BaseEngine
 import io.prediction.data.storage.EngineInstance
 import io.prediction.data.storage.EvaluationInstance
 import io.prediction.data.storage.Storage
-import io.prediction.workflow.JsonExtractorOption.Both
+import io.prediction.workflow.JsonExtractorOption.JsonExtractorOption
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
@@ -52,7 +52,8 @@ object CreateWorkflow extends Logging {
     verbosity: Int = 0,
     verbose: Boolean = false,
     debug: Boolean = false,
-    logFile: Option[String] = None)
+    logFile: Option[String] = None,
+    jsonExtractor: JsonExtractorOption = JsonExtractorOption.Both)
 
   case class AlgorithmParams(name: String, params: JValue)
 
@@ -131,6 +132,9 @@ object CreateWorkflow extends Logging {
     }
     opt[String]("log-file") action { (x, c) =>
       c.copy(logFile = Some(x))
+    }
+    opt[String]("json-extractor") action { (x, c) =>
+      c.copy(jsonExtractor = JsonExtractorOption.withName(x))
     }
   }
 
@@ -220,7 +224,7 @@ object CreateWorkflow extends Logging {
       val trainableEngine = engine.asInstanceOf[Engine[_, _, _, _, _, _]]
 
       val engineParams = if (wfc.engineParamsKey == "") {
-        trainableEngine.jValueToEngineParams(variantJson)
+        trainableEngine.jValueToEngineParams(variantJson, wfc.jsonExtractor)
       } else {
         engineFactoryObj.engineParams(wfc.engineParamsKey)
       }
@@ -237,10 +241,14 @@ object CreateWorkflow extends Logging {
         batch = if (wfc.batch == "") engineFactory else wfc.batch,
         env = pioEnvVars,
         sparkConf = workflowParams.sparkEnv,
-        dataSourceParams = JsonExtractor.paramToJson(Both, engineParams.dataSourceParams),
-        preparatorParams = JsonExtractor.paramToJson(Both, engineParams.preparatorParams),
-        algorithmsParams = JsonExtractor.paramsToJson(Both, engineParams.algorithmParamsList),
-        servingParams = JsonExtractor.paramToJson(Both, engineParams.servingParams))
+        dataSourceParams =
+          JsonExtractor.paramToJson(wfc.jsonExtractor, engineParams.dataSourceParams),
+        preparatorParams =
+          JsonExtractor.paramToJson(wfc.jsonExtractor, engineParams.preparatorParams),
+        algorithmsParams =
+          JsonExtractor.paramsToJson(wfc.jsonExtractor, engineParams.algorithmParamsList),
+        servingParams =
+          JsonExtractor.paramToJson(wfc.jsonExtractor, engineParams.servingParams))
 
       val engineInstanceId = Storage.getMetaDataEngineInstances.insert(
         engineInstance)

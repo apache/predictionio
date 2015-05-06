@@ -16,6 +16,7 @@
 package io.prediction.core
 
 import io.prediction.controller.EngineParams
+import io.prediction.workflow.JsonExtractorOption.JsonExtractorOption
 import io.prediction.workflow.WorkflowParams
 
 import org.apache.spark.SparkContext
@@ -74,8 +75,9 @@ abstract class BaseEngine[EI, Q, P, A] extends Serializable {
     * JSON file) to an instance of [[EngineParams]].
     *
     * @param variantJson Content of the engine variant JSON as JValue.
+    * @param jsonExtractor Content of the engine variant JSON as JValue.
     * @return An instance of [[EngineParams]] converted from JSON.
     */
-  def jValueToEngineParams(variantJson: JValue): EngineParams =
+  def jValueToEngineParams(variantJson: JValue, jsonExtractor: JsonExtractorOption): EngineParams =
     throw new NotImplementedError("JSON to EngineParams is not implemented.")
 }

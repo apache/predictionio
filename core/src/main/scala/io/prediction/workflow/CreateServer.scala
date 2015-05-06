@@ -38,6 +38,7 @@ import com.twitter.chill.KryoInjection
 import com.twitter.chill.ScalaKryoInstantiator
 import de.javakaffee.kryoserializers.SynchronizedCollectionsSerializer
 import grizzled.slf4j.Logging
+import io.prediction.workflow.JsonExtractorOption.JsonExtractorOption
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization.write
@@ -88,7 +89,8 @@ case class ServerConfig(
   logPrefix: Option[String] = None,
   logFile: Option[String] = None,
   verbose: Boolean = false,
-  debug: Boolean = false)
+  debug: Boolean = false,
+  jsonExtractor: JsonExtractorOption = JsonExtractorOption.Both)
 
 case class StartServer()
 case class BindServer()
@@ -149,6 +151,9 @@ object CreateServer extends Logging {
       opt[Unit]("debug") action { (x, c) =>
         c.copy(debug = true)
       } text("Enable debug output.")
+      opt[String]("json-extractor") action { (x, c) =>
+        c.copy(jsonExtractor = JsonExtractorOption.withName(x))
+      }
     }
 
     parser.parse(args, ServerConfig()) map { sc =>
@@ -193,7 +198,7 @@ object CreateServer extends Logging {
     engineLanguage: EngineLanguage.Value,
     manifest: EngineManifest): ActorRef = {
 
-    val engineParams = engine.engineInstanceToEngineParams(engineInstance)
+    val engineParams = engine.engineInstanceToEngineParams(engineInstance, sc.jsonExtractor)
 
     val kryo = KryoInstantiator.newKryoInjection
 
@@ -463,7 +468,7 @@ class ServerActor[Q, P](
           entity(as[String]) { queryString =>
             try {
               val servingStartTime = DateTime.now
-              val jsonExtractorOption = JsonExtractorOption.Both
+              val jsonExtractorOption = args.jsonExtractor
               val queryTime = DateTime.now
               val query = JsonExtractor.extract(
                 jsonExtractorOption,

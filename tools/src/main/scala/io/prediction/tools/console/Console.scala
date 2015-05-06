@@ -33,6 +33,8 @@ import io.prediction.tools.admin.AdminServer
 import io.prediction.tools.admin.AdminServerConfig
 import io.prediction.tools.dashboard.Dashboard
 import io.prediction.tools.dashboard.DashboardConfig
+import io.prediction.workflow.JsonExtractorOption
+import io.prediction.workflow.JsonExtractorOption.JsonExtractorOption
 import io.prediction.workflow.WorkflowUtils
 import org.apache.commons.io.FileUtils
 import org.apache.hadoop.fs.Path
@@ -87,7 +89,8 @@ case class CommonArgs(
   skipSanityCheck: Boolean = false,
   verbose: Boolean = false,
   verbosity: Int = 0,
-  sparkKryo: Boolean = false)
+  sparkKryo: Boolean = false,
+  jsonExtractor: JsonExtractorOption = JsonExtractorOption.Both)
 
 case class BuildArgs(
   sbt: Option[File] = None,
@@ -268,6 +271,16 @@ object Console extends Logging {
           },
           opt[String]("engine-params-key") action { (x, c) =>
             c.copy(common = c.common.copy(engineParamsKey = Some(x)))
+          },
+          opt[String]("json-extractor") action { (x, c) =>
+            c.copy(common = c.common.copy(jsonExtractor = JsonExtractorOption.withName(x)))
+          } validate { x =>
+              if (JsonExtractorOption.values.map(_.toString).contains(x)) {
+                success
+              } else {
+                val validOptions = JsonExtractorOption.values.mkString("|")
+                failure(s"$x is not a valid json-extractor option [$validOptions]")
+              }
           }
         )
       note("")
@@ -286,7 +299,17 @@ object Console extends Logging {
           } text("Optional engine parameters generator class, overriding the first argument"),
           opt[String]("batch") action { (x, c) =>
             c.copy(common = c.common.copy(batch = x))
-          } text("Batch label of the run.")
+          } text("Batch label of the run."),
+          opt[String]("json-extractor") action { (x, c) =>
+            c.copy(common = c.common.copy(jsonExtractor = JsonExtractorOption.withName(x)))
+          } validate { x =>
+            if (JsonExtractorOption.values.map(_.toString).contains(x)) {
+              success
+            } else {
+              val validOptions = JsonExtractorOption.values.mkString("|")
+              failure(s"$x is not a valid json-extractor option [$validOptions]")
+            }
+          }
         )
       note("")
       cmd("deploy").
@@ -334,6 +357,16 @@ object Console extends Logging {
           },
           opt[String]("log-prefix") action { (x, c) =>
             c.copy(deploy = c.deploy.copy(logPrefix = Some(x)))
+          },
+          opt[String]("json-extractor") action { (x, c) =>
+            c.copy(common = c.common.copy(jsonExtractor = JsonExtractorOption.withName(x)))
+          } validate { x =>
+            if (JsonExtractorOption.values.map(_.toString).contains(x)) {
+              success
+            } else {
+              val validOptions = JsonExtractorOption.values.mkString("|")
+              failure(s"$x is not a valid json-extractor option [$validOptions]")
+            }
           }
         )
       note("")

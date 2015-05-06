@@ -266,9 +266,23 @@ class JsonExtractorSuite extends FunSuite with Matchers {
     json should be ("""{"algo":{"p":"parameter"}}""")
   }
 
+  test("Java Param to Json using option Gson") {
+    val param = ("algo", new JavaParams("parameter"))
+    val json = JsonExtractor.paramToJson(JsonExtractorOption.Gson, param)
+
+    json should be ("""{"algo":{"p":"parameter"}}""")
+  }
+
   test("Scala Param to Json using option Both") {
     val param = ("algo", AlgorithmParams("parameter"))
     val json = JsonExtractor.paramToJson(JsonExtractorOption.Both, param)
+
+    json should be ("""{"algo":{"a":"parameter"}}""")
+  }
+
+  test("Scala Param to Json using option Json4sNative") {
+    val param = ("algo", AlgorithmParams("parameter"))
+    val json = JsonExtractor.paramToJson(JsonExtractorOption.Json4sNative, param)
 
     json should be ("""{"algo":{"a":"parameter"}}""")
   }
@@ -280,10 +294,25 @@ class JsonExtractorSuite extends FunSuite with Matchers {
     json should be ("""[{"algo":{"p":"parameter"}},{"algo2":{"p":"parameter2"}}]""")
   }
 
+  test("Java Params to Json using option Gson") {
+    val params = Seq(("algo", new JavaParams("parameter")), ("algo2", new JavaParams("parameter2")))
+    val json = JsonExtractor.paramsToJson(JsonExtractorOption.Gson, params)
+
+    json should be ("""[{"algo":{"p":"parameter"}},{"algo2":{"p":"parameter2"}}]""")
+  }
+
   test("Scala Params to Json using option Both") {
     val params =
       Seq(("algo", AlgorithmParams("parameter")), ("algo2", AlgorithmParams("parameter2")))
     val json = JsonExtractor.paramsToJson(JsonExtractorOption.Both, params)
+
+    json should be (org.json4s.native.Serialization.write(params)(Utils.json4sDefaultFormats))
+  }
+
+  test("Scala Params to Json using option Json4sNative") {
+    val params =
+      Seq(("algo", AlgorithmParams("parameter")), ("algo2", AlgorithmParams("parameter2")))
+    val json = JsonExtractor.paramsToJson(JsonExtractorOption.Json4sNative, params)
 
     json should be (org.json4s.native.Serialization.write(params)(Utils.json4sDefaultFormats))
   }

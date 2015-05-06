@@ -30,6 +30,7 @@ import io.prediction.core.BuildInfo
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import grizzled.slf4j.Logging
+import io.prediction.workflow.JsonExtractorOption.JsonExtractorOption
 import org.apache.log4j.Level
 import org.apache.log4j.LogManager
 import org.apache.spark.SparkContext
@@ -122,6 +123,7 @@ object WorkflowUtils extends Logging {
     * @param json JSON document.
     * @param clazz Class of the component that is going to receive the resulting
     *              Params instance as a constructor argument.
+    * @param jsonExtractor JSON extractor option.
     * @param formats JSON4S serializers for deserialization.
     *
     * @throws MappingException Thrown when JSON4S fails to perform conversion.
@@ -131,6 +133,7 @@ object WorkflowUtils extends Logging {
       language: EngineLanguage.Value = EngineLanguage.Scala,
       json: String,
       clazz: Class[_],
+      jsonExtractor: JsonExtractorOption,
       formats: Formats = Utils.json4sDefaultFormats): Params = {
     implicit val f = formats
     val pClass = clazz.getConstructors.head.getParameterTypes
@@ -144,7 +147,7 @@ object WorkflowUtils extends Logging {
     } else {
       val apClass = pClass.head
       try {
-        JsonExtractor.extract(JsonExtractorOption.Both, json, apClass).asInstanceOf[Params]
+        JsonExtractor.extract(jsonExtractor, json, apClass, f).asInstanceOf[Params]
       } catch {
         case e@(_: MappingException | _: JsonSyntaxException) =>
           error(
@@ -160,7 +163,8 @@ object WorkflowUtils extends Logging {
       variantJson: JValue,
       field: String,
       classMap: Map[String, Class[_]],
-      engineLanguage: EngineLanguage.Value): (String, Params) = {
+      engineLanguage: EngineLanguage.Value,
+      jsonExtractor: JsonExtractorOption): (String, Params) = {
     variantJson findField {
       case JField(f, _) => f == field
       case _ => false
@@ -183,7 +187,9 @@ object WorkflowUtils extends Logging {
           WorkflowUtils.extractParams(
             engineLanguage,
             compact(render(p)),
-            classMap(np.name))
+            classMap(np.name),
+            jsonExtractor,
+            formats)
         } catch {
           case e: Exception =>
             error(s"Unable to extract $field params $p")

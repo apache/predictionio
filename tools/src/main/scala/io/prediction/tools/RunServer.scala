@@ -123,7 +123,8 @@ object RunServer extends Logging {
       (if (ca.common.batch != "") Seq("--batch", ca.common.batch) else Seq()) ++
       (if (ca.common.verbose) Seq("--verbose") else Seq()) ++
       ca.deploy.logUrl.map(x => Seq("--log-url", x)).getOrElse(Seq()) ++
-      ca.deploy.logPrefix.map(x => Seq("--log-prefix", x)).getOrElse(Seq())
+      ca.deploy.logPrefix.map(x => Seq("--log-prefix", x)).getOrElse(Seq()) ++
+      Seq("--json-extractor", ca.common.jsonExtractor.toString)
 
     info(s"Submission command: ${sparkSubmit.mkString(" ")}")
 

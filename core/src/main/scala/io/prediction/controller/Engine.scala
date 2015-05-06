@@ -26,6 +26,7 @@ import io.prediction.data.storage.EngineInstance
 import io.prediction.data.storage.StorageClientException
 import io.prediction.workflow.CreateWorkflow
 import io.prediction.workflow.EngineLanguage
+import io.prediction.workflow.JsonExtractorOption.JsonExtractorOption
 import io.prediction.workflow.NameParamsSerializer
 import io.prediction.workflow.PersistentModelManifest
 import io.prediction.workflow.SparkWorkflowUtils
@@ -331,7 +332,10 @@ class Engine[TD, EI, PD, Q, P, A](
     Engine.eval(sc, dataSource, preparator, algorithms, serving)
   }
 
-  override def jValueToEngineParams(variantJson: JValue): EngineParams = {
+  override def jValueToEngineParams(
+    variantJson: JValue,
+    jsonExtractor: JsonExtractorOption): EngineParams = {
+
     val engineLanguage = EngineLanguage.Scala
     // Extract EngineParams
     logger.info(s"Extracting datasource params...")
@@ -340,8 +344,9 @@ class Engine[TD, EI, PD, Q, P, A](
         variantJson,
         "datasource",
         dataSourceClassMap,
-        engineLanguage)
-    logger.info(s"Datasource params: ${dataSourceParams}")
+        engineLanguage,
+        jsonExtractor)
+    logger.info(s"Datasource params: $dataSourceParams")
 
     logger.info(s"Extracting preparator params...")
     val preparatorParams: (String, Params) =
@@ -349,8 +354,9 @@ class Engine[TD, EI, PD, Q, P, A](
         variantJson,
         "preparator",
         preparatorClassMap,
-        engineLanguage)
-    logger.info(s"Preparator params: ${preparatorParams}")
+        engineLanguage,
+        jsonExtractor)
+    logger.info(s"Preparator params: $preparatorParams")
 
     val algorithmsParams: Seq[(String, Params)] =
       variantJson findField {
@@ -366,7 +372,8 @@ class Engine[TD, EI, PD, Q, P, A](
               WorkflowUtils.extractParams(
                 engineLanguage,
                 compact(render(eap.params)),
-                algorithmClassMap(eap.name))
+                algorithmClassMap(eap.name),
+                jsonExtractor)
             )
           }
           case _ => Nil
@@ -379,8 +386,9 @@ class Engine[TD, EI, PD, Q, P, A](
         variantJson,
         "serving",
         servingClassMap,
-        engineLanguage)
-    logger.info(s"Serving params: ${servingParams}")
+        engineLanguage,
+        jsonExtractor)
+    logger.info(s"Serving params: $servingParams")
 
     new EngineParams(
       dataSourceParams = dataSourceParams,
@@ -389,8 +397,10 @@ class Engine[TD, EI, PD, Q, P, A](
       servingParams = servingParams)
   }
 
-  private[prediction]
-  def engineInstanceToEngineParams(engineInstance: EngineInstance): EngineParams = {
+  private[prediction] def engineInstanceToEngineParams(
+    engineInstance: EngineInstance,
+    jsonExtractor: JsonExtractorOption): EngineParams = {
+
     implicit val formats = DefaultFormats
     val engineLanguage = EngineLanguage.Scala
 
@@ -398,14 +408,15 @@ class Engine[TD, EI, PD, Q, P, A](
       val (name, params) =
         read[(String, JValue)](engineInstance.dataSourceParams)
       if (!dataSourceClassMap.contains(name)) {
-        logger.error(s"Unable to find datasource class with name '${name}'" +
+        logger.error(s"Unable to find datasource class with name '$name'" +
           " defined in Engine.")
         sys.exit(1)
       }
       val extractedParams = WorkflowUtils.extractParams(
         engineLanguage,
         compact(render(params)),
-        dataSourceClassMap(name))
+        dataSourceClassMap(name),
+        jsonExtractor)
       (name, extractedParams)
     }
 
@@ -413,14 +424,15 @@ class Engine[TD, EI, PD, Q, P, A](
       val (name, params) =
         read[(String, JValue)](engineInstance.preparatorParams)
       if (!preparatorClassMap.contains(name)) {
-        logger.error(s"Unable to find preparator class with name '${name}'" +
+        logger.error(s"Unable to find preparator class with name '$name'" +
           " defined in Engine.")
         sys.exit(1)
       }
       val extractedParams = WorkflowUtils.extractParams(
         engineLanguage,
         compact(render(params)),
-        preparatorClassMap(name))
+        preparatorClassMap(name),
+        jsonExtractor)
       (name, extractedParams)
     }
 
@@ -430,21 +442,23 @@ class Engine[TD, EI, PD, Q, P, A](
           val extractedParams = WorkflowUtils.extractParams(
             engineLanguage,
             compact(render(params)),
-            algorithmClassMap(algoName))
+            algorithmClassMap(algoName),
+            jsonExtractor)
           (algoName, extractedParams)
       }
 
     val servingParamsWithName: (String, Params) = {
       val (name, params) = read[(String, JValue)](engineInstance.servingParams)
       if (!servingClassMap.contains(name)) {
-        logger.error(s"Unable to find serving class with name '${name}'" +
+        logger.error(s"Unable to find serving class with name '$name'" +
           " defined in Engine.")
         sys.exit(1)
       }
       val extractedParams = WorkflowUtils.extractParams(
         engineLanguage,
         compact(render(params)),
-        servingClassMap(name))
+        servingClassMap(name),
+        jsonExtractor)
       (name, extractedParams)
     }
 
