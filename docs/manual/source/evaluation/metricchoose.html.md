@@ -9,7 +9,7 @@ We have skimmmed through the process of choosing the right `Metric` in previous
 sections.
 
 This secion discusses basic evaluation metrics commonly used for 
-classificatino problems.
+classification problems.
 If you are more interested in knowing how to *implement* a custom metric, please
 skip to [the next section](/evaluation/metricbuild/).
 
@@ -24,7 +24,7 @@ function*](http://en.wikipedia.org/wiki/Loss_function) in literature, where the
 goal is to minimize the loss function. 
 
 During tuning, it is important for us to understand the definition of the
-metric, to make sure it is align with the prediction engine's goal.
+metric, to make sure it is aligned with the prediction engine's goal.
 
 In the classificaiton template, we use *Accuracy* as our metric.
 *Accuracy* is defined as:
@@ -59,7 +59,7 @@ Precision is a metric for binary classifier
 which measures the correctness among all positive labels.
 A binary classifier gives only two
 output values (i.e. positive and negative).
-For problem where the are multiple values (3 in our example),
+For problem where there are multiple values (3 in our example),
 we first have to tranform our problem into 
 a binary classification problem. For example, we can have problem whether
 label = 1.0. The confusion matrix now becomes:
@@ -78,7 +78,7 @@ labeled answer (false positive). In this case, the precision is 30 / (30 + 60) =
 ### Recall
 
 Recall is a metric for binary classifier
-which measures how many positive labels be successfully predicted amongst
+which measures how many positive labels are successfully predicted amongst
 all positive labels.
 Formally, it is the ratio between the number of correct positive answer
 (true positive) and the sum of correct positive answer (true positive) and

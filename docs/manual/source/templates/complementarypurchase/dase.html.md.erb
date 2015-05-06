@@ -87,7 +87,7 @@ method of class `DataSource` reads and selects data from the *Event Store*
 (data store of the *Event Server*). It returns `TrainingData`.
 
 ```scala
-case class DataSourceParams(appId: Int) extends Params
+case class DataSourceParams(appName: String) extends Params
 
 class DataSource(val dsp: DataSourceParams)
   extends PDataSource[TrainingData,
@@ -97,11 +97,10 @@ class DataSource(val dsp: DataSourceParams)
 
   override
   def readTraining(sc: SparkContext): TrainingData = {
-    val eventsDb = Storage.getPEvents()
 
     // get all "user" "buy" "item" events
-    val buyEvents: RDD[BuyEvent] = eventsDb.find(
-      appId = dsp.appId,
+    val buyEvents: RDD[BuyEvent] = PEventStore.find(
+      appName = dsp.appName,
       entityType = Some("user"),
       eventNames = Some(List("buy")),
       targetEntityType = Some(Some("item")))(sc)
@@ -125,7 +124,7 @@ class DataSource(val dsp: DataSourceParams)
 }
 ```
 
-PredictionIO automatically loads the parameters of *datasource* specified in MyComplementaryPurchase/***engine.json***, including *appId*, to `dsp`.
+PredictionIO automatically loads the parameters of *datasource* specified in MyComplementaryPurchase/***engine.json***, including *appName*, to `dsp`.
 
 In ***engine.json***:
 
@@ -134,18 +133,18 @@ In ***engine.json***:
   ...
   "datasource": {
     "params" : {
-      "appId": 1
+      "appName": "MyApp1"
     }
   },
   ...
 }
 ```
 
-In `readTraining()`, `Storage.getPEvents()` returns a data access object which you could use to access data that is collected by PredictionIO Event Server.
+In `readTraining()`, `PEventStore` is an object which provides function to access data that is collected by PredictionIO Event Server.
 
 This Complementary Purchase Engine Template requires "buy" events.
 
-`eventsDb.find(...)` specifies the events that you want to read. In this case, "user buy item" events are read and then each is mapped to a `BuyEvent` object.
+`PEventStore.find(...)` specifies the events that you want to read. In this case, "user buy item" events are read and then each is mapped to a `BuyEvent` object.
 
 `BuyEvent` case class is defined as:
 

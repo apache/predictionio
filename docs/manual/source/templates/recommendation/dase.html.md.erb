@@ -2,8 +2,8 @@
 title: DASE Components Explained (Recommendation)
 ---
 
-<%= partial 'shared/dase/dase', 
-locals: { 
+<%= partial 'shared/dase/dase',
+locals: {
   template_name: 'Recommendation Engine Template',
   evaluation_link: '/templates/recommendation/evaluation/'
 } %>
@@ -91,7 +91,7 @@ method of class `DataSource` reads, and selects, data from the *Event Store*
 (data store of the *Event Server*) and returns `TrainingData`.
 
 ```scala
-case class DataSourceParams(appId: Int) extends Params
+case class DataSourceParams(appName: String) extends Params
 
 class DataSource(val dsp: DataSourceParams)
   extends PDataSource[TrainingData,
@@ -101,9 +101,9 @@ class DataSource(val dsp: DataSourceParams)
 
   override
   def readTraining(sc: SparkContext): TrainingData = {
-    val eventsDb = Storage.getPEvents()
-    val eventsRDD: RDD[Event] = eventsDb.find(
-      appId = dsp.appId,
+
+    val eventsRDD: RDD[Event] = PEventStore.find(
+      appName = dsp.appName,
       entityType = Some("user"),
       eventNames = Some(List("rate", "buy")), // read "rate" and "buy" event
       // targetEntityType is optional field of an event.
@@ -128,17 +128,16 @@ class DataSource(val dsp: DataSourceParams)
       }
       rating
     }.cache()
-    
+
     new TrainingData(ratingsRDD)
   }
 }
 ```
 
-`Storage.getPEvents()` returns a data access object which you could use to
-access data that is collected by PredictionIO *Event Server*.
-`eventsDb.find(...)` specifies the events that you want to read. PredictionIO
+`PEventStore` is an object which provides function to access data that is collected by PredictionIO *Event Server*.
+`PEventStore.find(...)` specifies the events that you want to read. PredictionIO
 automatically loads the parameters of *datasource* specified in
-MyRecommendation/***engine.json***, including *appId*, to `dsp`.
+MyRecommendation/***engine.json***, including *appName*, to `dsp`.
 
 In ***engine.json***:
 
@@ -147,7 +146,7 @@ In ***engine.json***:
   ...
   "datasource": {
     "params" : {
-      "appId": 1
+      "appName": "MyApp1"
     }
   },
   ...

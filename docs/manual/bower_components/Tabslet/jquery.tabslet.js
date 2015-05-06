@@ -4,7 +4,7 @@
  * @copyright Copyright 2012, Dimitris Krestos
  * @license   Apache License, Version 2.0 (http://www.opensource.org/licenses/apache2.0.php)
  * @link      http://vdw.staytuned.gr
- * @version   v1.4.4
+ * @version   v1.4.8
  */
 
   /* Sample html structure
@@ -47,6 +47,9 @@
 
       var $this = $(this);
 
+      // Autorotate
+      var elements = $this.find('> ul li'), i = options.active - 1; // ungly
+
       if ( !$this.data( 'tabslet-init' ) ) {
 
         $this.data( 'tabslet-init', true );
@@ -61,8 +64,10 @@
         options.active        = $this.data('active') || options.active;
 
         $this.find('> div').hide();
-        $this.find('> div').eq(options.active - 1).show();
-        $this.find('> ul li').eq(options.active - 1).addClass('active');
+        if ( options.active ) {
+          $this.find('> div').eq(options.active - 1).show();
+          $this.find('> ul li').eq(options.active - 1).addClass('active');
+        }
 
         var fn = eval(
 
@@ -73,6 +78,8 @@
             $this.find('> ul li').removeClass('active');
             $(this).addClass('active');
             $this.find('> div').hide();
+
+            i = elements.index($(this));
 
             var currentTab = $(this).find('a').attr(options.attribute);
 
@@ -99,8 +106,7 @@
 
         init;
 
-        // Autorotate
-        var elements = $this.find('> ul li'), i = options.active - 1; // ungly
+        var t;
 
         var forward = function() {
 
@@ -108,21 +114,37 @@
 
           options.mouseevent == 'hover' ? elements.eq(i).trigger('mouseover') : elements.eq(i).click();
 
-          var t = setTimeout(forward, options.delay);
+          if (options.autorotate) {
 
-          $this.mouseover(function () {
+            clearTimeout(t);
 
-            if (options.pauseonhover) clearTimeout(t);
+            t = setTimeout(forward, options.delay);
 
-          });
+            $this.mouseover(function () {
+
+              if (options.pauseonhover) clearTimeout(t);
+
+            });
+
+          }
 
         }
 
         if (options.autorotate) {
 
-          setTimeout(forward, 0);
+          t = setTimeout(forward, options.delay);
 
-          if (options.pauseonhover) $this.on( "mouseleave", function() { setTimeout(forward, 1000); });
+          $this.hover(function() {
+
+            if (options.pauseonhover) clearTimeout(t);
+
+          }, function() {
+
+            t = setTimeout(forward, options.delay);
+
+          });
+
+          if (options.pauseonhover) $this.on( "mouseleave", function() { clearTimeout(t); t = setTimeout(forward, options.delay); });
 
         }
 

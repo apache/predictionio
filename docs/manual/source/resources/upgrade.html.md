@@ -2,6 +2,7 @@
 title: Upgrade Instructions
 ---
 
+
 This page highlights major changes in each version and upgrade tools.
 
 To upgrade and use new version of PredictionIO, do the following:
@@ -12,7 +13,160 @@ To upgrade and use new version of PredictionIO, do the following:
 
 In addition, please take notes of the following for specific version upgrade:
 
-##Upgrade to 0.9.0
+
+## Upgrade to 0.9.2
+
+The Spark dependency has been upgraded to version 1.3.0. All engines must be
+rebuilt against it in order to work.
+
+Open and edit `build.sbt` of your engine, and look for these two lines:
+
+```scala
+"org.apache.spark" %% "spark-core"    % "1.2.0" % "provided"
+
+"org.apache.spark" %% "spark-mllib"   % "1.2.0" % "provided"
+```
+
+Change `1.2.0` to `1.3.0`, and do a clean rebuild by `pio build --clean`. Your
+engine should now work with the latest Apache Spark.
+
+
+### New PEventStore and LEventStore API
+
+In addition, new PEventStore and LEventStore API are introduced so that appName can be used as parameters in engine.json to access Event Store.
+
+NOTE: The following changes are not required for using 0.9.2 but it's recommended to upgrade your engine code as described below because the old API will be deprecated.
+
+#### 1. In **DataSource.scala**:
+
+- remove this line of code:
+
+    ```scala
+    import io.prediction.data.storage.Storage
+    ```
+
+    and replace it by
+
+    ```scala
+    import io.prediction.data.store.PEventStore
+    ```
+
+- Change `appId: Int` to `appName: String` in DataSourceParams
+
+    For example,
+
+    ```scala
+    case class DataSourceParams(appName: String) extends Params
+    ```
+
+- remove this line of code: `val eventsDb = Storage.getPEvents()`
+
+- locate where `eventsDb.aggregateProperties()` is used, change it to `PEventStore.aggregateProperties()`:
+
+    For example,
+
+    ```scala
+
+      val usersRDD: RDD[(String, User)] = PEventStore.aggregateProperties( // CHANGED
+        appName = dsp.appName, // CHANGED: use appName
+        entityType = "user"
+      )(sc).map { ... }
+
+    ```
+
+- locate where `eventsDb.find() `is used, change it to `PEventStore.find()`
+
+    For example,
+
+    ```scala
+
+      val viewEventsRDD: RDD[ViewEvent] = PEventStore.find( // CHANGED
+        appName = dsp.appName, // CHANGED: use appName
+        entityType = Some("user"),
+        ...
+
+    ```
+
+#### 2. In **XXXAlgorithm.scala**:
+
+If Storage.getLEvents() is also used in Algorithm (such as ALSAlgorithm of E-Commerce Recommendation template), you also need to do following:
+
+NOTE: If `io.prediction.data.storage.Storage` is not used at all (such as Recommendation, Similar Product, Classification, Lead Scoring, Product Ranking template), there is no need to change Algorithm and can go to the later **engine.json** section.
+
+- remove `import io.prediction.data.storage.Storage` and replace it by `import io.prediction.data.store.LEventStore`
+- change `appId` to `appName` in the XXXAlgorithmParams class.
+- remove this line of code: `@transient lazy val lEventsDb = Storage.getLEvents()`
+- locate where `LEventStore.findByEntity()` is used, change it to `LEventStore.findByEntity()`:
+
+    For example, change following code
+
+    ```scala
+      ...
+      val seenEvents: Iterator[Event] = lEventsDb.findSingleEntity(
+        appId = ap.appId,
+        entityType = "user",
+        entityId = query.user,
+        eventNames = Some(ap.seenEvents),
+        targetEntityType = Some(Some("item")),
+        // set time limit to avoid super long DB access
+        timeout = Duration(200, "millis")
+      ) match {
+        case Right(x) => x
+        case Left(e) => {
+          logger.error(s"Error when read seen events: ${e}")
+          Iterator[Event]()
+        }
+      }
+    ```
+
+    to
+
+    ```scala
+      val seenEvents: Iterator[Event] = try { // CHANGED: try catch block is used
+        LEventStore.findByEntity( // CHANGED: new API
+          appName = ap.appName, // CHANGED: use appName
+          entityType = "user",
+          entityId = query.user,
+          eventNames = Some(ap.seenEvents),
+          targetEntityType = Some(Some("item")),
+          // set time limit to avoid super long DB access
+          timeout = Duration(200, "millis")
+        )
+      } catch { // CHANGED: try catch block is used
+        case e: scala.concurrent.TimeoutException =>
+          logger.error(s"Timeout when read seen events." +
+            s" Empty list is used. ${e}")
+          Iterator[Event]()
+        case e: Exception =>
+          logger.error(s"Error when read seen events: ${e}")
+          throw e
+      }
+    ```
+
+    If you are using E-Commerce Recommendation template, please refer to the latest version for other updates related to `LEventStore.findByEntity()`
+
+#### 3. In **engine.json**:
+
+locate where `appId` is used, change it to `appName` and specify the name of the app instead.
+
+For example:
+
+```json
+  ...
+
+  "datasource": {
+    "params" : {
+      "appName": "MyAppName"
+    }
+  },
+
+```
+
+Note that other components such as `algorithms` may also have `appId` param (e.g. E-Commerce Recommendation template). Remember to change it to `appName` as well.
+
+That's it! You can re-biuld your engine to try it out!
+
+## Upgrade to 0.9.0
 
 0.9.0 has the following new changes:
 

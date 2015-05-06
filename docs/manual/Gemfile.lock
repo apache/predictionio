@@ -1,16 +1,15 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    CFPropertyList (2.3.0)
-    activesupport (4.1.9)
+    activesupport (4.1.10)
       i18n (~> 0.6, >= 0.6.9)
       json (~> 1.7, >= 1.7.7)
       minitest (~> 5.1)
       thread_safe (~> 0.1)
       tzinfo (~> 1.1)
-    addressable (2.3.7)
+    addressable (2.3.8)
     ansi (1.5.0)
-    autoprefixer-rails (5.1.7)
+    autoprefixer-rails (5.1.9)
       execjs
       json
     backports (3.6.4)
@@ -19,10 +18,10 @@ GEM
       timers (~> 4.0.0)
     chunky_png (1.3.4)
     coderay (1.1.0)
-    coffee-script (2.3.0)
+    coffee-script (2.4.1)
       coffee-script-source
       execjs
-    coffee-script-source (1.9.1)
+    coffee-script-source (1.9.1.1)
     compass (1.0.3)
       chunky_png (~> 1.2)
       compass-core (~> 1.0.2)
@@ -42,93 +41,29 @@ GEM
     ethon (0.7.3)
       ffi (>= 1.3.0)
     eventmachine (1.0.7)
-    excon (0.44.4)
-    execjs (2.4.0)
+    excon (0.45.1)
+    execjs (2.5.2)
     faraday (0.9.1)
       multipart-post (>= 1.2, < 3)
     faraday_middleware (0.9.1)
       faraday (>= 0.7.4, < 0.10)
     ffi (1.9.8)
-    fission (0.5.0)
-      CFPropertyList (~> 2.2)
-    fog (1.28.0)
-      fog-atmos
-      fog-aws (~> 0.0)
-      fog-brightbox (~> 0.4)
-      fog-core (~> 1.27, >= 1.27.3)
-      fog-ecloud
-      fog-json
-      fog-profitbricks
-      fog-radosgw (>= 0.0.2)
-      fog-riakcs
-      fog-sakuracloud (>= 0.0.4)
-      fog-serverlove
-      fog-softlayer
-      fog-storm_on_demand
-      fog-terremark
-      fog-vmfusion
-      fog-voxel
-      fog-xml (~> 0.1.1)
-      ipaddress (~> 0.5)
-      nokogiri (~> 1.5, >= 1.5.11)
-    fog-atmos (0.1.0)
-      fog-core
-      fog-xml
-    fog-aws (0.1.1)
+    fog-aws (0.1.2)
       fog-core (~> 1.27)
       fog-json (~> 1.0)
       fog-xml (~> 0.1)
       ipaddress (~> 0.8)
-    fog-brightbox (0.7.1)
-      fog-core (~> 1.22)
-      fog-json
-      inflecto (~> 0.0.2)
-    fog-core (1.29.0)
+    fog-core (1.30.0)
       builder
-      excon (~> 0.38)
+      excon (~> 0.45)
       formatador (~> 0.2)
       mime-types
       net-scp (~> 1.1)
       net-ssh (>= 2.1.3)
-    fog-ecloud (0.0.2)
-      fog-core
-      fog-xml
-    fog-json (1.0.0)
+    fog-json (1.0.1)
+      fog-core (~> 1.0)
       multi_json (~> 1.0)
-    fog-profitbricks (0.0.1)
-      fog-core
-      fog-xml
-      nokogiri
-    fog-radosgw (0.0.3)
-      fog-core (>= 1.21.0)
-      fog-json
-      fog-xml (>= 0.0.1)
-    fog-riakcs (0.1.0)
-      fog-core
-      fog-json
-      fog-xml
-    fog-sakuracloud (1.0.0)
-      fog-core
-      fog-json
-    fog-serverlove (0.1.1)
-      fog-core
-      fog-json
-    fog-softlayer (0.4.1)
-      fog-core
-      fog-json
-    fog-storm_on_demand (0.1.0)
-      fog-core
-      fog-json
-    fog-terremark (0.0.4)
-      fog-core
-      fog-xml
-    fog-vmfusion (0.0.1)
-      fission
-      fog-core
-    fog-voxel (0.0.2)
-      fog-core
-      fog-xml
-    fog-xml (0.1.1)
+    fog-xml (0.1.2)
       fog-core
       nokogiri (~> 1.5, >= 1.5.11)
     formatador (0.2.5)
@@ -149,15 +84,14 @@ GEM
     htmlcompressor (0.1.2)
     http_parser.rb (0.6.0)
     i18n (0.7.0)
-    inflecto (0.0.2)
     ipaddress (0.8.0)
     json (1.8.2)
     kramdown (1.6.0)
     launchy (2.4.3)
       addressable (~> 2.3)
     libv8 (3.16.14.7)
-    listen (2.9.0)
-      celluloid (>= 0.15.2)
+    listen (2.10.0)
+      celluloid (~> 0.16.0)
       rb-fsevent (>= 0.9.3)
       rb-inotify (>= 0.9)
     map (6.5.5)
@@ -188,16 +122,16 @@ GEM
       rack-test (~> 0.6.2)
       thor (>= 0.15.2, < 2.0)
       tilt (~> 1.4.1, < 2.0)
-    middleman-livereload (3.3.4)
+    middleman-livereload (3.4.2)
       em-websocket (~> 0.5.1)
-      middleman-core (~> 3.2)
+      middleman-core (>= 3.3)
       rack-livereload (~> 0.3.15)
     middleman-minify-html (3.4.0)
       htmlcompressor (~> 0.1.0)
       middleman-core (>= 3.2)
-    middleman-s3_sync (3.0.42)
+    middleman-s3_sync (3.0.44)
       ansi (~> 1.5.0)
-      fog (>= 1.25.0)
+      fog-aws (>= 0.1.1)
       map
       middleman-core (>= 3.0.0)
       pmap
@@ -216,7 +150,7 @@ GEM
       rouge (~> 1.0)
     mime-types (2.4.3)
     mini_portile (0.6.2)
-    minitest (5.5.1)
+    minitest (5.6.0)
     multi_json (1.11.0)
     multipart-post (2.0.0)
     net-http-persistent (2.9.4)
@@ -226,7 +160,7 @@ GEM
     net-ssh (2.9.2)
     nokogiri (1.6.6.2)
       mini_portile (~> 0.6.0)
-    oj (2.12.1)
+    oj (2.12.2)
     padrino-helpers (0.12.5)
       i18n (~> 0.6, >= 0.6.7)
       padrino-support (= 0.12.5)
@@ -250,10 +184,10 @@ GEM
     rb-fsevent (0.9.4)
     rb-inotify (0.9.5)
       ffi (>= 0.5.0)
-    redcarpet (3.2.2)
+    redcarpet (3.2.3)
     ref (1.0.5)
     rouge (1.8.0)
-    ruby-progressbar (1.7.1)
+    ruby-progressbar (1.7.5)
     sass (3.4.13)
     slim (3.0.3)
       temple (~> 0.7.3)
@@ -270,7 +204,7 @@ GEM
       sprockets (~> 2.0)
       tilt (~> 1.1)
     temple (0.7.5)
-    therubyracer (0.12.1)
+    therubyracer (0.12.2)
       libv8 (~> 3.16.14.0)
       ref
     thor (0.19.1)
@@ -278,7 +212,7 @@ GEM
     tilt (1.4.1)
     timers (4.0.1)
       hitimes
-    travis (1.7.5)
+    travis (1.7.6)
       addressable (~> 2.3)
       backports
       faraday (~> 0.9)
@@ -306,9 +240,9 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  middleman (~> 3.3.7)
+  middleman (~> 3.3.10)
   middleman-autoprefixer
-  middleman-livereload (~> 3.3.4)
+  middleman-livereload (~> 3.4.2)
   middleman-minify-html
   middleman-s3_sync
   middleman-search_engine_sitemap
@@ -316,7 +250,7 @@ DEPENDENCIES
   nokogiri
   oj
   rainbow
-  redcarpet
+  redcarpet (>= 3.2.3)
   slim
   therubyracer
   travis

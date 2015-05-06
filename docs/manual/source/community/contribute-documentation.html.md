@@ -157,7 +157,7 @@ hidden: true
 
 | Description   | File          |
 | ------------- | ------------- |
-| Left side navigation. | `source/partials/nav/main.html.slim` |
+| Left side navigation. | `data/nav/main.yml` |
 | Main site layout. | `source/layouts/layout.html.slim` |
 | Custom Markdown renderer based on [Redcarpet](https://github.com/vmg/redcarpet). | `lib/custom_renderer.rb` |
 | Custom TOC helper. | `helpers/table_of_contents_helpers.rb` |

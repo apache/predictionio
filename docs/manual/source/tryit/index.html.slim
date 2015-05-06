@@ -12,15 +12,14 @@ title: Try PredictionIO
         ul
           li
             h2 Introduction
-            p In this 5 minute tutorial, you will see how PredictionIO works first hand.
-            p You'll start the server, and check it's status.
-            p Then you will build, train, and deploy a model using an #{link_to 'engine template', 'http://templates.prediction.io'}.
-            p After that you will learn to query the predicted results.
-            p Finally you will learn about importing data.
+            p To see how PredictionIO works, you can follow this quick tutorial to:
+            p Start the PredictionIO server
+            p Build, train, and deploy a predictive model with pre-imported data.
+            p Query prediction results.
             p #{link_to 'Start', '#', class: 'button-primary', id: 'tryit-start'}
 
           li
-            h2 Starting PredictionIO
+            h2 Start
             p Start PredictionIO and it's dependancies with:
             p <code>$ pio-start-all</code>
             h2 Check Status
@@ -29,19 +28,20 @@ title: Try PredictionIO
             p Which checks the status of PredictionIO and it's dependancies.
 
           li
-            h2 Deploying the Engine
+            h2 Build
             p All engine commands need to be run from within the engine directory:
             p <code>$ cd ~/PredictionIO/MyEngine</code>
 
-            h3 Build Engine
             p Build the engine with:
             p <code>$ pio build</code>
+          li
+            h2 Train and Deploy
 
-            h3 Train the Model
-            p Train the model with:
+            h3 Train the engine
+            p #{link_to 'Sample data', 'http://grouplens.org/datasets/movielens/'} is already imported, you can train the model the data by running:
             p <code>$ pio train</code>
 
-            h3 Deploy the Results
+            h3 Deploy the trained engine
             p Deploy the trained engine as a background process:
             p <code>$ pio deploy &</code>
 
@@ -50,13 +50,6 @@ title: Try PredictionIO
             p You can query results using cURL with after you see "Ready to serve":
             p <code>$ curl -H "Content-Type: application/json" -d '{ "items": ["296"], "num": 5 }' http://localhost:8000/queries.json</code>
             p This will return 5 recomended movies for movie 296 (Pulp Fiction).
-          li
-            h2 Importing Data
-            p For this example we have already imported the data. If you want to do it yourself though you can do it with the following from the <i>/app</i> directory:
-            p <code>$ ruby import.rb</code>
-            p The Ruby script imports data from the <i>/app/data/ratings.csv</i> file.
-            p You can also lookup movie titles in the <i>/app/data/movies.csv</i> file.
-            p Learn more about our #{link_to 'SDKs', 'http://docs.prediction.io/sdk/'} on our #{link_to 'Docs', 'http://docs.prediction.io'} site.
 
           li
             h2 Next Steps

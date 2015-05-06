@@ -4,7 +4,7 @@ title:  Contribute a Webhooks Connector
 
 NOTE: Please check out the [latest develop branch](https://github.com/PredictionIO/PredictionIO).
 
-Event server can collect data from other third-party sites or software through their webhooks services (for example, SegmentIO, MailChimp). To support that, a *Webhooks Connector* for the third-party data is needed to be integrated into Server Event Server. The job of this *Webhooks Connector* is as simply as converting the third-party data into Event JSON. You can find an example below.
+Event server can collect data from other third-party sites or software through their webhooks services (for example, SegmentIO, MailChimp). To support that, a *Webhooks Connector* for the third-party data is needed to be integrated into Event Server. The job of the *Webhooks Connector* is as simply as converting the third-party data into Event JSON. You can find an example below.
 
 Currently we support two types of connectors: `JsonConnector` and `FormConnector`, which is responsible for accepting *JSON* data and *Form-submission* data, respectively.
 
@@ -29,10 +29,11 @@ private[prediction] trait JsonConnector {
 The EventServer URL path to collect webhooks JSON data:
 
 ```
-http://<EVENT SERVER URL>/webhooks/<CONNECTOR_NAME>.json?accessKey=<YOUR_ACCESS_KEY>
+http://<EVENT SERVER URL>/webhooks/<CONNECTOR_NAME>.json?accessKey=<YOUR_ACCESS_KEY>&channel=<CHANNEL_NAME>
 ```
 
-<!-- TODO explain channel -->
+Note that you may collect Webhooks data into default channel (without the `channel` parameter in the URL) but it's highly recommended to create dedicated [Channel](/datacollection/channel/) to collect specific Webhooks data (e.g. create one channel "segmentio" for SegmentIO and another channel "mailchimp" for Mailchimp data) because it allows you to manage and query data more easily, and the Webhooks data won't be mixed with your other normal app data.
+
 
 **FormConnector**:
 
@@ -56,8 +57,10 @@ private[prediction] trait FormConnector {
 The EventServer URL path to collect webhooks form-subimssion data (no .json):
 
 ```
-http://<EVENT SERVER URL>/webhooks/<CONNECTOR_NAME>?accessKey=<YOUR_ACCESS_KEY>
+http://<EVENT SERVER URL>/webhooks/<CONNECTOR_NAME>?accessKey=<YOUR_ACCESS_KEY>&channel=<CHANNEL_NAME>
 ```
+
+Note that you may collect Webhooks data into default channel (without the `channel` parameter in the URL) but it's highly recommended to create dedicated [Channel](/datacollection/channel/) to collect specific Webhooks data (e.g. create one channel "segmentio" for SegmentIO and another channel "mailchimp" for Mailchimp data) because it allows you to manage and query data more easily, and the Webhooks data won't be mixed with your other normal app data.
 
 
 # Example
@@ -206,13 +209,13 @@ private[prediction] object WebhooksConnectors {
 Note that the name of the connectors (e.g. "examplejson", "segmentio") will be used as the webhooks URL. In this example, the event server URL to collect data from "ExampleJson" would be:
 
 ```
-http://<EVENT SERVER URL>/webhooks/examplejson.json?accessKey=<YOUR_ACCESS_KEY>
+http://<EVENT SERVER URL>/webhooks/examplejson.json?accessKey=<YOUR_ACCESS_KEY>&channel=<CHANNEL_NAME>
 ```
 
 For `FormConnector`, the URL doesn't have `.json`. For example,
 
 ```
-http://<EVENT SERVER URL>/webhooks/mailchimp?accessKey=<YOUR_ACCESS_KEY>
+http://<EVENT SERVER URL>/webhooks/mailchimp?accessKey=<YOUR_ACCESS_KEY>&channel=<CHANNEL_NAME>
 ```
 
 That's it. Once you re-compile PredictionIO, you can send the ExampleJson data to the following URL and the data will be stored to the App of the corresponding Access Key.

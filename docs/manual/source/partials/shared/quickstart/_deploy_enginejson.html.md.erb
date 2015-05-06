@@ -8,16 +8,19 @@ $ cd <%= engine_name %>
 
 Under the directory, you should find an `engine.json` file; this is where you specify parameters for the engine.
 
-WARNING: Make sure the `appId` defined in the file match your **App ID**.
+WARNING: Modify this file to make sure the `appName` parameter match your **App Name** you created earlier (e.g. "MyApp1" if you follow the quickstart).
 
 ```
   ...
   "datasource": {
     "params" : {
-      "appId": 1
+      "appName": "MyApp1"
     }
   },
   ...
 ```
+
+NOTE: You may see `appId` in engine.json instead, which means you are using old template. In this case, make sure the `appId` defined in the file match your **App ID**. Alternatively, you can download the latest version of the template or follow our [upgrade instructions](/resources/upgrade/#upgrade-to-0.9.2) to modify the template to use `appName` as parameter.
+
 <!-- dummy markdown link needed if code block is last -->
 []()

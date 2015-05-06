@@ -84,7 +84,7 @@ method of class `DataSource` reads and selects data from the *Event Store*
 (data store of the *Event Server*). It returns `TrainingData`.
 
 ```scala
-case class DataSourceParams(appId: Int) extends Params
+case class DataSourceParams(appName: String) extends Params
 
 class DataSource(val dsp: DataSourceParams)
   extends PDataSource[TrainingData,
@@ -94,16 +94,15 @@ class DataSource(val dsp: DataSourceParams)
 
   override
   def readTraining(sc: SparkContext): TrainingData = {
-    val eventsDb = Storage.getPEvents()
 
     // create a RDD of (entityID, User)
-    val usersRDD: RDD[(String, User)] = eventsDb.aggregateProperties(...) ...
+    val usersRDD: RDD[(String, User)] = PEventStore.aggregateProperties(...) ...
 
     // create a RDD of (entityID, Item)
-    val itemsRDD: RDD[(String, Item)] = eventsDb.aggregateProperties(...) ...
+    val itemsRDD: RDD[(String, Item)] = PEventStore.aggregateProperties(...) ...
 
     // get all "user" "view" "item" events
-    val viewEventsRDD: RDD[ViewEvent] = eventsDb.find(...) ...
+    val viewEventsRDD: RDD[ViewEvent] = PEventStore.find(...) ...
 
     new TrainingData(
       users = usersRDD,
@@ -114,7 +113,7 @@ class DataSource(val dsp: DataSourceParams)
 }
 ```
 
-PredictionIO automatically loads the parameters of *datasource* specified in MySimilarProduct/***engine.json***, including *appId*, to `dsp`.
+PredictionIO automatically loads the parameters of *datasource* specified in MySimilarProduct/***engine.json***, including *appName*, to `dsp`.
 
 In ***engine.json***:
 
@@ -123,26 +122,26 @@ In ***engine.json***:
   ...
   "datasource": {
     "params" : {
-      "appId": 1
+      "appName": "MyApp1"
     }
   },
   ...
 }
 ```
 
-In `readTraining()`, `Storage.getPEvents()` returns a data access object which you could use to access data that is collected by PredictionIO Event Server.
+In `readTraining()`, `PEventStore` is an object which provides function to access data that is collected by PredictionIO Event Server.
 
 This Similar Product Engine Template requires "user" and "item" entities that are set by events.
 
-`eventsDb.aggregateProperties(...)` aggregates properties of the `user` and `item` that are set, unset, or delete by special events **$set**, **$unset** and **$delete**. Please refer to [Event API](/datacollection/eventapi/#note-about-properties) for more details of using these events.
+`PEventStore.aggregateProperties(...)` aggregates properties of the `user` and `item` that are set, unset, or delete by special events **$set**, **$unset** and **$delete**. Please refer to [Event API](/datacollection/eventapi/#note-about-properties) for more details of using these events.
 
 The following code aggregates the properties of `user` and then map each result to a `User()` object.
 
 ```scala
 
   // create a RDD of (entityID, User)
-  val usersRDD: RDD[(String, User)] = eventsDb.aggregateProperties(
-    appId = dsp.appId,
+  val usersRDD: RDD[(String, User)] = PEventStore.aggregateProperties(
+    appName = dsp.appName,
     entityType = "user"
   )(sc).map { case (entityId, properties) =>
     val user = try {
@@ -165,8 +164,8 @@ Similarly, the following code aggregates `item` properties and then map each res
 
 ```scala
   // create a RDD of (entityID, Item)
-  val itemsRDD: RDD[(String, Item)] = eventsDb.aggregateProperties(
-    appId = dsp.appId,
+  val itemsRDD: RDD[(String, Item)] = PEventStore.aggregateProperties(
+    appName = dsp.appName,
     entityType = "item"
   )(sc).map { case (entityId, properties) =>
     val item = try {
@@ -189,18 +188,18 @@ The `Item` case class is defined as
 case class Item(categories: Option[List[String]])
 ```
 
-`eventsDb.find(...)` specifies the events that you want to read. In this case, "user view item" events are read and then each is mapped to a `ViewEvent()` object.
+`PEventStore.find(...)` specifies the events that you want to read. In this case, "user view item" events are read and then each is mapped to a `ViewEvent()` object.
 
 ```scala
 
   // get all "user" "view" "item" events
-  val viewEventsRDD: RDD[ViewEvent] = eventsDb.find(
-    appId = dsp.appId,
+  val viewEventsRDD: RDD[ViewEvent] = PEventStore.find(
+    appName = dsp.appName,
     entityType = Some("user"),
     eventNames = Some(List("view")),
     // targetEntityType is optional field of an event.
     targetEntityType = Some(Some("item")))(sc)
-    // eventsDb.find() returns RDD[Event]
+    // PEventStore.find() returns RDD[Event]
     .map { event =>
       val viewEvent = try {
         event.event match {

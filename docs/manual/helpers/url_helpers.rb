@@ -1,9 +1,8 @@
 module UrlHelpers
   def absolute_url(path)
     URI::Generic.build(
-      scheme: scheme,
+      scheme: 'https',
       host: host,
-      port: port.to_i,
       path: path
     ).to_s
   end

@@ -1,6 +1,6 @@
 {
   "name": "Tabslet",
-  "version": "1.4.4",
+  "version": "1.4.8",
   "homepage": "https://github.com/vdw/Tabslet",
   "authors": [
     "Dimitris Krestos <dkrestos@gmail.com>"
@@ -8,18 +8,19 @@
   "description": "Yet another jQuery plugin for tabs, lightweight, easy to use and with some extra features.",
   "main": "jquery.tabslet.min.js",
   "keywords": [
+    "jquery-plugin",
     "tabs",
     "jquery",
     "plugin"
   ],
   "license": "Apache",
-  "_release": "1.4.4",
+  "_release": "1.4.8",
   "_resolution": {
     "type": "version",
-    "tag": "v1.4.4",
-    "commit": "eb979afb4d065296449cdb409cc773562fc2d557"
+    "tag": "v1.4.8",
+    "commit": "fc1132416c16cb7f0831a2b9af9742e5a96ff713"
   },
   "_source": "git://github.com/vdw/Tabslet.git",
-  "_target": "1.4.4",
+  "_target": "~1.4.8",
   "_originalSource": "Tabslet"
 }

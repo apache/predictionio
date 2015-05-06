@@ -1,0 +1,148 @@
+---
+title: Developing Engines with IntelliJ IDEA
+---
+
+
+## Prerequisites
+
+This documentation assumes that you have a fully functional PredictionIO setup.
+If you have not installed PredictionIO yet, please follow [these
+instructions](/install/).
+
+
+## Preparing IntelliJ for Engine Development
+
+
+### Installing IntelliJ Scala Plugin
+
+First of all, you will need to install the [Scala
+plugin](https://plugins.jetbrains.com/plugin/?id=1347) if you have not already
+done so.
+
+Go to the *Preferences* menu item, and look for *Plugins*. You should see
+the following screen.
+
+![IntelliJ Plugins](/images/intellij/intelliJ-scala-plugin.png)
+
+Click *Install JetBrains plugin...*, the search for *Scala*. You should arrive
+at something similar to the following.
+
+![Scala Plugin](/images/intellij/intellij-scala-plugin-2.png)
+
+Click the green *Install plugin* button to install the plugin. Restart IntelliJ
+IDEA if asked to do so.
+
+
+### Setting Up the Engine Directory
+
+Create an engine directory from a template. This requires that you install a 
+template that you wish to start from or modify.
+Follow template [install](/start/download) and [deploy](/start/deploy) instructions
+or go through the [Quick Start](/templates/recommendation/quickstart/) if you are 
+planning to modify a recommender. Make sure to build, train, and deploy the 
+engine to make sure all is configured properly.
+
+From IntelliJ IDEA, choose *File* > *New* > *Project from Existing Sources...*.
+When asked to select a directory to import, browse to the engine directory that you 
+downloaded too and proceed. Make sure you pick *Import project from external model* > *SBT*, 
+then proceed to finish.
+
+You should be able to build the project at this point. To run and debug
+PredictionIO server, continue on to the rest of the steps.
+
+INFO: If you are running on OS X, you will need to do the following due to
+this [known issue](http://bit.ly/12Abtvn).
+
+Edit `build.sbt` and add the following under `libraryDependencies`
+
+```
+"org.xerial.snappy" % "snappy-java" % "1.1.1.7"
+```
+
+![Updating build.sbt](/images/intellij/intellij-buildsbt.png)
+
+When you are done editing, IntelliJ should either refresh the project
+automatically or prompt you to refresh.
+
+
+### Dependencies
+
+Right click on the project and click *Open Module Settings*. Under *Modules*, go
+to the *Dependencies* tab on the right hand side, and click the **+** button to
+add the following two JARs:
+
+-   `pio-assembly-<%= data.versions.pio %>.jar`
+
+    This JAR can be found inside the `assembly` or `lib` directory of your PredictionIO
+    installation directory.
+
+-   `spark-assembly-<%= data.versions.spark %>-hadoop2.4.0.jar`
+
+    This JAR can be found inside the `assembly` or `lib` directory of your Apache Spark
+    installation directory.
+
+
+![Adding Dependencies](/images/intellij/intellij-dependencies.png)
+
+
+## Running and Debugging in IntelliJ IDEA
+
+
+### Simulating `pio train`
+
+Create a new *Run/Debug Configuration* by going to *Run* > *Edit
+Configurations...*. Click on the **+** button and select *Application*. Name it
+`pio train` and put in the following.
+
+```
+Main class: io.prediction.workflow.CreateWorkflow
+VM options: -Dspark.master=local -Dlog4j.configuration=file:/**replace_with_your_PredictionIO_path**/conf/log4j.properties
+Program arguments: --engine-id dummy --engine-version dummy --engine-variant engine.json
+```
+
+Click the **...** button to the right of *Environment variables*, and paste the
+following.
+
+```
+SPARK_HOME=/**reaplce_w_your_spark_binary_path**
+PIO_FS_BASEDIR=/**replace_w_your_path_to**/.pio_store
+PIO_FS_ENGINESDIR=/**replace_w_your_path_to**/.pio_store/engines
+PIO_FS_TMPDIR=/**replace_w_your_path_to*/.pio_store/tmp
+PIO_STORAGE_REPOSITORIES_METADATA_NAME=predictionio_metadata
+PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=ELASTICSEARCH
+PIO_STORAGE_REPOSITORIES_MODELDATA_NAME=pio_
+PIO_STORAGE_REPOSITORIES_MODELDATA_SOURCE=LOCALFS
+PIO_STORAGE_REPOSITORIES_APPDATA_NAME=predictionio_appdata
+PIO_STORAGE_REPOSITORIES_APPDATA_SOURCE=ELASTICSEARCH
+PIO_STORAGE_REPOSITORIES_EVENTDATA_NAME=predictionio_eventdata
+PIO_STORAGE_REPOSITORIES_EVENTDATA_SOURCE=HBASE
+PIO_STORAGE_SOURCES_ELASTICSEARCH_TYPE=elasticsearch
+PIO_STORAGE_SOURCES_ELASTICSEARCH_HOSTS=localhost
+PIO_STORAGE_SOURCES_ELASTICSEARCH_PORTS=9300
+PIO_STORAGE_SOURCES_LOCALFS_TYPE=localfs
+PIO_STORAGE_SOURCES_LOCALFS_HOSTS=/**replace_w_your_path_to**/.pio_store/models
+PIO_STORAGE_SOURCES_LOCALFS_PORTS=0
+PIO_STORAGE_SOURCES_HBASE_TYPE=hbase
+PIO_STORAGE_SOURCES_HBASE_HOSTS=0
+PIO_STORAGE_SOURCES_HBASE_PORTS=0
+```
+
+INFO: Remember to replace all paths that start with `**replace` with actual
+values. The directory `.pio_store` typically locates inside your home directory.
+
+The end result should look something similar to this.
+
+![Run Configuration](/images/intellij/intellij-config.png)
+
+Save and you can run or debug `pio train` with the new configuration!
+
+
+### Simulating `pio deploy`
+
+For `pio deploy`, simply duplicate the previous configuration and replace with
+the following.
+
+```
+Main class: io.prediction.workflow.CreateServer
+Program Arguments: --engineInstanceId **replace_with_the_id_from_pio_train**
+```

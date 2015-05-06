@@ -1,0 +1,192 @@
+---
+title: Channel
+---
+
+Each App has a default channel (without name) which stores all incoming events. This "default" one is used when channel is not specified.
+
+You may create additional Channels for the App. Creating multiple Channels is advanced usage. You don't need to create any in order to use PredictionIO. The Channel is associated with one App only and must have unique name within the same App.
+
+Creating multiple Channels allows you more easily to identify, manage and use specific event data if you may collect events from different multiple sources (eg. mobile, website, or third-party webhooks service) for the your application.
+
+(More usage details coming soon...)
+
+## Create a new Channel
+
+For example, to create a new channel "myChannel" for app "myApp", run following `pio` command:
+
+```
+pio app channel-new myApp myChannel
+```
+
+you should see something like the following outputs:
+
+```
+[INFO] [App$] Updated Channel meta-data.
+[INFO] [HBLEvents] The table predictionio_eventdata:events_5_2 doesn't exist yet. Creating now...
+[INFO] [App$] Initialized Event Store for the channel: myChannel.
+[INFO] [App$] Created new channel:
+[INFO] [App$]     Channel Name: myChannel
+[INFO] [App$]       Channel ID: 2
+[INFO] [App$]           App ID: 5
+```
+
+Now "myChannel" is created and ready for collecting data.
+
+## Collect data through Channel
+
+The Event API support optional `channel` query parameter. This allows you to import and query events of the specified channel. When the `channel` parameter is not specified, the data is collected through the default channel.
+
+URL: `http://localhost:7070/events.json?accessKey=yourAccessKeyString&channel=yourChannelName`
+
+Query parameters:
+
+Field | Type | Description
+:---- | :----| :-----
+`accessKey` | String | The Access Key for your App
+`channel` | String | The channel name (optional). Specify this to import data to this channel. **NOTE: supported in PIO version >= 0.9.2** only. Channel must be created first.
+
+
+For SDK usage, one EventClient should be responsible for collecting data of one specific channel. The channel name is specified when the EventClient object is instantiated.
+
+For example, the following code import event to "YOUR_CHANNEL" of the corresponding App.
+
+<div class="tabs">
+  <div data-tab="Raw HTTP" data-lang="bash">
+```bash
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=YOUR_ACCESS_KEY&channel=YOUR_CHANNEL \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "my_event",
+  "entityType" : "user",
+  "entityId" : "uid",
+  "targetEntityType" : "item",
+  "targetEntityId" : "iid",
+  "properties" : {
+    "someProperty" : "value1",
+    "anotherProperty" : "value2"
+  },
+  "eventTime" : "2004-12-13T21:39:45.618Z"
+}'
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+(TODO: update me)
+<!--
+```php
+<?php
+  require_once("vendor/autoload.php");
+
+  use predictionio\EventClient;
+
+  $accessKey = 'YOUR_ACCESS_KEY';
+  $client = new EventClient($accessKey);
+  $response = $client->createEvent(array(
+                        'event' => 'my_event',
+                        'entityType' => 'user',
+                        'entityId' => 'uid',
+                        'targetEntityType' => 'item',
+                        'targetEntityId' => 'iid',
+                        'properties' => array('someProperty'=>'value1',
+                                              'anotherProperty'=>'value2'),
+                        'eventTime' => '2004-12-13T21:39:45.618Z'
+                       ));
+?>
+```
+-->
+
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+
+```python
+from predictionio import EventClient
+from datetime import datetime
+import pytz
+
+# Create a EventClient for "YOUR_CHANNEL"
+client = EventClient('YOUR_ACCESS_KEY', "http://localhost:7070",
+  channel='YOUR_CHANNEL') # default channel if not specified
+
+event_properties = {
+    "someProperty" : "value1",
+    "anotherProperty" : "value2",
+    }
+event_response = client.create_event(
+    event="my_event",
+    entity_type="user",
+    entity_id="uid",
+    target_entity_type="item",
+    target_entity_id="iid",
+    properties=event_properties,
+    event_time=datetime(2014, 12, 13, 21, 38, 45, 618000, pytz.utc))
+
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+(TODO: update me)
+<!--
+```ruby
+require 'predictionio'
+
+event_client = PredictionIO::EventClient.new('YOUR_ACCESS_KEY')
+event_client.create_event('my_event', 'user', 'uid',
+                          'targetEntityType' => 'item',
+                          'targetEntityId' => 'iid',
+                          'eventTime' => '2004-12-13T21:39:45.618Z',
+                          'properties' => { 'someProperty' => 'value1',
+                                            'anotherProperty' => 'value2' })
+```
+-->
+
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
+(coming soon)
+```
+  </div>
+</div>
+
+You can also follow the EventAPI [debug receipts](/datacollection/eventapi/#debugging-recipes) to query the events of specific channel by adding the `channel` query parameter in the URL.
+
+
+## Delete a Channel (including all imported data)
+
+```
+pio app channel-delete <app name> <channel name>
+```
+
+## Delete the data-only of a Channel
+
+```
+pio app data-delete <app name> --channel <channel name>
+```
+
+## Accessing Channel Data in Engine
+
+To acccess channel data, simply specify the channel name when use the PEventStore or LEventStore API. Data is read from from the default channel if channelName is not specified.
+
+For example, read data from default channel:
+
+```scala
+
+    val eventsRDD: RDD[Event] = PEventStore.find(
+      appName = dsp.appName,
+      entityType = Some("user"),
+      eventNames = Some(List("rate", "buy")), // read "rate" and "buy" event
+      // targetEntityType is optional field of an event.
+      targetEntityType = Some(Some("item")))(sc)
+
+```
+
+For examlpe, read data from the channel "CHANNEL_NAME"
+
+```scala
+
+    val eventsRDD: RDD[Event] = PEventStore.find(
+      appName = dsp.appName,
+      channelName = Some("CHANNEL_NAME"), // ADDED
+      entityType = Some("user"),
+      eventNames = Some(List("rate", "buy")), // read "rate" and "buy" event
+      // targetEntityType is optional field of an event.
+      targetEntityType = Some(Some("item")))(sc)
+
+```

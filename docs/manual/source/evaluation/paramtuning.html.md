@@ -5,7 +5,7 @@ title: Hyperparameter Tuning
 A PredictionIO engine is instantiated by a set of parameters, these parameters
 determines which algorithm is used as well as the parameter for the algorithm.
 It naturally raises a question of how to choose the best set of parameters.
-The evaluation module steamlines the process of *tuning* the engine to the best
+The evaluation module streamlines the process of *tuning* the engine to the best
 parameter set and deploy it.
 
 ## Quick Start
@@ -171,7 +171,7 @@ validation sets, for each tuple, the training set takes *k - 1* of the folds and
 the validation set takes the remaining fold.
 
 To enable evaluation data generation, we need to define the ***actual result***
-and implement the method for generating the (traingin, validation) data tuple.
+and implement the method for generating the (training, validation) data tuple.
 
 ### Actual Result
 
@@ -190,7 +190,7 @@ This class is used to store the actual label of the data (contrast to
 ### Implement Data Generation Method in DataSource
 
 In MyClassification/src/main/scala/***DataSource.scala***, the method
-`readEval` method reads, and selects, data from datastore and returns a 
+`readEval` reads, and selects, data from datastore and returns a 
 sequence of (training, validation) data.
 
 ```scala

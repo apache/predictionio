@@ -36,6 +36,6 @@ We will discuss various aspects of evaluation with PredictionIO.
   machine learning metrics
 - [Bulding Evaluation Metrics](/evaluation/metricbuild/) - we illustrate how to
   implement a custom metric with as few as one line of code (plus some
-  boilderplates).
+  boilerplates).
 
 

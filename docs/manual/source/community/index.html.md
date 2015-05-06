@@ -2,23 +2,23 @@
 title: Community Page
 ---
 
-# User Forum
+## User Forum
 
 Join our [Google Group](https://groups.google.com/forum/#!forum/predictionio-user).
 
-# Request a Feature
+## Request a Feature
 
 Fill out the form [here](https://predictionio.uservoice.com/forums/219398-general/filters/top).
 
-# Twitter
+## Twitter
 
 Follow us on Twitter [@predictionio](https://twitter.com/PredictionIO).
 
-# Facebook Page
+## Facebook Page
 
 Like us on Facebook at [https://www.facebook.com/predictionio](https://www.facebook.com/predictionio).
 
-# GitHub
+## GitHub
 
 View our code on GitHub at [https://github.com/PredictionIO](https://github.com/PredictionIO)
 

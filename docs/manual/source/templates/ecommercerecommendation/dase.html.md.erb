@@ -56,7 +56,7 @@ object ECommerceRecommendationEngine extends IEngineFactory {
     new Engine(
       classOf[DataSource],
       classOf[Preparator],
-      Map("als" -> classOf[ALSAlgorithm]),
+      Map("ecomm" -> classOf[ECommAlgorithm]),
       classOf[Serving])
   }
 }
@@ -84,7 +84,7 @@ method of class `DataSource` reads and selects data from the *Event Store*
 (data store of the *Event Server*). It returns `TrainingData`.
 
 ```scala
-case class DataSourceParams(appId: Int) extends Params
+case class DataSourceParams(appName: String) extends Params
 
 class DataSource(val dsp: DataSourceParams)
   extends PDataSource[TrainingData,
@@ -94,27 +94,33 @@ class DataSource(val dsp: DataSourceParams)
 
   override
   def readTraining(sc: SparkContext): TrainingData = {
-    val eventsDb = Storage.getPEvents()
 
     // create a RDD of (entityID, User)
-    val usersRDD: RDD[(String, User)] = eventsDb.aggregateProperties(...) ...
+    val usersRDD: RDD[(String, User)] = PEventStore.aggregateProperties(...) ...
 
     // create a RDD of (entityID, Item)
-    val itemsRDD: RDD[(String, Item)] = eventsDb.aggregateProperties(...) ...
+    val itemsRDD: RDD[(String, Item)] = PEventStore.aggregateProperties(...) ...
 
-    // get all "user" "view" "item" events
-    val viewEventsRDD: RDD[ViewEvent] = eventsDb.find(...) ...
+    // get all "user" "view" or "buy" "item" events from event store
+    val eventsRDD: RDD[Event] = PEventStore.find(...) ...
+
+    // filter all view events
+    val viewEventsRDD: RDD[ViewEvent] = eventsRDD.filter { ... } ...
+
+    // filter all buy events
+    val buyEventsRDD: RDD[BuyEvent] = eventsRDD.filter { ...} ...
 
     new TrainingData(
       users = usersRDD,
       items = itemsRDD,
-      viewEvents = viewEventsRDD
+      viewEvents = viewEventsRDD,
+      buyEvents = buyEventsRDD
     )
   }
 }
 ```
 
-PredictionIO automatically loads the parameters of *datasource* specified in MyECommerceRecommendation/***engine.json***, including *appId*, to `dsp`.
+PredictionIO automatically loads the parameters of *datasource* specified in MyECommerceRecommendation/***engine.json***, including *appName*, to `dsp`.
 
 In ***engine.json***:
 
@@ -123,26 +129,26 @@ In ***engine.json***:
   ...
   "datasource": {
     "params" : {
-      "appId": 1
+      "appName": "MyApp1"
     }
   },
   ...
 }
 ```
 
-In `readTraining()`, `Storage.getPEvents()` returns a data access object which you could use to access data that is collected by PredictionIO Event Server.
+In `readTraining()`, `PEventStore` is an object which provides function to access dataa that is collected by PredictionIO Event Server.
 
 This E-Commerce Recommendation Engine Template requires "user" and "item" entities that are set by events.
 
-`eventsDb.aggregateProperties(...)` aggregates properties of the `user` and `item` that are set, unset, or delete by special events **$set**, **$unset** and **$delete**. Please refer to [Event API](/datacollection/eventapi/#note-about-properties) for more details of using these events.
+`PEventStore.aggregateProperties(...)` aggregates properties of the `user` and `item` that are set, unset, or delete by special events **$set**, **$unset** and **$delete**. Please refer to [Event API](/datacollection/eventapi/#note-about-properties) for more details of using these events.
 
 The following code aggregates the properties of `user` and then map each result to a `User()` object.
 
 ```scala
 
   // create a RDD of (entityID, User)
-  val usersRDD: RDD[(String, User)] = eventsDb.aggregateProperties(
-    appId = dsp.appId,
+  val usersRDD: RDD[(String, User)] = PEventStore.aggregateProperties(
+    appName = dsp.appName,
     entityType = "user"
   )(sc).map { case (entityId, properties) =>
     val user = try {
@@ -165,8 +171,8 @@ Similarly, the following code aggregates `item` properties and then map each res
 
 ```scala
   // create a RDD of (entityID, Item)
-  val itemsRDD: RDD[(String, Item)] = eventsDb.aggregateProperties(
-    appId = dsp.appId,
+  val itemsRDD: RDD[(String, Item)] = PEventStore.aggregateProperties(
+    appName = dsp.appName,
     entityType = "item"
   )(sc).map { case (entityId, properties) =>
     val item = try {
@@ -189,43 +195,79 @@ The `Item` case class is defined as
 case class Item(categories: Option[List[String]])
 ```
 
-`eventsDb.find(...)` specifies the events that you want to read. In this case, "user view item" events are read and then each is mapped to a `ViewEvent()` object.
+`PEventStore.find(...)` specifies the events that you want to read. In this case, "user view item" and "user buy item" events are read
 
 ```scala
 
   // get all "user" "view" "item" events
-  val viewEventsRDD: RDD[ViewEvent] = eventsDb.find(
-    appId = dsp.appId,
-    entityType = Some("user"),
-    eventNames = Some(List("view")),
-    // targetEntityType is optional field of an event.
-    targetEntityType = Some(Some("item")))(sc)
-    // eventsDb.find() returns RDD[Event]
-    .map { event =>
-      val viewEvent = try {
-        event.event match {
-          case "view" => ViewEvent(
+  val eventsRDD: RDD[Event] = PEventStore.find(
+      appName = dsp.appName,
+      entityType = Some("user"),
+      eventNames = Some(List("view", "buy")),
+      // targetEntityType is optional field of an event.
+      targetEntityType = Some(Some("item")))(sc)
+      .cache()
+
+```
+
+Note that `.cache()` is used to cache the RDD data into memory since eventsRDD will be used multiple times later.
+
+Then we filter the events we are intersted in and map the event to a `ViewEvent` object.
+
+```scala
+
+  val viewEventsRDD: RDD[ViewEvent] = eventsRDD
+      .filter { event => event.event == "view" }
+      .map { event =>
+        try {
+          ViewEvent(
             user = event.entityId,
             item = event.targetEntityId.get,
-            t = event.eventTime.getMillis)
-          case _ => throw new Exception(s"Unexpected event ${event} is read.")
-        }
-      } catch {
-        case e: Exception => {
-          logger.error(s"Cannot convert ${event} to ViewEvent." +
-            s" Exception: ${e}.")
-          throw e
+            t = event.eventTime.getMillis
+          )
+        } catch {
+          case e: Exception =>
+            logger.error(s"Cannot convert ${event} to ViewEvent." +
+              s" Exception: ${e}.")
+            throw e
         }
       }
-      viewEvent
-    }.cache()
-
 ```
 
 `ViewEvent` case class is defined as:
 
 ```scala
 case class ViewEvent(user: String, item: String, t: Long)
+```
+
+We filter buy event in similar way and map to `BuyEvent` object for later use.
+
+
+```scala
+
+  val buyEventsRDD: RDD[BuyEvent] = eventsRDD
+      .filter { event => event.event == "buy" }
+      .map { event =>
+        try {
+          BuyEvent(
+            user = event.entityId,
+            item = event.targetEntityId.get,
+            t = event.eventTime.getMillis
+          )
+        } catch {
+          case e: Exception =>
+            logger.error(s"Cannot convert ${event} to BuyEvent." +
+              s" Exception: ${e}.")
+            throw e
+        }
+      }
+
+```
+
+`BuyEvent` case class is defined as:
+
+```scala
+case class BuyEvent(user: String, item: String, t: Long)
 ```
 
 INFO: For flexibility, this template is designed to support user ID and item ID in String.
@@ -236,13 +278,14 @@ INFO: For flexibility, this template is designed to support user ID and item ID 
 class TrainingData(
   val users: RDD[(String, User)],
   val items: RDD[(String, Item)],
-  val viewEvents: RDD[ViewEvent]
+  val viewEvents: RDD[ViewEvent],
+  val buyEvents: RDD[BuyEvent]
 ) extends Serializable { ... }
 ```
 
 PredictionIO then passes the returned `TrainingData` object to *Data Preparator*.
 
-NOTE: You could modify the DataSource to read other event other than the default **view**.
+NOTE: You could modify the DataSource to read other event other than the default **view** or **buy**.
 
 ### Data Preparator
 
@@ -261,14 +304,16 @@ class Preparator
     new PreparedData(
       users = trainingData.users,
       items = trainingData.items,
-      viewEvents = trainingData.viewEvents)
+      viewEvents = trainingData.viewEvents,
+      buyEvents = trainingData.buyEvents)
   }
 }
 
 class PreparedData(
   val users: RDD[(String, User)],
   val items: RDD[(String, Item)],
-  val viewEvents: RDD[ViewEvent]
+  val viewEvents: RDD[ViewEvent],
+  val buyEvents: RDD[BuyEvent]
 ) extends Serializable
 ```
 
@@ -276,35 +321,60 @@ PredictionIO passes the returned `PreparedData` object to Algorithm's `train` fu
 
 ## Algorithm
 
-In MyECommerceRecommendation/src/main/scala/***ALSAlgorithm.scala***, the two methods of
+In MyECommerceRecommendation/src/main/scala/***ECommAlgorithm.scala***, the two methods of
 the algorithm class are `train` and `predict`. `train` is responsible for
 training the predictive model;`predict` is
 responsible for using this model to make prediction.
 
+
+### Algorithm parameters
+
+The ECommAlgorithm takes the following parameters, as defined by the `ECommAlgorithmParams` case class:
+
+```scala
+case class ECommAlgorithmParams(
+  appName: String,
+  unseenOnly: Boolean,
+  seenEvents: List[String],
+  similarEvents: List[String],
+  rank: Int,
+  numIterations: Int,
+  lambda: Double,
+  seed: Option[Long]
+) extends Params
+```
+
+Parameter description:
+
+- **appName**: Your App name. Events defined by "seenEvents" and "similarEvents" will be read from this app during `predict`.
+- **unseenOnly**: true or false. Set to true if you want to recommmend unseen items only. Seen items are defined by *seenEvents* which mean if the user has these events on the items, then it's treated as *seen*.
+- **seenEvents**: A list of user-to-item events which will be treated as *seen* events. Used when *unseenOnly* is set to true.
+- **similarEvents**: A list of user-item-item events which will be used to find similar items to the items which the user has performend these events on.
+- **rank**: Parameter of the MLlib ALS algorithm. Number of latent features.
+- **numIterations**: Parameter of the MLlib ALS algorithm. Number of iterations.
+- **lambda**: Regularization parameter of the MLlib ALS algorithm.
+- **seed**: Optional. A random seed of the MLlib ALS algorithm. Specify a fixed value if want to have deterministic result.
+
 ### train(...)
 
 `train` is called when you run **pio train**. This is where MLlib ALS algorithm,
-i.e. `ALS.trainImplicit()`, is used to train a predictive model.
-
+i.e. `ALS.trainImplicit()`, is used to train a predictive model. In addition, we also count the number of items being bought for each item as default model which will be used when there is no ALS model avaiable or other useful information about the user is avaiable during `predict`.
 
 ```scala
 
-  def train(sc: SparkContext, data: PreparedData): ALSModel = {
+  def train(sc: SparkContext, data: PreparedData): ECommModel = {
     ...
 
     // create User and item's String ID to integer index BiMap
     val userStringIntMap = BiMap.stringInt(data.users.keys)
     val itemStringIntMap = BiMap.stringInt(data.items.keys)
 
-    // collect Item as Map and convert ID to Int index
-    val items: Map[Int, Item] = data.items.map { case (id, item) =>
-      (itemStringIntMap(id), item)
-    }.collectAsMap.toMap
-
-    val mllibRatings = data.viewEvents
-      .map { ... }
-
-    ...
+    // generate MLlibRating data for ALS algorithm
+    val mllibRatings: RDD[MLlibRating] = genMLlibRating(
+      userStringIntMap = userStringIntMap,
+      itemStringIntMap = itemStringIntMap,
+      data = data
+    )
 
     // seed for MLlib ALS
     val seed = ap.seed.getOrElse(System.nanoTime)
@@ -319,6 +389,15 @@ i.e. `ALS.trainImplicit()`, is used to train a predictive model.
       seed = seed)
 
     ...
+
+    // count the number of items being bought for recommendation popular items as default case
+    val popularCount = trainDefault(
+      userStringIntMap = userStringIntMap,
+      itemStringIntMap = itemStringIntMap,
+      data = data
+    )
+    ...
+
   }
 
 ```
@@ -343,35 +422,48 @@ val userStringIntMap = BiMap.stringInt(data.users.keys)
 val itemStringIntMap = BiMap.stringInt(data.items.keys)
 ```
 
-Then convert the user and item String ID in each ViewEvent to Int with these BiMaps. We use default -1 if the user or item String ID couldn't be found in the BiMap and filter out these events with invalid user and item ID later. After filtering, we use `reduceByKey()` to add up all values for the same key (uindex, iindex) and then finally map to `MLlibRating` object.
+Then convert the user and item String ID in each ViewEvent to Int with these BiMaps. We use default -1 if the user or item String ID couldn't be found in the BiMap and filter out these events with invalid user and item ID later. After filtering, we use `reduceByKey()` to add up all values for the same key (uindex, iindex) and then finally map to `MLlibRating` object. You can find the code inside the function `genMLlibRating()`:
 
 ```scala
 
-  val mllibRatings = data.viewEvents
-    .map { r =>
-      // Convert user and item String IDs to Int index for MLlib
-      val uindex = userStringIntMap.getOrElse(r.user, -1)
-      val iindex = itemStringIntMap.getOrElse(r.item, -1)
+  def genMLlibRating(
+    userStringIntMap: BiMap[String, Int],
+    itemStringIntMap: BiMap[String, Int],
+    data: PreparedData): RDD[MLlibRating] = {
 
-      if (uindex == -1)
-        logger.info(s"Couldn't convert nonexistent user ID ${r.user}"
-          + " to Int index.")
+    val mllibRatings = data.viewEvents
+      .map { r =>
+        // Convert user and item String IDs to Int index for MLlib
+        val uindex = userStringIntMap.getOrElse(r.user, -1)
+        val iindex = itemStringIntMap.getOrElse(r.item, -1)
 
-      if (iindex == -1)
-        logger.info(s"Couldn't convert nonexistent item ID ${r.item}"
-          + " to Int index.")
+        if (uindex == -1)
+          logger.info(s"Couldn't convert nonexistent user ID ${r.user}"
+            + " to Int index.")
 
-      ((uindex, iindex), 1)
-    }.filter { case ((u, i), v) =>
-      // keep events with valid user and item index
-      (u != -1) && (i != -1)
-    }.reduceByKey(_ + _) // aggregate all view events of same user-item pair
-    .map { case ((u, i), v) =>
-      // MLlibRating requires integer index for user and item
-      MLlibRating(u, i, v)
-    }.cache()
+        if (iindex == -1)
+          logger.info(s"Couldn't convert nonexistent item ID ${r.item}"
+            + " to Int index.")
+
+        ((uindex, iindex), 1)
+      }
+      .filter { case ((u, i), v) =>
+        // keep events with valid user and item index
+        (u != -1) && (i != -1)
+      }
+      .reduceByKey(_ + _) // aggregate all view events of same user-item pair
+      .map { case ((u, i), v) =>
+        // MLlibRating requires integer index for user and item
+        MLlibRating(u, i, v)
+      }
+      .cache()
+
+    mllibRatings
+  }
 
 ```
+
+NOTE: You can customize this function if you want to convert other events to MLlibRating or need different ways to aggreagte the events into MLlibRating.
 
 In addition to `RDD[MLlibRating]`, `ALS.trainImplicit` takes the following parameters: *rank*, *iterations*, *lambda* and *seed*.
 
@@ -385,9 +477,10 @@ MyECommerceRecommendation/***engine.json***:
     {
       "name": "als",
       "params": {
-        "appId": 17,
+        "appName": "MyApp1",
         "unseenOnly": true,
         "seenEvents": ["buy", "view"],
+        "similarEvents" : ["view"]
         "rank": 10,
         "numIterations" : 20,
         "lambda": 0.01,
@@ -399,39 +492,49 @@ MyECommerceRecommendation/***engine.json***:
 }
 ```
 
-The parameters 'appId', 'unseenOnly' and 'seenEvents' are used during `predict()`, which will be explained later.
+The parameters `appName`, `unseenOnly`, `seenEvents` and `similarEvents` are used during `predict()`, which will be explained later.
 
 PredictionIO will automatically loads these values into the constructor `ap`,
-which has a corresponding case case `ALSAlgorithmParams`:
-
-```scala
-case class ALSAlgorithmParams(
-  appId: Int,
-  unseenOnly: Boolean,
-  seenEvents: List[String],
-  rank: Int,
-  numIterations: Int,
-  lambda: Double,
-  seed: Option[Long]
-) extends Params
-```
+which has a corresponding case case `ECommAlgorithmParams`.
 
 The `seed` parameter is an optional parameter, which is used by MLlib ALS algorithm internally to generate random values. If the `seed` is not specified, current system time would be used and hence each train may produce different reuslts. Specify a fixed value for the `seed` if you want to have deterministic result (For example, when you are testing).
 
 `ALS.trainImplicit()` returns a `MatrixFactorizationModel` model which contains two RDDs: userFeatures and productFeatures. They correspond to the user X latent features matrix and item X latent features matrix, respectively.
 
-In addition to the latent feature vector, the item properties (e.g. categories) are also used during `predict()`. Hence, we also save the Item data along with the feature vector by joining them:
+In addition to the latent feature vector, the item properties (e.g. categories) and popular count are also used during `predict()`. Hence, we also save these data along with the feature vector by joining them and then collect the data as local Map. Each item is represented by a `ProductModel` class, which cosists of the `item` information, `features` calculated by ALS, and `count` returned by `trainDefault()`.
 
 ```scala
 
-    // join item with the trained productFeatures
-    val productFeatures = items.leftOuterJoin(m.productFeatures)
-      .collectAsMap.toMap
+case class ProductModel(
+  item: Item,
+  features: Option[Array[Double]], // features by ALS
+  count: Int // popular count for default score
+)
 
-    new ALSModel(
+```
+
+```scala
+    // join item with the trained productFeatures
+    val productFeatures: Map[Int, (Item, Option[Array[Double]])] =
+      items.leftOuterJoin(m.productFeatures).collectAsMap.toMap
+
+    ...
+
+    val productModels: Map[Int, ProductModel] = productFeatures
+      .map { case (index, (item, features)) =>
+        val pm = ProductModel(
+          item = item,
+          features = features,
+          // NOTE: use getOrElse because popularCount may not contain all items.
+          count = popularCount.getOrElse(index, 0)
+        )
+        (index, pm)
+      }
+
+    new ECommModel(
       rank = m.rank,
       userFeatures = userFeatures,
-      productFeatures = productFeatures,
+      productModels = productModels,
       userStringIntMap = userStringIntMap,
       itemStringIntMap = itemStringIntMap
     )
@@ -440,26 +543,26 @@ In addition to the latent feature vector, the item properties (e.g. categories) 
 
 Note that `leftOuterJoin` is used because the productFeatures returned by ALS may not contain all items.
 
-The `ALSModel` is defined as the following:
+The `ECommModel` is defined as the following:
 
 ```scala
-class ALSModel(
+class ECommModel(
   val rank: Int,
   val userFeatures: Map[Int, Array[Double]],
-  val productFeatures: Map[Int, (Item, Option[Array[Double]])],
+  val productModels: Map[Int, ProductModel],
   val userStringIntMap: BiMap[String, Int],
   val itemStringIntMap: BiMap[String, Int]
 ) extends Serializable  { ... }
 ```
 
-PredictionIO will automatically store the returned model after training, i.e. `ALSModel` in this example.
+PredictionIO will automatically store the returned model after training, i.e. `ECommModel` in this example.
 
 ### predict(...)
 
 `predict` is called when you send a JSON query to
 http://localhost:8000/queries.json. PredictionIO converts the query, such as `{ "user": "u1", "num": 4 }` to the `Query` class you defined previously.
 
-We can use the userFeatures and productFeatures stored in ALSModel to calculate the scores of items for the user.
+We can use the userFeatures and productFeatures stored in ECommModel to calculate the scores of items for the user.
 
 This template also supports additional business logic features, such as filtering items by categories, recommending items in the white list, excluding items in the black list, recommend unseen items only, and exclude unavaiable items defined in constraint event.
 
@@ -469,9 +572,10 @@ The `predict()` function does the following:
 2. Get a list seen items by the user (defined by parmater `seenEvents`)
 3. Get the latest unavailableItems which is used to exclude unavailable items for all users
 4. Combine query's blackList, seenItems, and unavailableItems into a final black list of items to be excluded from recommendation.
-5. Get the user feature vector from the ALSModel.
+5. Get the user feature vector from the ECommModel.
 6. If there is feature vector for the user, recommend top N items based on the user feature and prodcut features.
-7. If there is no feature vector for the user, use the recent viewed items of the user to recommend similar items.
+7. If there is no feature vector for the user, use the recent items acted by the user (defined by `similarEvents` parameter) to recommend similar items.
+8. If there is no recent `similarEvents` available for the user, popular items are then recommended (added in template version 0.4.0).
 
 Only items which satisfy the `isCandidate()` condition will be recommended. By default, the item can be recommended if:
 
@@ -483,7 +587,7 @@ INFO: You can easily modify `isCandidate()` checking or related logic if you hav
 
 ```scala
 
-  def predict(model: ALSModel, query: Query): PredictedResult = {
+  def predict(model: ECommModel, query: Query): PredictedResult = {
 
     val userFeatures = model.userFeatures
     val productFeatures = model.productFeatures
@@ -493,20 +597,12 @@ INFO: You can easily modify `isCandidate()` checking or related logic if you hav
       set.map(model.itemStringIntMap.get(_)).flatten
     )
 
-    val blackList: Set[String] = query.blackList.getOrElse(Set[String]())
+    // generate final blackList based on additional constraints
+    val finalBlackList: Set[Int] = genBlackList(query = query)
+      // convert seen Items list from String ID to interger Index
+      .flatMap(x => model.itemStringIntMap.get(x))
 
-    // if unseenOnly is True, get all seen items
-    val seenItems: Set[String] = if (ap.unseenOnly) { ... }
-
-    // get the latest constraint unavailableItems $set event
-    val unavailableItems: Set[String] = ...
-
-    // combine query's blackList,seenItems and unavailableItems
-    // into final blackList.
-    // convert seen Items list from String ID to interger Index
-    val finalBlackList: Set[Int] = (blackList ++ seenItems ++
-      unavailableItems).map( x => model.itemStringIntMap.get(x)).flatten
-
+    // look up user feature from model
     val userFeature =
       model.userStringIntMap.get(query.user).map { userIndex =>
         userFeatures.get(userIndex)
@@ -514,46 +610,48 @@ INFO: You can easily modify `isCandidate()` checking or related logic if you hav
       // flatten Option[Option[Array[Double]]] to Option[Array[Double]]
       .flatten
 
-    val topScores = if (userFeature.isDefined) {
+    val topScores: Array[(Int, Double)] = if (userFeature.isDefined) {
       // the user has feature vector
-      val uf = userFeature.get
-      val indexScores: Map[Int, Double] =
-        productFeatures.par // convert to parallel collection
-          .filter { case (i, (item, feature)) =>
-            feature.isDefined &&
-            isCandidateItem(
-              i = i,
-              item = item,
-              categories = query.categories,
-              whiteList = whiteList,
-              blackList = finalBlackList
-            )
-          }
-          .map { case (i, (item, feature)) =>
-            // NOTE: feature must be defined, so can call .get
-            val s = dotProduct(uf, feature.get)
-            // Can adjust score here
-            (i, s)
-          }
-          .filter(_._2 > 0) // only keep items with score > 0
-          .seq // convert back to sequential collection
-
-      val ord = Ordering.by[(Int, Double), Double](_._2).reverse
-      val topScores = getTopN(indexScores, query.num)(ord).toArray
-
-      topScores
-
-    } else {
-      // the user doesn't have feature vector.
-      // For example, new user is created after model is trained.
-      logger.info(s"No userFeature found for user ${query.user}.")
-      predictNewUser(
-        model = model,
+      predictKnownUser(
+        userFeature = userFeature.get,
+        productModels = productModels,
         query = query,
         whiteList = whiteList,
         blackList = finalBlackList
       )
+    } else {
+      // the user doesn't have feature vector.
+      // For example, new user is created after model is trained.
+      logger.info(s"No userFeature found for user ${query.user}.")
 
+      // check if the user has recent events on some items
+      val recentItems: Set[String] = getRecentItems(query)
+      val recentList: Set[Int] = recentItems.flatMap (x =>
+        model.itemStringIntMap.get(x))
+
+      val recentFeatures: Vector[Array[Double]] = recentList.toVector
+        // productModels may not contain the requested item
+        .map { i =>
+          productModels.get(i).flatMap { pm => pm.features }
+        }.flatten
+
+      if (recentFeatures.isEmpty) {
+        logger.info(s"No features vector for recent items ${recentItems}.")
+        predictDefault(
+          productModels = productModels,
+          query = query,
+          whiteList = whiteList,
+          blackList = finalBlackList
+        )
+      } else {
+        predictSimilar(
+          recentFeatures = recentFeatures,
+          productModels = productModels,
+          query = query,
+          whiteList = whiteList,
+          blackList = finalBlackList
+        )
+      }
     }
 
     ...
@@ -603,4 +701,4 @@ When you send a JSON query to http://localhost:8000/queries.json,
 
 > An engine can train multiple models if you specify more than one Algorithm
 component in `object RecommendationEngine` inside ***Engine.scala***. Since only
-one `ALSAlgorithm` is implemented by default, this `Seq` contains one element.
+one `ECommAlgorithm` is implemented by default, this `Seq` contains one element.

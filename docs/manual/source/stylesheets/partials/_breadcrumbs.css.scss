@@ -1,0 +1,25 @@
+#breadcrumbs {
+  ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: inline-block;
+    margin: 15px 0 0 25px;
+  }
+
+  li {
+    display: inline-block;
+  }
+
+  a {
+    color: $breadcrumbs-link-color;
+  }
+
+  span {
+    color: $breadcrumbs-font-color;
+  }
+  span.spacer {
+    padding: 0 8px 0 8px;
+    color: $breadcrumbs-spacer-color;
+  }
+}

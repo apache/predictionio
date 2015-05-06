@@ -9,6 +9,7 @@ html
         = partial 'nav/main'
         main#main data-swiftype-index="true"
           .col-main
+            = breadcrumbs
             = partial 'page_title'
             #content
               = yield

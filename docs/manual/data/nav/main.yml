@@ -6,6 +6,9 @@ root:
       -
         body: 'Welcome to PredictionIO'
         url: '/'
+      -
+        body: 'Release Notes'
+        url: '/release-notes/'
   -
     body: 'Getting Started'
     url: '#'
@@ -35,6 +38,22 @@ root:
       -
         body: 'List of SDKs'
         url: '/sdk/'
+        children:
+          -
+            body: 'Java & Android SDK'
+            url: '/sdk/java/'
+          -
+            body: 'PHP SDK'
+            url: '/sdk/php/'
+          -
+            body: 'Python SDK'
+            url: '/sdk/python/'
+          -
+            body: 'Ruby SDK'
+            url: '/sdk/ruby/'
+          -
+            body: 'Community Powered SDKs'
+            url: '/sdk/community/'
   -
     body: 'Deploying an Engine'
     url: '#'
@@ -156,7 +175,7 @@ root:
         url: '/demo/community/'
   -
     body: 'Getting Involved'
-    url: '#'
+    url: '/community/'
     children:
       -
         body: 'Contribute Code'
@@ -196,6 +215,9 @@ root:
       -
         body: 'Upgrade Instructions'
         url: '/resources/upgrade/'
+      -
+        body: 'Download Logos'
+        url: '/logo/'
       -
         body: 'Glossary'
         url: '/resources/glossary/'

@@ -28,7 +28,7 @@ set :markdown,
 sprockets.append_path File.join root, 'bower_components'
 
 # Sitemap
-set :url_root, 'http://docs.prediction.io'
+set :url_root, 'https://docs.prediction.io'
 activate :search_engine_sitemap, exclude_attr: 'hidden'
 
 # Development Settings
@@ -36,13 +36,13 @@ configure :development do
   set :scheme, 'http'
   set :host, Middleman::PreviewServer.host rescue 'localhost'
   set :port, Middleman::PreviewServer.port rescue 80
-  Slim::Engine.set_options pretty: true, sort_attrs: false
+  Slim::Engine.set_options pretty: false, sort_attrs: false
   set :debug_assets, true
 end
 
 # Build Settings
 configure :build do
-  set :scheme, 'http'
+  set :scheme, 'https'
   set :host, 'docs.prediction.io'
   set :port, 80
   Slim::Engine.set_options pretty: false, sort_attrs: false
