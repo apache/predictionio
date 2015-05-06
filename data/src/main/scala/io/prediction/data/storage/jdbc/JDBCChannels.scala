@@ -25,30 +25,20 @@ class JDBCChannels(client: String, config: StorageClientConfig, prefix: String)
   extends Channels with Logging {
   val tableName = JDBCUtils.prefixTableName(prefix, "channels")
   DB autoCommit { implicit session =>
-    try {
-      sql"""
-      create table $tableName (
-        id serial not null primary key,
-        name text not null,
-        appid integer not null)""".execute().apply()
-    } catch {
-      case e: Exception => debug(e.getMessage, e) // assume table already exists
-    }
+    sql"""
+    create table if not exists $tableName (
+      id serial not null primary key,
+      name text not null,
+      appid integer not null)""".execute().apply()
   }
 
   def insert(channel: Channel): Option[Int] = DB localTx { implicit session =>
-    try {
-      val q = if (channel.id == 0) {
-        sql"INSERT INTO $tableName (name, appid) VALUES(${channel.name}, ${channel.appid})"
-      } else {
-        sql"INSERT INTO $tableName VALUES(${channel.id}, ${channel.name}, ${channel.appid})"
-      }
-      Some(q.updateAndReturnGeneratedKey().apply().toInt)
-    } catch {
-      case e: Exception =>
-        error(e.getMessage, e)
-        None
+    val q = if (channel.id == 0) {
+      sql"INSERT INTO $tableName (name, appid) VALUES(${channel.name}, ${channel.appid})"
+    } else {
+      sql"INSERT INTO $tableName VALUES(${channel.id}, ${channel.name}, ${channel.appid})"
     }
+    Some(q.updateAndReturnGeneratedKey().apply().toInt)
   }
 
   def get(id: Int): Option[Channel] = DB localTx { implicit session =>

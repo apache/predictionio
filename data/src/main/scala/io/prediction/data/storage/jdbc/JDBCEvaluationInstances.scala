@@ -25,160 +25,120 @@ class JDBCEvaluationInstances(client: String, config: StorageClientConfig, prefi
   extends EvaluationInstances with Logging {
   val tableName = JDBCUtils.prefixTableName(prefix, "evaluationinstances")
   DB autoCommit { implicit session =>
-    try {
-      sql"""
-      create table $tableName (
-        id text not null primary key,
-        status text not null,
-        startTime timestamp not null,
-        endTime timestamp not null,
-        evaluationClass text not null,
-        engineParamsGeneratorClass text not null,
-        batch text not null,
-        env text not null,
-        sparkConf text not null,
-        evaluatorResults text not null,
-        evaluatorResultsHTML text not null,
-        evaluatorResultsJSON text)""".execute().apply()
-    } catch {
-      case e: Exception => debug(e.getMessage, e)
-    }
+    sql"""
+    create table if not exists $tableName (
+      id varchar(100) not null primary key,
+      status text not null,
+      startTime timestamp not null,
+      endTime timestamp not null,
+      evaluationClass text not null,
+      engineParamsGeneratorClass text not null,
+      batch text not null,
+      env text not null,
+      sparkConf text not null,
+      evaluatorResults text not null,
+      evaluatorResultsHTML text not null,
+      evaluatorResultsJSON text)""".execute().apply()
   }
 
   def insert(i: EvaluationInstance): String = DB localTx { implicit session =>
-    try {
-      val id = java.util.UUID.randomUUID().toString
-      sql"""
-      INSERT INTO $tableName VALUES(
-        $id,
-        ${i.status},
-        ${i.startTime},
-        ${i.endTime},
-        ${i.evaluationClass},
-        ${i.engineParamsGeneratorClass},
-        ${i.batch},
-        ${JDBCUtils.mapToString(i.env)},
-        ${JDBCUtils.mapToString(i.sparkConf)},
-        ${i.evaluatorResults},
-        ${i.evaluatorResultsHTML},
-        ${i.evaluatorResultsJSON})""".update().apply()
-      id
-    } catch {
-      case e: Exception =>
-        error(e.getMessage, e)
-        ""
-    }
+    val id = java.util.UUID.randomUUID().toString
+    sql"""
+    INSERT INTO $tableName VALUES(
+      $id,
+      ${i.status},
+      ${i.startTime},
+      ${i.endTime},
+      ${i.evaluationClass},
+      ${i.engineParamsGeneratorClass},
+      ${i.batch},
+      ${JDBCUtils.mapToString(i.env)},
+      ${JDBCUtils.mapToString(i.sparkConf)},
+      ${i.evaluatorResults},
+      ${i.evaluatorResultsHTML},
+      ${i.evaluatorResultsJSON})""".update().apply()
+    id
   }
 
   def get(id: String): Option[EvaluationInstance] = DB localTx { implicit session =>
-    try {
-      sql"""
-      SELECT
-        id,
-        status,
-        startTime,
-        endTime,
-        evaluationClass,
-        engineParamsGeneratorClass,
-        batch,
-        env,
-        sparkConf,
-        evaluatorResults,
-        evaluatorResultsHTML,
-        evaluatorResultsJSON
-      FROM $tableName WHERE id = $id
-      """.map(resultToEvaluationInstance).single().apply()
-    } catch {
-      case e: Exception =>
-        error(e.getMessage, e)
-        None
-    }
+    sql"""
+    SELECT
+      id,
+      status,
+      startTime,
+      endTime,
+      evaluationClass,
+      engineParamsGeneratorClass,
+      batch,
+      env,
+      sparkConf,
+      evaluatorResults,
+      evaluatorResultsHTML,
+      evaluatorResultsJSON
+    FROM $tableName WHERE id = $id
+    """.map(resultToEvaluationInstance).single().apply()
   }
 
   def getAll(): Seq[EvaluationInstance] = DB localTx { implicit session =>
-    try {
-      sql"""
-      SELECT
-        id,
-        status,
-        startTime,
-        endTime,
-        evaluationClass,
-        engineParamsGeneratorClass,
-        batch,
-        env,
-        sparkConf,
-        evaluatorResults,
-        evaluatorResultsHTML,
-        evaluatorResultsJSON
-      FROM $tableName
-      """.map(resultToEvaluationInstance).list().apply()
-    } catch {
-      case e: Exception =>
-        error(e.getMessage, e)
-        Seq()
-    }
+    sql"""
+    SELECT
+      id,
+      status,
+      startTime,
+      endTime,
+      evaluationClass,
+      engineParamsGeneratorClass,
+      batch,
+      env,
+      sparkConf,
+      evaluatorResults,
+      evaluatorResultsHTML,
+      evaluatorResultsJSON
+    FROM $tableName
+    """.map(resultToEvaluationInstance).list().apply()
   }
 
   def getCompleted(): Seq[EvaluationInstance] = DB localTx { implicit s =>
-    try {
-      sql"""
-      SELECT
-        id,
-        status,
-        startTime,
-        endTime,
-        evaluationClass,
-        engineParamsGeneratorClass,
-        batch,
-        env,
-        sparkConf,
-        evaluatorResults,
-        evaluatorResultsHTML,
-        evaluatorResultsJSON
-      FROM $tableName
-      WHERE
-        status = 'EVALCOMPLETED'
-      ORDER BY starttime DESC
-      """.map(resultToEvaluationInstance).list().apply()
-    } catch {
-      case e: Exception =>
-        error(e.getMessage, e)
-        Seq()
-    }
+    sql"""
+    SELECT
+      id,
+      status,
+      startTime,
+      endTime,
+      evaluationClass,
+      engineParamsGeneratorClass,
+      batch,
+      env,
+      sparkConf,
+      evaluatorResults,
+      evaluatorResultsHTML,
+      evaluatorResultsJSON
+    FROM $tableName
+    WHERE
+      status = 'EVALCOMPLETED'
+    ORDER BY starttime DESC
+    """.map(resultToEvaluationInstance).list().apply()
   }
 
   def update(i: EvaluationInstance): Unit = DB localTx { implicit session =>
-    try {
-      sql"""
-      update $tableName set
-        status = ${i.status},
-        startTime = ${i.startTime},
-        endTime = ${i.endTime},
-        evaluationClass = ${i.evaluationClass},
-        engineParamsGeneratorClass = ${i.engineParamsGeneratorClass},
-        batch = ${i.batch},
-        env = ${JDBCUtils.mapToString(i.env)},
-        sparkConf = ${JDBCUtils.mapToString(i.sparkConf)},
-        evaluatorResults = ${i.evaluatorResults},
-        evaluatorResultsHTML = ${i.evaluatorResultsHTML},
-        evaluatorResultsJSON = ${i.evaluatorResultsJSON}
-      where id = ${i.id}""".update().apply()
-    } catch {
-      case e: Exception =>
-        error(e.getMessage, e)
-        ""
-    }
+    sql"""
+    update $tableName set
+      status = ${i.status},
+      startTime = ${i.startTime},
+      endTime = ${i.endTime},
+      evaluationClass = ${i.evaluationClass},
+      engineParamsGeneratorClass = ${i.engineParamsGeneratorClass},
+      batch = ${i.batch},
+      env = ${JDBCUtils.mapToString(i.env)},
+      sparkConf = ${JDBCUtils.mapToString(i.sparkConf)},
+      evaluatorResults = ${i.evaluatorResults},
+      evaluatorResultsHTML = ${i.evaluatorResultsHTML},
+      evaluatorResultsJSON = ${i.evaluatorResultsJSON}
+    where id = ${i.id}""".update().apply()
   }
 
-  /** Delete a EngineInstance. */
   def delete(id: String): Unit = DB localTx { implicit session =>
-    try {
-      sql"DELETE FROM $tableName WHERE id = $id".update().apply()
-    } catch {
-      case e: Exception =>
-        error(e.getMessage, e)
-    }
+    sql"DELETE FROM $tableName WHERE id = $id".update().apply()
   }
 
   def resultToEvaluationInstance(rs: WrappedResultSet): EvaluationInstance = {

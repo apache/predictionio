@@ -24,44 +24,25 @@ import scalikejdbc._
 class JDBCModels(client: String, config: StorageClientConfig, prefix: String)
   extends Models with Logging {
   val tableName = JDBCUtils.prefixTableName(prefix, "models")
+  val binaryColumnType = JDBCUtils.binaryColumnType(client)
   DB autoCommit { implicit session =>
-    try {
-      sql"""
-      create table $tableName (
-        id text not null primary key,
-        models bytea not null)""".execute().apply()
-    } catch {
-      case e: Exception => debug(e.getMessage, e)
-    }
+    sql"""
+    create table if not exists $tableName (
+      id varchar(100) not null primary key,
+      models $binaryColumnType not null)""".execute().apply()
   }
 
   def insert(i: Model): Unit = DB localTx { implicit session =>
-    try {
-      sql"insert into $tableName values(${i.id}, ${i.models})".update().apply()
-    } catch {
-      case e: Exception =>
-        error(e.getMessage, e)
-    }
+    sql"insert into $tableName values(${i.id}, ${i.models})".update().apply()
   }
 
   def get(id: String): Option[Model] = DB readOnly { implicit session =>
-    try {
-      sql"select id, models from $tableName where id = $id".map { r =>
-        Model(id = r.string("id"), models = r.bytes("models"))
-      }.single().apply()
-    } catch {
-      case e: Exception =>
-        error(e.getMessage, e)
-        None
-    }
+    sql"select id, models from $tableName where id = $id".map { r =>
+      Model(id = r.string("id"), models = r.bytes("models"))
+    }.single().apply()
   }
 
   def delete(id: String): Unit = DB localTx { implicit session =>
-    try {
-      sql"delete from $tableName where id = $id".execute().apply()
-    } catch {
-      case e: Exception =>
-        error(e.getMessage, e)
-    }
+    sql"delete from $tableName where id = $id".execute().apply()
   }
 }

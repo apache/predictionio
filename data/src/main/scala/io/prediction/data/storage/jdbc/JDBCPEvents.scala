@@ -43,7 +43,10 @@ class JDBCPEvents(client: String, config: StorageClientConfig, namespace: String
     targetEntityType: Option[Option[String]] = None,
     targetEntityId: Option[Option[String]] = None)(sc: SparkContext): RDD[Event] = {
     val lower = startTime.map(_.getMillis).getOrElse(0.toLong)
-    val upper = untilTime.map(_.getMillis).getOrElse((DateTime.now + 100.years).getMillis)
+    /** Change the default upper bound from +100 to +1 year because MySQL's
+      * FROM_UNIXTIME(t) will return NULL if we use +100 years.
+      */
+    val upper = untilTime.map(_.getMillis).getOrElse((DateTime.now + 1.years).getMillis)
     val par = scala.math.min(
       new Duration(upper - lower).getStandardDays,
       config.properties.getOrElse("PARTITIONS", "4").toLong).toInt
@@ -57,12 +60,7 @@ class JDBCPEvents(client: String, config: StorageClientConfig, namespace: String
     val targetEntityIdClause = targetEntityId.map(
       _.map(x => s"and targetEntityId = '$x'"
     ).getOrElse("and targetEntityId is null")).getOrElse("")
-    new JdbcRDD(
-      sc,
-      () => {
-        DriverManager.getConnection(client)
-      },
-      s"""
+    val q = s"""
       select
         id,
         event,
@@ -78,15 +76,26 @@ class JDBCPEvents(client: String, config: StorageClientConfig, namespace: String
         creationTime,
         creationTimeZone
       from ${JDBCUtils.eventTableName(namespace, appId, channelId)}
-      where eventTime >= to_timestamp(?) and eventTime < to_timestamp(?)
+      where
+        eventTime >= ${JDBCUtils.timestampFunction(client)}(?) and
+        eventTime < ${JDBCUtils.timestampFunction(client)}(?)
       $entityTypeClause
       $entityIdClause
       $eventNamesClause
       $targetEntityTypeClause
       $targetEntityIdClause
-      """.replace("\n", " "),
-      lower,
-      upper,
+      """.replace("\n", " ")
+    new JdbcRDD(
+      sc,
+      () => {
+        DriverManager.getConnection(
+          client,
+          config.properties("USERNAME"),
+          config.properties("PASSWORD"))
+      },
+      q,
+      lower / 1000,
+      upper / 1000,
       par,
       (r: ResultSet) => {
         Event(

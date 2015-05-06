@@ -26,10 +26,19 @@ object JDBCUtils {
     }
   }
 
-  def autoIncrementType(url: String): String = {
+  def binaryColumnType(url: String): SQLSyntax = {
     driverType(url) match {
-      case "postgresql" => "SERIAL"
-      case _ => ""
+      case "postgresql" => sqls"bytea"
+      case "mysql" => sqls"longblob"
+      case _ => sqls"longblob"
+    }
+  }
+
+  def timestampFunction(url: String): String = {
+    driverType(url) match {
+      case "postgresql" => "to_timestamp"
+      case "mysql" => "from_unixtime"
+      case _ => "from_unixtime"
     }
   }
 

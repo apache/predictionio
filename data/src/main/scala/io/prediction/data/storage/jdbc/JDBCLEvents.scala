@@ -38,44 +38,32 @@ class JDBCLEvents(
 
   def init(appId: Int, channelId: Option[Int] = None): Boolean = {
     DB autoCommit { implicit session =>
-      try {
-        SQL(s"""
-        create table ${JDBCUtils.eventTableName(namespace, appId, channelId)} (
-          id varchar(32) not null primary key,
-          event text not null,
-          entityType text not null,
-          entityId text not null,
-          targetEntityType text,
-          targetEntityId text,
-          properties text,
-          eventTime timestamp not null,
-          eventTimeZone varchar(50) not null,
-          tags text,
-          prId text,
-          creationTime timestamp not null,
-          creationTimeZone varchar(50) not null)""").execute().apply()
-        true
-      } catch {
-        case e: Exception =>
-          error(e.getMessage, e)
-          false
-      }
+      SQL(s"""
+      create table if not exists ${JDBCUtils.eventTableName(namespace, appId, channelId)} (
+        id varchar(32) not null primary key,
+        event text not null,
+        entityType text not null,
+        entityId text not null,
+        targetEntityType text,
+        targetEntityId text,
+        properties text,
+        eventTime timestamp not null,
+        eventTimeZone varchar(50) not null,
+        tags text,
+        prId text,
+        creationTime timestamp not null,
+        creationTimeZone varchar(50) not null)""").execute().apply()
+      true
     }
   }
 
 
   def remove(appId: Int, channelId: Option[Int] = None): Boolean =
     DB autoCommit { implicit session =>
-      try {
-        SQL(s"""
-        drop table ${JDBCUtils.eventTableName(namespace, appId, channelId)}
-        """).execute().apply()
-        true
-      } catch {
-        case e: Exception =>
-          error(e.getMessage, e)
-          false
-      }
+      SQL(s"""
+      drop table ${JDBCUtils.eventTableName(namespace, appId, channelId)}
+      """).execute().apply()
+      true
     }
 
   def close(): Unit = ConnectionPool.closeAll()
@@ -85,30 +73,24 @@ class JDBCLEvents(
     DB localTx { implicit session =>
       val id = event.eventId.getOrElse(JDBCUtils.generateId)
       val tableName = sqls.createUnsafely(JDBCUtils.eventTableName(namespace, appId, channelId))
-      try {
-        sql"""
-        insert into $tableName values(
-          $id,
-          ${event.event},
-          ${event.entityType},
-          ${event.entityId},
-          ${event.targetEntityType},
-          ${event.targetEntityId},
-          ${write(event.properties.toJObject)},
-          ${event.eventTime},
-          ${event.eventTime.getZone.getID},
-          ${if (event.tags.nonEmpty) Some(event.tags.mkString(",")) else None},
-          ${event.prId},
-          ${event.creationTime},
-          ${event.creationTime.getZone.getID}
-        )
-        """.update().apply()
-        id
-      } catch {
-        case e: Exception =>
-          error(e.getMessage, e)
-          ""
-      }
+      sql"""
+      insert into $tableName values(
+        $id,
+        ${event.event},
+        ${event.entityType},
+        ${event.entityId},
+        ${event.targetEntityType},
+        ${event.targetEntityId},
+        ${write(event.properties.toJObject)},
+        ${event.eventTime},
+        ${event.eventTime.getZone.getID},
+        ${if (event.tags.nonEmpty) Some(event.tags.mkString(",")) else None},
+        ${event.prId},
+        ${event.creationTime},
+        ${event.creationTime.getZone.getID}
+      )
+      """.update().apply()
+      id
     }
   }
 
@@ -116,30 +98,24 @@ class JDBCLEvents(
     implicit ec: ExecutionContext): Future[Option[Event]] = Future {
     DB readOnly { implicit session =>
       val tableName = sqls.createUnsafely(JDBCUtils.eventTableName(namespace, appId, channelId))
-      try {
-        sql"""
-        select
-          id,
-          event,
-          entityType,
-          entityId,
-          targetEntityType,
-          targetEntityId,
-          properties,
-          eventTime,
-          eventTimeZone,
-          tags,
-          prId,
-          creationTime,
-          creationTimeZone
-        from $tableName
-        where id = $eventId
-        """.map(resultToEvent).single().apply()
-      } catch {
-        case e: Exception =>
-          error(e.getMessage, e)
-          None
-      }
+      sql"""
+      select
+        id,
+        event,
+        entityType,
+        entityId,
+        targetEntityType,
+        targetEntityId,
+        properties,
+        eventTime,
+        eventTimeZone,
+        tags,
+        prId,
+        creationTime,
+        creationTimeZone
+      from $tableName
+      where id = $eventId
+      """.map(resultToEvent).single().apply()
     }
   }
 
@@ -147,16 +123,10 @@ class JDBCLEvents(
     implicit ec: ExecutionContext): Future[Boolean] = Future {
     DB localTx { implicit session =>
       val tableName = sqls.createUnsafely(JDBCUtils.eventTableName(namespace, appId, channelId))
-      try {
-        sql"""
-        delete from $tableName where id = $eventId
-        """.update().apply()
-        true
-      } catch {
-        case e: Exception =>
-          error(e.getMessage, e)
-          false
-      }
+      sql"""
+      delete from $tableName where id = $eventId
+      """.update().apply()
+      true
     }
   }
 
@@ -174,55 +144,49 @@ class JDBCLEvents(
       reversed: Option[Boolean] = None
     )(implicit ec: ExecutionContext): Future[Iterator[Event]] = Future {
     DB readOnly { implicit session =>
-      try {
-        val tableName = sqls.createUnsafely(JDBCUtils.eventTableName(namespace, appId, channelId))
-        val whereClause = sqls.toAndConditionOpt(
-          startTime.map(x => sqls"startTime >= $x"),
-          untilTime.map(x => sqls"endTime < $x"),
-          entityType.map(x => sqls"entityType = $x"),
-          entityId.map(x => sqls"entityId = $x"),
-          eventNames.map(x =>
-            sqls.toOrConditionOpt(x.map(y =>
-              Some(sqls"event = $y")
-            ): _*)
-          ).getOrElse(None),
-          targetEntityType.map(x => x.map(y => sqls"targetEntityType = $y")
-              .getOrElse(sqls"targetEntityType IS NULL")),
-          targetEntityId.map(x => x.map(y => sqls"targetEntityId = $y")
-              .getOrElse(sqls"targetEntityId IS NULL"))
-        ).map(sqls.where(_)).getOrElse(sqls"")
-        val orderByClause = reversed.map(x =>
-          if (x) sqls"eventTime desc" else sqls"eventTime asc"
-        ).getOrElse(sqls"eventTime asc")
-        val limitClause = limit.map(x =>
-          if (x < 0) sqls"" else sqls.limit(x)
-        ).getOrElse(sqls"")
-        val q = sql"""
-        select
-          id,
-          event,
-          entityType,
-          entityId,
-          targetEntityType,
-          targetEntityId,
-          properties,
-          eventTime,
-          eventTimeZone,
-          tags,
-          prId,
-          creationTime,
-          creationTimeZone
-        from $tableName
-        $whereClause
-        order by $orderByClause
-        $limitClause
-        """
-        q.map(resultToEvent).list().apply().toIterator
-      } catch {
-        case e: Exception =>
-          error(e.getMessage, e)
-          Iterator()
-      }
+      val tableName = sqls.createUnsafely(JDBCUtils.eventTableName(namespace, appId, channelId))
+      val whereClause = sqls.toAndConditionOpt(
+        startTime.map(x => sqls"startTime >= $x"),
+        untilTime.map(x => sqls"endTime < $x"),
+        entityType.map(x => sqls"entityType = $x"),
+        entityId.map(x => sqls"entityId = $x"),
+        eventNames.map(x =>
+          sqls.toOrConditionOpt(x.map(y =>
+            Some(sqls"event = $y")
+          ): _*)
+        ).getOrElse(None),
+        targetEntityType.map(x => x.map(y => sqls"targetEntityType = $y")
+            .getOrElse(sqls"targetEntityType IS NULL")),
+        targetEntityId.map(x => x.map(y => sqls"targetEntityId = $y")
+            .getOrElse(sqls"targetEntityId IS NULL"))
+      ).map(sqls.where(_)).getOrElse(sqls"")
+      val orderByClause = reversed.map(x =>
+        if (x) sqls"eventTime desc" else sqls"eventTime asc"
+      ).getOrElse(sqls"eventTime asc")
+      val limitClause = limit.map(x =>
+        if (x < 0) sqls"" else sqls.limit(x)
+      ).getOrElse(sqls"")
+      val q = sql"""
+      select
+        id,
+        event,
+        entityType,
+        entityId,
+        targetEntityType,
+        targetEntityId,
+        properties,
+        eventTime,
+        eventTimeZone,
+        tags,
+        prId,
+        creationTime,
+        creationTimeZone
+      from $tableName
+      $whereClause
+      order by $orderByClause
+      $limitClause
+      """
+      q.map(resultToEvent).list().apply().toIterator
     }
   }
 

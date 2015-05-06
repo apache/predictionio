@@ -25,110 +25,88 @@ class JDBCEngineInstances(client: String, config: StorageClientConfig, prefix: S
   extends EngineInstances with Logging {
   val tableName = JDBCUtils.prefixTableName(prefix, "engineinstances")
   DB autoCommit { implicit session =>
-    try {
-      sql"""
-      create table $tableName (
-        id text not null primary key,
-        status text not null,
-        startTime timestamp not null,
-        endTime timestamp not null,
-        engineId text not null,
-        engineVersion text not null,
-        engineVariant text not null,
-        engineFactory text not null,
-        batch text not null,
-        env text not null,
-        sparkConf text not null,
-        datasourceParams text not null,
-        preparatorParams text not null,
-        algorithmsParams text not null,
-        servingParams text not null)""".execute().apply()
-    } catch {
-      case e: Exception => debug(e.getMessage, e)
-    }
+    sql"""
+    create table if not exists $tableName (
+      id varchar(100) not null primary key,
+      status text not null,
+      startTime timestamp not null,
+      endTime timestamp not null,
+      engineId text not null,
+      engineVersion text not null,
+      engineVariant text not null,
+      engineFactory text not null,
+      batch text not null,
+      env text not null,
+      sparkConf text not null,
+      datasourceParams text not null,
+      preparatorParams text not null,
+      algorithmsParams text not null,
+      servingParams text not null)""".execute().apply()
   }
 
   def insert(i: EngineInstance): String = DB localTx { implicit session =>
-    try {
-      val id = java.util.UUID.randomUUID().toString
-      sql"""
-      INSERT INTO $tableName VALUES(
-        $id,
-        ${i.status},
-        ${i.startTime},
-        ${i.endTime},
-        ${i.engineId},
-        ${i.engineVersion},
-        ${i.engineVariant},
-        ${i.engineFactory},
-        ${i.batch},
-        ${JDBCUtils.mapToString(i.env)},
-        ${JDBCUtils.mapToString(i.sparkConf)},
-        ${i.dataSourceParams},
-        ${i.preparatorParams},
-        ${i.algorithmsParams},
-        ${i.servingParams})""".update().apply()
-      id
-    } catch {
-      case e: Exception =>
-        error(e.getMessage, e)
-        ""
-    }
+    val id = java.util.UUID.randomUUID().toString
+    sql"""
+    INSERT INTO $tableName VALUES(
+      $id,
+      ${i.status},
+      ${i.startTime},
+      ${i.endTime},
+      ${i.engineId},
+      ${i.engineVersion},
+      ${i.engineVariant},
+      ${i.engineFactory},
+      ${i.batch},
+      ${JDBCUtils.mapToString(i.env)},
+      ${JDBCUtils.mapToString(i.sparkConf)},
+      ${i.dataSourceParams},
+      ${i.preparatorParams},
+      ${i.algorithmsParams},
+      ${i.servingParams})""".update().apply()
+    id
   }
 
   def get(id: String): Option[EngineInstance] = DB localTx { implicit session =>
-    try {
-      sql"""
-      SELECT
-        id,
-        status,
-        startTime,
-        endTime,
-        engineId,
-        engineVersion,
-        engineVariant,
-        engineFactory,
-        batch,
-        env,
-        sparkConf,
-        datasourceParams,
-        preparatorParams,
-        algorithmsParams,
-        servingParams
-      FROM $tableName WHERE id = $id""".map(resultToEngineInstance).
-        single().apply()
-    } catch {
-      case e: Exception =>
-        error(e.getMessage, e)
-        None
-    }
+    sql"""
+    SELECT
+      id,
+      status,
+      startTime,
+      endTime,
+      engineId,
+      engineVersion,
+      engineVariant,
+      engineFactory,
+      batch,
+      env,
+      sparkConf,
+      datasourceParams,
+      preparatorParams,
+      algorithmsParams,
+      servingParams
+    FROM $tableName WHERE id = $id""".map(resultToEngineInstance).
+      single().apply()
   }
 
   def getAll(): Seq[EngineInstance] = DB localTx { implicit session =>
-    try {
-      sql"""
-      SELECT
-        id,
-        status,
-        startTime,
-        endTime,
-        engineId,
-        engineVersion,
-        engineVariant,
-        engineFactory,
-        batch,
-        env,
-        sparkConf,
-        datasourceParams,
-        preparatorParams,
-        algorithmsParams,
-        servingParams
-      FROM $tableName""".map(resultToEngineInstance).list().apply()
-    } catch {
-      case e: Exception =>
-        error(e.getMessage, e)
-        Seq()
-    }
+    sql"""
+    SELECT
+      id,
+      status,
+      startTime,
+      endTime,
+      engineId,
+      engineVersion,
+      engineVariant,
+      engineFactory,
+      batch,
+      env,
+      sparkConf,
+      datasourceParams,
+      preparatorParams,
+      algorithmsParams,
+      servingParams
+    FROM $tableName""".map(resultToEngineInstance).list().apply()
   }
 
   def getLatestCompleted(
@@ -137,78 +115,59 @@ class JDBCEngineInstances(client: String, config: StorageClientConfig, prefix: S
     engineVariant: String): Option[EngineInstance] =
     getCompleted(engineId, engineVersion, engineVariant).headOption
 
-  /** Get all instances that has trained to completion. */
   def getCompleted(
     engineId: String,
     engineVersion: String,
     engineVariant: String): Seq[EngineInstance] = DB localTx { implicit s =>
-    try {
-      sql"""
-      SELECT
-        id,
-        status,
-        startTime,
-        endTime,
-        engineId,
-        engineVersion,
-        engineVariant,
-        engineFactory,
-        batch,
-        env,
-        sparkConf,
-        datasourceParams,
-        preparatorParams,
-        algorithmsParams,
-        servingParams
-      FROM $tableName
-      WHERE
-        status = 'COMPLETED' AND
-        engineId = $engineId AND
-        engineVersion = $engineVersion AND
-        engineVariant = $engineVariant
-      ORDER BY startTime DESC""".
-        map(resultToEngineInstance).list().apply()
-    } catch {
-      case e: Exception =>
-        error(e.getMessage, e)
-        Seq()
-    }
+    sql"""
+    SELECT
+      id,
+      status,
+      startTime,
+      endTime,
+      engineId,
+      engineVersion,
+      engineVariant,
+      engineFactory,
+      batch,
+      env,
+      sparkConf,
+      datasourceParams,
+      preparatorParams,
+      algorithmsParams,
+      servingParams
+    FROM $tableName
+    WHERE
+      status = 'COMPLETED' AND
+      engineId = $engineId AND
+      engineVersion = $engineVersion AND
+      engineVariant = $engineVariant
+    ORDER BY startTime DESC""".
+      map(resultToEngineInstance).list().apply()
   }
 
   def update(i: EngineInstance): Unit = DB localTx { implicit session =>
-    try {
-      sql"""
-      update $tableName set
-        status = ${i.status},
-        startTime = ${i.startTime},
-        endTime = ${i.endTime},
-        engineId = ${i.engineId},
-        engineVersion = ${i.engineVersion},
-        engineVariant = ${i.engineVariant},
-        engineFactory = ${i.engineFactory},
-        batch = ${i.batch},
-        env = ${JDBCUtils.mapToString(i.env)},
-        sparkConf = ${JDBCUtils.mapToString(i.sparkConf)},
-        datasourceParams = ${i.dataSourceParams},
-        preparatorParams = ${i.preparatorParams},
-        algorithmsParams = ${i.algorithmsParams},
-        servingParams = ${i.servingParams}
-      where id = ${i.id}""".update().apply()
-    } catch {
-      case e: Exception =>
-        error(e.getMessage, e)
-        ""
-    }
+    sql"""
+    update $tableName set
+      status = ${i.status},
+      startTime = ${i.startTime},
+      endTime = ${i.endTime},
+      engineId = ${i.engineId},
+      engineVersion = ${i.engineVersion},
+      engineVariant = ${i.engineVariant},
+      engineFactory = ${i.engineFactory},
+      batch = ${i.batch},
+      env = ${JDBCUtils.mapToString(i.env)},
+      sparkConf = ${JDBCUtils.mapToString(i.sparkConf)},
+      datasourceParams = ${i.dataSourceParams},
+      preparatorParams = ${i.preparatorParams},
+      algorithmsParams = ${i.algorithmsParams},
+      servingParams = ${i.servingParams}
+    where id = ${i.id}""".update().apply()
   }
 
-  /** Delete a EngineInstance. */
   def delete(id: String): Unit = DB localTx { implicit session =>
-    try {
-      sql"DELETE FROM $tableName WHERE id = $id".update().apply()
-    } catch {
-      case e: Exception =>
-        error(e.getMessage, e)
-    }
+    sql"DELETE FROM $tableName WHERE id = $id".update().apply()
   }
 
   def resultToEngineInstance(rs: WrappedResultSet): EngineInstance = {
