@@ -151,8 +151,8 @@ root:
         body: 'Production Deployment with Cloudformation'
         url: '/system/deploy-cloudformation/'
       -
-        body: 'Using Another Datastore'
-        url: '/system/anotherdatastore'
+        body: 'Using Another Data Store'
+        url: '/system/anotherdatastore/'
   -
     body: 'Engine Template Gallery'
     url: '#'
