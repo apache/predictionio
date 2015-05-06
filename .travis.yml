@@ -17,6 +17,8 @@ language: scala
 addons:
     postgresql: "9.3"
 
+sudo: false
+
 env:
   global:
     - PIO_HOME=`pwd`
