@@ -113,7 +113,7 @@ $ pio build
 **5.a.** Evaluate your training model and tune parameters. 
 
 ```
-$ pio eval
+$ pio eval org.template.textclassification.AccuracyEvaluation org.template.textclassification.EngineParamsList
 ```
 
 **5.b.** Train your model and deploy.
