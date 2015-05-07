@@ -71,3 +71,11 @@ The following graph shows the workflow of DASE components when `pio train` is ru
 The following graph shows the workflow of DASE components when a REST query is received by a deployed engine.
 
 ![Engine Overview](/images/engine-query.png)
+
+
+## Examples of DASE
+
+- [DASE of Recommendation Template](/templates/recommendation/dase/)
+- [DASE of Similar Product Template](/templates/similarproduct/dase/)
+- [DASE of Classification Template](/templates/classification/dase/)
+- [DASE of Lead Scoring Template](/templates/leadscoring/dase/)
