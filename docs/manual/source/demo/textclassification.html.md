@@ -74,13 +74,13 @@ $ pio app new MyTextApp
 $ python import_eventserver.py --access_key access
 ```
 
-**3.** Set the engine parameters in the file \tt{engine.json}. The default settings are shown below.
+**3.** Set the engine parameters in the file `engine.json`. The default settings are shown below.
 
 ```
 {
   "id": "default",
   "description": "Default settings",
-  "engineFactory": "TextManipulationEngine.TextManipulationEngine",
+  "engineFactory": "org.template.textclassification.TextClassificationEngine",
   "datasource": {
     "params": {
       "appName": "MyTextApp",
@@ -113,7 +113,7 @@ $ pio build
 **5.a.** Evaluate your training model and tune parameters. 
 
 ```
-$ pio eval
+$ pio eval org.template.textclassification.AccuracyEvaluation org.template.textclassification.EngineParamsList
 ```
 
 **5.b.** Train your model and deploy.
@@ -266,13 +266,13 @@ All of this functionality is implemented in the private method tokenize of the D
 
   private def tokenize (doc : String): Array[String] = {
     SimpleTokenizer.INSTANCE
-      .tokenize(doc)
+      .tokenize(doc.toLowerCase)
       .filter(e => ! td.stopWords.contains(e))
   }
 ...
 ```
 
-You may want to extend this functionality so that all letters in your document are transformed to lowercase so that, for example, the tokens `"Hello"` and `"hello"` are considered equivalent. This is a **modeling choice** that is not implemented in the engine template. However, you may choose to easily include this to reduce the number of features you create by replacing `doc` with `doc.toLowerCase` in the body of the function. 
+Note that all letters are transformed to lowercase, so that the tokens `"Hello"` and `"hello"` are considered to be equivalent. This is a **modeling choice**, and is something that can be removed if desired (it will affect your feature extraction). Another modeling choice one could make is to remove all punctuation.
 
 The next step in the data representation is to take the array of allowed tokens and extract a set of n-grams and a corresponding value indicating the number of times a given n-gram appears. The set of n-grams for n equal to 1 and 2 in the running example is the set of elements of the form `[A(`\\(i\\)`)]` and `[A(`\\(j\\)`), A(`\\(j + 1\\)`)]`, respectively. In the general case, the set of n-grams extracted from an array of allowed tokens `A` will be of the form `[A(`\\(i\\)`), A(`\\(i + 1\\)`), ..., A(`\\(i + n - 1\\)`)]` for \\(i = 0, 1, 2, ...,\\) `A.size` \\(- n\\). The n-gram window is an interval of integers for which you want to extract grams for each element in the interval. nMin and nMax are the smallest and largest integer values in the interval, respectively. The default model only includes unigrams and bigrams (\\(n = 1\\) and \\(n = 2\\), respectively).
 
@@ -526,7 +526,7 @@ $ pio build
 **2.a.** Evaluate your training model and tune parameters.
 
 ```
-$ pio eval
+$ pio eval org.template.textclassification.AccuracyEvaluation org.template.textclassification.EngineParamsList
 ```
 
 **2.b.** Train your model and deploy.
