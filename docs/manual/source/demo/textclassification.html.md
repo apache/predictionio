@@ -161,7 +161,7 @@ The class DataSourceParams is used to specify the parameters needed to read and 
 
 The final and most important ingredient is the DataSource class. This is initialized with its corresponding parameter class, and extends PDataSource. This **must** implement the method readTraining which returns an instance of type TrainingData. This method completely relies on the defined private methods readEventData and readStopWords. Both of these functions read data observations as Event instances, create an RDD containing these events and finally transforms the RDD of events into an object of the appropriate type as seen below:
 
-```
+```scala
 ...
 private def readEventData(sc: SparkContext) : RDD[Observation] = {
     //Get RDD of Events.
@@ -208,7 +208,7 @@ This section deals with the aspect of transforming the data you read in the prev
 
 Recall that the Preparator stage is used for doing any prior data processing needed to fit a predictive model. In line with the separation of concerns, the Data Model implementation, PreparedData, is built to do the heavy lifting needed for this data processing. The Preparator must simply implement the prepare method which outputs an object of type PreparedData. This requires you to specify two n-gram window components (defined in the following section), a custom class of parameters for the Preparator component, PreparatorParams, must be incorporated. 
 
-```
+```scala
 case class PreparatorParams(
   nMin: Int,
   nMax: Int
@@ -246,19 +246,19 @@ For this Text Classification Engine, the Data Model abstraction is implemented i
 
 The first thing you need to do is break up D into an array of "allowed tokens." You can think of a token as a terminating sequence of characters that exist in a document (think of a word in a sentence). For example, the list of tokens that appear in D is:
 
-```
+```scala
 val A = Array("Hello", ",", "my",  "name", "is", "Marco", ".")
 ```
 
 Recall that a set of stop words was also imported in the previous sections. This set of stop words contains all the words (or tokens) that you do not want to include once documents are tokenized. Those tokens that appear in D and are not contained in the set of stop words will be called allowed tokens. So, if the set of stop words is `{"my", "is"}`, then the list of allowed tokens appearing in D is:
 
-```
+```scala
 val A = Array("Hello", ",",  "name", "Marco", ".")
 ```
 
 All of this functionality is implemented in the private method tokenize of the DataModel class. This method uses the SimpleTokenizer from OpenNLP's library to implement this (note that you must add the Maven dependency declaration to your `build.sbt` file to incorporate this library into your engine). 
 
-```
+```scala
 ...
   // 1. Tokenizer: document => token list.
   // Takes an individual document and converts it to
@@ -278,7 +278,7 @@ The next step in the data representation is to take the array of allowed tokens 
 
 The n-gram extraction and counting procedure is carried out by the private method hash, which, given a document, returns a Map with keys, n-grams, and values, the number of times each n-gram is extracted from the document. OpenNLP's NGramModel class is used to extract n-grams.
 
-```
+```scala
 ...
   // 2. Hasher: Array[tokens] => Map(n-gram -> n-gram document tf).
 
@@ -302,7 +302,7 @@ The n-gram extraction and counting procedure is carried out by the private metho
 
 The next step is, once all of the observations have been hashed, to collect all n-grams and compute their corresponding [t.f.-i.d.f. value](http://en.wikipedia.org/wiki/Tf%E2%80%93idf). The t.f.-i.d.f. transformation is a transformation that helps to give less weight to those n-grams that appear with high frequency across all documents, and vice versa. This helps to leverage the predictive power of those words that appear rarely, but can make a big difference in the categorization of a given article. The private method createUniverse outputs an RDD of pairs, where an n-gram is matched with it's i.d.f. value. This RDD is collected as a HashMap (this will be used in future RDD computations so that this object should be serializable), and then create a second hash map with n-grams associated to indices. This gives a global index to each n-gram and ensures that each document observation is vectorized in the same manner. 
 
-```
+```scala
 ...
   // 4. Set private class variables for use in data transformations.
 
@@ -326,7 +326,7 @@ The next step is, once all of the observations have been hashed, to collect all 
 
 The last two functions that will be mentioned are the methods you will actually use for the data transformation. The method transform takes a document and outputs a sparse vector (MLLib implementation). The transformData method simply transforms the TrainingData input (a corpus of documents) into a set of vectors that can now be used for training. The method transform is used both to transform the training data and future queries. It is important to note that using all 11,314 news article observations without any pre-processing of the documents results in over 1 million unigram and bigram features, so that a sparse vector representation is necessary to save some serious computation time.
 
-```
+```scala
 ...
   def transform(doc: String): Vector = {
     // Map(n-gram -> document tf)
@@ -387,7 +387,7 @@ is a vector with C components that represent the posterior class membership prob
 
 The private methods innerProduct and getScores are implemented to do the matrix computation above. 
 
-```
+```scala
 ...
   // 2. Set up framework for performing the required Matrix
   // Multiplication for the prediction rule explained in the
@@ -424,7 +424,7 @@ The private methods innerProduct and getScores are implemented to do the matrix 
 
 Once you have a vector of class probabilities, you can classify the text document to the category with highest posterior probability, and, finally, return both the category as well as the probability of belonging to that category (i.e. the confidence in the prediction) given the observed data. This is implemented in the method predict.
 
-```
+```scala
 ...
   def predict(doc : String) : PredictedResult = {
     val x: Array[Double] = getScores(doc)
@@ -448,7 +448,7 @@ For example, you could choose to slightly modify the implementation to return cl
  Second you must define an evaluation object (i.e. extends the class [Evaluation](https://docs.prediction.io/api/current/#io.prediction.controller.Evaluation)).
 Here, you must specify the actual engine and metric components that are to be used for the evaluation. In the engine template, the specified engine is the TextManipulationEngine object, and metric, Accuracy. Lastly, you must specify the parameter values that you want to test in the cross validation. You see in the following block of code:
 
-```
+```scala
 object EngineParamsList extends EngineParamsGenerator {
 
   // Set data source and preparator parameters.
@@ -467,7 +467,7 @@ object EngineParamsList extends EngineParamsGenerator {
 
 In the latter block of code, only the parameter values that show up in the algorithm stage are assessed. However, it is plausible that you may want to assess parameter values in the Data Model implementation, PreparedData. This can easily be done by placing the preparator parameter choices as follows:
 
-```
+```scala
 object EngineParamsList extends EngineParamsGenerator {
 
   // Set data source and preparator parameters.
@@ -477,11 +477,11 @@ object EngineParamsList extends EngineParamsGenerator {
 
   // Set the algorithm params for which we will assess an accuracy score.
   engineParamsList = Seq(
-    baseEP.copy(preparatorParams = ("preparator", PreparatorParams(nMin = 1, nMax = 2)),
+    baseEP.copy(preparatorParams = ("", PreparatorParams(nMin = 1, nMax = 2)),
       algorithmParamsList = Seq(("nb", NBAlgorithmParams(0.5)))),
-    baseEP.copy(preparatorParams = ("preparator", PreparatorParams(nMin = 2, nMax = 3)),
+    baseEP.copy(preparatorParams = ("", PreparatorParams(nMin = 2, nMax = 3)),
       algorithmParamsList = Seq(("nb", NBAlgorithmParams(1.5)))),
-    baseEP.copy(preparatorParams = ("preparator", PreparatorParams(nMin = 1, nMax = 3)),
+    baseEP.copy(preparatorParams = ("", PreparatorParams(nMin = 1, nMax = 3)),
       algorithmParamsList = Seq(("nb", NBAlgorithmParams(5))))
   )
 ```
