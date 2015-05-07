@@ -16,11 +16,11 @@
 package io.prediction.data.storage
 
 import com.github.nscala_time.time.Imports._
+import io.prediction.annotation.DeveloperApi
 import org.json4s._
 
-/** EngineInstance object.
-  *
-  * Stores parameters, model, and evaluation results for each engine instance.
+/** :: DeveloperApi ::
+  * Stores parameters, model, and other information for each engine instance
   *
   * @param id Engine instance ID.
   * @param status Status of the engine instance.
@@ -37,8 +37,10 @@ import org.json4s._
   * @param preparatorParams Preparator parameters of the instance.
   * @param algorithmsParams Algorithms parameters of the instance.
   * @param servingParams Serving parameters of the instance.
+  * @group Meta Data
   */
-private[prediction] case class EngineInstance(
+@DeveloperApi
+case class EngineInstance(
   id: String,
   status: String,
   startTime: DateTime,
@@ -55,41 +57,50 @@ private[prediction] case class EngineInstance(
   algorithmsParams: String,
   servingParams: String)
 
-/** Base trait for implementations that interact with EngineInstances in the
-  * backend app data store.
+/** :: DeveloperApi ::
+  * Base trait of the [[EngineInstance]] data access object
+  *
+  * @group Meta Data
   */
-private[prediction] trait EngineInstances {
-  /** Insert a new EngineInstance. */
+@DeveloperApi
+trait EngineInstances {
+  /** Insert a new [[EngineInstance]] */
   def insert(i: EngineInstance): String
 
-  /** Get a EngineInstance by ID. */
+  /** Get an [[EngineInstance]] by ID */
   def get(id: String): Option[EngineInstance]
 
-  /** Get all EngineInstances. */
+  /** Get all [[EngineInstance]]s */
   def getAll(): Seq[EngineInstance]
 
   /** Get an instance that has started training the latest and has trained to
-    * completion.
+    * completion
     */
   def getLatestCompleted(
       engineId: String,
       engineVersion: String,
       engineVariant: String): Option[EngineInstance]
 
-  /** Get all instances that has trained to completion. */
+  /** Get all instances that has trained to completion */
   def getCompleted(
     engineId: String,
     engineVersion: String,
     engineVariant: String): Seq[EngineInstance]
 
-  /** Update a EngineInstance. */
+  /** Update an [[EngineInstance]] */
   def update(i: EngineInstance): Unit
 
-  /** Delete a EngineInstance. */
+  /** Delete an [[EngineInstance]] */
   def delete(id: String): Unit
 }
 
-private[prediction] class EngineInstanceSerializer
+/** :: DeveloperApi ::
+  * JSON4S serializer for [[EngineInstance]]
+  *
+  * @group Meta Data
+  */
+@DeveloperApi
+class EngineInstanceSerializer
     extends CustomSerializer[EngineInstance](
   format => ({
     case JObject(fields) =>
