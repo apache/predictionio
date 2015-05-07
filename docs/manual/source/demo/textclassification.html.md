@@ -83,7 +83,7 @@ $ python import_eventserver.py --access_key access
   "engineFactory": "TextManipulationEngine.TextManipulationEngine",
   "datasource": {
     "params": {
-      "appName": "marco-testapp",
+      "appName": "MyTextApp",
       "evalK": 5
     }
   },
