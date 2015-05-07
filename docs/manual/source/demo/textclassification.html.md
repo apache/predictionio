@@ -74,20 +74,16 @@ $ pio app new MyTextApp
 $ python import_eventserver.py --access_key access
 ```
 
-**3.** Set the engine parameters in the file \tt{engine.json}. The default settings are shown below.
+**3.** Set the engine parameters in the file `engine.json`. The default settings are shown below.
 
 ```
 {
   "id": "default",
   "description": "Default settings",
-  "engineFactory": "TextManipulationEngine.TextManipulationEngine",
+  "engineFactory": "org.template.textclassification.TextManipulationEngine",
   "datasource": {
     "params": {
-<<<<<<< HEAD
       "appName": "MyTextApp",
-=======
-      "appName": "marco-testapp",
->>>>>>> develop
       "evalK": 5
     }
   },
