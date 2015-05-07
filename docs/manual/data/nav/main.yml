@@ -173,6 +173,9 @@ root:
       -
         body: 'Community Contributed Demo'
         url: '/demo/community/'
+      -
+        body: 'Text Classification Engine Tutorial'
+        url: '/demo/textclassification/'
   -
     body: 'Getting Involved'
     url: '/community/'
