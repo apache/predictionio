@@ -1,5 +1,6 @@
 $(document).ready(function() {
   var annotations = $("dt:contains('Annotations')").next("dd").children("span.name");
+  addBadges(annotations, "DeveloperApi", ":: DeveloperApi ::", '<span class="developer badge">Developer API</span>');
   addBadges(annotations, "Experimental", ":: Experimental ::", '<span class="experimental badge">Experimental</span>');
 });
 

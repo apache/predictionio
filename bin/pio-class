@@ -38,13 +38,16 @@ fi
 
 # Warn if log4j.properties is not present
 if [ ! -f "$FWDIR/conf/log4j.properties" ]; then
-  echo -e "Warning: log4j.properties is missing from $FWDIR/conf\033[0m"
+  echo -e "\033[0;35mWarning: log4j.properties is missing from $FWDIR/conf\033[0m"
 fi
 
 # Make sure the Apache Spark version meets the prerequisite if it is a binary
 # distribution
 MIN_SPARK_VERSION="1.3.0"
-if [ -r "$SPARK_HOME/RELEASE" ]; then
+if [ -z "$SPARK_HOME" ]; then
+  echo -e "\033[0;31mSPARK_HOME must be set in conf/pio-env.sh, or in the environment!\033[0m"
+  exit 1
+elif [ -r "$SPARK_HOME/RELEASE" ]; then
   SPARK_VERSION=`head -n 1 $SPARK_HOME/RELEASE | awk '{print $2}'`
   if semverLT ${SPARK_VERSION} ${MIN_SPARK_VERSION}; then
     echo -e "\033[0;31mYou have Apache Spark $SPARK_VERSION at $SPARK_HOME which does not meet the minimum version requirement of $MIN_SPARK_VERSION.\033[0m"
@@ -52,7 +55,7 @@ if [ -r "$SPARK_HOME/RELEASE" ]; then
     exit 1
   fi
 else
-  echo "$SPARK_HOME is an Apache Spark development tree. Please make sure you are using at least $MIN_SPARK_VERSION."
+  echo -e "\033[0;35m$SPARK_HOME is probably an Apache Spark development tree. Please make sure you are using at least $MIN_SPARK_VERSION.\033[0m"
 fi
 
 # Find the java binary

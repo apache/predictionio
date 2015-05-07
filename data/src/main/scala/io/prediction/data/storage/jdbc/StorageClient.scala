@@ -13,25 +13,31 @@
   * limitations under the License.
   */
 
-package io.prediction.data.storage.mongodb
+package io.prediction.data.storage.jdbc
 
-import com.mongodb.casbah.Imports._
 import grizzled.slf4j.Logging
-
 import io.prediction.data.storage.BaseStorageClient
 import io.prediction.data.storage.StorageClientConfig
 import io.prediction.data.storage.StorageClientException
+import scalikejdbc._
 
-class StorageClient(val config: StorageClientConfig) extends BaseStorageClient
-    with Logging {
-  override val prefix = "Mongo"
-  val client = try {
-    val addresses = (config.hosts zip config.ports).map(hp =>
-      new ServerAddress(hp._1, hp._2)
-    ).toList
-    MongoClient(addresses)
-  } catch {
-    case e: MongoException =>
-      throw new StorageClientException(e.getMessage)
+class StorageClient(val config: StorageClientConfig)
+  extends BaseStorageClient with Logging {
+  override val prefix = "JDBC"
+
+  if (!config.properties.contains("URL")) {
+    throw new StorageClientException("The URL variable is not set!", null)
   }
+  if (!config.properties.contains("USERNAME")) {
+    throw new StorageClientException("The USERNAME variable is not set!", null)
+  }
+  if (!config.properties.contains("PASSWORD")) {
+    throw new StorageClientException("The PASSWORD variable is not set!", null)
+  }
+
+  ConnectionPool.singleton(
+    config.properties("URL"),
+    config.properties("USERNAME"),
+    config.properties("PASSWORD"))
+  val client = config.properties("URL")
 }

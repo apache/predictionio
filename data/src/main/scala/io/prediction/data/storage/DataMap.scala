@@ -39,7 +39,7 @@ class DataMap (
   val fields: Map[String, JValue]
 ) extends Serializable {
   @transient lazy implicit private val formats = DefaultFormats +
-    new DateTimeJson4sSupport.serializer
+    new DateTimeJson4sSupport.Serializer
 
   /** Check the existence of a required property name. Throw an exception if
     * it does not exist.
@@ -141,6 +141,14 @@ class DataMap (
     * @return the JObject initialized by this DataMap.
     */
   def toJObject(): JObject = JObject(toList())
+
+  /** Converts this DataMap to case class of type T.
+    *
+    * @return the object of type T.
+    */
+  def extract[T: Manifest]: T = {
+    toJObject().extract[T]
+  }
 
   override
   def toString: String = s"DataMap(${fields})"

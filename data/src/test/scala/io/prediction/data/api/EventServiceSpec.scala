@@ -43,7 +43,7 @@ class EventServiceSpec extends Specification {
       eventClient,
       accessKeysClient,
       channelsClient,
-      true))
+      EventServerConfig()))
 
   "GET / request" should {
     "properly produce OK HttpResponses" in {

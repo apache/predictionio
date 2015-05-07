@@ -15,10 +15,7 @@
 
 package io.prediction.tools.console
 
-import io.prediction.data.storage.{AccessKey => StorageAccessKey}
-import io.prediction.data.storage.{App => StorageApp}
-import io.prediction.data.storage.{Channel => StorageChannel}
-import io.prediction.data.storage.Storage
+import io.prediction.data.storage
 
 import grizzled.slf4j.Logging
 
@@ -32,7 +29,7 @@ case class AppArgs(
 
 object App extends Logging {
   def create(ca: ConsoleArgs): Int = {
-    val apps = Storage.getMetaDataApps
+    val apps = storage.Storage.getMetaDataApps
     apps.getByName(ca.app.name) map { app =>
       error(s"App ${ca.app.name} already exists. Aborting.")
       1
@@ -45,17 +42,17 @@ object App extends Logging {
           return 1
         }
       }
-      val appid = apps.insert(StorageApp(
+      val appid = apps.insert(storage.App(
         id = ca.app.id.getOrElse(0),
         name = ca.app.name,
         description = ca.app.description))
       appid map { id =>
-        val events = Storage.getLEvents()
+        val events = storage.Storage.getLEvents()
         val dbInit = events.init(id)
         val r = if (dbInit) {
           info(s"Initialized Event Store for this app ID: ${id}.")
-          val accessKeys = Storage.getMetaDataAccessKeys
-          val accessKey = accessKeys.insert(StorageAccessKey(
+          val accessKeys = storage.Storage.getMetaDataAccessKeys
+          val accessKey = accessKeys.insert(storage.AccessKey(
             key = "",
             appid = id,
             events = Seq()))
@@ -83,8 +80,8 @@ object App extends Logging {
   }
 
   def list(ca: ConsoleArgs): Int = {
-    val apps = Storage.getMetaDataApps.getAll().sortBy(_.name)
-    val accessKeys = Storage.getMetaDataAccessKeys
+    val apps = storage.Storage.getMetaDataApps.getAll().sortBy(_.name)
+    val accessKeys = storage.Storage.getMetaDataAccessKeys
     val title = "Name"
     val ak = "Access Key"
     info(f"$title%20s |   ID | $ak%64s | Allowed Event(s)")
@@ -101,13 +98,13 @@ object App extends Logging {
   }
 
   def show(ca: ConsoleArgs): Int = {
-    val apps = Storage.getMetaDataApps
-    val accessKeys = Storage.getMetaDataAccessKeys
-    val channels = Storage.getMetaDataChannels
+    val apps = storage.Storage.getMetaDataApps
+    val accessKeys = storage.Storage.getMetaDataAccessKeys
+    val channels = storage.Storage.getMetaDataChannels
     apps.getByName(ca.app.name) map { app =>
       info(s"    App Name: ${app.name}")
       info(s"      App ID: ${app.id}")
-      info(s" Description: ${app.description}")
+      info(s" Description: ${app.description.getOrElse("")}")
       val keys = accessKeys.getByAppid(app.id)
 
       var firstKey = true
@@ -141,14 +138,15 @@ object App extends Logging {
   }
 
   def delete(ca: ConsoleArgs): Int = {
-    val apps = Storage.getMetaDataApps
-    val channels = Storage.getMetaDataChannels
-    val events = Storage.getLEvents()
+    val apps = storage.Storage.getMetaDataApps
+    val accesskeys = storage.Storage.getMetaDataAccessKeys
+    val channels = storage.Storage.getMetaDataChannels
+    val events = storage.Storage.getLEvents()
     val status = apps.getByName(ca.app.name) map { app =>
       info(s"The following app (including all channels) will be deleted. Are you sure?")
       info(s"    App Name: ${app.name}")
       info(s"      App ID: ${app.id}")
-      info(s" Description: ${app.description}")
+      info(s" Description: ${app.description.getOrElse("")}")
       val chans = channels.getByAppid(app.id)
       var firstChan = true
       val titleName = "Channel Name"
@@ -184,6 +182,13 @@ object App extends Logging {
           if (delChannelStatus.filter(_ != 0).isEmpty) {
             val r = if (events.remove(app.id)) {
               info(s"Removed Event Store for this app ID: ${app.id}")
+              accesskeys.getByAppid(app.id) foreach { key =>
+                if (accesskeys.delete(key.key)) {
+                  info(s"Removed access key ${key.key}")
+                } else {
+                  error(s"Error removing access key ${key.key}")
+                }
+              }
               if (apps.delete(app.id)) {
                 info(s"Deleted app ${app.name}.")
                 0
@@ -221,8 +226,8 @@ object App extends Logging {
   }
 
   def dataDeleteOne(ca: ConsoleArgs): Int = {
-    val apps = Storage.getMetaDataApps
-    val channels = Storage.getMetaDataChannels
+    val apps = storage.Storage.getMetaDataApps
+    val channels = storage.Storage.getMetaDataChannels
     apps.getByName(ca.app.name) map { app =>
 
       val channelId = ca.app.dataDeleteChannel.map { ch =>
@@ -254,37 +259,40 @@ object App extends Logging {
 
       choice match {
         case "YES" => {
-          val events = Storage.getLEvents()
+          val events = storage.Storage.getLEvents()
           // remove table
           val r1 = if (events.remove(app.id, channelId)) {
-            if (channelId.isDefined)
+            if (channelId.isDefined) {
               info(s"Removed Event Store for this channel ID: ${channelId.get}")
-            else
+            } else {
               info(s"Removed Event Store for this app ID: ${app.id}")
+            }
             0
           } else {
-            if (channelId.isDefined)
+            if (channelId.isDefined) {
               error(s"Error removing Event Store for this channel.")
-            else
+            } else {
               error(s"Error removing Event Store for this app.")
-
+            }
             1
           }
           // re-create table
           val dbInit = events.init(app.id, channelId)
           val r2 = if (dbInit) {
-            if (channelId.isDefined)
+            if (channelId.isDefined) {
               info(s"Initialized Event Store for this channel ID: ${channelId.get}.")
-            else
+            } else {
               info(s"Initialized Event Store for this app ID: ${app.id}.")
+            }
             0
           } else {
-            if (channelId.isDefined)
+            if (channelId.isDefined) {
               error(s"Unable to initialize Event Store for this channel ID:" +
                 s" ${channelId.get}.")
-            else
+            } else {
               error(s"Unable to initialize Event Store for this appId:" +
                 s" ${app.id}.")
+            }
             1
           }
           events.close()
@@ -302,9 +310,9 @@ object App extends Logging {
   }
 
   def dataDeleteAll(ca: ConsoleArgs): Int = {
-    val apps = Storage.getMetaDataApps
-    val channels = Storage.getMetaDataChannels
-    val events = Storage.getLEvents()
+    val apps = storage.Storage.getMetaDataApps
+    val channels = storage.Storage.getMetaDataChannels
+    val events = storage.Storage.getLEvents()
     val status = apps.getByName(ca.app.name) map { app =>
       info(s"All data of the app (including default and all channels) will be deleted." +
         " Are you sure?")
@@ -381,9 +389,9 @@ object App extends Logging {
   }
 
   def channelNew(ca: ConsoleArgs): Int = {
-    val apps = Storage.getMetaDataApps
-    val channels = Storage.getMetaDataChannels
-    val events = Storage.getLEvents()
+    val apps = storage.Storage.getMetaDataApps
+    val channels = storage.Storage.getMetaDataChannels
+    val events = storage.Storage.getLEvents()
     val newChannel = ca.app.channel
     val status = apps.getByName(ca.app.name) map { app =>
       val channelMap = channels.getByAppid(app.id).map(c => (c.name, c.id)).toMap
@@ -391,14 +399,14 @@ object App extends Logging {
         error(s"Unable to create new channel.")
         error(s"Channel ${newChannel} already exists.")
         1
-      } else if (!StorageChannel.isValidName(newChannel)) {
+      } else if (!storage.Channel.isValidName(newChannel)) {
         error(s"Unable to create new channel.")
         error(s"The channel name ${newChannel} is invalid.")
-        error(s"${StorageChannel.nameConstraint}")
+        error(s"${storage.Channel.nameConstraint}")
         1
       } else {
 
-        val channelId = channels.insert(StorageChannel(
+        val channelId = channels.insert(storage.Channel(
           id = 0, // new id will be assigned
           appid = app.id,
           name = newChannel
@@ -442,9 +450,9 @@ object App extends Logging {
   }
 
   def channelDelete(ca: ConsoleArgs): Int = {
-    val apps = Storage.getMetaDataApps
-    val channels = Storage.getMetaDataChannels
-    val events = Storage.getLEvents()
+    val apps = storage.Storage.getMetaDataApps
+    val channels = storage.Storage.getMetaDataChannels
+    val events = storage.Storage.getLEvents()
     val deleteChannel = ca.app.channel
     val status = apps.getByName(ca.app.name) map { app =>
       val channelMap = channels.getByAppid(app.id).map(c => (c.name, c.id)).toMap

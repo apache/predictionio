@@ -15,6 +15,7 @@
 
 package io.prediction.controller
 
+import io.prediction.core.BaseEngine
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
@@ -207,6 +208,26 @@ abstract class SumMetric[EI, Q, P, A, R: ClassTag](implicit num: Numeric[R])
     )
 
     union.aggregate[R](num.zero)(_ + _, _ + _)
+  }
+}
+
+/** Returns zero. Useful as a placeholder during evaluation development when not all components are
+  * implemented.
+  * @tparam EI Evaluation information
+  * @tparam Q Query
+  * @tparam P Predicted result
+  * @tparam A Actual result
+  *
+  * @group Evaluation
+  */
+class ZeroMetric[EI, Q, P, A] extends Metric[EI, Q, P, A, Double]() {
+   def calculate(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])]): Double = 0.0
+}
+
+object ZeroMetric {
+  /** Returns a ZeroMetric instance using Engine's type parameters. */
+  def apply[EI, Q, P, A](engine: BaseEngine[EI, Q, P, A]): ZeroMetric[EI, Q, P, A] = {
+    new ZeroMetric[EI, Q, P, A]()
   }
 }
 

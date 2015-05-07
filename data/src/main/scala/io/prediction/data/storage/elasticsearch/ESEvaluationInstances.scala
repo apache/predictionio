@@ -14,10 +14,12 @@
   */
 
 package io.prediction.data.storage.elasticsearch
+
 import grizzled.slf4j.Logging
 import io.prediction.data.storage.EvaluationInstance
 import io.prediction.data.storage.EvaluationInstanceSerializer
 import io.prediction.data.storage.EvaluationInstances
+import io.prediction.data.storage.StorageClientConfig
 import org.elasticsearch.ElasticsearchException
 import org.elasticsearch.client.Client
 import org.elasticsearch.index.query.FilterBuilders._
@@ -28,7 +30,7 @@ import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization.read
 import org.json4s.native.Serialization.write
 
-class ESEvaluationInstances(client: Client, index: String)
+class ESEvaluationInstances(client: Client, config: StorageClientConfig, index: String)
   extends EvaluationInstances with Logging {
   implicit val formats = DefaultFormats + new EvaluationInstanceSerializer
   private val estype = "evaluation_instances"

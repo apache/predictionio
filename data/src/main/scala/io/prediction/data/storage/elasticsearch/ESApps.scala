@@ -15,34 +15,25 @@
 
 package io.prediction.data.storage.elasticsearch
 
-import io.prediction.data.storage.{ App, Apps, Utils }
-
-import com.github.nscala_time.time.Imports._
 import grizzled.slf4j.Logging
+import io.prediction.data.storage.StorageClientConfig
+import io.prediction.data.storage.App
+import io.prediction.data.storage.Apps
 import org.elasticsearch.ElasticsearchException
 import org.elasticsearch.client.Client
-import org.elasticsearch.common.unit.DistanceUnit
 import org.elasticsearch.index.query.FilterBuilders._
-import org.elasticsearch.index.query.QueryBuilders
-import org.elasticsearch.search.sort.SortBuilders._
-import org.elasticsearch.search.sort.SortOrder
-import org.joda.time.format.ISODateTimeFormat
-import org.json4s._
 import org.json4s.JsonDSL._
+import org.json4s._
 import org.json4s.native.JsonMethods._
-import org.json4s.native.Serialization
-import org.json4s.native.Serialization.{ read, write }
-
-import scala.collection.JavaConversions._
-import scala.concurrent.Await
-import scala.concurrent.duration._
-import scala.util.Random
+import org.json4s.native.Serialization.read
+import org.json4s.native.Serialization.write
 
 /** Elasticsearch implementation of Items. */
-class ESApps(client: Client, index: String) extends Apps with Logging {
+class ESApps(client: Client, config: StorageClientConfig, index: String)
+  extends Apps with Logging {
   implicit val formats = DefaultFormats.lossless
   private val estype = "apps"
-  private val seq = new ESSequences(client, index)
+  private val seq = new ESSequences(client, config, index)
 
   val indices = client.admin.indices
   val indexExistResponse = indices.prepareExists(index).get

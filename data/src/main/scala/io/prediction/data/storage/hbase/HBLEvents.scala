@@ -15,28 +15,23 @@
 
 package io.prediction.data.storage.hbase
 
-import io.prediction.data.storage.Event
-import io.prediction.data.storage.PropertyMap
-import io.prediction.data.storage.LEvents
-import io.prediction.data.storage.hbase.HBEventsUtil.RowKey
-import io.prediction.data.storage.hbase.HBEventsUtil.RowKeyException
-
 import grizzled.slf4j.Logging
-
-import org.joda.time.DateTime
-
-import org.apache.hadoop.hbase.NamespaceDescriptor
-import org.apache.hadoop.hbase.HTableDescriptor
+import io.prediction.data.storage.Event
+import io.prediction.data.storage.LEvents
+import io.prediction.data.storage.StorageClientConfig
+import io.prediction.data.storage.hbase.HBEventsUtil.RowKey
 import org.apache.hadoop.hbase.HColumnDescriptor
+import org.apache.hadoop.hbase.HTableDescriptor
+import org.apache.hadoop.hbase.NamespaceDescriptor
 import org.apache.hadoop.hbase.TableName
 import org.apache.hadoop.hbase.client._
+import org.joda.time.DateTime
 
 import scala.collection.JavaConversions._
-
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
-class HBLEvents(val client: HBClient, val namespace: String)
+class HBLEvents(val client: HBClient, config: StorageClientConfig, val namespace: String)
   extends LEvents with Logging {
 
   // implicit val formats = DefaultFormats + new EventJson4sSupport.DBSerializer

@@ -15,28 +15,22 @@
 
 package io.prediction.data.storage.elasticsearch
 
-import io.prediction.data.storage.EngineInstance
-import io.prediction.data.storage.EngineInstances
-import io.prediction.data.storage.EngineInstanceSerializer
-
-import com.github.nscala_time.time.Imports._
-import com.google.common.io.BaseEncoding
 import grizzled.slf4j.Logging
+import io.prediction.data.storage.EngineInstance
+import io.prediction.data.storage.EngineInstanceSerializer
+import io.prediction.data.storage.EngineInstances
+import io.prediction.data.storage.StorageClientConfig
 import org.elasticsearch.ElasticsearchException
 import org.elasticsearch.client.Client
 import org.elasticsearch.index.query.FilterBuilders._
-import org.elasticsearch.search.sort.SortBuilders._
 import org.elasticsearch.search.sort.SortOrder
-import org.json4s._
 import org.json4s.JsonDSL._
+import org.json4s._
 import org.json4s.native.JsonMethods._
-import org.json4s.native.Serialization.{ read, write }
+import org.json4s.native.Serialization.read
+import org.json4s.native.Serialization.write
 
-import scala.collection.JavaConversions._
-import scala.concurrent.Await
-import scala.concurrent.duration._
-
-class ESEngineInstances(client: Client, index: String)
+class ESEngineInstances(client: Client, config: StorageClientConfig, index: String)
   extends EngineInstances with Logging {
   implicit val formats = DefaultFormats + new EngineInstanceSerializer
   private val estype = "engine_instances"
@@ -61,8 +55,6 @@ class ESEngineInstances(client: Client, index: String)
             ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
           ("engineFactory" ->
             ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
-          ("metricsClass" ->
-            ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
           ("batch" ->
             ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
           ("dataSourceParams" ->
@@ -73,15 +65,7 @@ class ESEngineInstances(client: Client, index: String)
             ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
           ("servingParams" ->
             ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
-          ("metricsParams" ->
-            ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
-          ("status" -> ("type" -> "string") ~ ("index" -> "not_analyzed")) ~
-          ("multipleMetricsResults" ->
-            ("type" -> "string") ~ ("index" -> "no")) ~
-          ("multipleMetricsResultsHTML" ->
-            ("type" -> "string") ~ ("index" -> "no")) ~
-          ("multipleMetricsResultsJSON" ->
-            ("type" -> "string") ~ ("index" -> "no"))))
+          ("status" -> ("type" -> "string") ~ ("index" -> "not_analyzed"))))
     indices.preparePutMapping(index).setType(estype).
       setSource(compact(render(json))).get
   }
@@ -152,19 +136,6 @@ class ESEngineInstances(client: Client, index: String)
       engineId,
       engineVersion,
       engineVariant).headOption
-
-  def getEvalCompleted(): Seq[EngineInstance] = {
-    try {
-      val builder = client.prepareSearch(index).setTypes(estype).setPostFilter(
-        termFilter("status", "EVALCOMPLETED")).
-        addSort("startTime", SortOrder.DESC)
-      ESUtils.getAll[EngineInstance](client, builder)
-    } catch {
-      case e: ElasticsearchException =>
-        error(e.getMessage)
-        Seq()
-    }
-  }
 
   def update(i: EngineInstance): Unit = {
     try {

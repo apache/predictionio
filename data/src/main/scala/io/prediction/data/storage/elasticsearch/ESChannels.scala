@@ -15,27 +15,25 @@
   
 package io.prediction.data.storage.elasticsearch
 
+import grizzled.slf4j.Logging
 import io.prediction.data.storage.Channel
 import io.prediction.data.storage.Channels
-
-import grizzled.slf4j.Logging
+import io.prediction.data.storage.StorageClientConfig
 import org.elasticsearch.ElasticsearchException
-import org.elasticsearch.index.query.FilterBuilders.termFilter
 import org.elasticsearch.client.Client
-
+import org.elasticsearch.index.query.FilterBuilders.termFilter
 import org.json4s.DefaultFormats
-import org.json4s._
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
-import org.json4s.native.Serialization
-import org.json4s.native.Serialization.{ read, write }
+import org.json4s.native.Serialization.read
+import org.json4s.native.Serialization.write
 
-class ESChannels(client: Client, index: String)
+class ESChannels(client: Client, config: StorageClientConfig, index: String)
     extends Channels with Logging {
 
   implicit val formats = DefaultFormats.lossless
   private val estype = "channels"
-  private val seq = new ESSequences(client, index)
+  private val seq = new ESSequences(client, config, index)
   private val seqName = "channels"
 
   val indices = client.admin.indices

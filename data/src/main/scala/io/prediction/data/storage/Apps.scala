@@ -15,41 +15,44 @@
 
 package io.prediction.data.storage
 
-/**
- * App object.
- *
- * Stores mapping of app IDs and names.
- *
- * @param id ID of the app.
- * @param name Name of the app.
- * @param description Long description of the app.
- */
-private[prediction] case class App(
+import io.prediction.annotation.DeveloperApi
+
+/** :: DeveloperApi ::
+  * Stores mapping of app IDs and names
+  *
+  * @param id ID of the app.
+  * @param name Name of the app.
+  * @param description Long description of the app.
+  * @group Meta Data
+  */
+@DeveloperApi
+case class App(
   id: Int,
   name: String,
   description: Option[String])
 
-/**
- * Base trait for implementations that interact with Apps in the backend data
- * store.
- */
-private[prediction] trait Apps {
-  /** Insert a new App. Returns a generated app ID. */
+/** :: DeveloperApi ::
+  * Base trait of the [[App]] data access object
+  *
+  * @group Meta Data
+  */
+@DeveloperApi
+trait Apps {
+  /** Insert a new [[App]]. Returns a generated app ID if the supplied app ID is 0. */
   def insert(app: App): Option[Int]
 
-  /** Get an App by app ID. */
+  /** Get an [[App]] by app ID */
   def get(id: Int): Option[App]
 
-  /** Get an App by app name. */
+  /** Get an [[App]] by app name */
   def getByName(name: String): Option[App]
 
-  /** Get all Apps. */
+  /** Get all [[App]]s */
   def getAll(): Seq[App]
 
-  /** Update an App. */
+  /** Update an [[App]] */
   def update(app: App): Boolean
 
-  /** Delete an App. */
+  /** Delete an [[App]] */
   def delete(id: Int): Boolean
-
 }

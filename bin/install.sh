@@ -114,7 +114,7 @@ elif [[ "$1" == "-y" ]]; then
   # Java Install
   echo -e "\033[1;36mStarting Java install...\033[0m"
 
-  # todo: make java installation platform independant
+  # todo: make java installation platform independent
   sudo apt-get update
   sudo apt-get install openjdk-7-jdk libgfortran3 -y
 
@@ -131,7 +131,7 @@ else
     read -e -p "Vendor path ($pio_dir/vendors): " vendors_dir
     vendors_dir=${vendors_dir:-$pio_dir/vendors}
 
-    if confirm "Recieve updates?"; then
+    if confirm "Receive updates?"; then
       guess_email=''
       if hash git 2>/dev/null; then
         # Git installed!

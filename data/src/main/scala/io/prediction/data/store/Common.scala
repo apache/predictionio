@@ -33,9 +33,9 @@ private[prediction] object Common {
         .map(c => (c.name, c.id)).toMap
 
       val channelId: Option[Int] = channelName.map { ch =>
-        if (channelMap.contains(ch))
+        if (channelMap.contains(ch)) {
           channelMap(ch)
-        else {
+        } else {
           logger.error(s"Invalid channel name ${ch}.")
           throw new IllegalArgumentException(s"Invalid channel name ${ch}.")
         }
