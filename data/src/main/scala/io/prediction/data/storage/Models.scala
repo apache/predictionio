@@ -16,37 +16,45 @@
 package io.prediction.data.storage
 
 import com.google.common.io.BaseEncoding
+import io.prediction.annotation.DeveloperApi
 import org.json4s._
-import org.json4s.native.Serialization
 
-/**
- * Model object.
- *
- * Stores model for each engine instance.
- *
- * @param id ID of the model, which should be the same as engine instance ID.
- * @param models Trained models of all algorithms.
- */
-private[prediction] case class Model(
+/** :: DeveloperApi ::
+  * Stores model for each engine instance
+  *
+  * @param id ID of the model, which should be the same as engine instance ID
+  * @param models Trained models of all algorithms
+  * @group Model Data
+  */
+@DeveloperApi
+case class Model(
   id: String,
   models: Array[Byte])
 
-/**
- * Base trait for implementations that interact with Models in the backend data
- * store.
- */
-private[prediction] trait Models {
-  /** Insert a new Model. */
+/** :: DeveloperApi ::
+  * Base trait for of the [[Model]] data access object
+  *
+  * @group Model Data
+  */
+@DeveloperApi
+trait Models {
+  /** Insert a new [[Model]] */
   def insert(i: Model): Unit
 
-  /** Get a Model by ID. */
+  /** Get a [[Model]] by ID */
   def get(id: String): Option[Model]
 
-  /** Delete a Model. */
+  /** Delete a [[Model]] */
   def delete(id: String): Unit
 }
 
-private[prediction] class ModelSerializer extends CustomSerializer[Model](
+/** :: DeveloperApi ::
+  * JSON4S serializer for [[Model]]
+  *
+  * @group Model Data
+  */
+@DeveloperApi
+class ModelSerializer extends CustomSerializer[Model](
   format => ({
     case JObject(fields) =>
       implicit val formats = DefaultFormats

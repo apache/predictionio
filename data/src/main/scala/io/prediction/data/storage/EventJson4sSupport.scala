@@ -15,20 +15,30 @@
 
 package io.prediction.data.storage
 
-import io.prediction.data.{ Utils => DataUtils }
-
-import org.json4s._
-import org.json4s.native.Serialization.{ read, write }
-
+import io.prediction.annotation.DeveloperApi
+import io.prediction.data.{Utils => DataUtils}
 import org.joda.time.DateTime
+import org.json4s._
 
-private[prediction] object EventJson4sSupport {
-
-  // NOTE: don't use json4s to serialize/deserialize joda DateTime
-  // because it has some issue with timezone (as of version 3.2.10)
+/** :: DeveloperApi ::
+  * Support library for dealing with [[Event]] and JSON4S
+  *
+  * @group Event Data
+  */
+@DeveloperApi
+object EventJson4sSupport {
+  /** This is set to org.json4s.DefaultFormats. Do not use JSON4S to serialize
+    * or deserialize Joda-Time DateTime because it has some issues with timezone
+    * (as of version 3.2.10)
+    */
   implicit val formats = DefaultFormats
 
-  // convert API's JSON to Event object
+  /** :: DeveloperApi ::
+    * Convert JSON from Event Server to [[Event]]
+    *
+    * @return deserialization routine used by [[APISerializer]]
+    */
+  @DeveloperApi
   def readJson: PartialFunction[JValue, Event] = {
     case JObject(x) => {
       val fields = new DataMap(x.toMap)
@@ -92,7 +102,12 @@ private[prediction] object EventJson4sSupport {
     }
   }
 
-  // convert Event object to API's JSON
+  /** :: DeveloperApi ::
+    * Convert [[Event]] to JSON for use by the Event Server
+    *
+    * @return serialization routine used by [[APISerializer]]
+    */
+  @DeveloperApi
   def writeJson: PartialFunction[Any, JValue] = {
     case d: Event => {
       JObject(
@@ -119,6 +134,12 @@ private[prediction] object EventJson4sSupport {
     }
   }
 
+  /** :: DeveloperApi ::
+    * Convert JSON4S JValue to [[Event]]
+    *
+    * @return deserialization routine used by [[DBSerializer]]
+    */
+  @DeveloperApi
   def deserializeFromJValue: PartialFunction[JValue, Event] = {
     case jv: JValue => {
       val event = (jv \ "event").extract[String]
@@ -147,6 +168,12 @@ private[prediction] object EventJson4sSupport {
     }
   }
 
+  /** :: DeveloperApi ::
+    * Convert [[Event]] to JSON4S JValue
+    *
+    * @return serialization routine used by [[DBSerializer]]
+    */
+  @DeveloperApi
   def serializeToJValue: PartialFunction[Any, JValue] = {
     case d: Event => {
       JObject(
@@ -168,11 +195,19 @@ private[prediction] object EventJson4sSupport {
     }
   }
 
-  // for DB usage
+  /** :: DeveloperApi ::
+    * Custom JSON4S serializer for [[Event]] intended to be used by database
+    * access, or anywhere that demands serdes of [[Event]] to/from JSON4S JValue
+    */
+  @DeveloperApi
   class DBSerializer extends CustomSerializer[Event](format => (
     deserializeFromJValue, serializeToJValue))
 
-  // for API usage
+  /** :: DeveloperApi ::
+    * Custom JSON4S serializer for [[Event]] intended to be used by the Event
+    * Server, or anywhere that demands serdes of [[Event]] to/from JSON
+    */
+  @DeveloperApi
   class APISerializer extends CustomSerializer[Event](format => (
     readJson, writeJson))
 }

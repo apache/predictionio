@@ -15,6 +15,7 @@
 
 package io.prediction.data.storage
 
+import io.prediction.annotation.DeveloperApi
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 
@@ -33,6 +34,7 @@ import org.joda.time.DateTimeZone
   * @param tags Tags of this event.
   * @param prId PredictedResultId of this event.
   * @param creationTime Time of creation in the system of this event.
+  * @group Event Data
   */
 case class Event(
   val eventId: Option[String] = None,
@@ -54,19 +56,56 @@ case class Event(
   }
 }
 
-private[prediction] object EventValidation {
-
+/** :: DeveloperApi ::
+  * Utilities for validating [[Event]]s
+  *
+  * @group Event Data
+  */
+@DeveloperApi
+object EventValidation {
+  /** Default time zone is set to UTC */
   val defaultTimeZone = DateTimeZone.UTC
 
-  // general reserved prefix for built-in engine
+  /** Checks whether an event name contains a reserved prefix
+    *
+    * @param name Event name
+    * @return true if event name starts with $ or pio_, false otherwise
+    */
   def isReservedPrefix(name: String): Boolean = name.startsWith("$") ||
     name.startsWith("pio_")
 
-  // single entity reserved events
+  /** PredictionIO reserves some single entity event names. They are currently
+    * $set, $unset, and $delete.
+    */
   val specialEvents = Set("$set", "$unset", "$delete")
 
+  /** Checks whether an event name is a special PredictionIO event name
+    *
+    * @param name Event name
+    * @return true if the name is a special event, false otherwise
+    */
   def isSpecialEvents(name: String): Boolean = specialEvents.contains(name)
 
+  /** Validate an [[Event]], throwing exceptions when the candidate violates any
+    * of the following:
+    *
+    *  - event name must not be empty
+    *  - entityType must not be empty
+    *  - entityId must not be empty
+    *  - targetEntityType must not be Some of empty
+    *  - targetEntityId must not be Some of empty
+    *  - targetEntityType and targetEntityId must be both Some or None
+    *  - properties must not be empty when event is $unset
+    *  - event name must be a special event if it has a reserved prefix
+    *  - targetEntityType and targetEntityId must be None if the event name has
+    *    a reserved prefix
+    *  - entityType must be a built-in entity type if entityType has a
+    *    reserved prefix
+    *  - targetEntityType must be a built-in entity type if targetEntityType is
+    *    Some and has a reserved prefix
+    *
+    * @param e Event to be validated
+    */
   def validate(e: Event): Unit = {
 
     require(!e.event.isEmpty, "event must not be empty.")
@@ -98,12 +137,22 @@ private[prediction] object EventValidation {
     validateProperties(e)
   }
 
-  // properties
+  /** Defines built-in entity types. The current built-in type is pio_pr. */
   val builtinEntityTypes: Set[String] = Set("pio_pr")
+
+  /** Defines built-in properties. This is currently empty. */
   val builtinProperties: Set[String] = Set()
 
+  /** Checks whether an entity type is a built-in entity type */
   def isBuiltinEntityTypes(name: String): Boolean = builtinEntityTypes.contains(name)
 
+  /** Validate event properties, throwing exceptions when the candidate violates
+    * any of the following:
+    *
+    *  - property name must not contain a reserved prefix
+    *
+    * @param e Event to be validated
+    */
   def validateProperties(e: Event): Unit = {
     e.properties.keySet.foreach { k =>
       require(!isReservedPrefix(k) || builtinProperties.contains(k),
