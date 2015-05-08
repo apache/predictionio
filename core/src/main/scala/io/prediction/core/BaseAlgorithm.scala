@@ -22,14 +22,12 @@ import net.jodah.typetools.TypeResolver
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-import scala.reflect._
-
 trait BaseQuerySerializer {
   @transient lazy val querySerializer = Utils.json4sDefaultFormats
   @transient lazy val gsonTypeAdpaterFactories = Seq.empty[TypeAdapterFactory]
 }
 
-abstract class BaseAlgorithm[PD, M, Q : Manifest, P]
+abstract class BaseAlgorithm[PD, M, Q, P]
   extends AbstractDoer with BaseQuerySerializer {
   private[prediction]
   def trainBase(sc: SparkContext, pd: PD): M
@@ -42,9 +40,6 @@ abstract class BaseAlgorithm[PD, M, Q : Manifest, P]
   // Used by Deploy
   private[prediction]
   def predictBase(bm: Any, q: Q): P
-
-  private[prediction]
-  def queryManifest(): Manifest[Q] = manifest[Q]
 
   private[prediction]
   def makePersistentModel(

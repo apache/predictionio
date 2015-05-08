@@ -20,8 +20,6 @@ import io.prediction.workflow.PersistentModelManifest
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-import scala.reflect._
-
 /** Base class of a parallel algorithm.
   *
   * A parallel algorithm can be run in parallel on a cluster and produces a
@@ -42,7 +40,7 @@ import scala.reflect._
   * @tparam P Output prediction class.
   * @group Algorithm
   */
-abstract class PAlgorithm[PD, M, Q : Manifest, P]
+abstract class PAlgorithm[PD, M, Q, P]
   extends BaseAlgorithm[PD, M, Q, P] {
 
   /** Do not use directly or override this method, as this is called by

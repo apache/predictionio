@@ -39,7 +39,7 @@ import scala.reflect._
   * @tparam P Output prediction class.
   * @group Algorithm
   */
-abstract class P2LAlgorithm[PD, M : ClassTag, Q : Manifest, P]
+abstract class P2LAlgorithm[PD, M: ClassTag, Q: ClassTag, P]
   extends BaseAlgorithm[PD, M, Q, P] {
 
   /** Do not use directly or override this method, as this is called by

@@ -38,7 +38,7 @@ import scala.reflect._
   * @tparam P Output prediction class.
   * @group Algorithm
   */
-abstract class LAlgorithm[PD, M : ClassTag, Q : Manifest, P]
+abstract class LAlgorithm[PD, M : ClassTag, Q, P]
   extends BaseAlgorithm[RDD[PD], RDD[M], Q, P] {
 
   /** Do not use directly or override this method, as this is called by
@@ -65,9 +65,9 @@ abstract class LAlgorithm[PD, M : ClassTag, Q : Manifest, P]
   def batchPredict(mRDD: RDD[M], qs: RDD[(Long, Q)]): RDD[(Long, P)] = {
     val glomQs: RDD[Array[(Long, Q)]] = qs.glom()
     val cartesian: RDD[(M, Array[(Long, Q)])] = mRDD.cartesian(glomQs)
-    cartesian.flatMap { case (m, qArray) => {
+    cartesian.flatMap { case (m, qArray) =>
       qArray.map { case (qx, q) => (qx, predict(m, q)) }
-    }}
+    }
   }
 
   private[prediction]
@@ -97,7 +97,7 @@ abstract class LAlgorithm[PD, M : ClassTag, Q : Manifest, P]
     // return the Manifest, otherwise, Unit. 
 
     // Check RDD[M].count == 1
-    val m = bm.asInstanceOf[RDD[M]].first
+    val m = bm.asInstanceOf[RDD[M]].first()
     if (m.isInstanceOf[PersistentModel[_]]) {
       if (m.asInstanceOf[PersistentModel[Params]].save(
         modelId, algoParams, sc)) {
