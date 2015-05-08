@@ -20,12 +20,12 @@ import io.prediction.core.BaseEngine
 import scala.language.implicitConversions
 
 /** If you intend to let PredictionIO create workflow and deploy serving
-  * automatically, you will need to implement an object that extends this trait
+  * automatically, you will need to implement an object that extends this class
   * and return an [[Engine]].
   *
   * @group Engine
   */
-trait EngineFactory {
+abstract class EngineFactory {
   /** Creates an instance of an [[Engine]]. */
   def apply(): BaseEngine[_, _, _, _]
 

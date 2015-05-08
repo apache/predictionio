@@ -41,6 +41,7 @@ import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization.read
 
+import scala.collection.JavaConversions
 import scala.language.implicitConversions
 
 /** This class chains up the entire data process. PredictionIO uses this
@@ -107,6 +108,23 @@ class Engine[TD, EI, PD, Q, P, A](
       algorithmClassMap,
       Map("" -> servingClass)
     )
+
+  /** Java-friendly constructor
+    *
+    * @param dataSourceClass Data source class.
+    * @param preparatorClass Preparator class.
+    * @param algorithmClassMap Map of algorithm names to classes.
+    * @param servingClass Serving class.
+    */
+  def this(dataSourceClass: Class[_ <: BaseDataSource[TD, EI, Q, A]],
+    preparatorClass: Class[_ <: BasePreparator[TD, PD]],
+    algorithmClassMap: java.util.Map[String, Class[_ <: BaseAlgorithm[PD, _, Q, P]]],
+    servingClass: Class[_ <: BaseServing[Q, P]]) = this(
+    Map("" -> dataSourceClass),
+    Map("" -> preparatorClass),
+    JavaConversions.mapAsScalaMap(algorithmClassMap).toMap,
+    Map("" -> servingClass)
+  )
 
   /** Returns a new Engine instance, mimicking case class's copy method behavior.
     */
