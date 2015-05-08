@@ -16,10 +16,10 @@
 package io.prediction.data.storage
 
 import com.github.nscala_time.time.Imports._
+import io.prediction.annotation.DeveloperApi
 import org.json4s._
 
-/** EvaluationInstance object.
-  *
+/** :: DeveloperApi ::
   * Stores meta information for each evaluation instance.
   *
   * @param id Instance ID.
@@ -33,8 +33,10 @@ import org.json4s._
   * @param evaluatorResults Results of the evaluator.
   * @param evaluatorResultsHTML HTML results of the evaluator.
   * @param evaluatorResultsJSON JSON results of the evaluator.
+  * @group Meta Data
   */
-private[prediction] case class EvaluationInstance(
+@DeveloperApi
+case class EvaluationInstance(
   id: String = "",
   status: String = "",
   startTime: DateTime = DateTime.now,
@@ -48,33 +50,39 @@ private[prediction] case class EvaluationInstance(
   evaluatorResultsHTML: String = "",
   evaluatorResultsJSON: String = "")
 
-/**
- * Base trait for implementations that interact with EvaluationInstances in the
- * backend data store.
- */
-private[prediction] trait EvaluationInstances {
-  /** Insert a new EvaluationInstance. */
+/** :: DeveloperApi ::
+  * Base trait of the [[EvaluationInstance]] data access object
+  *
+  * @group Meta Data
+  */
+@DeveloperApi
+trait EvaluationInstances {
+  /** Insert a new [[EvaluationInstance]] */
   def insert(i: EvaluationInstance): String
 
-  /** Get an EvaluationInstance by ID. */
+  /** Get an [[EvaluationInstance]] by ID */
   def get(id: String): Option[EvaluationInstance]
 
-  /** Get all EvaluationInstances. */
+  /** Get all [[EvaluationInstances]] */
   def getAll: Seq[EvaluationInstance]
 
   /** Get instances that are produced by evaluation and have run to completion,
-    * reverse sorted by the start time.
+    * reverse sorted by the start time
     */
   def getCompleted: Seq[EvaluationInstance]
 
-  /** Update an EvaluationInstance. */
+  /** Update an [[EvaluationInstance]] */
   def update(i: EvaluationInstance): Unit
 
-  /** Delete an EvaluationInstance. */
+  /** Delete an [[EvaluationInstance]] */
   def delete(id: String): Unit
 }
 
-private[prediction]
+/** :: DeveloperApi ::
+  * JSON4S serializer for [[EvaluationInstance]]
+  *
+  * @group Meta Data
+  */
 class EvaluationInstanceSerializer extends CustomSerializer[EvaluationInstance](
   format => ({
     case JObject(fields) =>

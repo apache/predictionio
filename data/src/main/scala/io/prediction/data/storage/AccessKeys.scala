@@ -15,40 +15,44 @@
 
 package io.prediction.data.storage
 
-/**
- * AccessKey object.
- *
- * Stores mapping of access keys, IDs, and lists of allowed event names.
- *
- * @param key Key.
- * @param appid ID of the app.
- * @param events List of allowed events for this particular app key.
- */
-private[prediction] case class AccessKey(
+import io.prediction.annotation.DeveloperApi
+
+/** :: DeveloperApi ::
+  * Stores mapping of access keys, app IDs, and lists of allowed event names
+  *
+  * @param key Access key
+  * @param appid App ID
+  * @param events List of allowed events for this particular app key
+  * @group Meta Data
+  */
+@DeveloperApi
+case class AccessKey(
   key: String,
   appid: Int,
   events: Seq[String])
 
-/**
- * Base trait for implementations that interact with AccessKeys in the backend
- * data store.
- */
-private[prediction] trait AccessKeys {
-  /** Insert a new AccessKey. Returns a generated access key. */
+/** :: DeveloperApi ::
+  * Base trait of the [[AccessKey]] data access object
+  *
+  * @group Meta Data
+  */
+@DeveloperApi
+trait AccessKeys {
+  /** Insert a new [[AccessKey]]. Returns a generated access key. */
   def insert(k: AccessKey): Option[String]
 
-  /** Get an AccessKey by key. */
+  /** Get an [[AccessKey]] by key */
   def get(k: String): Option[AccessKey]
 
-  /** Get all AccessKeys. */
+  /** Get all [[AccessKey]]s */
   def getAll(): Seq[AccessKey]
 
-  /** Get all AccessKeys for a particular app ID. */
+  /** Get all [[AccessKey]]s for a particular app ID */
   def getByAppid(appid: Int): Seq[AccessKey]
 
-  /** Update an AccessKey. */
+  /** Update an [[AccessKey]] */
   def update(k: AccessKey): Boolean
 
-  /** Delete an AccessKey. */
+  /** Delete an [[AccessKey]] */
   def delete(k: String): Boolean
 }

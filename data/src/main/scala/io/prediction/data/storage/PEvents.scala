@@ -26,7 +26,10 @@ import scala.reflect.ClassTag
 
 /** :: DeveloperApi ::
   * Base trait of a data access object that returns [[Event]] related RDD data
-  * structure.
+  * structure. Engine developers should use
+  * [[io.prediction.data.store.PEventStore]] instead of using this directly.
+  *
+  * @group Event Data
   */
 @DeveloperApi
 trait PEvents extends Serializable {
@@ -48,7 +51,8 @@ trait PEvents extends Serializable {
     }
 
   /** :: DeveloperApi ::
-    * Read from database and return the events.
+    * Read from database and return the events. The deprecation here is intended
+    * to engine developers only.
     *
     * @param appId return events of this app ID
     * @param channelId return events of this channel ID (default channel if it's None)
@@ -68,7 +72,6 @@ trait PEvents extends Serializable {
     * @param sc Spark context
     * @return RDD[Event]
     */
-  // NOTE: The deprecation here is for
   @deprecated("Use PEventStore.find() instead.", "0.9.2")
   @DeveloperApi
   def find(
@@ -83,7 +86,8 @@ trait PEvents extends Serializable {
     targetEntityId: Option[Option[String]] = None)(sc: SparkContext): RDD[Event]
 
   /** Aggregate properties of entities based on these special events:
-    * \$set, \$unset, \$delete events.
+    * \$set, \$unset, \$delete events. The deprecation here is intended to
+    * engine developers only.
     *
     * @param appId use events of this app ID
     * @param channelId use events of this channel ID (default channel if it's None)
@@ -92,9 +96,8 @@ trait PEvents extends Serializable {
     * @param untilTime use events with eventTime < untilTime
     * @param required only keep entities with these required properties defined
     * @param sc Spark context
-    * @return RDD[(String, PropertyMap)] RDD of entityId and PropetyMap pair
+    * @return RDD[(String, PropertyMap)] RDD of entityId and PropertyMap pair
     */
-  // NOTE: Don't delete! make this private[prediction] instead when deprecate
   @deprecated("Use PEventStore.aggregateProperties() instead.", "0.9.2")
   def aggregateProperties(
     appId: Int,

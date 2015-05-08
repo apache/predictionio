@@ -15,12 +15,27 @@
 
 package io.prediction.data.storage
 
+import io.prediction.annotation.DeveloperApi
 import org.joda.time.DateTime
 
-import org.json4s.JValue
-
-private[prediction] object LEventAggregator {
-
+/** :: DeveloperApi ::
+  * Provides aggregation support of [[Event]]s to [[LEvents]]. Engine developers
+  * should use [[io.prediction.data.store.LEventStore]] instead of using this
+  * directly.
+  *
+  * @group Event Data
+  */
+@DeveloperApi
+object LEventAggregator {
+  /** :: DeveloperApi ::
+    * Aggregate all properties grouped by entity type given an iterator of
+    * [[Event]]s with the latest property values from all [[Event]]s, and their
+    * first and last updated time
+    *
+    * @param events An iterator of [[Event]]s whose properties will be aggregated
+    * @return A map of entity type to [[PropertyMap]]
+    */
+  @DeveloperApi
   def aggregateProperties(events: Iterator[Event]): Map[String, PropertyMap] = {
     events.toList
       .groupBy(_.entityId)
@@ -41,7 +56,14 @@ private[prediction] object LEventAggregator {
       }
   }
 
-  // aggregate Properties for single entity
+  /** :: DeveloperApi ::
+    * Aggregate all properties given an iterator of [[Event]]s with the latest
+    * property values from all [[Event]]s, and their first and last updated time
+    *
+    * @param events An iterator of [[Event]]s whose properties will be aggregated
+    * @return An optional [[PropertyMap]]
+    */
+  @DeveloperApi
   def aggregatePropertiesSingle(events: Iterator[Event])
   : Option[PropertyMap] = {
     val prop = events.toList
@@ -62,6 +84,7 @@ private[prediction] object LEventAggregator {
     }
   }
 
+  /** Event names that control aggregation: $set, $unset, and $delete */
   val eventNames = List("$set", "$unset", "$delete")
 
   private
@@ -114,10 +137,9 @@ private[prediction] object LEventAggregator {
   private
   def last(a: DateTime, b: DateTime): DateTime = if (b.isAfter(a)) b else a
 
-  case class Prop(
+  private case class Prop(
     dm: Option[DataMap] = None,
     firstUpdated: Option[DateTime] = None,
     lastUpdated: Option[DateTime] = None
   )
-
 }

@@ -15,16 +15,18 @@
 
 package io.prediction.data.storage
 
-/**
- * Channel object.
- *
- * Stores mapping of channel IDs, names and app ID
- *
- * @param id ID of the channel
- * @param name Name of the channel (must be unique within the same app).
- * @param appid ID of the app which this channel belongs to
- */
-private[prediction] case class Channel(
+import io.prediction.annotation.DeveloperApi
+
+/** :: DeveloperApi ::
+  * Stores mapping of channel IDs, names and app ID
+  *
+  * @param id ID of the channel
+  * @param name Name of the channel (must be unique within the same app)
+  * @param appid ID of the app which this channel belongs to
+  * @group Meta Data
+  */
+@DeveloperApi
+case class Channel(
   id: Int,
   name: String, // must be unique within the same app
   appid: Int
@@ -33,33 +35,46 @@ private[prediction] case class Channel(
     "Invalid channel name: ${name}. ${Channel.nameConstraint}")
 }
 
-private[prediction] object Channel {
+/** :: DeveloperApi ::
+  * Companion object of [[Channel]]
+  *
+  * @group Meta Data
+  */
+@DeveloperApi
+object Channel {
+  /** Examine whether the supplied channel name is valid. A valid channel name
+    * must consists of 1 to 16 alphanumeric and '-' characters.
+    *
+    * @param s Channel name to examine
+    * @return true if channel name is valid, false otherwise
+    */
   def isValidName(s: String): Boolean = {
     // note: update channelNameConstraint if this rule is changed
     s.matches("^[a-zA-Z0-9-]{1,16}$")
   }
 
-  // for display error message consistently
+  /** For consistent error message display */
   val nameConstraint: String =
     "Only alphanumeric and - characters are allowed and max length is 16."
 }
 
-/**
- * Base trait for implementations that interact with Channels in the backend
- * data store.
- */
-private[prediction] trait Channels {
-
-  /** Insert a new Channel. Returns a generated channel ID if original ID is 0. */
+/** :: DeveloperApi ::
+  * Base trait of the [[Channel]] data access object
+  *
+  * @group Meta Data
+  */
+@DeveloperApi
+trait Channels {
+  /** Insert a new [[Channel]]. Returns a generated channel ID if original ID is 0. */
   def insert(channel: Channel): Option[Int]
 
-  /** Get a Channel by channel ID. */
+  /** Get a [[Channel]] by channel ID */
   def get(id: Int): Option[Channel]
 
-  /** Get all Channel by app ID. */
+  /** Get all [[Channel]] by app ID */
   def getByAppid(appid: Int): Seq[Channel]
 
-  /** Delete a Channel */
+  /** Delete a [[Channel]] */
   def delete(id: Int): Boolean
 
 }

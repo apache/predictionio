@@ -15,22 +15,23 @@
 
 package io.prediction.data.storage
 
+import io.prediction.annotation.DeveloperApi
 import org.json4s._
 
-/**
- * EngineManifest object.
- *
- * The system should be able to host multiple versions of an engine with the
- * same ID.
- *
- * @param id Unique identifier of an engine.
- * @param version Engine version string.
- * @param name A short and descriptive name for the engine.
- * @param description A long description of the engine.
- * @param files Paths to engine files.
- * @param engineFactory Engine's factory class name.
- */
-private[prediction] case class EngineManifest(
+/** :: DeveloperApi ::
+  * Provides a way to discover engines by ID and version in a distributed
+  * environment
+  *
+  * @param id Unique identifier of an engine.
+  * @param version Engine version string.
+  * @param name A short and descriptive name for the engine.
+  * @param description A long description of the engine.
+  * @param files Paths to engine files.
+  * @param engineFactory Engine's factory class name.
+  * @group Meta Data
+  */
+@DeveloperApi
+case class EngineManifest(
   id: String,
   version: String,
   name: String,
@@ -38,25 +39,36 @@ private[prediction] case class EngineManifest(
   files: Seq[String],
   engineFactory: String)
 
-/** Base trait for implementations that interact with engine manifests in the backend data store. */
-private[prediction] trait EngineManifests {
-  /** Inserts an engine manifest. */
+/** :: DeveloperApi ::
+  * Base trait of the [[EngineManifest]] data access object
+  *
+  * @group Meta Data
+  */
+@DeveloperApi
+trait EngineManifests {
+  /** Inserts an [[EngineManifest]] */
   def insert(engineManifest: EngineManifest): Unit
 
-  /** Get an engine manifest by its ID. */
+  /** Get an [[EngineManifest]] by its ID */
   def get(id: String, version: String): Option[EngineManifest]
 
-  /** Get all engine manifest. */
+  /** Get all [[EngineManifest]] */
   def getAll(): Seq[EngineManifest]
 
-  /** Updates an engine manifest. */
+  /** Updates an [[EngineManifest]] */
   def update(engineInfo: EngineManifest, upsert: Boolean = false): Unit
 
-  /** Delete an engine manifest by its ID. */
+  /** Delete an [[EngineManifest]] by its ID */
   def delete(id: String, version: String): Unit
 }
 
-private[prediction] class EngineManifestSerializer
+/** :: DeveloperApi ::
+  * JSON4S serializer for [[EngineManifest]]
+  *
+  * @group Meta Data
+  */
+@DeveloperApi
+class EngineManifestSerializer
     extends CustomSerializer[EngineManifest](format => (
   {
     case JObject(fields) =>

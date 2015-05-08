@@ -29,7 +29,9 @@ case class AppArgs(
 
 object App extends Logging {
   def create(ca: ConsoleArgs): Int = {
-    val apps = storage.Storage.getMetaDataApps
+    val apps = storage.Storage.getMetaDataApps()
+    // get the client in the beginning so error exit right away if can't access client
+    val events = storage.Storage.getLEvents()
     apps.getByName(ca.app.name) map { app =>
       error(s"App ${ca.app.name} already exists. Aborting.")
       1
@@ -47,7 +49,6 @@ object App extends Logging {
         name = ca.app.name,
         description = ca.app.description))
       appid map { id =>
-        val events = storage.Storage.getLEvents()
         val dbInit = events.init(id)
         val r = if (dbInit) {
           info(s"Initialized Event Store for this app ID: ${id}.")
@@ -68,6 +69,14 @@ object App extends Logging {
           }
         } else {
           error(s"Unable to initialize Event Store for this app ID: ${id}.")
+          // revert back the meta data change
+          val revertedStatus = apps.delete(id)
+          if (!revertedStatus) {
+            error(s"Failed to revert back the App meta-data change.")
+            error(s"The app ${ca.app.name} CANNOT be used!")
+            error(s"Please run 'pio app delete ${ca.app.name}' " +
+              "to delete this app!")
+          }
           1
         }
         events.close()

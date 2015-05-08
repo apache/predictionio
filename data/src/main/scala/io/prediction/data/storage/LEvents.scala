@@ -28,10 +28,14 @@ import org.joda.time.DateTime
 
 /** :: DeveloperApi ::
   * Base trait of a data access object that directly returns [[Event]] without
-  * going through Spark's parallelization.
+  * going through Spark's parallelization. Engine developers should use
+  * [[io.prediction.data.store.LEventStore]] instead of using this directly.
+  *
+  * @group Event Data
   */
 @DeveloperApi
 trait LEvents {
+  /** Default timeout for asynchronous operations that is set to 1 minute */
   val defaultTimeout = Duration(60, "seconds")
 
   /** :: DeveloperApi ::
