@@ -15,23 +15,16 @@
 
 package io.prediction.data.store
 
-import io.prediction.data.storage.Storage
 import io.prediction.data.storage.Event
-
 import org.joda.time.DateTime
 
-import scala.concurrent.Await
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.collection.JavaConversions
 import scala.concurrent.duration.Duration
 
-/** This object provides a set of operation to access Event Store
+/** This Java-friendly object provides a set of operation to access Event Store
   * without going through Spark's parallelization
   */
-object LEventStore {
-
-  private val defaultTimeout = Duration(60, "seconds")
-
-  @transient lazy private val eventsDb = Storage.getLEvents()
+object LJavaEventStore {
 
   /** Reads events of the specified entity. May use this in Algorithm's predict()
     * or Serving logic to have fast event store access.
@@ -52,42 +45,45 @@ object LEventStore {
     * @param startTime return events with eventTime >= startTime
     * @param untilTime return events with eventTime < untilTime
     * @param limit Limit number of events. Get all events if None or Some(-1)
-    * @param latest Return latest event first (default true)
-    * @return Iterator[Event]
+    * @param latest Return latest event first
+    * @return java.util.List[Event]
     */
   def findByEntity(
     appName: String,
     entityType: String,
     entityId: String,
-    channelName: Option[String] = None,
-    eventNames: Option[Seq[String]] = None,
-    targetEntityType: Option[Option[String]] = None,
-    targetEntityId: Option[Option[String]] = None,
-    startTime: Option[DateTime] = None,
-    untilTime: Option[DateTime] = None,
-    limit: Option[Int] = None,
-    latest: Boolean = true,
-    timeout: Duration = defaultTimeout): Iterator[Event] = {
+    channelName: Option[String],
+    eventNames: Option[java.util.List[String]],
+    targetEntityType: Option[Option[String]],
+    targetEntityId: Option[Option[String]],
+    startTime: Option[DateTime],
+    untilTime: Option[DateTime],
+    limit: Option[Integer],
+    latest: Boolean,
+    timeout: Duration): java.util.List[Event] = {
 
-    val (appId, channelId) = Common.appNameToId(appName, channelName)
+    val eventNamesSeq = eventNames.map(JavaConversions.asScalaBuffer(_).toSeq)
+    val limitInt = limit.map(_.intValue())
 
-    Await.result(eventsDb.futureFind(
-      appId = appId,
-      channelId = channelId,
-      startTime = startTime,
-      untilTime = untilTime,
-      entityType = Some(entityType),
-      entityId = Some(entityId),
-      eventNames = eventNames,
-      targetEntityType = targetEntityType,
-      targetEntityId = targetEntityId,
-      limit = limit,
-      reversed = Some(latest)),
-      timeout)
+    JavaConversions.seqAsJavaList(
+      LEventStore.findByEntity(
+        appName,
+        entityType,
+        entityId,
+        channelName,
+        eventNamesSeq,
+        targetEntityType,
+        targetEntityId,
+        startTime,
+        untilTime,
+        limitInt,
+        latest,
+        timeout
+      ).toSeq)
   }
 
   /** Reads events generically. If entityType or entityId is not specified, it
-    * results in table scan. 
+    * results in table scan.
     *
     * @param appName return events of this app
     * @param entityType return events of this entityType
@@ -109,34 +105,37 @@ object LEventStore {
     * @param startTime return events with eventTime >= startTime
     * @param untilTime return events with eventTime < untilTime
     * @param limit Limit number of events. Get all events if None or Some(-1)
-    * @return Iterator[Event]
+    * @return java.util.List[Event]
     */
   def find(
     appName: String,
-    entityType: Option[String] = None,
-    entityId: Option[String] = None,
-    channelName: Option[String] = None,
-    eventNames: Option[Seq[String]] = None,
-    targetEntityType: Option[Option[String]] = None,
-    targetEntityId: Option[Option[String]] = None,
-    startTime: Option[DateTime] = None,
-    untilTime: Option[DateTime] = None,
-    limit: Option[Int] = None,
-    timeout: Duration = defaultTimeout): Iterator[Event] = {
+    entityType: Option[String],
+    entityId: Option[String],
+    channelName: Option[String],
+    eventNames: Option[java.util.List[String]],
+    targetEntityType: Option[Option[String]],
+    targetEntityId: Option[Option[String]],
+    startTime: Option[DateTime],
+    untilTime: Option[DateTime],
+    limit: Option[Integer],
+    timeout: Duration): java.util.List[Event] = {
 
-    val (appId, channelId) = Common.appNameToId(appName, channelName)
+    val eventNamesSeq = eventNames.map(JavaConversions.asScalaBuffer(_).toSeq)
+    val limitInt = limit.map(_.intValue())
 
-    Await.result(eventsDb.futureFind(
-      appId = appId,
-      channelId = channelId,
-      startTime = startTime,
-      untilTime = untilTime,
-      entityType = entityType,
-      entityId = entityId,
-      eventNames = eventNames,
-      targetEntityType = targetEntityType,
-      targetEntityId = targetEntityId,
-      limit = limit), timeout)
+    JavaConversions.seqAsJavaList(
+      LEventStore.find(
+        appName,
+        entityType,
+        entityId,
+        channelName,
+        eventNamesSeq,
+        targetEntityType,
+        targetEntityId,
+        startTime,
+        untilTime,
+        limitInt,
+        timeout
+      ).toSeq)
   }
-
 }
