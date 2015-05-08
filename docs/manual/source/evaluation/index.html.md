@@ -3,7 +3,7 @@ title: ML Tuning and Evaluation
 ---
 
 PredictionIO's evaluation module allows you to streamline the process of
-testing lots of knobs in engine parameters and deploy the best on out
+testing lots of knobs in engine parameters and deploy the best one out
 of it using statisically sound cross-validation methods.
 
 There are two key components:
