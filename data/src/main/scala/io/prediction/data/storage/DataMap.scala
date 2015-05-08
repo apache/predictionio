@@ -19,6 +19,7 @@ import org.json4s._
 import org.json4s.native.JsonMethods.parse
 
 import scala.collection.GenTraversableOnce
+import scala.collection.JavaConversions
 
 /** Exception thrown by DataMap object.
   */
@@ -48,7 +49,7 @@ class DataMap (
     */
   def require(name: String): Unit = {
     if (!fields.contains(name)) {
-      throw new DataMapException(s"The field ${name} is required.")
+      throw new DataMapException(s"The field $name is required.")
     }
   }
 
@@ -72,7 +73,7 @@ class DataMap (
     require(name)
     fields(name) match {
       case JNull => throw new DataMapException(
-        s"The required field ${name} cannot be null.")
+        s"The required field $name cannot be null.")
       case x: JValue => x.extract[T]
     }
   }
@@ -99,6 +100,42 @@ class DataMap (
     */
   def getOrElse[T: Manifest](name: String, default: T): T = {
     getOpt[T](name).getOrElse(default)
+  }
+
+  /** Java-friendly method for getting the value of a property. Return null if the
+    * property does not exist.
+    *
+    * @tparam T The type of the property value
+    * @param name The property name
+    * @param clazz The class of the type of the property value
+    * @return Return the property value of type T
+    */
+  def get[T](name: String, clazz: java.lang.Class[T]): T = {
+    val manifest =  new Manifest[T] {
+      override def erasure = clazz
+      override def runtimeClass: Class[_] = clazz
+    }
+
+    fields.get(name) match {
+      case None => null.asInstanceOf[T]
+      case Some(JNull) => null.asInstanceOf[T]
+      case Some(x) => x.extract[T](formats, manifest)
+    }
+  }
+
+  /** Java-friendly method for getting a list of values of a property. Return null if the
+    * property does not exist.
+    *
+    * @param name The property name
+    * @return Return the list of property values
+    */
+  def getStringList(name: String): java.util.List[String] = {
+    fields.get(name) match {
+      case None => null
+      case Some(JNull) => null
+      case Some(x) =>
+        JavaConversions.seqAsJavaList(x.extract[List[String]](formats, manifest[List[String]]))
+    }
   }
 
   /** Return a new DataMap with elements containing elements from the left hand
@@ -151,17 +188,14 @@ class DataMap (
   }
 
   override
-  def toString: String = s"DataMap(${fields})"
+  def toString: String = s"DataMap($fields)"
 
   override
-  def hashCode: Int = (41 + fields.hashCode)
+  def hashCode: Int = 41 + fields.hashCode
 
   override
   def equals(other: Any): Boolean = other match {
-    case that: DataMap => {
-      (that.canEqual(this)) &&
-      (this.fields.equals(that.fields))
-    }
+    case that: DataMap => that.canEqual(this) && this.fields.equals(that.fields)
     case _ => false
   }
 
