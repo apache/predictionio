@@ -23,6 +23,9 @@ import org.joda.time.DateTime
 
 import scala.collection.JavaConversions
 
+/** This Java-friendly object provides a set of operation to access Event Store
+  * with Spark's parallelization
+  */
 object PJavaEventStore {
 
   /** Read events from Event Store

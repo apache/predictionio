@@ -15,11 +15,14 @@
 
 package io.prediction.data.store
 
+/** Used by Java-based engines to mock Some and None */
 object JavaOptionHelper {
+  /** Mimics a None from Java-based engine */
   def none[T]: Option[T] = {
     Option(null.asInstanceOf[T])
   }
 
+  /** Mimics a Some from Java-based engine */
   def some[T](value: T): Option[T] = {
     Some(value)
   }

@@ -17,18 +17,18 @@ package io.prediction.e2.evaluation
 import scala.reflect.ClassTag
 import org.apache.spark.rdd.RDD
 
+/** Common helper functions */
 object CommonHelperFunctions {
 
-  /**
-   * Split a data set into evalK folds for crossvalidation.
-   * Apply to data sets supplied to evaluation.
-   *
-   * @tparam D Data point class.
-   * @tparam TD Training data class.
-   * @tparam EI Evaluation Info class.
-   * @tparam Q Input query class.
-   * @tparam A Actual value class.
-   */
+  /** Split a data set into evalK folds for crossvalidation.
+    * Apply to data sets supplied to evaluation.
+    *
+    * @tparam D Data point class.
+    * @tparam TD Training data class.
+    * @tparam EI Evaluation Info class.
+    * @tparam Q Input query class.
+    * @tparam A Actual value class.
+    */
 
   def splitData[D: ClassTag, TD, EI, Q, A](
 

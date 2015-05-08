@@ -84,7 +84,7 @@ object LEventAggregator {
     }
   }
 
-  /** Event names that control aggregation: $set, $unset, and $delete */
+  /** Event names that control aggregation: \$set, \$unset, and \$delete */
   val eventNames = List("$set", "$unset", "$delete")
 
   private

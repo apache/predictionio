@@ -15,10 +15,17 @@
 
 package io.prediction.data
 
-/** Provides convenient tools to interface with the Event Store from within a
-  * prediction engine. The common entry point is [[Storage]].
+/** If you are an engine developer, please refer to the [[store]] package.
+  *
+  * This package provides convenient access to underlying data access objects.
+  * The common entry point is [[Storage]].
   *
   * Developer APIs are available to advanced developers to add support of other
   * data store backends.
   */
 package object storage {}
+
+/** Provides high level interfaces to the Event Store from within a prediction
+  * engine.
+  */
+package object store {}

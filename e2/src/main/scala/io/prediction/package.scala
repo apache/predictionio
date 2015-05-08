@@ -13,10 +13,9 @@
   * limitations under the License.
   */
 
-package io.prediction.e2
+package io.prediction
 
-/** Collection of engine libraries that have no dependency on PredictionIO */
-package object engine {}
-
-/** Collection of evaluation libraries that have no dependency on PredictionIO */
-package object evaluation {}
+/** Independent library of code that is useful for engine development and
+  * evaluation
+  */
+package object e2 {}
