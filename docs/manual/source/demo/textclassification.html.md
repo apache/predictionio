@@ -145,7 +145,7 @@ Now, refer to the quick start guide for the commands used to import your data. O
 Importing data.....
 Imported 11314 events.
 Importing stop words.....
-Imported 318 stop words.
+Imported 350 stop words.
 ```
 
  This data import process greatly exemplifies the advantages of using PredictionIO's Event Server for data storage. It allows you to import data from different sources and store it using the same server. The [event-style format](https://docs.prediction.io/datacollection/eventapi/) allows for a standardized method of storing data which facilitates the process of reading in your data and incorporating different data sources. For example, the provided data script imports both the text observations and stop words which are going to inevitably differ in nature. In short, PredictionIO's Event Server is yet another abstraction that exacerbates your development productivity, as well as the ability to focus on the modeling stages involved in building your predictive engine.
@@ -206,12 +206,18 @@ This section deals with the aspect of transforming the data you read in the prev
 
 ### Preparator : Data Processing in DASE
 
-Recall that the Preparator stage is used for doing any prior data processing needed to fit a predictive model. In line with the separation of concerns, the Data Model implementation, PreparedData, is built to do the heavy lifting needed for this data processing. The Preparator must simply implement the prepare method which outputs an object of type PreparedData. This requires you to specify two n-gram window components (defined in the following section), a custom class of parameters for the Preparator component, PreparatorParams, must be incorporated. 
+Recall that the Preparator stage is used for doing any prior data processing needed to fit a predictive model. In line with the separation of concerns, the Data Model implementation, PreparedData, is built to do the heavy lifting needed for this data processing. The Preparator must simply implement the prepare method which outputs an object of type PreparedData. This requires you to specify two n-gram window components, and two inverse i.d.f. window components (these terms will be defined in the following section). Therefore a custom class of parameters for the Preparator component, PreparatorParams, must be incorporated. The code defining the full Preparator component is given below:
 
 ```scala
+// 1. Initialize Preparator parameters. Recall that for our data
+// representation we are only required to input the n-gram window
+// components.
+
 case class PreparatorParams(
   nMin: Int,
-  nMax: Int
+  nMax: Int,
+  inverseIdfMin : Double,
+  inverseIdfMax : Double
 ) extends Params
 
 
@@ -222,35 +228,32 @@ class Preparator(pp: PreparatorParams) extends PPreparator[TrainingData, Prepare
 
   // Prepare your training data.
   def prepare(sc : SparkContext, td: TrainingData): PreparedData = {
-    new PreparedData(new DataModel(td, pp.nMin, pp.nMax))
+    new PreparedData(td, pp.nMin, pp.nMax, pp.inverseIdfMin, pp. inverseIdfMax)
   }
 }
 
-
-// Define PreparedData, a wrapper for our data model.
-class PreparedData(
-  val dataModel: DataModel
-) extends Serializable
 ```
 
 The simplicity of this stage implementation truly exemplifies one of the benefits of using the PredictionIO platform. For developers, it is easy to incorporate different classes and tools into the DASE framework so that the process of creating an engine is greatly simplified which helps increase your productivity. For data scientists, the load of implementation details you need to worry about is minimized so that you can focus on what is important to you: training a good predictive model. 
 
-The following section actually explains the meat of the conversion process from text documents to feature vectors.
+The following section explains the class PreparedData, which actually handles the transformation of text documents to feature vectors.
 
 
 ### Data Model : Ideas Behind the PreparedData Implementation
 
-For this Text Classification Engine, the Data Model abstraction is implemented in Prepared Data which takes the parameters td, nMin, nMax, where td is an object of class TrainingData. The other two parameters are the components of the model n-gram window which will be defined shortly. It will be easier to explain the preparation process with an example, so consider the document:
+For this Text Classification Engine, the Data Model abstraction is implemented in Prepared Data which takes the parameters td, nMin, nMax, inverseIdfMin, and inverseIdfMax, where td is an object of class TrainingData. The other four parameters are the components of the model n-gram window and inverse i.d.f. window, which will be defined shortly. 
+
+It will be easier to explain the preparation process with an example, so consider the document \\(d\\):
 
 `"Hello, my name is Marco."`
 
-The first thing you need to do is break up D into an array of "allowed tokens." You can think of a token as a terminating sequence of characters that exist in a document (think of a word in a sentence). For example, the list of tokens that appear in D is:
+The first thing you need to do is break up \\(d\\) into an array of "allowed tokens." You can think of a token as a terminating sequence of characters that exist in a document (think of a word in a sentence). For example, the list of tokens that appear in \\(d\\) is:
 
 ```scala
 val A = Array("Hello", ",", "my",  "name", "is", "Marco", ".")
 ```
 
-Recall that a set of stop words was also imported in the previous sections. This set of stop words contains all the words (or tokens) that you do not want to include once documents are tokenized. Those tokens that appear in D and are not contained in the set of stop words will be called allowed tokens. So, if the set of stop words is `{"my", "is"}`, then the list of allowed tokens appearing in D is:
+Recall that a set of stop words was also imported in the previous sections. This set of stop words contains all the words (or tokens) that you do not want to include once documents are tokenized. Those tokens that appear in \\(d\\) and are not contained in the set of stop words will be called allowed tokens. So, if the set of stop words is `{"my", "is"}`, then the list of allowed tokens appearing in \\(d\\) is:
 
 ```scala
 val A = Array("Hello", ",",  "name", "Marco", ".")
@@ -272,7 +275,7 @@ All of this functionality is implemented in the private method tokenize of the D
 ...
 ```
 
-Note that all letters are transformed to lowercase, so that the tokens `"Hello"` and `"hello"` are considered to be equivalent. This is a **modeling choice**, and is something that can be removed if desired (it will affect your feature extraction). Another modeling choice one could make is to remove all punctuation.
+Note that all letters are transformed to lowercase, so that the tokens `"Hello"` and `"hello"` are considered to be equivalent. This is a **modeling choice**, and is something that can be removed if desired (it will affect your feature extraction process). Another modeling choice that is made implicitly in the default template settings is to remove the possibility of having punctuation characters as tokens. This, however, is actually dealt with when importing the data, since individual punctuation characters are included in the default set of stop words.
 
 The next step in the data representation is to take the array of allowed tokens and extract a set of n-grams and a corresponding value indicating the number of times a given n-gram appears. The set of n-grams for n equal to 1 and 2 in the running example is the set of elements of the form `[A(`\\(i\\)`)]` and `[A(`\\(j\\)`), A(`\\(j + 1\\)`)]`, respectively. In the general case, the set of n-grams extracted from an array of allowed tokens `A` will be of the form `[A(`\\(i\\)`), A(`\\(i + 1\\)`), ..., A(`\\(i + n - 1\\)`)]` for \\(i = 0, 1, 2, ...,\\) `A.size` \\(- n\\). The n-gram window is an interval of integers for which you want to extract grams for each element in the interval. nMin and nMax are the smallest and largest integer values in the interval, respectively. The default model only includes unigrams and bigrams (\\(n = 1\\) and \\(n = 2\\), respectively).
 
@@ -300,7 +303,17 @@ The n-gram extraction and counting procedure is carried out by the private metho
 ...
 ```
 
-The next step is, once all of the observations have been hashed, to collect all n-grams and compute their corresponding [t.f.-i.d.f. value](http://en.wikipedia.org/wiki/Tf%E2%80%93idf). The t.f.-i.d.f. transformation is a transformation that helps to give less weight to those n-grams that appear with high frequency across all documents, and vice versa. This helps to leverage the predictive power of those words that appear rarely, but can make a big difference in the categorization of a given article. The private method createUniverse outputs an RDD of pairs, where an n-gram is matched with it's i.d.f. value. This RDD is collected as a HashMap (this will be used in future RDD computations so that this object should be serializable), and then create a second hash map with n-grams associated to indices. This gives a global index to each n-gram and ensures that each document observation is vectorized in the same manner. 
+The next step is, once all of the observations have been hashed, to collect all n-grams and compute their corresponding [t.f.-i.d.f. value](http://en.wikipedia.org/wiki/Tf%E2%80%93idf). The t.f.-i.d.f. transformation is defined for n-grams, and helps to give less weight to those n-grams that appear with high frequency across all documents, and vice versa. This helps to leverage the predictive power of those words that appear rarely, but can make a big difference in the categorization of a given text document. The private method createUniverse outputs an RDD of pairs, where an n-gram \\(g\\) is matched with its i.d.f. value. This RDD is collected as a HashMap (this will be used in future RDD computations so that this object should be serializable).
+
+Now, for a corpus (or set) of documents \\(D\\), the i.d.f. value of an n-gram \\(g\\) is defined as
+
+$$
+\text{idf}(g) = \log\left(\frac{|D|}{|\{d \in D : g \\ \text{is extracted from} \\ d\}|}\right).
+$$
+
+Here \\(|S|\\) denotes the number of elements contained in a set \\(S\\). Plainly speaking, this term approaches 1 as the number of documents in the corpus from which \\(g\\) is extracted increases, and grows larger than 1 as this number decreases. Hence the inverse i.d.f. of an n-gram \\(g\\) \\(\left(\frac{1}{\text{idf}(g)}\right)\\) will lie between 0 and 1. Those n-grams whose inverse i.d.f. value is close to 0 rarely appear in any corpus documents, and those with value closely to 1 appear in a large proportion of the documents. The inverse i.d.f. window is defined as an interval \\([a, b]\\), \\(0 \leq a < b \leq 1\\), which restricts the n-grams we choose as features to those with inverse i.d.f. values lying in this interval. That is, all n-grams whose inverse i.d.f. less than a or greater than b, our inverse i.d.f. window components, are excluded. The PreparedData class parameters inverseIdfMin and inverseIdfMax values correspond to \\(a\\) and \\(b\\), respectively. 
+
+Once these n-grams are filtered out of the i.d.f. HashMap created, a second hash map is created with n-grams associated to indices. This gives a global index to each n-gram and ensures that each document observation is vectorized in the same manner. 
 
 ```scala
 ...
@@ -313,8 +326,14 @@ The next step is, once all of the observations have been hashed, to collect all 
       td.data
       .map(e => hash(tokenize(e.text)))
     ).collect: _*
+  // Cut out n-grams with inverse i.d.f. greater/less than or equal to min/max
+  // cutoff.
+  ).filter(
+    e => (1 / e._2) >= inverseIdfMin && (1 / e._2) <= inverseIdfMax
   )
+
 ...
+
   // Create n-gram to global index hashmap:
   //    Map(n-gram -> global index)
   private val globalIndex : HashMap[String, Int] = HashMap(
@@ -348,6 +367,8 @@ The last two functions that will be mentioned are the methods you will actually 
 
 }
 ```
+
+The last and final object implemented in this class simply creates a Map with keys being class labels and values, the corresponding category.
 
 
 
