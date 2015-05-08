@@ -90,7 +90,9 @@ $ python import_eventserver.py --access_key access
   "preparator": {
     "params": {
       "nMin": 1,
-      "nMax": 2
+      "nMax": 2,
+      "inverseIdfMin": 0.15,
+      "inverseIdfMax": 0.85
     }
   },
   "algorithms": [
@@ -308,7 +310,7 @@ The next step is, once all of the observations have been hashed, to collect all 
 Now, for a corpus (or set) of documents \\(D\\), the i.d.f. value of an n-gram \\(g\\) is defined as
 
 $$
-\text{idf}(g) = \log\left(\frac{|D|}{|\{d \in D : g \\ \text{is extracted from} \\ d\}|}\right).
+\text{idf}(g) = \log\left(\frac{|D|}{|\\{d \in D : g \\ \text{is extracted from} \\ d\\}|}\right).
 $$
 
 Here \\(|S|\\) denotes the number of elements contained in a set \\(S\\). Plainly speaking, this term approaches 1 as the number of documents in the corpus from which \\(g\\) is extracted increases, and grows larger than 1 as this number decreases. Hence the inverse i.d.f. of an n-gram \\(g\\) \\(\left(\frac{1}{\text{idf}(g)}\right)\\) will lie between 0 and 1. Those n-grams whose inverse i.d.f. value is close to 0 rarely appear in any corpus documents, and those with value closely to 1 appear in a large proportion of the documents. The inverse i.d.f. window is defined as an interval \\([a, b]\\), \\(0 \leq a < b \leq 1\\), which restricts the n-grams we choose as features to those with inverse i.d.f. values lying in this interval. That is, all n-grams whose inverse i.d.f. less than a or greater than b, our inverse i.d.f. window components, are excluded. The PreparedData class parameters inverseIdfMin and inverseIdfMax values correspond to \\(a\\) and \\(b\\), respectively. 
