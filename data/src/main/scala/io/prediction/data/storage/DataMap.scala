@@ -21,20 +21,22 @@ import org.json4s.native.JsonMethods.parse
 import scala.collection.GenTraversableOnce
 import scala.collection.JavaConversions
 
-/** Exception thrown by DataMap object.
+/** Exception class for [[DataMap]]
+  *
+  * @group Event Data
   */
-private[prediction] case class DataMapException(msg: String, cause: Exception)
+case class DataMapException(msg: String, cause: Exception)
   extends Exception(msg, cause) {
-
   def this(msg: String) = this(msg, null)
 }
 
 /** A DataMap stores properties of the event or entity. Internally it is a Map
   * whose keys are property names and values are corresponding JSON values
-  * respectively. Use the get() method to retrieve the value of mandatory
-  * property or use getOpt() to retrieve the value of the optional property.
+  * respectively. Use the [[get]] method to retrieve the value of a mandatory
+  * property or use [[getOpt]] to retrieve the value of an optional property.
   *
   * @param fields Map of property name to JValue
+  * @group Event Data
   */
 class DataMap (
   val fields: Map[String, JValue]
@@ -202,7 +204,10 @@ class DataMap (
   def canEqual(other: Any): Boolean = other.isInstanceOf[DataMap]
 }
 
-/** Companion object of the [[DataMap]] class. */
+/** Companion object of the [[DataMap]] class
+  *
+  * @group Event Data
+  */
 object DataMap {
   /** Create an empty DataMap
     * @return an empty DataMap

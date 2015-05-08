@@ -27,6 +27,8 @@ import scala.reflect.runtime.universe._
   * '''StorageClient''' as the class name. PredictionIO storage layer will look
   * for this class when it instantiates the actual backend for use by higher
   * level storage access APIs.
+  *
+  * @group Storage System
   */
 @DeveloperApi
 trait BaseStorageClient {
@@ -64,6 +66,8 @@ trait BaseStorageClient {
   *                   - TYPE -> jdbc
   *                   - USERNAME -> abc
   *                   - PASSWORD -> xyz
+  *
+  * @group Storage System
   */
 @DeveloperApi
 case class StorageClientConfig(
@@ -76,6 +80,7 @@ case class StorageClientConfig(
   *
   * @param message Exception error message
   * @param cause The underlying exception that caused the exception
+  * @group Storage System
   */
 @DeveloperApi
 class StorageClientException(message: String, cause: Throwable)
@@ -89,6 +94,8 @@ private[prediction] case class StorageError(message: String)
   *
   * @param message Exception error message
   * @param cause The underlying exception that caused the exception
+  *
+  * @group Storage System
   */
 @DeveloperApi
 class StorageException(message: String, cause: Throwable)
@@ -99,6 +106,8 @@ class StorageException(message: String, cause: Throwable)
 
 /** Backend-agnostic data storage layer with lazy initialization. Use this
   * object when you need to interface with Event Store in your engine.
+  *
+  * @group Storage System
   */
 object Storage extends Logging {
   private case class ClientMeta(

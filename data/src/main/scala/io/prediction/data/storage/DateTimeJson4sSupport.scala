@@ -15,25 +15,32 @@
 
 package io.prediction.data.storage
 
-import io.prediction.data.{ Utils => DataUtils }
-
-import org.json4s._
-import org.json4s.native.Serialization.{ read, write }
-
+import io.prediction.annotation.DeveloperApi
+import io.prediction.data.{Utils => DataUtils}
 import org.joda.time.DateTime
+import org.json4s._
 
-private[prediction] object DateTimeJson4sSupport {
+/** :: DeveloperApi ::
+  * JSON4S serializer for Joda-Time
+  *
+  * @group Common
+  */
+@DeveloperApi
+object DateTimeJson4sSupport {
 
   @transient lazy implicit val formats = DefaultFormats
 
+  /** Serialize DateTime to JValue */
   def serializeToJValue: PartialFunction[Any, JValue] = {
     case d: DateTime => JString(DataUtils.dateTimeToString(d))
   }
 
+  /** Deserialize JValue to DateTime */
   def deserializeFromJValue: PartialFunction[JValue, DateTime] = {
     case jv: JValue => DataUtils.stringToDateTime(jv.extract[String])
   }
 
+  /** Custom JSON4S serializer for Joda-Time */
   class Serializer extends CustomSerializer[DateTime](format => (
     deserializeFromJValue, serializeToJValue))
 
