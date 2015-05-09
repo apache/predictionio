@@ -13,7 +13,14 @@
   * limitations under the License.
   */
 
-package io
+package io.prediction.data
 
-/** PredictionIO Scala API */
-package object prediction {}
+/** If you are an engine developer, please refer to the [[store]] package.
+  *
+  * This package provides convenient access to underlying data access objects.
+  * The common entry point is [[Storage]].
+  *
+  * Developer APIs are available to advanced developers to add support of other
+  * data store backends.
+  */
+package object storage {}

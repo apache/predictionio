@@ -13,9 +13,9 @@
   * limitations under the License.
   */
 
-package io.prediction
+package io.prediction.data
 
-/** Provides data access for PredictionIO and any engines running on top of
-  * PredictionIO
+/** Provides high level interfaces to the Event Store from within a prediction
+  * engine.
   */
-package object data {}
+package object store {}
