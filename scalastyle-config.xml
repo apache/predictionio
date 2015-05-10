@@ -68,7 +68,7 @@ limitations under the License.
            class="org.scalastyle.scalariform.PackageObjectNamesChecker"
            enabled="true">
         <parameters>
-            <parameter name="regex"><![CDATA[^[a-z][A-Za-z]*$]]></parameter>
+            <parameter name="regex"><![CDATA[^[a-z_][a-z0-9]*$]]></parameter>
         </parameters>
     </check>
     <check level="error"

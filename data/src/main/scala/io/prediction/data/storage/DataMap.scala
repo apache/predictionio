@@ -114,7 +114,7 @@ class DataMap (
     */
   def get[T](name: String, clazz: java.lang.Class[T]): T = {
     val manifest =  new Manifest[T] {
-      override def erasure = clazz
+      override def erasure: Class[_] = clazz
       override def runtimeClass: Class[_] = clazz
     }
 
