@@ -237,3 +237,47 @@ supported.
 
     HDFS path at where models are stored, e.g.
     `PIO_STORAGE_SOURCES_HDFS_PATH=/mymodels`
+
+
+## Adding Support of Other Backends
+
+It is quite straightforward to implement support of other backends. A good
+starting point is to reference the JDBC implementation inside the
+[io.prediction.data.storage.jdbc
+package](https://github.com/PredictionIO/PredictionIO/tree/develop/data/src/main/scala/io/prediction/data/storage/jdbc).
+
+Contributions of different backends implementation is highly encouraged. To
+start contributing, please refer to [this guide](/community/contribute-code/).
+
+
+### Deploying Your Custom Backend Support as a Plugin
+
+It is possible to deploy your custom backend implementation as a standalone JAR
+apart from the main PredictionIO binary distribution. The following is an
+outline of how this can be achieved.
+
+1.  Create an SBT project with a library dependency on PredictionIO's data
+    access base traits (inside the `data` artifact).
+
+2.  Implement traits that you intend to support, and package everything into a
+    big fat JAR (e.g. sbt-assembly).
+
+3.  Create a directory named `plugins` inside PredictionIO binary installation.
+
+4.  Copy the JAR from step 2 to `plugins`.
+
+5.  In storage configuration, specify `TYPE` as your complete package name. As
+    an example, if you have implemented all your traits under the package name
+    `org.mystorage.jdbc`, use something like
+
+    ```shell
+    PIO_STORAGE_SOURCES_MYJDBC_TYPE=org.mystorage.jdbc
+    ...
+    PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=MYJDBC
+    ```
+
+    to instruct PredictionIO to pick up `StorageClient` from the appropriate
+    package.
+
+6.  Now you should be able to use your custom source and assign it to different
+    repositories as you wish.
