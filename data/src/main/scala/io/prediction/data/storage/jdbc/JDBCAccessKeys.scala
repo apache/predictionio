@@ -60,18 +60,16 @@ class JDBCAccessKeys(client: String, config: StorageClientConfig, prefix: String
       map(resultToAccessKey).list().apply()
   }
 
-  def update(accessKey: AccessKey): Boolean = DB localTx { implicit session =>
+  def update(accessKey: AccessKey): Unit = DB localTx { implicit session =>
     sql"""
     UPDATE $tableName SET
       appid = ${accessKey.appid},
       events = ${accessKey.events.mkString(",")}
     WHERE accesskey = ${accessKey.key}""".update().apply()
-    true
   }
 
-  def delete(key: String): Boolean = DB localTx { implicit session =>
+  def delete(key: String): Unit = DB localTx { implicit session =>
     sql"DELETE FROM $tableName WHERE accesskey = $key".update().apply()
-    true
   }
 
   /** Convert JDBC results to [[AccessKey]] */

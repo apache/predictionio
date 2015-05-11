@@ -75,6 +75,5 @@ trait Channels {
   def getByAppid(appid: Int): Seq[Channel]
 
   /** Delete a [[Channel]] */
-  def delete(id: Int): Boolean
-
+  def delete(id: Int): Unit
 }

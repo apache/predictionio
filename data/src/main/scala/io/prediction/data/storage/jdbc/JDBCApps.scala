@@ -74,15 +74,13 @@ class JDBCApps(client: String, config: StorageClientConfig, prefix: String)
     ).list().apply()
   }
 
-  def update(app: App): Boolean = DB localTx { implicit session =>
+  def update(app: App): Unit = DB localTx { implicit session =>
     sql"""
     update $tableName set name = ${app.name}, description = ${app.description}
     where id = ${app.id}""".update().apply()
-    true
   }
 
-  def delete(id: Int): Boolean = DB localTx { implicit session =>
+  def delete(id: Int): Unit = DB localTx { implicit session =>
     sql"DELETE FROM $tableName WHERE id = $id".update().apply()
-    true
   }
 }

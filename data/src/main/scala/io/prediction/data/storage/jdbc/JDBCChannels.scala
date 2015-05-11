@@ -53,9 +53,8 @@ class JDBCChannels(client: String, config: StorageClientConfig, prefix: String)
       map(resultToChannel).list().apply()
   }
 
-  def delete(id: Int): Boolean = DB localTx { implicit session =>
+  def delete(id: Int): Unit = DB localTx { implicit session =>
     sql"DELETE FROM $tableName WHERE id = $id".update().apply()
-    true
   }
 
   def resultToChannel(rs: WrappedResultSet): Channel = {

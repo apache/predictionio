@@ -102,14 +102,12 @@ class ESChannels(client: Client, config: StorageClientConfig, index: String)
     }
   }
 
-  def delete(id: Int): Boolean = {
+  def delete(id: Int): Unit = {
     try {
       client.prepareDelete(index, estype, id.toString).get
-      true
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)
-        false
     }
   }
 

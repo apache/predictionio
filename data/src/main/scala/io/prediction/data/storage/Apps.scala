@@ -51,8 +51,8 @@ trait Apps {
   def getAll(): Seq[App]
 
   /** Update an [[App]] */
-  def update(app: App): Boolean
+  def update(app: App): Unit
 
   /** Delete an [[App]] */
-  def delete(id: Int): Boolean
+  def delete(id: Int): Unit
 }

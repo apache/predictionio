@@ -51,8 +51,8 @@ trait AccessKeys {
   def getByAppid(appid: Int): Seq[AccessKey]
 
   /** Update an [[AccessKey]] */
-  def update(k: AccessKey): Boolean
+  def update(k: AccessKey): Unit
 
   /** Delete an [[AccessKey]] */
-  def delete(k: String): Boolean
+  def delete(k: String): Unit
 }

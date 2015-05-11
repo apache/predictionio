@@ -59,7 +59,8 @@ class ESApps(client: Client, config: StorageClientConfig, index: String)
       }
       else app.id
     val realapp = app.copy(id = id)
-    if (update(realapp)) Some(id) else None
+    update(realapp)
+    Some(id)
   }
 
   def get(id: Int): Option[App] = {
@@ -105,26 +106,22 @@ class ESApps(client: Client, config: StorageClientConfig, index: String)
     }
   }
 
-  def update(app: App): Boolean = {
+  def update(app: App): Unit = {
     try {
       val response = client.prepareIndex(index, estype, app.id.toString).
         setSource(write(app)).get()
-      true
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)
-        false
     }
   }
 
-  def delete(id: Int): Boolean = {
+  def delete(id: Int): Unit = {
     try {
       client.prepareDelete(index, estype, id.toString).get
-      true
     } catch {
       case e: ElasticsearchException =>
         error(e.getMessage)
-        false
     }
   }
 }
