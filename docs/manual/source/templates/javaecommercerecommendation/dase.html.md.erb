@@ -91,8 +91,7 @@ from the data store and prepare them for Algorithm.
 ### Data Source
 
 In ***DataSource*** class, the `readTraining`
-method reads and selects data from the *Event Store*
-(data store of the *Event Server*). It returns `TrainingData`.
+method reads and selects data from the *Event Store*. It returns `TrainingData`.
 
 ```java
   public TrainingData readTraining(SparkContext sc) {
@@ -129,13 +128,13 @@ In ***engine.json***:
 }
 ```
 
-In `readTraining()`, `PEventStore` is an object which provides function to access data that is collected by PredictionIO Event Server.
+In `readTraining()`, `PJavaEventStore` is an object which provides function to access data that is collected by PredictionIO Event Server.
 
 This E-Commerce Recommendation Engine Template requires "user" and "item" entities that are set by events.
 
 `PEventStore.aggregateProperties(...)` aggregates properties of the `user` and `item` that are set, unset, or deleted by special events **$set**, **$unset** and **$delete**. Please refer to [Event API](/datacollection/eventapi/#note-about-properties) for more details of using these events.
 
-The following code aggregates the properties of `user` and then map each result to a `User()` object.
+The following code aggregates the properties of `user` and then map each result to a `User` object.
 
 ```java
 
@@ -190,7 +189,7 @@ Similarly, the following code aggregates `item` properties and then map each res
 
 ```
 
-`PEventStore.find(...)` specifies the events that you want to read. In this case, "user view item" and "user buy item" events are read
+`PJavaEventStore.find(...)` specifies the events that you want to read. In this case, "user view item" and "user buy item" events are read
 
 ```java
 
@@ -266,7 +265,7 @@ takes `TrainingData` as its input and performs any
 necessary feature selection and data processing tasks. At the end, it returns
 `PreparedData` which should contain the data *Algorithm* needs.
 
-By default, `prepare` simply includes the unprocessed `TrainingData` data to `PreparedData`:
+By default, `prepare` simply includes the unprocessed `TrainingData` in `PreparedData`:
 
 ```java
 public class Preparator extends PPreparator<TrainingData, PreparedData> {
