@@ -21,8 +21,10 @@ import io.prediction.data.storage.EngineInstances
 import io.prediction.data.storage.StorageClientConfig
 import scalikejdbc._
 
+/** JDBC implementation of [[EngineInstances]] */
 class JDBCEngineInstances(client: String, config: StorageClientConfig, prefix: String)
   extends EngineInstances with Logging {
+  /** Database table name for this data access object */
   val tableName = JDBCUtils.prefixTableName(prefix, "engineinstances")
   DB autoCommit { implicit session =>
     sql"""
@@ -170,6 +172,7 @@ class JDBCEngineInstances(client: String, config: StorageClientConfig, prefix: S
     sql"DELETE FROM $tableName WHERE id = $id".update().apply()
   }
 
+  /** Convert JDBC results to [[EngineInstance]] */
   def resultToEngineInstance(rs: WrappedResultSet): EngineInstance = {
     EngineInstance(
       id = rs.string("id"),

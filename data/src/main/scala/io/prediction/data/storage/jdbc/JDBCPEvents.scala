@@ -30,6 +30,7 @@ import org.json4s.JObject
 import org.json4s.native.Serialization
 import scalikejdbc._
 
+/** JDBC implementation of [[PEvents]] */
 class JDBCPEvents(client: String, config: StorageClientConfig, namespace: String) extends PEvents {
   @transient private implicit lazy val formats = org.json4s.DefaultFormats
   def find(

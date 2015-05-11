@@ -21,8 +21,10 @@ import io.prediction.data.storage.EngineManifests
 import io.prediction.data.storage.StorageClientConfig
 import scalikejdbc._
 
+/** JDBC implementation of [[EngineManifests]] */
 class JDBCEngineManifests(client: String, config: StorageClientConfig, prefix: String)
   extends EngineManifests with Logging {
+  /** Database table name for this data access object */
   val tableName = JDBCUtils.prefixTableName(prefix, "enginemanifests")
   DB autoCommit { implicit session =>
     sql"""
@@ -96,6 +98,7 @@ class JDBCEngineManifests(client: String, config: StorageClientConfig, prefix: S
       update().apply()
   }
 
+  /** Convert JDBC results to [[EngineManifest]] */
   def resultToEngineManifest(rs: WrappedResultSet): EngineManifest = {
     EngineManifest(
       id = rs.string("id"),

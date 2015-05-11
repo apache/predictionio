@@ -23,9 +23,10 @@ import scalikejdbc._
 
 import scala.util.Random
 
-/** JDBC implementation of AccessKeys. */
+/** JDBC implementation of [[AccessKeys]] */
 class JDBCAccessKeys(client: String, config: StorageClientConfig, prefix: String)
   extends AccessKeys with Logging {
+  /** Database table name for this data access object */
   val tableName = JDBCUtils.prefixTableName(prefix, "accesskeys")
   DB autoCommit { implicit session =>
     sql"""
@@ -73,6 +74,7 @@ class JDBCAccessKeys(client: String, config: StorageClientConfig, prefix: String
     true
   }
 
+  /** Convert JDBC results to [[AccessKey]] */
   def resultToAccessKey(rs: WrappedResultSet): AccessKey = {
     AccessKey(
       key = rs.string("accesskey"),

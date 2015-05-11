@@ -21,8 +21,10 @@ import io.prediction.data.storage.Channels
 import io.prediction.data.storage.StorageClientConfig
 import scalikejdbc._
 
+/** JDBC implementation of [[Channels]] */
 class JDBCChannels(client: String, config: StorageClientConfig, prefix: String)
   extends Channels with Logging {
+  /** Database table name for this data access object */
   val tableName = JDBCUtils.prefixTableName(prefix, "channels")
   DB autoCommit { implicit session =>
     sql"""
@@ -60,21 +62,6 @@ class JDBCChannels(client: String, config: StorageClientConfig, prefix: String)
       case e: Exception =>
         error(e.getMessage, e)
         Seq()
-    }
-  }
-
-  def update(channel: Channel): Boolean = DB localTx { implicit session =>
-    try {
-      sql"""
-      UPDATE $tableName SET
-        name = ${channel.name},
-        appid = ${channel.appid}
-      WHERE id = ${channel.id}""".update().apply()
-      true
-    } catch {
-      case e: Exception =>
-        error(e.getMessage, e)
-        false
     }
   }
 

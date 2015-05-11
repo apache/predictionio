@@ -21,6 +21,7 @@ import io.prediction.data.storage.StorageClientConfig
 import io.prediction.data.storage.StorageClientException
 import scalikejdbc._
 
+/** JDBC implementation of [[BaseStorageClient]] */
 class StorageClient(val config: StorageClientConfig)
   extends BaseStorageClient with Logging {
   override val prefix = "JDBC"
@@ -39,5 +40,6 @@ class StorageClient(val config: StorageClientConfig)
     config.properties("URL"),
     config.properties("USERNAME"),
     config.properties("PASSWORD"))
+  /** JDBC connection URL. Connections are managed by ScalikeJDBC. */
   val client = config.properties("URL")
 }

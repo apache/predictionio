@@ -21,8 +21,10 @@ import io.prediction.data.storage.EvaluationInstances
 import io.prediction.data.storage.StorageClientConfig
 import scalikejdbc._
 
+/** JDBC implementations of [[EvaluationInstances]] */
 class JDBCEvaluationInstances(client: String, config: StorageClientConfig, prefix: String)
   extends EvaluationInstances with Logging {
+  /** Database table name for this data access object */
   val tableName = JDBCUtils.prefixTableName(prefix, "evaluationinstances")
   DB autoCommit { implicit session =>
     sql"""
@@ -141,6 +143,7 @@ class JDBCEvaluationInstances(client: String, config: StorageClientConfig, prefi
     sql"DELETE FROM $tableName WHERE id = $id".update().apply()
   }
 
+  /** Convert JDBC results to [[EvaluationInstance]] */
   def resultToEvaluationInstance(rs: WrappedResultSet): EvaluationInstance = {
     EvaluationInstance(
       id = rs.string("id"),

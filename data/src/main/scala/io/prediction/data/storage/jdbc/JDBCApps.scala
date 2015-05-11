@@ -21,9 +21,10 @@ import io.prediction.data.storage.Apps
 import io.prediction.data.storage.StorageClientConfig
 import scalikejdbc._
 
-/** JDBC implementation of Apps. */
+/** JDBC implementation of [[Apps]] */
 class JDBCApps(client: String, config: StorageClientConfig, prefix: String)
   extends Apps with Logging {
+  /** Database table name for this data access object */
   val tableName = JDBCUtils.prefixTableName(prefix, "apps")
   DB autoCommit { implicit session =>
     sql"""

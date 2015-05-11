@@ -30,11 +30,12 @@ import scalikejdbc._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
+/** JDBC implementation of [[LEvents]] */
 class JDBCLEvents(
     client: String, 
     config: StorageClientConfig, 
     namespace: String) extends LEvents with Logging {
-  implicit val formats = org.json4s.DefaultFormats
+  implicit private val formats = org.json4s.DefaultFormats
 
   def init(appId: Int, channelId: Option[Int] = None): Boolean = {
     DB autoCommit { implicit session =>
@@ -56,7 +57,6 @@ class JDBCLEvents(
       true
     }
   }
-
 
   def remove(appId: Int, channelId: Option[Int] = None): Boolean =
     DB autoCommit { implicit session =>
