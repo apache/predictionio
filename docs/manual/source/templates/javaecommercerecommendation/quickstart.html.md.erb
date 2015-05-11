@@ -1,0 +1,610 @@
+---
+title: Quick Start - E-Commerce Recommendation Engine Template
+---
+
+## Overview
+
+This engine template provides personalized recommendation for e-commerce applications with the following features by default:
+
+- Exclude out-of-stock items
+- Provide recommendation to new users who sign up after the model is trained
+- Recommend unseen items only (configurable)
+- Recommend popular items if no information about the user is available
+
+WARNING: This template requires PredictionIO version >= 0.9.3
+
+
+## Usage
+
+### Event Data Requirements
+
+By default, this template takes the following data from Event Server:
+
+- Users' *view* events
+- Users' *buy* events
+- Items with *categories* properties
+- Constraint *unavailableItems* set events
+
+INFO: This template can easily be customized to consider more user events such as *rate* and *like*.
+
+The *view* events are used as Training Data to train the model. The algorithm has a parameter *unseenOnly*; when this parameter is set to true, the engine would recommend unseen items only. You can specify a list of events which are considered as *seen* events with the algorithm parameter *seenItemEvents*. The default values are *view* and *buy* events, which means that the engine by default recommends un-viewed and un-bought items only. You can also define your own events which are considered as *seen*.
+
+The constraint *unavailableItems* set events are used to exclude a list of unavailable items (such as out of stock) for all users in real time.
+
+### Input Query
+
+- User entity ID
+- Num of items to be recommended
+- List of whitelisted item categories (optional)
+- List of whitelisted item entity IDs (optional)
+- List of blacklisted item entity IDs (optional)
+
+This template also supports blacklist and whitelist. If a whitelist is provided, the engine will include only those products in the recommendation.
+Likewise, if a blacklist is provided, the engine will exclude those products in the recommendation.
+
+### Output PredictedResult
+
+- A ranked list of recommended item entity IDs
+
+
+## 1. Install and Run PredictionIO
+
+<%= partial 'shared/quickstart/install' %>
+
+## 2. Create a new Engine from an Engine Template
+
+<%= partial 'shared/quickstart/create_engine', locals: { engine_name: 'MyECommerceRecommendation', template_name: 'E-Commerce Recommendation Engine Template', template_repo: 'template-java-parallel-ecommercerecommendation' } %>
+
+## 3. Generate an App ID and Access Key
+
+<%= partial 'shared/quickstart/create_app' %>
+
+## 4a. Collecting Data
+
+Next, let's collect training data for this Engine. By default,
+the E-Commerce Recommendation Engine Template supports 2 types of entities and 2 events: **user** and
+**item**; events **view** and **buy**. Each item has a **categories** property, which is a list of category names (String). A user can view and buy an item.
+
+There is also one special **constraint** entity with entity ID **unavailableItems**, which defines a list of unavailable items and is taken into account in real time during serving.
+
+<%= partial 'shared/quickstart/install_sdk' %>
+
+The following is a sample code of using different SDKs to import events of setting user and item properties, user-view-item events, user-buy-item events and setting the constraint **unavailableItems**.
+
+<div class="tabs">
+  <div data-tab="Python SDK" data-lang="python">
+```python
+import predictionio
+
+client = predictionio.EventClient(
+  access_key=<ACCESS KEY>,
+  url=<URL OF EVENTSERVER>,
+  threads=5,
+  qsize=500
+)
+
+# Create a new user
+
+client.create_event(
+  event="$set",
+  entity_type="user",
+  entity_id=<USER_ID>
+)
+
+# Create a new item or set existing item's categories
+
+client.create_event(
+  event="$set",
+  entity_type="item",
+  entity_id=item_id,
+  properties={
+    "categories" : ["<CATEGORY_1>", "<CATEGORY_2>"]
+  }
+)
+
+# A user views an item
+
+client.create_event(
+  event="view",
+  entity_type="user",
+  entity_id=<USER ID>,
+  target_entity_type="item",
+  target_entity_id=<ITEM ID>
+)
+
+# A user buys an item
+
+client.create_event(
+  event="buy",
+  entity_type="user",
+  entity_id=<USER ID>,
+  target_entity_type="item",
+  target_entity_id=<ITEM ID>
+)
+
+# Set a list of unavailable items
+
+client.create_event(
+  event="$set",
+  entity_type="constraint",
+  entity_id="unavailableItems",
+  properties={
+    "items" : ["<ITEM ID1>", "<ITEM ID2>"]
+  }
+)
+
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+
+```php
+<?php
+require_once("vendor/autoload.php");
+use predictionio\EventClient;
+
+$client = new EventClient(<ACCESS KEY>, <URL OF EVENTSERVER>);
+
+// Create a new user
+$client->createEvent(array(
+  'event' => '$set',
+  'entityType' => 'user',
+  'entityId' => <USER ID>
+));
+
+// Create a new item or set existing item's categories
+$client->createEvent(array(
+  'event' => '$set',
+  'entityType' => 'item',
+  'entityId' => <ITEM ID>
+  'properties' => array('categories' => array('<CATEGORY_1>', '<CATEGORY_2>'))
+));
+
+// A user views an item
+$client->createEvent(array(
+   'event' => 'view',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'targetEntityType' => 'item',
+   'targetEntityId' => <ITEM ID>
+));
+
+// A user buys an item
+$client->createEvent(array(
+   'event' => 'buy',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'targetEntityType' => 'item',
+   'targetEntityId' => <ITEM ID>
+));
+
+// Set a list of unavailable items
+$client->createEvent(array(
+  'event' => '$set',
+  'entityType' => 'constraint',
+  'entityId' => 'unavailableItems',
+  'properties' => array('items' => array('<ITEM ID1>', '<ITEM ID2>'))
+));
+
+
+?>
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+
+```ruby
+# Create a client object.
+client = PredictionIO::EventClient.new(<ACCESS KEY>, <URL OF EVENTSERVER>)
+
+# Create a new user
+client.create_event(
+  '$set',
+  'user',
+  <USER ID>
+)
+
+# Create a new item or set existing item's categories
+client.create_event(
+  '$set',
+  'item',
+  <ITEM ID>, {
+    'properties' => { 'categories' => ['<CATEGORY_1>', '<CATEGORY_2>'] }
+  }
+)
+
+# A user views an item.
+client.create_event(
+  'view',
+  'user',
+  <USER ID>, {
+    'targetEntityType' => 'item',
+    'targetEntityId' => <ITEM ID>
+  }
+)
+
+# A user buys an item.
+client.create_event(
+  'buy',
+  'user',
+  <USER ID>, {
+    'targetEntityType' => 'item',
+    'targetEntityId' => <ITEM ID>
+  }
+)
+
+# Set a list of unavailable items
+client.create_event(
+  '$set',
+  'constraint',
+  'unavailableItems', {
+    'properties' => { 'items' => ['<ITEM ID1>', '<ITEM ID2>'] }
+  }
+)
+
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+
+```java
+import io.prediction.Event;
+import io.prediction.EventClient;
+
+import com.google.common.collect.ImmutableList;
+
+EventClient client = new EventClient(<ACCESS KEY>, <URL OF EVENTSERVER>);
+
+// Create a new user
+Event userEvent = new Event()
+  .event("$set")
+  .entityType("user")
+  .entityId(<USER_ID>);
+client.createEvent(userEvent);
+
+// Create a new item or set existing item's categories
+Event itemEvent = new Event()
+  .event("$set")
+  .entityType("item")
+  .entityId(<ITEM_ID>)
+  .property("categories", ImmutableList.of("<CATEGORY_1>", "<CATEGORY_2>"));
+client.createEvent(itemEvent)
+
+// A user views an item
+Event viewEvent = new Event()
+    .event("view")
+    .entityType("user")
+    .entityId(<USER_ID>)
+    .targetEntityType("item")
+    .targetEntityId(<ITEM_ID>);
+client.createEvent(viewEvent);
+
+// A user buys an item
+Event viewEvent = new Event()
+    .event("buy")
+    .entityType("user")
+    .entityId(<USER_ID>)
+    .targetEntityType("item")
+    .targetEntityId(<ITEM_ID>);
+client.createEvent(viewEvent);
+
+// Set a list of unavailable items
+Event itemEvent = new Event()
+  .event("$set")
+  .entityType("constraint")
+  .entityId("unavailableItems")
+  .property("items", ImmutableList.of("<ITEM ID1>", "<ITEM ID2>"));
+client.createEvent(itemEvent)
+
+```
+  </div>
+  <div data-tab="REST API" data-lang="json">
+```
+# Create a new user
+
+curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "user"
+  "entityId" : <USER ID>,
+  "eventTime" : <TIME OF THIS EVENT>
+}'
+
+# Create a new item or set existing item's categories
+
+curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "item"
+  "entityId" : <ITEM ID>,
+  "properties" : {
+    "categories" : ["<CATEGORY_1>", "<CATEGORY_2>"]
+  }
+  "eventTime" : <TIME OF THIS EVENT>
+}'
+
+# A user views an item
+
+curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "view",
+  "entityType" : "user"
+  "entityId" : <USER ID>,
+  "targetEntityType" : "item",
+  "targetEntityId" : <ITEM ID>,
+  "eventTime" : <TIME OF THIS EVENT>
+}'
+
+# A user buys an item
+
+curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "buy",
+  "entityType" : "user"
+  "entityId" : <USER ID>,
+  "targetEntityType" : "item",
+  "targetEntityId" : <ITEM ID>,
+  "eventTime" : <TIME OF THIS EVENT>
+}'
+
+# Set a list of unavailable items
+curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "constraint"
+  "entityId" : "unavailableItems",
+  "properties" : {
+    "categories" : ["<ITEM ID1>", "<ITEM ID2>"]
+  }
+  "eventTime" : <TIME OF THIS EVENT>
+}'
+
+```
+  </div>
+</div>
+
+The properties of `user` and `item` can be set, unset, or delete by special events **$set**, **$unset** and **$delete**. Please refer to [Event API](/datacollection/eventapi/#note-about-properties) for more details of using these events.
+
+## 4b. Import Sample Data
+
+<%= partial 'shared/quickstart/import_sample_data' %>
+
+A Python import script `import_eventserver.py` is provided to import sample data. It imports 10 users (with user ID "u1" to "u10") and 50 items (with item ID "i1" to "i50") with some random assigned categories ( with categories "c1" to "c6"). Each user then randomly view 10 items.
+
+NOTE: You need to install Python SDK to run the import script. Please follow [Python SDK README](https://github.com/PredictionIO/PredictionIO-Python-SDK) to install.
+
+First, make sure you are under the `MyECommerceRecommendation` directory. Execute the following to import the data (Replace the value of access_key parameter with your **Access Key**):
+
+```
+$ cd MyECommerceRecommendation
+$ python data/import_eventserver.py --access_key 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
+```
+
+You should see the following output:
+
+```
+...
+User u10 buys item i14
+User u10 views item i46
+User u10 buys item i46
+User u10 views item i30
+User u10 buys item i30
+User u10 views item i40
+User u10 buys item i40
+204 events are imported.
+```
+
+WARNING: If you see error **TypeError: __init__() got an unexpected keyword argument 'access_key'**,
+please update the Python SDK to the latest version.
+
+<%= partial 'shared/quickstart/query_eventserver' %>
+
+## 5. Deploy the Engine as a Service
+
+<%= partial 'shared/quickstart/deploy_enginejson', locals: { engine_name: 'MyECommerceRecommendation' } %>
+
+WARNING: Note that the "algorithms" also has `appName` parameter which you need to modify to match your **App Name** as well:
+
+```
+  ...
+  "algorithms": [
+    {
+      "name": "als",
+      "params": {
+        "appName": "MyApp1",
+        ...
+      }
+    }
+  ]
+  ...
+```
+
+<%= partial 'shared/quickstart/deploy', locals: { engine_name: 'MyECommerceRecommendation' } %>
+
+## 6. Use the Engine
+
+Now, You can retrieve predicted results. To recommend 4 items to user ID "u1". You send this JSON `{ "userEntityId": "u1", "number": 4 }` to the deployed engine and it will return a JSON of the recommended items. Simply send a query by making a HTTP request or through the `EngineClient` of an SDK:
+
+<div class="tabs">
+  <div data-tab="Python SDK" data-lang="python">
+```python
+import predictionio
+engine_client = predictionio.EngineClient(url="http://localhost:8000")
+print engine_client.send_query({"userEntityId": "u1", "number": 4})
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+```php
+<?php
+require_once("vendor/autoload.php");
+use predictionio\EngineClient;
+
+$client = new EngineClient('http://localhost:8000');
+
+$response = $client->sendQuery(array('userEntityId'=> 'i1', 'number'=> 4));
+print_r($response);
+
+?>
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+
+```ruby
+# Create client object.
+client = PredictionIO::EngineClient.new('http://localhost:8000')
+
+# Query PredictionIO.
+response = client.send_query('userEntityId' => 'i1', 'number' => 4)
+
+puts response
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+
+```java
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
+import com.google.gson.JsonObject;
+
+import io.prediction.EngineClient;
+
+// create client object
+EngineClient engineClient = new EngineClient("http://localhost:8000");
+
+// query
+
+JsonObject response = engineClient.sendQuery(ImmutableMap.<String, Object>of(
+        "userEntityId", "u1",
+        "number",  4
+    ));
+```
+  </div>
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -H "Content-Type: application/json" \
+-d '{ "userEntityId": "u1", "number": 4 }' \
+http://localhost:8000/queries.json
+
+```
+  </div>
+</div>
+
+The following is sample JSON response:
+
+```
+{
+  "itemScores":[
+    {"itemEntityId":"i4","score":0.006009267718658978},
+    {"itemEntityId":"i33","score":0.005999267822052033},
+    {"itemEntityId":"i14","score":0.005261309429391667},
+    {"itemEntityId":"i3","score":0.003007015026561692}
+  ]
+}
+```
+
+*MyECommerceRecommendation* is now running.
+
+<%= partial 'shared/quickstart/production' %>
+
+## Setting constraint "unavailableItems"
+
+Now let's send an item constraint "unavailableItems" (replace accessKey with your Access Key):
+
+NOTE: You can also use SDK to send this event as described in the SDK sample above.
+
+```
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=zPkr6sBwQoBwBjVHK2hsF9u26L38ARSe19QzkdYentuomCtYSuH0vXP5fq7advo4 \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "constraint"
+  "entityId" : "unavailableItems",
+  "properties" : {
+    "items": ["i4", "i14", "i11"],
+  }
+  "eventTime" : "2015-02-17T02:11:21.934Z"
+}'
+```
+
+Try to get recommendation for user *u1* again, the unavaiable items (e.g. i4, i14, i11). won't be recommended anymore:
+
+```
+$ curl -H "Content-Type: application/json" \
+-d '{
+  "user": "u1",
+  "num": 4,
+  "blackList": ["i21", "i26", "i40"]
+}' \
+http://localhost:8000/queries.json
+
+{"itemScores":[{"itemEntityId":"i33","score":0.005999267822052019},{"itemEntityId":"i3","score":0.0030070150265619003},{"itemEntityId":"i2","score":0.0028489173099429527},{"itemEntityId":"i5","score":0.0028489173099429527}]}
+```
+
+INFO: You should send a full list of unavailable items whenever there is any updates in the list. The latest event is used.
+
+When there is no more unavilable items, simply set an empty list. ie.
+
+```
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=zPkr6sBwQoBwBjVHK2hsF9u26L38ARSe19QzkdYentuomCtYSuH0vXP5fq7advo4 \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "constraint"
+  "entityId" : "unavailableItems",
+  "properties" : {
+    "items": [],
+  }
+  "eventTime" : "2015-02-18T02:11:21.934Z"
+}'
+```
+
+## Advanced Query
+
+In addition, the Query support the following optional parameters `categories`, `whitelist` and `blacklist`.
+
+### Recommend items in selected categories:
+
+```
+$ curl -H "Content-Type: application/json" \
+-d '{
+  "userEntityId": "u1",
+  "number": 4,
+  "categories" : ["c4", "c3"]
+}' \
+http://localhost:8000/queries.json
+
+{"itemScores":[{"itemEntityId":"i4","score":0.006009267718658978},{"itemEntityId":"i33","score":0.005999267822052033},{"itemEntityId":"i14","score":0.005261309429391667},{"itemEntityId":"i2","score":0.002848917309942939}]}
+```
+
+### Recommend items in the whitelist:
+
+```
+$ curl -H "Content-Type: application/json" \
+-d '{
+  "userEntityId": "u1",
+  "number": 4,
+  "whitelist": ["i1", "i2", "i3", "i21", "i22", "i23", "i24", "i25"]
+}' \
+http://localhost:8000/queries.json
+
+{"itemScores":[{"itemEntityId":"i3","score":0.003007015026561692},{"itemEntityId":"i2","score":0.002848917309942939},{"itemEntityId":"i23","score":0.0016857619403278443},{"itemEntityId":"i25","score":1.3707548965227745E-4}]}
+```
+
+### Recommend items not in the blackList:
+
+```
+$ curl -H "Content-Type: application/json" \
+-d '{
+  "userEntityId": "u1",
+  "number": 4,
+  "categories" : ["c4", "c3"],
+  "blacklist": ["i21", "i26", "i40"]
+}' \
+http://localhost:8000/queries.json
+
+{"itemScores":[{"itemEntityId":"i4","score":0.006009267718658978},{"itemEntityId":"i33","score":0.005999267822052033},{"itemEntityId":"i14","score":0.005261309429391667},{"itemEntityId":"i2","score":0.002848917309942939}]}
+```
+
+#### [Next: DASE Components Explained](/templates/ecommercerecommendation/dase/)
