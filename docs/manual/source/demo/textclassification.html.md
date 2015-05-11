@@ -26,8 +26,11 @@ The purpose of this tutorial is to illustrate how you can go about doing this us
 
 Before getting started, please make sure that you have the latest version of PredictionIO [installed](https://docs.prediction.io/install/). You will also need PredictionIO's [Python SDK](https://github.com/PredictionIO/PredictionIO-Python-SDK), and the [Scikit learn library](http://scikit-learn.org/stable/) for importing a sample data set into the PredictionIO Event Server. Any Python version greater than 2.7 will work for the purposes of executing the `data/import_eventserver.py` script provided with this engine template. Moreover, we emphasize here that this is an engine template written in **Scala** and can be more generally thought of as an SBT project containing all the necessary components.
 
-You should also download the engine template named [Text Classification Engine](http://templates.prediction.io/) that accompanies this tutorial.
+You should also download the engine template named Text Classification Engine that accompanies this tutorial by cloning the template repository:
 
+```
+git clone https://github.com/PredictionIO/template-scala-parallel-textclassification.git
+```
 
 
 ## Engine Overview
@@ -46,15 +49,7 @@ Here category is the model's class assignment for this new text document (i.e. t
 
 `{category : String}`.
 
-This is used in the evaluation stage when estimating the performance of your predictive model (how well does the model predict categories).
-
-In addition to the DASE components, we also introduce the Data Model and Training Model abstractions. The Data Model abstraction refers to the set of Scala classes dealing with the implementation of modeling choices relating to feature **extraction**, **preparation**, and/or **selection**. For this illustration, this only includes the vectorization of text and t.f.-i.d.f. processing which is entirely implemented in the PreparedData class. The Training Model abstraction refers to any set of classes that individually take in a set of feature observations and output a predictive model. This predictive model is leveraged by the Algorithm component to produce prediction results to queries in real-time. In the engine template, this abstraction is implemented in the NBModel class. **Please note that these are conceptual abstractions that are designed to make engine development easier by decoupling class functionality.** Keeping these abstractions in mind will help you in the future with debugging your code, and also make it easier to incorporate different modeling ideas into your engine. 
-
-The figure below shows a graphical representation of the engine architecture just described, as well as its interactions with your web/app and a provided Event Server:
-
-
-![Engine Overview](/images/demo/text_classification_template/engine_overview.png)
-
+This is used in the evaluation stage when estimating the performance of your predictive model (how well does the model predict categories). Please refer to the [following tutorial](https://docs.prediction.io/customize/) for a more detailed explanation of how your engine will interact with your web application, as well as an in depth-overview of DASE.
 
 
 ## Quick Start
@@ -88,16 +83,17 @@ $ python import_eventserver.py --access_key access
     }
   },
   "preparator": {
+    "name" : "prep",
     "params": {
       "nMin": 1,
       "nMax": 2,
-      "inverseIdfMin": 0.15,
-      "inverseIdfMax": 0.85
+      "inverseIdfMin" : 0.15,
+      "inverseIdfMax" : 0.85
     }
   },
   "algorithms": [
     {
-      "name": "sup",
+      "name": "nb",
       "params": {
         "lambda": 0.5
       }
@@ -150,7 +146,7 @@ Importing stop words.....
 Imported 350 stop words.
 ```
 
- This data import process greatly exemplifies the advantages of using PredictionIO's Event Server for data storage. It allows you to import data from different sources and store it using the same server. The [event-style format](https://docs.prediction.io/datacollection/eventapi/) allows for a standardized method of storing data which facilitates the process of reading in your data and incorporating different data sources. For example, the provided data script imports both the text observations and stop words which are going to inevitably differ in nature. In short, PredictionIO's Event Server is yet another abstraction that exacerbates your development productivity, as well as the ability to focus on the modeling stages involved in building your predictive engine.
+This data import process greatly exemplifies the advantages of using PredictionIO's Event Server for data storage. It allows you to import data from different sources and store it using the same server. The [event-style format](https://docs.prediction.io/datacollection/eventapi/) allows for a standardized method of storing data which facilitates the process of reading in your data and incorporating different data sources. For example, the provided data script imports both the text observations and stop words which are going to inevitably differ in nature. In short, PredictionIO's Event Server is yet another abstraction that exacerbates your development productivity, as well as the ability to focus on the modeling stages involved in building your predictive engine.
 
 
 
@@ -201,12 +197,7 @@ Note that readEventData and readStopWords use different entity types and event n
 
 
 
-## Processing the Data : The Preparator Component and Data Model Implementation
-
-This section deals with the aspect of transforming the data you read in the previous stage into something that you can actually use to train a predictive model. 
-
-
-### Preparator : Data Processing in DASE
+## Preparator : Data Processing With DASE
 
 Recall that the Preparator stage is used for doing any prior data processing needed to fit a predictive model. In line with the separation of concerns, the Data Model implementation, PreparedData, is built to do the heavy lifting needed for this data processing. The Preparator must simply implement the prepare method which outputs an object of type PreparedData. This requires you to specify two n-gram window components, and two inverse i.d.f. window components (these terms will be defined in the following section). Therefore a custom class of parameters for the Preparator component, PreparatorParams, must be incorporated. The code defining the full Preparator component is given below:
 
@@ -238,12 +229,11 @@ class Preparator(pp: PreparatorParams) extends PPreparator[TrainingData, Prepare
 
 The simplicity of this stage implementation truly exemplifies one of the benefits of using the PredictionIO platform. For developers, it is easy to incorporate different classes and tools into the DASE framework so that the process of creating an engine is greatly simplified which helps increase your productivity. For data scientists, the load of implementation details you need to worry about is minimized so that you can focus on what is important to you: training a good predictive model. 
 
-The following section explains the class PreparedData, which actually handles the transformation of text documents to feature vectors.
+The following subsection explains the class PreparedData, which actually handles the transformation of text documents to feature vectors. 
 
+### PreparedData: Text Vectorization and Feature Reduction 
 
-### Data Model : Ideas Behind the PreparedData Implementation
-
-For this Text Classification Engine, the Data Model abstraction is implemented in Prepared Data which takes the parameters td, nMin, nMax, inverseIdfMin, and inverseIdfMax, where td is an object of class TrainingData. The other four parameters are the components of the model n-gram window and inverse i.d.f. window, which will be defined shortly. 
+The Scala class PreparedData which takes the parameters td, nMin, nMax, inverseIdfMin, and inverseIdfMax, where td is an object of class TrainingData. The other four parameters are the components of the model n-gram window and inverse i.d.f. window, which will be defined shortly. 
 
 It will be easier to explain the preparation process with an example, so consider the document \\(d\\):
 
@@ -261,7 +251,7 @@ Recall that a set of stop words was also imported in the previous sections. This
 val A = Array("Hello", ",",  "name", "Marco", ".")
 ```
 
-All of this functionality is implemented in the private method tokenize of the DataModel class. This method uses the SimpleTokenizer from OpenNLP's library to implement this (note that you must add the Maven dependency declaration to your `build.sbt` file to incorporate this library into your engine). 
+All of this functionality is implemented in the private method tokenize. This method uses the SimpleTokenizer from OpenNLP's library to implement this (note that you must add the Maven dependency declaration to your `build.sbt` file to incorporate this library into your engine). 
 
 ```scala
 ...
@@ -314,6 +304,8 @@ $$
 $$
 
 Here \\(|S|\\) denotes the number of elements contained in a set \\(S\\). Plainly speaking, this term approaches 1 as the number of documents in the corpus from which \\(g\\) is extracted increases, and grows larger than 1 as this number decreases. Hence the inverse i.d.f. of an n-gram \\(g\\) \\(\left(\frac{1}{\text{idf}(g)}\right)\\) will lie between 0 and 1. Those n-grams whose inverse i.d.f. value is close to 0 rarely appear in any corpus documents, and those with value closely to 1 appear in a large proportion of the documents. The inverse i.d.f. window is defined as an interval \\([a, b]\\), \\(0 \leq a < b \leq 1\\), which restricts the n-grams we choose as features to those with inverse i.d.f. values lying in this interval. That is, all n-grams whose inverse i.d.f. less than a or greater than b, our inverse i.d.f. window components, are excluded. The PreparedData class parameters inverseIdfMin and inverseIdfMax values correspond to \\(a\\) and \\(b\\), respectively. 
+
+The latter discussion implies that modifying the inverse i.d.f. window components will reduce the number of features used for model training, and therefore will reduce computation time. However, reducing the number of features may affect your fit. This is another modeling choice that needs to be assessed by the modeler.
 
 Once these n-grams are filtered out of the i.d.f. HashMap created, a second hash map is created with n-grams associated to indices. This gives a global index to each n-gram and ensures that each document observation is vectorized in the same manner. 
 
@@ -374,21 +366,17 @@ The last and final object implemented in this class simply creates a Map with ke
 
 
 
-## Training The Model
 
-This section will guide you through the two Training Model implementations that come with this engine template. Recall that the Training Model abstraction refers to an arbitrary set Scala Class that outputs a predictive model (i.e. implements some method that can be used for prediction). The general problem this engine template is tackling is text classification, so that our Training Model abstraction domain is restricted to implementations producing classifiers. In particular, the classification model that is implemented in this engine template is based on Multinomial Naive Bayes using t.f.-i.d.f. vectorized text. 
+## Algorithm Component
 
-
-### Algorithm Component
-
-The Training Model implementation in this engine is accompanied by a corresponding algorithm component. In particular, NBModel accompanies NBAlgorithm. The Training Model abstraction allows you to take care of the modeling implementation details in the model class. Again this demonstrates how easy it is to incorporate different modeling choices into the DASE architecture. We first describe the actual Algorithm component, and describe where it leverages the Training Model abstraction.
-
-The algorithm component actually follows a very general form. Firstly, a parameter class must again be initialized to feed in the corresponding Algorithm model parameters. For example, NBAlgorithm incorporates NBAlgorithmParams which holds the appropriate additive smoothing parameter lambda for the Naive Bayes model. 
+The algorithm component in this engine, NBAlgorithm, actually follows a very general form. Firstly, a parameter class must again be initialized to feed in the corresponding Algorithm model parameters. For example, NBAlgorithm incorporates NBAlgorithmParams which holds the appropriate additive smoothing parameter lambda for the Naive Bayes model. 
 
 
-The main class of interest in this component is the class that extends [P2LAlgorithm](https://docs.prediction.io/api/current/#io.prediction.controller.P2LAlgorithm). This class must implement a method named train which will output your Training Model implementation. It must also implement a predict method that transforms a query to an appropriate feature vector, and uses this to predict with the fitted model. The vectorization function is implemented by a PreparedData object, and the categorization (prediction) is handled by an instance of your Training Model Implementation. Again, this demonstrates the facility with which different models can be incorporated into PredictionIO's DASE architecture.
+The main class of interest in this component is the class that extends [P2LAlgorithm](https://docs.prediction.io/api/current/#io.prediction.controller.P2LAlgorithm). This class must implement a method named train which will output your predictive model (as a concrete object, this will be implemented via a Scala  class). It must also implement a predict method that transforms a query to an appropriate feature vector, and uses this to predict with the fitted model. The vectorization function is implemented by a PreparedData object, and the categorization (prediction) is handled by an instance of the NBModel implementation. Again, this demonstrates the facility with which different models can be incorporated into PredictionIO's DASE architecture.
 
-Now, turn your attention to the TextManipulationEngine object defined in the script `Engine.scala`. You can see here that the engine is initialized by specifying the DataSource, Preparator, and Serving classes, as well as a Map of algorithm names to Algorithm classes. This tells the engine which algorithms to run. In practice, you can have as many as you would like, you simply have to implement a new Training Model and Training Algorithm pair. 
+The model class itself will be discussed in the following section, however, turn your attention to the TextManipulationEngine object defined in the script `Engine.scala`. You can see here that the engine is initialized by specifying the DataSource, Preparator, and Serving classes, as well as a Map of algorithm names to Algorithm classes. This tells the engine which algorithms to run. In practice, you can have as many statistical learning models as you'd like, you simply have to implement a new algorithm component to do this. However, this general design form will persist, and the main meat of the work should be in the implementation of your model class.
+
+The following subsection will go over our Naive Bayes implementation in NBModel.
 
 
 ### Naive Bayes Classification
@@ -500,14 +488,32 @@ object EngineParamsList extends EngineParamsGenerator {
 
   // Set the algorithm params for which we will assess an accuracy score.
   engineParamsList = Seq(
-    baseEP.copy(preparatorParams = ("", PreparatorParams(nMin = 1, nMax = 2)),
+    baseEP.copy(preparatorParams = ("prep", PreparatorParams(nMin = 1, nMax = 2)),
       algorithmParamsList = Seq(("nb", NBAlgorithmParams(0.5)))),
-    baseEP.copy(preparatorParams = ("", PreparatorParams(nMin = 2, nMax = 3)),
+    baseEP.copy(preparatorParams = ("prep", PreparatorParams(nMin = 2, nMax = 3)),
       algorithmParamsList = Seq(("nb", NBAlgorithmParams(1.5)))),
-    baseEP.copy(preparatorParams = ("", PreparatorParams(nMin = 1, nMax = 3)),
+    baseEP.copy(preparatorParams = ("prep", PreparatorParams(nMin = 1, nMax = 3)),
       algorithmParamsList = Seq(("nb", NBAlgorithmParams(5))))
   )
 ```
+
+In the latter block of code, the preparatorParams field must be filled with a tuple consisting of the Preparator name and Params extension object. The name of the Preparator is specified in your `engine.json` file:
+
+```
+...
+"preparator": {
+    "name" : "prep",
+    "params": {
+      "nMin": 1,
+      "nMax": 2,
+      "inverseIdfMin" : 0.15,
+      "inverseIdfMax" : 0.85
+    }
+  },
+...
+```
+
+
 ## Engine Deployment 
 
 Once an engine is ready for deployment it can interact with your web application in real-time. This section will cover how to send and receive queries from your engine, gather more data, and re-training your model with the newly gathered data. 
