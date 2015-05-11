@@ -70,12 +70,14 @@ object AccessKey extends Logging {
   }
 
   def delete(ca: ConsoleArgs): Int = {
-    if (storage.Storage.getMetaDataAccessKeys.delete(ca.accessKey.accessKey)) {
+    try {
+      storage.Storage.getMetaDataAccessKeys.delete(ca.accessKey.accessKey)
       info(s"Deleted access key ${ca.accessKey.accessKey}.")
       0
-    } else {
-      error(s"Error deleting access key ${ca.accessKey.accessKey}.")
-      1
+    } catch {
+      case e: Exception =>
+        error(s"Error deleting access key ${ca.accessKey.accessKey}.", e)
+        1
     }
   }
 }

@@ -70,14 +70,17 @@ object App extends Logging {
         } else {
           error(s"Unable to initialize Event Store for this app ID: ${id}.")
           // revert back the meta data change
-          val revertedStatus = apps.delete(id)
-          if (!revertedStatus) {
-            error(s"Failed to revert back the App meta-data change.")
-            error(s"The app ${ca.app.name} CANNOT be used!")
-            error(s"Please run 'pio app delete ${ca.app.name}' " +
-              "to delete this app!")
+          try {
+            apps.delete(id)
+            0
+          } catch {
+            case e: Exception =>
+              error(s"Failed to revert back the App meta-data change.", e)
+              error(s"The app ${ca.app.name} CANNOT be used!")
+              error(s"Please run 'pio app delete ${ca.app.name}' " +
+                "to delete this app!")
+              1
           }
-          1
         }
         events.close()
         r
@@ -175,44 +178,57 @@ object App extends Logging {
           val delChannelStatus: Seq[Int] = chans.map { ch =>
             if (events.remove(app.id, Some(ch.id))) {
               info(s"Removed Event Store of the channel ID: ${ch.id}")
-              if (channels.delete(ch.id)) {
+              try {
+                channels.delete(ch.id)
                 info(s"Deleted channel ${ch.name}")
                 0
-              } else {
-                error(s"Error deleting channel ${ch.name}.")
-                1
+              } catch {
+                case e: Exception =>
+                  error(s"Error deleting channel ${ch.name}.", e)
+                  1
               }
             } else {
               error(s"Error removing Event Store of the channel ID: ${ch.id}.")
-              1
+              return 1
             }
           }
 
-          if (delChannelStatus.filter(_ != 0).isEmpty) {
-            val r = if (events.remove(app.id)) {
-              info(s"Removed Event Store for this app ID: ${app.id}")
-              accesskeys.getByAppid(app.id) foreach { key =>
-                if (accesskeys.delete(key.key)) {
-                  info(s"Removed access key ${key.key}")
-                } else {
-                  error(s"Error removing access key ${key.key}")
-                }
-              }
-              if (apps.delete(app.id)) {
-                info(s"Deleted app ${app.name}.")
-                0
-              } else {
-                error(s"Error deleting app ${app.name}.")
-                1
-              }
-            } else {
-              error(s"Error removing Event Store for this app.")
-              1
-            }
+          if (delChannelStatus.exists(_ != 0)) {
+            error("Error occurred while deleting channels. Aborting.")
+            return 1
+          }
 
-            info("Done.")
-            r
-          } else 1
+          try {
+            events.remove(app.id)
+            info(s"Removed Event Store for this app ID: ${app.id}")
+          } catch {
+            case e: Exception =>
+              error(s"Error removing Event Store for this app. Aborting.", e)
+              return 1
+          }
+
+          accesskeys.getByAppid(app.id) foreach { key =>
+            try {
+              accesskeys.delete(key.key)
+              info(s"Removed access key ${key.key}")
+            } catch {
+              case e: Exception =>
+                error(s"Error removing access key ${key.key}. Aborting.", e)
+                return 1
+            }
+          }
+
+          try {
+            apps.delete(app.id)
+            info(s"Deleted app ${app.name}.")
+          } catch {
+            case e: Exception =>
+              error(s"Error deleting app ${app.name}. Aborting.", e)
+              return 1
+          }
+
+          info("Done.")
+          0
         }
         case _ =>
           info("Aborted.")
@@ -435,14 +451,17 @@ object App extends Logging {
             error(s"Unable to create new channel.")
             error(s"Failed to initalize Event Store.")
             // reverted back the meta data
-            val revertedStatus = channels.delete(chanId)
-            if (!revertedStatus) {
-              error(s"Failed to revert back the Channel meta-data change.")
-              error(s"The channel ${newChannel} CANNOT be used!")
-              error(s"Please run 'pio app channel-delete ${app.name} ${newChannel}' " +
-                "to delete this channel!")
+            try {
+              channels.delete(chanId)
+              0
+            } catch {
+              case e: Exception =>
+                error(s"Failed to revert back the Channel meta-data change.", e)
+                error(s"The channel ${newChannel} CANNOT be used!")
+                error(s"Please run 'pio app channel-delete ${app.name} ${newChannel}' " +
+                  "to delete this channel!")
+                1
             }
-            1
           }
         }.getOrElse {
           error(s"Unable to create new channel.")
@@ -482,17 +501,18 @@ object App extends Logging {
             val dbRemoved = events.remove(app.id, Some(channelMap(deleteChannel)))
             if (dbRemoved) {
               info(s"Removed Event Store for this channel: ${deleteChannel}")
-              val metaStatus = channels.delete(channelMap(deleteChannel))
-              if (metaStatus) {
+              try {
+                channels.delete(channelMap(deleteChannel))
                 info(s"Deleted channel: ${deleteChannel}.")
                 0
-              } else {
-                error(s"Unable to delete channel.")
-                error(s"Failed to update Channel meta-data.")
-                error(s"The channel ${deleteChannel} CANNOT be used!")
-                error(s"Please run 'pio app channel-delete ${app.name} ${deleteChannel}' " +
-                  "to delete this channel again!")
-                1
+              } catch {
+                case e: Exception =>
+                  error(s"Unable to delete channel.", e)
+                  error(s"Failed to update Channel meta-data.")
+                  error(s"The channel ${deleteChannel} CANNOT be used!")
+                  error(s"Please run 'pio app channel-delete ${app.name} ${deleteChannel}' " +
+                    "to delete this channel again!")
+                  1
               }
             } else {
               error(s"Unable to delete channel.")

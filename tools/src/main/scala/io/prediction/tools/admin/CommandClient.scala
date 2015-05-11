@@ -141,11 +141,8 @@ class CommandClient(
 
     val response = appClient.getByName(appName) map { app =>
       val data = if (eventClient.remove(app.id)) {
-        if (Storage.getMetaDataApps.delete(app.id)) {
-          GeneralResponse(1, s"App successfully deleted")
-        } else {
-          GeneralResponse(0, s"Error deleting app ${app.name}.")
-        }
+        Storage.getMetaDataApps.delete(app.id)
+        GeneralResponse(1, s"App successfully deleted")
       } else {
         GeneralResponse(0, s"Error removing Event Store for app ${app.name}.");
       }
