@@ -116,7 +116,7 @@ abstract class BaseAlgorithm[PD, M, Q, P]
     *
     * @return Type signature of query
     */
-  def queryClass = {
+  def queryClass: Class[Q] = {
     val types = TypeResolver.resolveRawArguments(classOf[BaseAlgorithm[PD, M, Q, P]], getClass)
     types(2).asInstanceOf[Class[Q]]
   }
