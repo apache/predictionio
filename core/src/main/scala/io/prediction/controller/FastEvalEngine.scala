@@ -34,6 +34,11 @@ import _root_.java.util.NoSuchElementException
 
 import scala.collection.mutable.{ HashMap => MutableHashMap }
 
+/** :: Experimental ::
+  * Workflow based on [[FastEvalEngine]]
+  *
+  * @group Evaluation
+  */
 @Experimental
 object FastEvalEngineWorkflow  {
   @transient lazy val logger = Logger[this.type]
@@ -269,6 +274,11 @@ object FastEvalEngineWorkflow  {
   }
 }
 
+/** :: Experimental ::
+  * Workflow based on [[FastEvalEngine]]
+  *
+  * @group Evaluation
+  */
 @Experimental
 class FastEvalEngineWorkflow[TD, EI, PD, Q, P, A](
   val engine: FastEvalEngine[TD, EI, PD, Q, P, A],
@@ -290,8 +300,11 @@ class FastEvalEngineWorkflow[TD, EI, PD, Q, P, A](
 
 
 
-/** FastEvalEngine is a subclass of Engine that exploits the immutability of
-  * controllers to optimize the evaluation process.
+/** :: Experimental ::
+  * FastEvalEngine is a subclass of [[Engine]] that exploits the immutability of
+  * controllers to optimize the evaluation process
+  *
+  * @group Evaluation
   */
 @Experimental
 class FastEvalEngine[TD, EI, PD, Q, P, A](

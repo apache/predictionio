@@ -15,13 +15,16 @@
 
 package io.prediction.controller
 
+import java.io.File
+import java.io.PrintWriter
+
+import com.github.nscala_time.time.Imports.DateTime
+import grizzled.slf4j.Logger
+import io.prediction.annotation.DeveloperApi
 import io.prediction.core.BaseEvaluator
 import io.prediction.core.BaseEvaluatorResult
 import io.prediction.data.storage.Storage
 import io.prediction.workflow.NameParamsSerializer
-
-import com.github.nscala_time.time.Imports.DateTime
-import grizzled.slf4j.Logger
 import io.prediction.workflow.WorkflowParams
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -30,13 +33,29 @@ import org.json4s.native.Serialization.writePretty
 
 import scala.language.existentials
 
-import _root_.java.io.PrintWriter
-import _root_.java.io.File
-
+/** Case class storing a primary score, and other scores
+  *
+  * @param score Primary metric score
+  * @param otherScores Other scores this metric might have
+  * @tparam R Type of the primary metric score
+  * @group Evaluation
+  */
 case class MetricScores[R](
   score: R,
   otherScores: Seq[Any])
 
+/** Contains all results of a [[MetricEvaluator]]
+  *
+  * @param bestScore The best score among all iterations
+  * @param bestEngineParams The set of engine parameters that yielded the best score
+  * @param bestIdx The index of iteration that yielded the best score
+  * @param metricHeader Brief description of the primary metric score
+  * @param otherMetricHeaders Brief descriptions of other metric scores
+  * @param engineParamsScores All sets of engine parameters and corresponding metric scores
+  * @param outputPath An optional output path where scores are saved
+  * @tparam R Type of the primary metric score
+  * @group Evaluation
+  */
 case class MetricEvaluatorResult[R](
   bestScore: MetricScores[R],
   bestEngineParams: EngineParams,
@@ -87,6 +106,10 @@ extends BaseEvaluatorResult {
   }
 }
 
+/** Companion object of [[MetricEvaluator]]
+  *
+  * @group Evaluation
+  */
 object MetricEvaluator {
   def apply[EI, Q, P, A, R](
     metric: Metric[EI, Q, P, A, R],
@@ -140,8 +163,23 @@ object MetricEvaluator {
   }
 }
 
-
-private[prediction] class MetricEvaluator[EI, Q, P, A, R] (
+/** :: DeveloperApi ::
+  * Do no use this directly. Use [[MetricEvaluator$]] instead. An implementation
+  * of [[BaseEvaluator]] that evaluates prediction performance
+  * based on metric scores
+  *
+  * @param metric Primary metric
+  * @param otherMetrics Other metrics
+  * @param outputPath Optional output path to save evaluation results
+  * @tparam EI Evaluation information type
+  * @tparam Q Query class
+  * @tparam P Predicted result class
+  * @tparam A Actual result class
+  * @tparam R Metric result class
+  * @group Evaluation
+  */
+@DeveloperApi
+class MetricEvaluator[EI, Q, P, A, R] (
   val metric: Metric[EI, Q, P, A, R],
   val otherMetrics: Seq[Metric[EI, Q, P, A, _]],
   val outputPath: Option[String])

@@ -16,7 +16,7 @@
 package io.prediction
 
 /** Provides building blocks for writing a complete prediction engine
-  * consisting of DataSource, Preparator, Algorithm, Serving, and Metrics.
+  * consisting of DataSource, Preparator, Algorithm, Serving, and Evaluation.
   *
   * == Start Building an Engine ==
   * The starting point of a prediction engine is the [[Engine]] class.
@@ -98,6 +98,10 @@ package io.prediction
   */
 package object controller {
 
+  /** Base class of several helper types that represent emptiness
+    *
+    * @group Helper
+    */
   class SerializableClass() extends Serializable
 
   /** Empty data source parameters.

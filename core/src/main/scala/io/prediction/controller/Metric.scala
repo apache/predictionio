@@ -224,6 +224,10 @@ class ZeroMetric[EI, Q, P, A] extends Metric[EI, Q, P, A, Double]() {
    def calculate(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])]): Double = 0.0
 }
 
+/** Companion object of [[ZeroMetric]]
+  *
+  * @group Evaluation
+  */
 object ZeroMetric {
   /** Returns a ZeroMetric instance using Engine's type parameters. */
   def apply[EI, Q, P, A](engine: BaseEngine[EI, Q, P, A]): ZeroMetric[EI, Q, P, A] = {
@@ -232,8 +236,23 @@ object ZeroMetric {
 }
 
 
-/** Trait for metric which returns a score based on Query, PredictedResult, and ActualResult.
+/** Trait for metric which returns a score based on Query, PredictedResult,
+  * and ActualResult
+  *
+  * @tparam Q Query class
+  * @tparam P Predicted result class
+  * @tparam A Actual result class
+  * @tparam R Metric result class
+  * @group Evaluation
   */
 trait QPAMetric[Q, P, A, R] {
+  /** Calculate a metric result based on query, predicted result, and actual
+    * result
+    *
+    * @param q Query
+    * @param p Predicted result
+    * @param a Actual result
+    * @return Metric result
+    */
   def calculate(q: Q, p: P, a: A): R
 }
