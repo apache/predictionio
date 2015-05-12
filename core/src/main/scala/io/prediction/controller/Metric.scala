@@ -125,10 +125,10 @@ abstract class OptionAverageMetric[EI, Q, P, A]
   }
 }
 
-/** Returns the global stdev of the score returned by the calculate method.
+/** Returns the global standard deviation of the score returned by the calculate method
   *
-  * This method uses [[org.apache.spark.util.StatCounter]] library, a one pass
-  * method is used for calculation.
+  * This method uses org.apache.spark.util.StatCounter library, a one pass
+  * method is used for calculation
   *
   * @tparam EI Evaluation information
   * @tparam Q Query
@@ -153,10 +153,10 @@ abstract class StdevMetric[EI, Q, P, A]
   }
 }
 
-/** Returns the global stdev of the non-None score returned by the calculate method.
+/** Returns the global standard deviation of the non-None score returned by the calculate method
   *
-  * This method uses [[org.apache.spark.util.StatCounter]] library, a one pass
-  * method is used for calculation.
+  * This method uses org.apache.spark.util.StatCounter library, a one pass
+  * method is used for calculation
   *
   * @tparam EI Evaluation information
   * @tparam Q Query

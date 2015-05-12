@@ -45,7 +45,7 @@ trait Evaluation extends Deployment {
     (engine, _evaluator)
   }
 
-  /** Sets both the [[Engine]] and [[Evaluator]] for this [[Evaluation]]. */
+  /** Sets both the [[Engine]] and [[BaseEvaluator]] for this [[Evaluation]]. */
   def engineEvaluator_=[EI, Q, P, A, R <: BaseEvaluatorResult](
     engineEvaluator: (
       BaseEngine[EI, Q, P, A], 

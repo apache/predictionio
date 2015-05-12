@@ -75,7 +75,7 @@ package io.prediction
   * Produces a model that is small enough to fit in a single machine from
   * [[PDataSource]] and [[PPreparator]]. The model '''cannot''' contain any RDD.
   * If the produced model is serializable, PredictionIO will try to
-  * automatically persist it. In addition, [[P2LAlgorithm#batchPredict]] is
+  * automatically persist it. In addition, P2LAlgorithm.batchPredict is
   * already implemented for [[Evaluation]] purpose.
   *
   * ==== PAlgorithm ====
@@ -88,7 +88,7 @@ package io.prediction
   * Produces a model that is small enough to fit in a single machine from
   * [[LDataSource]] and [[LPreparator]]. The model '''cannot''' contain any RDD.
   * If the produced model is serializable, PredictionIO will try to
-  * automatically persist it. In addition, [[LAlgorithm#batchPredict]] is
+  * automatically persist it. In addition, LAlgorithm.batchPredict is
   * already implemented for [[Evaluation]] purpose.
   *
   * === Serving ===

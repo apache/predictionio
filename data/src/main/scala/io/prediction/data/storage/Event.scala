@@ -69,13 +69,13 @@ object EventValidation {
   /** Checks whether an event name contains a reserved prefix
     *
     * @param name Event name
-    * @return true if event name starts with $ or pio_, false otherwise
+    * @return true if event name starts with \$ or pio_, false otherwise
     */
   def isReservedPrefix(name: String): Boolean = name.startsWith("$") ||
     name.startsWith("pio_")
 
   /** PredictionIO reserves some single entity event names. They are currently
-    * $set, $unset, and $delete.
+    * \$set, \$unset, and \$delete.
     */
   val specialEvents = Set("$set", "$unset", "$delete")
 
@@ -95,7 +95,7 @@ object EventValidation {
     *  - targetEntityType must not be Some of empty
     *  - targetEntityId must not be Some of empty
     *  - targetEntityType and targetEntityId must be both Some or None
-    *  - properties must not be empty when event is $unset
+    *  - properties must not be empty when event is \$unset
     *  - event name must be a special event if it has a reserved prefix
     *  - targetEntityType and targetEntityId must be None if the event name has
     *    a reserved prefix
