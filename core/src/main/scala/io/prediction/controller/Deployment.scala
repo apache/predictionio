@@ -19,7 +19,7 @@ import io.prediction.core.BaseEngine
 
 import scala.language.implicitConversions
 
-/** Defines a deployment that contains an engine.
+/** Defines a deployment that contains an implementation of [[BaseEngine]]
   *
   * @group Engine
   */
@@ -27,7 +27,7 @@ trait Deployment extends EngineFactory {
   protected[this] var _engine: BaseEngine[_, _, _, _] = _
   protected[this] var engineSet: Boolean = false
 
-  /** Returns the [[Engine]] contained in this [[Deployment]]. */
+  /** Returns the implementation of [[BaseEngine]] of this [[Deployment]] */
   def apply(): BaseEngine[_, _, _, _] = {
     assert(engineSet, "Engine not set")
     _engine
@@ -40,7 +40,14 @@ trait Deployment extends EngineFactory {
     _engine
   }
 
-  /** Sets the [[Engine]] for this [[Deployment]]. */
+  /** Sets the implementation of [[BaseEngine]] for this [[Deployment]]
+    *
+    * @param engine An implementation of [[BaseEngine]]
+    * @tparam EI Evaluation information class
+    * @tparam Q Query class
+    * @tparam P Predicted result class
+    * @tparam A Actual result class
+    */
   def engine_=[EI, Q, P, A](engine: BaseEngine[EI, Q, P, A]) {
     assert(!engineSet, "Engine can be set at most once")
     _engine = engine

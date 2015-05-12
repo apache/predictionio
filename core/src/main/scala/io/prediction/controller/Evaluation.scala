@@ -15,10 +15,9 @@
 
 package io.prediction.controller
 
+import io.prediction.core.BaseEngine
 import io.prediction.core.BaseEvaluator
 import io.prediction.core.BaseEvaluatorResult
-import io.prediction.core.BaseEngine
-// import io.prediction.workflow.EngineWorkflow
 
 import scala.language.implicitConversions
 
@@ -26,6 +25,9 @@ import scala.language.implicitConversions
   *
   * Implementations of this trait can be supplied to "pio eval" as the first
   * argument.
+  *
+  * For Scala engines, implement this trait with an object. For Java engines,
+  * implement this interface (trait) with a class.
   *
   * @group Evaluation
   */
@@ -38,14 +40,24 @@ trait Evaluation extends Deployment {
     assert(_evaluatorSet, "Evaluator not set")
     _evaluator
   }
-  
+
+  /** Gets the tuple of implementations of [[BaseEngine]] and [[BaseEvaluator]] */
   def engineEvaluator
   : (BaseEngine[_, _, _, _], BaseEvaluator[_, _, _, _, _]) = {
     assert(_evaluatorSet, "Evaluator not set")
     (engine, _evaluator)
   }
 
-  /** Sets both the [[Engine]] and [[BaseEvaluator]] for this [[Evaluation]]. */
+  /** Sets both implementations of [[BaseEngine]] and [[BaseEvaluator]] for
+    * this [[Evaluation]]
+    *
+    * @param engineEvaluator A tuple of implementations of [[BaseEngine]] and [[BaseEvaluator]]
+    * @tparam EI Evaluation information class
+    * @tparam Q Query class
+    * @tparam P Predicted result class
+    * @tparam A Actual result class
+    * @tparam R Metric result class
+    */
   def engineEvaluator_=[EI, Q, P, A, R <: BaseEvaluatorResult](
     engineEvaluator: (
       BaseEngine[EI, Q, P, A], 
@@ -56,14 +68,22 @@ trait Evaluation extends Deployment {
     _evaluatorSet = true
   }
 
-  /** Returns both the [[Engine]] and [[Metric]] contained in this
-    * [[Evaluation]].
+  /** Returns both implemenations of [[BaseEngine]] and [[Metric]] contained in
+    * this [[Evaluation]]
     */
   def engineMetric: (BaseEngine[_, _, _, _], Metric[_, _, _, _, _]) = {
     throw new NotImplementedError("This method is to keep the compiler happy")
   }
 
-  /** Sets both the [[Engine]], [[Metric]] for this [Evaluation]] */
+  /** Sets both implementations of [[BaseEngine]], [[Metric]] for this
+    * [[Evaluation]]
+    *
+    * @param engineMetric A tuple of implementations of [[BaseEngine]] and [[Metric]]
+    * @tparam EI Evaluation information class
+    * @tparam Q Query class
+    * @tparam P Predicted result class
+    * @tparam A Actual result class
+    */
   def engineMetric_=[EI, Q, P, A](
     engineMetric: (BaseEngine[EI, Q, P, A], Metric[EI, Q, P, A, _])) {
     engineEvaluator = (
@@ -83,8 +103,15 @@ trait Evaluation extends Deployment {
     throw new NotImplementedError("This method is to keep the compiler happy")
   }
 
-  /** Sets the [[Engine]], [[Metric]], and Seq([[Metric]])) 
-    * for this [[Evaluation]]. */
+  /** Sets implementations of [[BaseEngine]], [[Metric]], and sequence of
+    * [[Metric]] for this [[Evaluation]]
+    *
+    * @param engineMetrics A tuple of implementations of [[BaseEngine]], [[Metric]] and sequence of [[Metric]]
+    * @tparam EI Evaluation information class
+    * @tparam Q Query class
+    * @tparam P Predicted result class
+    * @tparam A Actual result class
+    */
   def engineMetrics_=[EI, Q, P, A](
     engineMetrics: (
       BaseEngine[EI, Q, P, A], 
