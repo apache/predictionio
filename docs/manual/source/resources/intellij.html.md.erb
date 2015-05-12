@@ -35,16 +35,22 @@ IDEA if asked to do so.
 
 ### Setting Up the Engine Directory
 
-Create an engine directory from a template. This requires that you install a 
+INFO: It is very important to run at least `pio build` once in your engine
+directory so that the project correctly recognizes the version of PredictionIO
+that you are using. If you upgraded your PredictionIO installation later, you
+will need to run `pio build` again in order for the engine to pick up the latest
+version of PredictionIO.
+
+Create an engine directory from a template. This requires that you install a
 template that you wish to start from or modify.
 Follow template [install](/start/download) and [deploy](/start/deploy) instructions
-or go through the [Quick Start](/templates/recommendation/quickstart/) if you are 
-planning to modify a recommender. Make sure to build, train, and deploy the 
+or go through the [Quick Start](/templates/recommendation/quickstart/) if you are
+planning to modify a recommender. Make sure to build, train, and deploy the
 engine to make sure all is configured properly.
 
 From IntelliJ IDEA, choose *File* > *New* > *Project from Existing Sources...*.
-When asked to select a directory to import, browse to the engine directory that you 
-downloaded too and proceed. Make sure you pick *Import project from external model* > *SBT*, 
+When asked to select a directory to import, browse to the engine directory that you
+downloaded too and proceed. Make sure you pick *Import project from external model* > *SBT*,
 then proceed to finish.
 
 You should be able to build the project at this point. To run and debug
@@ -147,12 +153,13 @@ Main class: io.prediction.workflow.CreateServer
 Program Arguments: --engineInstanceId **replace_with_the_id_from_pio_train**
 ```
 
-### Executing a query
+### Executing a Query
 
-You can execute a query with the correct SDK. For a recommender 
-that has been trainted with the sample Movielens dataset prehaps the easiest query is a curl one. 
-Start by running or debuging your `deploy` config so the service is waiting for the query. Then go 
-to the "Terminal" tab at the very bottom of the IDEA window and enter the curl request:
+You can execute a query with the correct SDK. For a recommender  that has been
+trained with the sample MovieLens dataset perhaps the easiest query is a curl
+one.  Start by running or debuging your `deploy` config so the service is
+waiting for the query. Then go  to the "Terminal" tab at the very bottom of the
+IDEA window and enter the curl request:
 
 ```$ curl -H "Content-Type: application/json" -d '{ "user": "1", "num": 4 }' http://localhost:8000/queries.json```
 
@@ -167,6 +174,6 @@ This should return something like:
 ]}
 ```
 
-INFO: If you hit a breakpoint you are likely to get a connection timeout. To see the data that would 
-have been returned, just place a breakpoint where the response is created or run the query with no 
-breakpoints.
+INFO: If you hit a breakpoint you are likely to get a connection timeout. To see
+the data that would have been returned, just place a breakpoint where the
+response is created or run the query with no breakpoints.
