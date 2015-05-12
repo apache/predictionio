@@ -99,8 +99,7 @@ class DataSource(val dsp: DataSourceParams)
 
   @transient lazy val logger = Logger[this.type]
 
-  override
-  def readTraining(sc: SparkContext): TrainingData = {
+  def getRatings(sc: SparkContext): RDD[Rating] = {
 
     val eventsRDD: RDD[Event] = PEventStore.find(
       appName = dsp.appName,
@@ -129,8 +128,14 @@ class DataSource(val dsp: DataSourceParams)
       rating
     }.cache()
 
-    new TrainingData(ratingsRDD)
+    ratingsRDD
   }
+
+  override
+  def readTraining(sc: SparkContext): TrainingData = {
+    new TrainingData(getRatings(sc))
+  }
+  
 }
 ```
 
