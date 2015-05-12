@@ -15,6 +15,7 @@
 
 package io.prediction.controller
 
+import _root_.io.prediction.annotation.DeveloperApi
 import io.prediction.core.BaseAlgorithm
 import io.prediction.workflow.PersistentModelManifest
 import org.apache.spark.SparkContext
@@ -42,10 +43,6 @@ import scala.reflect._
 abstract class P2LAlgorithm[PD, M: ClassTag, Q: ClassTag, P]
   extends BaseAlgorithm[PD, M, Q, P] {
 
-  /** Do not use directly or override this method, as this is called by
-    * PredictionIO workflow to train a model.
-    */
-  private[prediction]
   def trainBase(sc: SparkContext, pd: PD): M = train(sc, pd)
 
   /** Implement this method to produce a model from prepared data.
@@ -55,16 +52,21 @@ abstract class P2LAlgorithm[PD, M: ClassTag, Q: ClassTag, P]
     */
   def train(sc: SparkContext, pd: PD): M
 
-  private[prediction]
   def batchPredictBase(sc: SparkContext, bm: Any, qs: RDD[(Long, Q)])
   : RDD[(Long, P)] = batchPredict(bm.asInstanceOf[M], qs)
 
-  private[prediction]
+  /** This is a default implementation to perform batch prediction. Override
+    * this method for a custom implementation.
+    *
+    * @param m A model
+    * @param qs An RDD of index-query tuples. The index is used to keep track of
+    *           predicted results with corresponding queries.
+    * @return Batch of predicted results
+    */
   def batchPredict(m: M, qs: RDD[(Long, Q)]): RDD[(Long, P)] = {
     qs.mapValues { q => predict(m, q) }
   }
 
-  private[prediction]
   def predictBase(bm: Any, q: Q): P = predict(bm.asInstanceOf[M], q)
 
   /** Implement this method to produce a prediction from a query and trained
@@ -76,18 +78,34 @@ abstract class P2LAlgorithm[PD, M: ClassTag, Q: ClassTag, P]
     */
   def predict(model: M, query: Q): P
 
-  private[prediction]
+  /** :: DeveloperApi ::
+    * Engine developers should not use this directly (read on to see how
+    * parallel-to-local algorithm models are persisted).
+    *
+    * Parallel-to-local algorithms produce local models. By default, models will be
+    * serialized and stored automatically. Engine developers can override this behavior by
+    * mixing the [[PersistentModel]] trait into the model class, and
+    * PredictionIO will call [[PersistentModel.save]] instead. If it returns
+    * true, a [[io.prediction.workflow.PersistentModelManifest]] will be
+    * returned so that during deployment, PredictionIO will use
+    * [[PersistentModelLoader]] to retrieve the model. Otherwise, Unit will be
+    * returned and the model will be re-trained on-the-fly.
+    *
+    * @param sc Spark context
+    * @param modelId Model ID
+    * @param algoParams Algorithm parameters that trained this model
+    * @param bm Model
+    * @return The model itself for automatic persistence, an instance of
+    *         [[io.prediction.workflow.PersistentModelManifest]] for manual
+    *         persistence, or Unit for re-training on deployment
+    */
+  @DeveloperApi
   override
   def makePersistentModel(
     sc: SparkContext,
     modelId: String,
     algoParams: Params,
     bm: Any): Any = {
-    // P2LAlgo has local model. By default, the model is serialized into our
-    // storage automatically. User can override this by implementing the
-    // IPersistentModel trait, then we call the save method, upon successful, we
-    // return the Manifest, otherwise, Unit. 
-
     val m = bm.asInstanceOf[M]
     if (m.isInstanceOf[PersistentModel[_]]) {
       if (m.asInstanceOf[PersistentModel[Params]].save(

@@ -15,6 +15,7 @@
 
 package io.prediction.controller
 
+import io.prediction.annotation.DeveloperApi
 import io.prediction.core.BaseAlgorithm
 import io.prediction.workflow.PersistentModelManifest
 import org.apache.spark.SparkContext
@@ -43,10 +44,6 @@ import org.apache.spark.rdd.RDD
 abstract class PAlgorithm[PD, M, Q, P]
   extends BaseAlgorithm[PD, M, Q, P] {
 
-  /** Do not use directly or override this method, as this is called by
-    * PredictionIO workflow to train a model.
-    */
-  private[prediction]
   def trainBase(sc: SparkContext, pd: PD): M = train(sc, pd)
 
   /** Implement this method to produce a model from prepared data.
@@ -56,10 +53,8 @@ abstract class PAlgorithm[PD, M, Q, P]
     */
   def train(sc: SparkContext, pd: PD): M
 
-  private[prediction]
   def batchPredictBase(sc: SparkContext, bm: Any, qs: RDD[(Long, Q)])
   : RDD[(Long, P)] = batchPredict(bm.asInstanceOf[M], qs)
-
 
   /** To provide evaluation feature, one must override and implement this method
     * to generate many predictions in batch. Otherwise, an exception will be
@@ -74,10 +69,6 @@ abstract class PAlgorithm[PD, M, Q, P]
   def batchPredict(m: M, qs: RDD[(Long, Q)]): RDD[(Long, P)] =
     throw new NotImplementedError("batchPredict not implemented")
 
-  /** Do not use directly or override this method, as this is called by
-    * PredictionIO workflow to perform prediction.
-    */
-  private[prediction]
   def predictBase(baseModel: Any, query: Q): P = {
     predict(baseModel.asInstanceOf[M], query)
   }
@@ -91,19 +82,35 @@ abstract class PAlgorithm[PD, M, Q, P]
     */
   def predict(model: M, query: Q): P
 
-  private[prediction]
+  /** :: DeveloperApi ::
+    * Engine developers should not use this directly (read on to see how parallel
+    * algorithm models are persisted).
+    *
+    * In general, parallel models may contain multiple RDDs. It is not easy to
+    * infer and persist them programmatically since these RDDs may be
+    * potentially huge. To persist these models, engine developers need to  mix
+    * the [[PersistentModel]] trait into the model class and implement
+    * [[PersistentModel.save]]. If it returns true, a
+    * [[io.prediction.workflow.PersistentModelManifest]] will be
+    * returned so that during deployment, PredictionIO will use
+    * [[PersistentModelLoader]] to retrieve the model. Otherwise, Unit will be
+    * returned and the model will be re-trained on-the-fly.
+    *
+    * @param sc Spark context
+    * @param modelId Model ID
+    * @param algoParams Algorithm parameters that trained this model
+    * @param bm Model
+    * @return The model itself for automatic persistence, an instance of
+    *         [[io.prediction.workflow.PersistentModelManifest]] for manual
+    *         persistence, or Unit for re-training on deployment
+    */
+  @DeveloperApi
   override
   def makePersistentModel(
     sc: SparkContext,
     modelId: String,
     algoParams: Params,
     bm: Any): Any = {
-    // In general, a parallel model may contain multiple RDDs. It is not easy to
-    // infer and persist them programmatically since these RDDs may be
-    // potentially huge.
-
-    // Persist is successful only if the model is an instance of
-    // IPersistentModel and save is successful.
     val m = bm.asInstanceOf[M]
     if (m.isInstanceOf[PersistentModel[_]]) {
       if (m.asInstanceOf[PersistentModel[Params]].save(

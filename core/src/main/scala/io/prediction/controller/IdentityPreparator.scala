@@ -29,7 +29,6 @@ import scala.reflect._
   * @group Preparator
   */
 class IdentityPreparator[TD] extends BasePreparator[TD, TD] {
-  private[prediction]
   def prepareBase(sc: SparkContext, td: TD): TD = td
 }
 

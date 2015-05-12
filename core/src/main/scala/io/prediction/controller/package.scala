@@ -95,6 +95,12 @@ package io.prediction
   * The serving component comes with only 1 flavor--[[LServing]]. At the serving
   * stage, it is assumed that the result being served is already at a human-
   * consumable size.
+  *
+  * == Model Persistence ==
+  * PredictionIO tries its best to persist trained models automatically. Please
+  * refer to [[LAlgorithm.makePersistentModel]],
+  * [[P2LAlgorithm.makePersistentModel]], and [[PAlgorithm.makePersistentModel]]
+  * for descriptions on different strategies.
   */
 package object controller {
 

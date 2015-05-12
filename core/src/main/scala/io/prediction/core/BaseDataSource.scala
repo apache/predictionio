@@ -15,15 +15,38 @@
 
 package io.prediction.core
 
+import io.prediction.annotation.DeveloperApi
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
+/** :: DeveloperApi ::
+  * Base class of all data source controllers
+  *
+  * @tparam TD Training data class
+  * @tparam EI Evaluation information class
+  * @tparam Q Query class
+  * @tparam A Actual result class
+  */
+@DeveloperApi
 abstract class BaseDataSource[TD, EI, Q, A] extends AbstractDoer {
-
-  private[prediction]
+  /** :: DeveloperApi ::
+    * Engine developer should not use this directly. This is called by workflow
+    * to read training data.
+    *
+    * @param sc Spark context
+    * @return Training data
+    */
+  @DeveloperApi
   def readTrainingBase(sc: SparkContext): TD
 
-  private[prediction]
+  /** :: DeveloperApi ::
+    * Engine developer should not use this directly. This is called by
+    * evaluation workflow to read training and validation data.
+    *
+    * @param sc Spark context
+    * @return Sets of training data, evaluation information, queries, and actual
+    *         results
+    */
+  @DeveloperApi
   def readEvalBase(sc: SparkContext): Seq[(TD, EI, RDD[(Q, A)])]
-
 }

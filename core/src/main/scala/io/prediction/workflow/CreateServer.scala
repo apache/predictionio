@@ -475,7 +475,7 @@ class ServerActor[Q, P](
                 queryString,
                 algorithms.head.queryClass,
                 algorithms.head.querySerializer,
-                algorithms.head.gsonTypeAdpaterFactories
+                algorithms.head.gsonTypeAdapterFactories
               )
               val predictions = algorithms.zipWithIndex.map { case (a, ai) =>
                 a.predictBase(models(ai), query)
@@ -485,7 +485,7 @@ class ServerActor[Q, P](
                 jsonExtractorOption,
                 prediction,
                 algorithms.head.querySerializer,
-                algorithms.head.gsonTypeAdpaterFactories)
+                algorithms.head.gsonTypeAdapterFactories)
               val r = (predictionJValue,
                 prediction,
                 query)

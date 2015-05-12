@@ -164,9 +164,9 @@ object MetricEvaluator {
 }
 
 /** :: DeveloperApi ::
-  * Do no use this directly. Use [[MetricEvaluator$]] instead. An implementation
-  * of [[BaseEvaluator]] that evaluates prediction performance
-  * based on metric scores
+  * Do no use this directly. Use [[MetricEvaluator$]] instead. This is an
+  * implementation of [[io.prediction.core.BaseEvaluator]] that evaluates
+  * prediction performance based on metric scores.
   *
   * @param metric Primary metric
   * @param otherMetrics Other metrics

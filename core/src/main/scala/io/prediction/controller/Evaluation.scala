@@ -41,17 +41,20 @@ trait Evaluation extends Deployment {
     _evaluator
   }
 
-  /** Gets the tuple of implementations of [[BaseEngine]] and [[BaseEvaluator]] */
+  /** Gets the tuple of the [[Engine]] and the implementation of
+    * [[io.prediction.core.BaseEvaluator]]
+    */
   def engineEvaluator
   : (BaseEngine[_, _, _, _], BaseEvaluator[_, _, _, _, _]) = {
     assert(_evaluatorSet, "Evaluator not set")
     (engine, _evaluator)
   }
 
-  /** Sets both implementations of [[BaseEngine]] and [[BaseEvaluator]] for
-    * this [[Evaluation]]
+  /** Sets both an [[Engine]] and an implementation of
+    * [[io.prediction.core.BaseEvaluator]] for this [[Evaluation]]
     *
-    * @param engineEvaluator A tuple of implementations of [[BaseEngine]] and [[BaseEvaluator]]
+    * @param engineEvaluator A tuple an [[Engine]] and an implementation of
+    *                        [[io.prediction.core.BaseEvaluator]]
     * @tparam EI Evaluation information class
     * @tparam Q Query class
     * @tparam P Predicted result class
@@ -68,17 +71,18 @@ trait Evaluation extends Deployment {
     _evaluatorSet = true
   }
 
-  /** Returns both implemenations of [[BaseEngine]] and [[Metric]] contained in
-    * this [[Evaluation]]
+  /** Returns both the [[Engine]] and the implementation of [[Metric]] for this
+    * [[Evaluation]]
     */
   def engineMetric: (BaseEngine[_, _, _, _], Metric[_, _, _, _, _]) = {
     throw new NotImplementedError("This method is to keep the compiler happy")
   }
 
-  /** Sets both implementations of [[BaseEngine]], [[Metric]] for this
+  /** Sets both an [[Engine]] and an implementation of [[Metric]] for this
     * [[Evaluation]]
     *
-    * @param engineMetric A tuple of implementations of [[BaseEngine]] and [[Metric]]
+    * @param engineMetric A tuple of [[Engine]] and an implementation of
+    *                     [[Metric]]
     * @tparam EI Evaluation information class
     * @tparam Q Query class
     * @tparam P Predicted result class
@@ -94,20 +98,16 @@ trait Evaluation extends Deployment {
         outputPath = "best.json"))
   }
 
-  /** Returns both the [[Engine]] and [[Metric]] contained in this
-    * [[Evaluation]].
-    *
-    */
-  private [prediction] 
+  private [prediction]
   def engineMetrics: (BaseEngine[_, _, _, _], Metric[_, _, _, _, _]) = {
     throw new NotImplementedError("This method is to keep the compiler happy")
   }
 
-  /** Sets implementations of [[BaseEngine]], [[Metric]], and sequence of
-    * [[Metric]] for this [[Evaluation]]
+  /** Sets an [[Engine]], an implementation of [[Metric]], and sequence of
+    * implementations of [[Metric]] for this [[Evaluation]]
     *
-    * @param engineMetrics A tuple of implementations of [[BaseEngine]],
-    *                      [[Metric]] and sequence of [[Metric]]
+    * @param engineMetrics A tuple of [[Engine]], an implementation of
+    *                      [[Metric]] and sequence of implementations of [[Metric]]
     * @tparam EI Evaluation information class
     * @tparam Q Query class
     * @tparam P Predicted result class

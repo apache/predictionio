@@ -30,7 +30,6 @@ import org.apache.spark.SparkContext
 abstract class PPreparator[TD, PD]
   extends BasePreparator[TD, PD] {
 
-  private[prediction]
   def prepareBase(sc: SparkContext, td: TD): PD = {
     prepare(sc, td)
   }

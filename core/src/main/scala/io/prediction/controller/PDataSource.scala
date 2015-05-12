@@ -34,14 +34,11 @@ import org.apache.spark.rdd.RDD
 abstract class PDataSource[TD, EI, Q, A]
   extends BaseDataSource[TD, EI, Q, A] {
 
-  private[prediction]
   def readTrainingBase(sc: SparkContext): TD = readTraining(sc)
 
-  /** Implement this method to only return training data from a data source.
-    */
+  /** Implement this method to only return training data from a data source */
   def readTraining(sc: SparkContext): TD
 
-  private[prediction]
   def readEvalBase(sc: SparkContext): Seq[(TD, EI, RDD[(Q, A)])] = readEval(sc)
 
   /** To provide evaluation feature for your engine, your must override this

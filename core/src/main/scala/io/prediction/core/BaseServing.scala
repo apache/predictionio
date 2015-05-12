@@ -15,8 +15,26 @@
 
 package io.prediction.core
 
+import io.prediction.annotation.DeveloperApi
+
+/** :: DeveloperApi ::
+  * Base class of all serving controller classes
+  *
+  * @tparam Q Query class
+  * @tparam P Predicted result class
+  */
+@DeveloperApi
 abstract class BaseServing[Q, P]
   extends AbstractDoer {
-  private[prediction]
+  /** :: DeveloperApi ::
+    * Engine developers should not use this directly. This is called by serving
+    * layer to combine multiple predicted results from multiple algorithms, and
+    * custom business logic before serving to the end user.
+    *
+    * @param q Query
+    * @param ps List of predicted results
+    * @return A single predicted result
+    */
+  @DeveloperApi
   def serveBase(q: Q, ps: Seq[P]): P
 }

@@ -15,16 +15,26 @@
 
 package io.prediction.core
 
+import io.prediction.annotation.DeveloperApi
 import io.prediction.controller.EngineParams
 import io.prediction.workflow.JsonExtractorOption.JsonExtractorOption
 import io.prediction.workflow.WorkflowParams
-
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.json4s.JValue
 
+/** :: DeveloperApi ::
+  * Base class of all engine controller classes
+  *
+  * @tparam EI Evaluation information class
+  * @tparam Q Query class
+  * @tparam P Predicted result class
+  * @tparam A Actual result class
+  */
+@DeveloperApi
 abstract class BaseEngine[EI, Q, P, A] extends Serializable {
-  /** Implement this method so that training this engine would return a list of
+  /** :: DeveloperApi ::
+    * Implement this method so that training this engine would return a list of
     * models.
     *
     * @param sc An instance of SparkContext.
@@ -32,13 +42,15 @@ abstract class BaseEngine[EI, Q, P, A] extends Serializable {
     * @param params An instance of [[WorkflowParams]] that controls the workflow.
     * @return A list of models.
     */
+  @DeveloperApi
   def train(
     sc: SparkContext, 
     engineParams: EngineParams,
     engineInstanceId: String,
     params: WorkflowParams): Seq[Any]
 
-  /** Implement this method so that [[io.prediction.controller.Evaluation]] can
+  /** :: DeveloperApi ::
+    * Implement this method so that [[io.prediction.controller.Evaluation]] can
     * use this method to generate inputs for [[io.prediction.controller.Metric]].
     *
     * @param sc An instance of SparkContext.
@@ -47,12 +59,14 @@ abstract class BaseEngine[EI, Q, P, A] extends Serializable {
     * @return A list of evaluation information and RDD of query, predicted
     *         result, and actual result tuple tuple.
     */
+  @DeveloperApi
   def eval(
     sc: SparkContext, 
     engineParams: EngineParams,
     params: WorkflowParams): Seq[(EI, RDD[(Q, P, A)])]
 
-  /** Override this method to further optimize the process that runs multiple
+  /** :: DeveloperApi ::
+    * Override this method to further optimize the process that runs multiple
     * evaluations (during tuning, for example). By default, this method calls
     * [[eval]] for each element in the engine parameters list.
     *
@@ -61,6 +75,7 @@ abstract class BaseEngine[EI, Q, P, A] extends Serializable {
     * @param params An instance of [[WorkflowParams]] that controls the workflow.
     * @return A list of engine parameters and evaluation result (from [[eval]]) tuples.
     */
+  @DeveloperApi
   def batchEval(
     sc: SparkContext, 
     engineParamsList: Seq[EngineParams],
@@ -71,13 +86,15 @@ abstract class BaseEngine[EI, Q, P, A] extends Serializable {
     }
   }
 
-  /** Implement this method to convert a JValue (read from an engine variant
+  /** :: DeveloperApi ::
+    * Implement this method to convert a JValue (read from an engine variant
     * JSON file) to an instance of [[EngineParams]].
     *
     * @param variantJson Content of the engine variant JSON as JValue.
     * @param jsonExtractor Content of the engine variant JSON as JValue.
     * @return An instance of [[EngineParams]] converted from JSON.
     */
+  @DeveloperApi
   def jValueToEngineParams(variantJson: JValue, jsonExtractor: JsonExtractorOption): EngineParams =
     throw new NotImplementedError("JSON to EngineParams is not implemented.")
 }

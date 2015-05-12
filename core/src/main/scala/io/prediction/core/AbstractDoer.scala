@@ -16,12 +16,30 @@
 package io.prediction.core
 
 import grizzled.slf4j.Logging
+import io.prediction.annotation.DeveloperApi
 import io.prediction.controller.Params
 
-// Base class for all controllers.
+/** :: DeveloperApi ::
+  * Base class for all controllers
+  */
+@DeveloperApi
 abstract class AbstractDoer extends Serializable
 
+/** :: DeveloperApi ::
+  * Provides facility to instantiate controller classes
+  */
+@DeveloperApi
 object Doer extends Logging {
+  /** :: DeveloperApi ::
+    * Instantiates a controller class using supplied controller parameters as
+    * constructor parameters
+    *
+    * @param cls Class of the controller class
+    * @param params Parameters of the controller class
+    * @tparam C Controller class
+    * @return An instance of the controller class
+    */
+  @DeveloperApi
   def apply[C <: AbstractDoer] (
     cls: Class[_ <: C], params: Params): C = {
 

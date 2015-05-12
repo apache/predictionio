@@ -13,26 +13,9 @@
   * limitations under the License.
   */
 
-package io.prediction.controller
+package io.prediction
 
-import io.prediction.core.BaseServing
-
-/** Base class of serving. 
-  *
-  * @tparam Q Input query class.
-  * @tparam P Output prediction class.
-  * @group Serving
+/** Core base classes of PredictionIO controller components. Engine developers
+  * should not use these directly.
   */
-abstract class LServing[Q, P] extends BaseServing[Q, P] {
-  def serveBase(q: Q, ps: Seq[P]): P = {
-    serve(q, ps)
-  }
-
-  /** Implement this method to combine multiple algorithms' predictions to
-    * produce a single final prediction.
-    *
-    * @param query Input query.
-    * @param predictions A list of algorithms' predictions.
-    */
-  def serve(query: Q, predictions: Seq[P]): P
-}
+package object core {}

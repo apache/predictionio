@@ -15,6 +15,7 @@
 
 package io.prediction.controller
 
+import _root_.io.prediction.annotation.DeveloperApi
 import io.prediction.core.BaseAlgorithm
 import io.prediction.workflow.PersistentModelManifest
 import org.apache.spark.SparkContext
@@ -41,10 +42,6 @@ import scala.reflect._
 abstract class LAlgorithm[PD, M : ClassTag, Q, P]
   extends BaseAlgorithm[RDD[PD], RDD[M], Q, P] {
 
-  /** Do not use directly or override this method, as this is called by
-    * PredictionIO workflow to train a model.
-    */
-  private[prediction]
   def trainBase(sc: SparkContext, pd: RDD[PD]): RDD[M] = pd.map(train)
 
   /** Implement this method to produce a model from prepared data.
@@ -54,14 +51,20 @@ abstract class LAlgorithm[PD, M : ClassTag, Q, P]
     */
   def train(pd: PD): M
 
-  private[prediction]
   def batchPredictBase(sc: SparkContext, bm: Any, qs: RDD[(Long, Q)])
   : RDD[(Long, P)] = {
     val mRDD = bm.asInstanceOf[RDD[M]]
     batchPredict(mRDD, qs)
   }
 
-  private[prediction]
+  /** This is a default implementation to perform batch prediction. Override
+    * this method for a custom implementation.
+    *
+    * @param mRDD A single model wrapped inside an RDD
+    * @param qs An RDD of index-query tuples. The index is used to keep track of
+    *           predicted results with corresponding queries.
+    * @return Batch of predicted results
+    */
   def batchPredict(mRDD: RDD[M], qs: RDD[(Long, Q)]): RDD[(Long, P)] = {
     val glomQs: RDD[Array[(Long, Q)]] = qs.glom()
     val cartesian: RDD[(M, Array[(Long, Q)])] = mRDD.cartesian(glomQs)
@@ -70,7 +73,6 @@ abstract class LAlgorithm[PD, M : ClassTag, Q, P]
     }
   }
 
-  private[prediction]
   def predictBase(localBaseModel: Any, q: Q): P = {
     predict(localBaseModel.asInstanceOf[M], q)
   }
@@ -84,18 +86,34 @@ abstract class LAlgorithm[PD, M : ClassTag, Q, P]
     */
   def predict(m: M, q: Q): P
 
-  private[prediction]
+  /** :: DeveloperApi ::
+    * Engine developers should not use this directly (read on to see how local
+    * algorithm models are persisted).
+    *
+    * Local algorithms produce local models. By default, models will be
+    * serialized and stored automatically. Engine developers can override this behavior by
+    * mixing the [[PersistentModel]] trait into the model class, and
+    * PredictionIO will call [[PersistentModel.save]] instead. If it returns
+    * true, a [[io.prediction.workflow.PersistentModelManifest]] will be
+    * returned so that during deployment, PredictionIO will use
+    * [[PersistentModelLoader]] to retrieve the model. Otherwise, Unit will be
+    * returned and the model will be re-trained on-the-fly.
+    *
+    * @param sc Spark context
+    * @param modelId Model ID
+    * @param algoParams Algorithm parameters that trained this model
+    * @param bm Model
+    * @return The model itself for automatic persistence, an instance of
+    *         [[io.prediction.workflow.PersistentModelManifest]] for manual
+    *         persistence, or Unit for re-training on deployment
+    */
+  @DeveloperApi
   override
   def makePersistentModel(
     sc: SparkContext,
     modelId: String,
     algoParams: Params,
     bm: Any): Any = {
-    // LAlgo has local model. By default, the model is serialized into our
-    // storage automatically. User can override this by implementing the
-    // IPersistentModel trait, then we call the save method, upon successful, we
-    // return the Manifest, otherwise, Unit. 
-
     // Check RDD[M].count == 1
     val m = bm.asInstanceOf[RDD[M]].first()
     if (m.isInstanceOf[PersistentModel[_]]) {

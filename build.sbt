@@ -106,17 +106,17 @@ scalacOptions in (ScalaUnidoc, unidoc) ++= Seq(
     "io.prediction.annotation",
     "io.prediction.controller.html",
     "io.prediction.controller.java",
-    "io.prediction.core",
+    //"io.prediction.core",
     "io.prediction.data.api",
     "io.prediction.data.examples",
     "io.prediction.data.view",
     "io.prediction.engines",
-    "io.prediction.workflow",
+    //"io.prediction.workflow",
     "io.prediction.tools",
     "org",
     "scalikejdbc").mkString(":"),
   "-doc-title",
-  "PredictionIO Scaladoc",
+  "PredictionIO Scala API",
   "-doc-version",
   version.value,
   "-doc-root-content",
@@ -135,7 +135,7 @@ javacOptions in (JavaUnidoc, unidoc) := Seq(
   "java.lang")
 */
 
-lazy val pioUnidoc = taskKey[Unit]("Builds PredictionIO Scaladoc and Javadoc")
+lazy val pioUnidoc = taskKey[Unit]("Builds PredictionIO ScalaDoc and Javadoc")
 
 pioUnidoc := {
   (unidoc in Compile).value
