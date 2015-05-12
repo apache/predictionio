@@ -106,7 +106,8 @@ trait Evaluation extends Deployment {
   /** Sets implementations of [[BaseEngine]], [[Metric]], and sequence of
     * [[Metric]] for this [[Evaluation]]
     *
-    * @param engineMetrics A tuple of implementations of [[BaseEngine]], [[Metric]] and sequence of [[Metric]]
+    * @param engineMetrics A tuple of implementations of [[BaseEngine]],
+    *                      [[Metric]] and sequence of [[Metric]]
     * @tparam EI Evaluation information class
     * @tparam Q Query class
     * @tparam P Predicted result class
