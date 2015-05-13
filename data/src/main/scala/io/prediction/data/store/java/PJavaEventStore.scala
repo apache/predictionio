@@ -13,10 +13,11 @@
   * limitations under the License.
   */
 
-package io.prediction.data.store
+package io.prediction.data.store.java
 
 import io.prediction.data.storage.Event
 import io.prediction.data.storage.PropertyMap
+import io.prediction.data.store.PEventStore
 import org.apache.spark.SparkContext
 import org.apache.spark.api.java.JavaRDD
 import org.joda.time.DateTime

@@ -13,17 +13,16 @@
   * limitations under the License.
   */
 
-package io.prediction.data.store
+package io.prediction.controller.java
 
-/** Used by Java-based engines to mock Some and None */
-object JavaOptionHelper {
-  /** Mimics a None from Java-based engine */
-  def none[T]: Option[T] = {
-    Option(null.asInstanceOf[T])
-  }
+import io.prediction.controller.PDataSource
 
-  /** Mimics a Some from Java-based engine */
-  def some[T](value: T): Option[T] = {
-    Some(value)
-  }
-}
+/** Base class of a Java parallel data source. Refer to [[PDataSource]] for documentation.
+  *
+  * @tparam TD Training data class.
+  * @tparam EI Evaluation Info class.
+  * @tparam Q Input query class.
+  * @tparam A Actual value class.
+  * @group Data Source
+  */
+abstract class PJavaDataSource[TD, EI, Q, A] extends PDataSource[TD, EI, Q, A]

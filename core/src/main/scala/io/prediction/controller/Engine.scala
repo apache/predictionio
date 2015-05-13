@@ -118,7 +118,7 @@ class Engine[TD, EI, PD, Q, P, A](
     */
   def this(dataSourceClass: Class[_ <: BaseDataSource[TD, EI, Q, A]],
     preparatorClass: Class[_ <: BasePreparator[TD, PD]],
-    algorithmClassMap: java.util.Map[String, Class[_ <: BaseAlgorithm[PD, _, Q, P]]],
+    algorithmClassMap: _root_.java.util.Map[String, Class[_ <: BaseAlgorithm[PD, _, Q, P]]],
     servingClass: Class[_ <: BaseServing[Q, P]]) = this(
     Map("" -> dataSourceClass),
     Map("" -> preparatorClass),
@@ -335,7 +335,7 @@ class Engine[TD, EI, PD, Q, P, A](
               "Existing algorithm name(s) are: " +
               s"${algorithmClassMap.keys.mkString(", ")}. Aborting.")
           } else {
-            logger.error(s"${algoName} cannot be found in the engine's " +
+            logger.error(s"$algoName cannot be found in the engine's " +
               "definition. Existing algorithm name(s) are: " +
               s"${algorithmClassMap.keys.mkString(", ")}. Aborting.")
           }
@@ -780,7 +780,7 @@ object Engine {
       }}
 
       val unionAlgoPredicts: RDD[(QX, Seq[P])] = sc.union(algoPredicts)
-      .groupByKey
+      .groupByKey()
       .mapValues { ps => {
         assert (ps.size == algoCount, "Must have same length as algoCount")
         // TODO. Check size == algoCount

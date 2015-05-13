@@ -32,7 +32,7 @@ import scala.reflect._
   * @tparam A Actual value class.
   * @group Data Source
   */
-abstract class LDataSource[TD : ClassTag, EI : ClassTag, Q, A]
+abstract class LDataSource[TD: ClassTag, EI, Q, A]
   extends BaseDataSource[RDD[TD], EI, Q, A] {
 
   def readTrainingBase(sc: SparkContext): RDD[TD] = {

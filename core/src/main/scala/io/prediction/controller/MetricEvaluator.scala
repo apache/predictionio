@@ -15,8 +15,8 @@
 
 package io.prediction.controller
 
-import java.io.File
-import java.io.PrintWriter
+import _root_.java.io.File
+import _root_.java.io.PrintWriter
 
 import com.github.nscala_time.time.Imports.DateTime
 import grizzled.slf4j.Logger

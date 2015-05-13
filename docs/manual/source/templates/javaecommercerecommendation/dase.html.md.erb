@@ -132,7 +132,7 @@ In `readTraining()`, `PJavaEventStore` is an object which provides function to a
 
 This E-Commerce Recommendation Engine Template requires "user" and "item" entities that are set by events.
 
-`PEventStore.aggregateProperties(...)` aggregates properties of the `user` and `item` that are set, unset, or deleted by special events **$set**, **$unset** and **$delete**. Please refer to [Event API](/datacollection/eventapi/#note-about-properties) for more details of using these events.
+`PJavaEventStore.aggregateProperties(...)` aggregates properties of the `user` and `item` that are set, unset, or deleted by special events **$set**, **$unset** and **$delete**. Please refer to [Event API](/datacollection/eventapi/#note-about-properties) for more details of using these events.
 
 The following code aggregates the properties of `user` and then map each result to a `User` object.
 
@@ -141,10 +141,10 @@ The following code aggregates the properties of `user` and then map each result 
  JavaPairRDD<String,User> usersRDD = PJavaEventStore.aggregateProperties(
    dsp.getAppName(),
    "user",
-   JavaOptionHelper.<String>none(),
-   JavaOptionHelper.<DateTime>none(),
-   JavaOptionHelper.<DateTime>none(),
-   JavaOptionHelper.<List<String>>none(),
+   OptionHelper.<String>none(),
+   OptionHelper.<DateTime>none(),
+   OptionHelper.<DateTime>none(),
+   OptionHelper.<List<String>>none(),
    sc)
    .mapToPair(new PairFunction<Tuple2<String, PropertyMap>, String, User>() {
      @Override
@@ -172,10 +172,10 @@ Similarly, the following code aggregates `item` properties and then map each res
   JavaPairRDD<String, Item> itemsRDD = PJavaEventStore.aggregateProperties(
     dsp.getAppName(),
     "item",
-    JavaOptionHelper.<String>none(),
-    JavaOptionHelper.<DateTime>none(),
-    JavaOptionHelper.<DateTime>none(),
-    JavaOptionHelper.<List<String>>none(),
+    OptionHelper.<String>none(),
+    OptionHelper.<DateTime>none(),
+    OptionHelper.<DateTime>none(),
+    OptionHelper.<List<String>>none(),
     sc)
     .mapToPair(new PairFunction<Tuple2<String, PropertyMap>, String, Item>() {
        @Override
@@ -195,14 +195,14 @@ Similarly, the following code aggregates `item` properties and then map each res
 
   JavaRDD<UserItemEvent> viewEventsRDD = PJavaEventStore.find(
     dsp.getAppName(),
-    JavaOptionHelper.<String>none(),
-    JavaOptionHelper.<DateTime>none(),
-    JavaOptionHelper.<DateTime>none(),
-    JavaOptionHelper.some("user"),
-    JavaOptionHelper.<String>none(),
-    JavaOptionHelper.some(Collections.singletonList("view")),
-    JavaOptionHelper.<Option<String>>none(),
-    JavaOptionHelper.<Option<String>>none(),
+    OptionHelper.<String>none(),
+    OptionHelper.<DateTime>none(),
+    OptionHelper.<DateTime>none(),
+    OptionHelper.some("user"),
+    OptionHelper.<String>none(),
+    OptionHelper.some(Collections.singletonList("view")),
+    OptionHelper.<Option<String>>none(),
+    OptionHelper.<Option<String>>none(),
     sc)
     .map(new Function<Event, UserItemEvent>() {
        @Override
@@ -220,14 +220,14 @@ Similarly, we read buy events from Event Server.
 
   JavaRDD<UserItemEvent> viewEventsRDD = PJavaEventStore.find(
     dsp.getAppName(),
-    JavaOptionHelper.<String>none(),
-    JavaOptionHelper.<DateTime>none(),
-    JavaOptionHelper.<DateTime>none(),
-    JavaOptionHelper.some("user"),
-    JavaOptionHelper.<String>none(),
-    JavaOptionHelper.some(Collections.singletonList("buy")),
-    JavaOptionHelper.<Option<String>>none(),
-    JavaOptionHelper.<Option<String>>none(),
+    OptionHelper.<String>none(),
+    OptionHelper.<DateTime>none(),
+    OptionHelper.<DateTime>none(),
+    OptionHelper.some("user"),
+    OptionHelper.<String>none(),
+    OptionHelper.some(Collections.singletonList("buy")),
+    OptionHelper.<Option<String>>none(),
+    OptionHelper.<Option<String>>none(),
     sc)
     .map(new Function<Event, UserItemEvent>() {
        @Override
@@ -268,7 +268,7 @@ necessary feature selection and data processing tasks. At the end, it returns
 By default, `prepare` simply includes the unprocessed `TrainingData` in `PreparedData`:
 
 ```java
-public class Preparator extends PPreparator<TrainingData, PreparedData> {
+public class Preparator extends PJavaPreparator<TrainingData, PreparedData> {
 
   @Override
   public PreparedData prepare(SparkContext sc, TrainingData trainingData) {
@@ -451,7 +451,7 @@ than one predictive model. *Serving* then returns the final predicted result.
 PredictionIO will convert it to a JSON response automatically.
 
 ```java
-public class Serving extends LServing<Query, PredictedResult> {
+public class Serving extends LJavaServing<Query, PredictedResult> {
 
   @Override
   public PredictedResult serve(Query query, Seq<PredictedResult> predictions) {

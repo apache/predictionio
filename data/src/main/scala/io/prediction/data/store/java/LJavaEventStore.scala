@@ -13,9 +13,10 @@
   * limitations under the License.
   */
 
-package io.prediction.data.store
+package io.prediction.data.store.java
 
 import io.prediction.data.storage.Event
+import io.prediction.data.store.LEventStore
 import org.joda.time.DateTime
 
 import scala.collection.JavaConversions
