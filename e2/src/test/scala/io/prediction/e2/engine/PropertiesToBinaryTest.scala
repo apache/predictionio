@@ -17,6 +17,7 @@ package io.prediction.e2.engine
 
 import io.prediction.e2.fixture.PropertiesToBinaryFixture
 import io.prediction.e2.fixture.SharedSparkContext
+import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.rdd.RDD
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
@@ -29,24 +30,27 @@ class PropertiesToBinaryTest extends FlatSpec with Matchers with SharedSparkCont
 with PropertiesToBinaryFixture{
 
   "toBinary" should "produce the following summed values:" in {
-    val testCase = new PropertiesToBinary(sc.parallelize(base.maps), base.properties)
+    val testCase = PropertiesToBinary(sc.parallelize(base.maps), base.properties)
     val vectorTwoA = testCase.toBinary(testArrays.twoA)
     val vectorTwoB = testCase.toBinary(testArrays.twoB)
+
 
     // Make sure vectors produced are the same size.
     vectorTwoA.size should be (vectorTwoB.size)
 
     // // Test case for checking food value not listed in base.maps.
-    testCase.toBinary(testArrays.one).toArray.sum should be(1.0)
+    testCase.toBinary(testArrays.one).toArray.sum should be (1.0)
 
     // Test cases for making sure indices are preserved.
-    (0 until vectorTwoA.size).map(
-      k => vectorTwoA(k) - vectorTwoB(k)
-    ).toArray.sum should be (0.0)
+    val sumOne = vecSum(vectorTwoA, vectorTwoB)
 
-    (0 until vectorTwoA.size).map(
-      k => vectorTwoA(k) + vectorTwoB(k)
-    ).toArray.sum should be (4.0)
+    exactly (1, sumOne) should be (2.0)
+    exactly (2,sumOne) should be (0.0)
+    exactly (2, sumOne) should be (1.0)
+
+    val sumTwo = vecSum(Vectors.dense(sumOne), testCase.toBinary(testArrays.twoC))
+
+    exactly (3, sumTwo) should be (1.0)
   }
 
 }

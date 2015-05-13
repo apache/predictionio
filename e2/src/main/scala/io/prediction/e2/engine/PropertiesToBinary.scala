@@ -21,23 +21,28 @@ import org.apache.spark.mllib.linalg.Vector
 import scala.collection.immutable.HashMap
 import scala.collection.immutable.HashSet
 
-class PropertiesToBinary(input : RDD[HashMap[String, String]], properties : HashSet[String]) {
-
-  val propertyMap : HashMap[(String, String), Int] = HashMap(
-    input.flatMap(identity)
-      .distinct
-      .collect
-      .filter(e => properties.contains(e._1))
-      .zipWithIndex : _*
-  )
+class PropertiesToBinary (propertyMap : HashMap[(String, String), Int]) {
 
   val numFeatures = propertyMap.size
 
   def toBinary(map :  Array[(String, String)]) : Vector = {
     val mapArr : Seq[(Int, Double)] = map.flatMap(
-      e => propertyMap.get(e).map(e => (e, 1.0))
+      e => propertyMap.get(e).map(idx => (idx, 1.0))
     )
 
     Vectors.sparse(numFeatures, mapArr)
+  }
+}
+
+
+object PropertiesToBinary {
+  def apply (input : RDD[HashMap[String, String]], properties : HashSet[String]) : PropertiesToBinary = {
+    new PropertiesToBinary(HashMap(
+      input.flatMap(identity)
+        .filter(e => properties.contains(e._1))
+        .distinct
+        .collect
+        .zipWithIndex : _*
+    ))
   }
 }

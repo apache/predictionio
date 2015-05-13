@@ -17,6 +17,7 @@ package io.prediction.e2.fixture
 
 import scala.collection.immutable.HashMap
 import scala.collection.immutable.HashSet
+import org.apache.spark.mllib.linalg.Vector
 
 trait PropertiesToBinaryFixture {
 
@@ -36,13 +37,23 @@ trait PropertiesToBinaryFixture {
 
   def testArrays = {
     new {
-      // Test case for checking food value not listed in base.maps.
+      // Test case for checking food value not listed in base.maps, and
+      // property not in properties.
       val one = Array(("food", "burger"), ("music", "rock"), ("hobby", "scala"))
 
       // Test case for making sure indices are preserved.
-      val twoA = Array(("food", "banana"), ("hobby", "scala"))
-      val twoB = Array(("food", "orange"), ("hobby", "scala"))
+      val twoA = Array(("food", "orange"), ("hobby", "scala"))
+      val twoB = Array(("food", "banana"), ("hobby", "scala"))
+      val twoC = Array(("hobby", "guitar"))
     }
   }
 
+  def vecSum (vec1 : Vector, vec2 : Vector) : Array[Double] = {
+    (0 until vec1.size).map(
+      k => vec1(k) + vec2(k)
+    ).toArray
+  }
+
 }
+
+
