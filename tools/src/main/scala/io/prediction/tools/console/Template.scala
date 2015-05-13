@@ -419,8 +419,9 @@ object Template extends Logging {
 
     metadata.pioVersionMin.foreach { pvm =>
       if (Version(BuildInfo.version) < Version(pvm)) {
-        warn(s"This engine template requires at least PredictionIO $pvm. " +
+        error(s"This engine template requires at least PredictionIO $pvm. " +
           s"The template may not work with PredictionIO ${BuildInfo.version}.")
+        sys.exit(1)
       }
     }
   }
