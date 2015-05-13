@@ -1,4 +1,5 @@
-Usage: pio app new [--id <value>] [--description <value>] <name>
+Usage: pio app new [--id <value>] [--description <value>] [--access-key <value>]
+                   <name>
 
 Create a new app key to app ID mapping.
 
@@ -6,6 +7,8 @@ Create a new app key to app ID mapping.
       Specify this if you already have data under an app ID.
   --description <value>
       Description of the new app.
+  --access-key <value>
+      Specify a custom default access key.
   <name>
       App name.
 

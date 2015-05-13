@@ -54,7 +54,7 @@ object App extends Logging {
           info(s"Initialized Event Store for this app ID: ${id}.")
           val accessKeys = storage.Storage.getMetaDataAccessKeys
           val accessKey = accessKeys.insert(storage.AccessKey(
-            key = "",
+            key = ca.accessKey.accessKey,
             appid = id,
             events = Seq()))
           accessKey map { k =>
@@ -102,7 +102,7 @@ object App extends Logging {
       keys foreach { k =>
         val events =
           if (k.events.size > 0) k.events.sorted.mkString(",") else "(all)"
-        info(f"${app.name}%20s | ${app.id}%4d | ${k.key}%s | ${events}%s")
+        info(f"${app.name}%20s | ${app.id}%4d | ${k.key}%64s | $events%s")
       }
     }
     info(s"Finished listing ${apps.size} app(s).")

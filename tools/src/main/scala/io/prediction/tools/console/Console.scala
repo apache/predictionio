@@ -484,13 +484,16 @@ object Console extends Logging {
             } children(
               opt[Int]("id") action { (x, c) =>
                 c.copy(app = c.app.copy(id = Some(x)))
-              } text("Specify this if you already have data under an app ID."),
+              },
               opt[String]("description") action { (x, c) =>
                 c.copy(app = c.app.copy(description = Some(x)))
-              } text("Specify this if you already have data under an app ID."),
+              },
+              opt[String]("access-key") action { (x, c) =>
+                c.copy(accessKey = c.accessKey.copy(accessKey = x))
+              },
               arg[String]("<name>") action { (x, c) =>
                 c.copy(app = c.app.copy(name = x))
-              } text("App name.")
+              }
             ),
           note(""),
           cmd("list").
@@ -572,14 +575,17 @@ object Console extends Logging {
             action { (_, c) =>
               c.copy(commands = c.commands :+ "new")
             } children(
+              opt[String]("key") action { (x, c) =>
+                c.copy(accessKey = c.accessKey.copy(accessKey = x))
+              },
               arg[String]("<app name>") action { (x, c) =>
                 c.copy(app = c.app.copy(name = x))
-              } text("App to be associated with the new access key."),
+              },
               arg[String]("[<event1> <event2> ...]") unbounded() optional()
                 action { (x, c) =>
                   c.copy(accessKey = c.accessKey.copy(
                     events = c.accessKey.events :+ x))
-                } text("Allowed event name(s) to be added to the access key.")
+                }
             ),
           cmd("list").
             text("List all access keys of an app.").

@@ -1,7 +1,9 @@
-Usage: pio accesskey new <app name> [<event1> <event2>...]
+Usage: pio accesskey new [--key] <app name> [<event1> <event2>...]
 
 Add allowed event(s) to an access key.
 
+  --key <value>
+      Specify a custom key.
   <app name>
       App to be associated with the new access key.
   <event1> <event2>...

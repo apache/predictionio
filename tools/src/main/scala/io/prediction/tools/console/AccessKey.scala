@@ -29,7 +29,7 @@ object AccessKey extends Logging {
     apps.getByName(ca.app.name) map { app =>
       val accessKeys = storage.Storage.getMetaDataAccessKeys
       val accessKey = accessKeys.insert(storage.AccessKey(
-        key = "",
+        key = ca.accessKey.accessKey,
         appid = app.id,
         events = ca.accessKey.events))
       accessKey map { k =>
@@ -63,7 +63,7 @@ object AccessKey extends Logging {
     keys.sortBy(k => k.appid) foreach { k =>
       val events =
         if (k.events.size > 0) k.events.sorted.mkString(",") else "(all)"
-      info(f"${k.key}%s | ${k.appid}%6d | ${events}%s")
+      info(f"${k.key}%64s | ${k.appid}%6d | $events%s")
     }
     info(s"Finished listing ${keys.size} access key(s).")
     0
