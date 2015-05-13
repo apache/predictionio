@@ -18,6 +18,7 @@ package io.prediction.controller
 import io.prediction.core.BaseDataSource
 import io.prediction.core.BaseAlgorithm
 
+import scala.collection.JavaConversions
 import scala.language.implicitConversions
 
 /** This class serves as a logical grouping of all required engine's parameters.
@@ -34,6 +35,33 @@ class EngineParams(
     val algorithmParamsList: Seq[(String, Params)] = Seq(),
     val servingParams: (String, Params) = ("", EmptyParams()))
   extends Serializable {
+
+  /** Java-friendly constructor
+    *
+    * @param dataSourceName Data Source name
+    * @param dataSourceParams Data Source parameters
+    * @param preparatorName Preparator name
+    * @param preparatorParams Preparator parameters
+    * @param algorithmNameParams Map of algorithm name-parameters
+    * @param servingName Serving name
+    * @param servingParams Serving parameters
+    */
+  def this(
+    dataSourceName: String,
+    dataSourceParams: Params,
+    preparatorName: String,
+    preparatorParams: Params,
+    algorithmNameParams: _root_.java.util.Map[String, _ <: Params],
+    servingName: String,
+    servingParams: Params) = {
+
+    this(
+      (dataSourceName, dataSourceParams),
+      (preparatorName, preparatorParams),
+      JavaConversions.mapAsScalaMap(algorithmNameParams).toSeq,
+      (servingName, servingParams)
+    )
+  }
 
   // A case class style copy method.
   def copy(

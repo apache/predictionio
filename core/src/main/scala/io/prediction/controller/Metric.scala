@@ -15,15 +15,15 @@
 
 package io.prediction.controller
 
+import _root_.java.util.Comparator
+
 import io.prediction.core.BaseEngine
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-
-import scala.reflect._
-
-import Numeric.Implicits._   
 import org.apache.spark.util.StatCounter
+
+import scala.Numeric.Implicits._
+import scala.reflect._
 
 /** Base class of a [[Metric]].
   *
@@ -36,6 +36,14 @@ import org.apache.spark.util.StatCounter
   */
 abstract class Metric[EI, Q, P, A, R](implicit rOrder: Ordering[R])
 extends Serializable {
+  /** Java friendly constructor
+    *
+    * @param comparator Comparator for sorting the metric results
+    */
+  def this(comparator: Comparator[R]) = {
+    this()(Ordering.comparatorToOrdering(comparator))
+  }
+
   /** Class name of this [[Metric]]. */
   def header: String = this.getClass.getSimpleName
 

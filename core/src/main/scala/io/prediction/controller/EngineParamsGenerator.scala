@@ -22,9 +22,6 @@ import scala.language.implicitConversions
   * Implementations of this trait can be supplied to "pio eval" as the second
   * command line argument.
   *
-  * For Scala engines, implement this trait with an object. For Java engines,
-  * implement this interface (trait) with a class.
-  *
   * @group Evaluation
   */
 trait EngineParamsGenerator {
