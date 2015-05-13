@@ -83,7 +83,6 @@ $ python import_eventserver.py --access_key access
     }
   },
   "preparator": {
-    "name" : "prep",
     "params": {
       "nMin": 1,
       "nMax": 2,
@@ -474,43 +473,6 @@ object EngineParamsList extends EngineParamsGenerator {
     baseEP.copy(algorithmParamsList = Seq(("nb", NBAlgorithmParams(1.5)))),
     baseEP.copy(algorithmParamsList = Seq(("nb", NBAlgorithmParams(5))))
   )
-```
-
-In the latter block of code, only the parameter values that show up in the algorithm stage are assessed. However, it is plausible that you may want to assess parameter values in the Data Model implementation, PreparedData. This can easily be done by placing the preparator parameter choices as follows:
-
-```scala
-object EngineParamsList extends EngineParamsGenerator {
-
-  // Set data source and preparator parameters.
-  private[this] val baseEP = EngineParams(
-    dataSourceParams = DataSourceParams(appName = "marco-MyTextApp", evalK = Some(5))
-  )
-
-  // Set the algorithm params for which we will assess an accuracy score.
-  engineParamsList = Seq(
-    baseEP.copy(preparatorParams = ("prep", PreparatorParams(nMin = 1, nMax = 2)),
-      algorithmParamsList = Seq(("nb", NBAlgorithmParams(0.5)))),
-    baseEP.copy(preparatorParams = ("prep", PreparatorParams(nMin = 2, nMax = 3)),
-      algorithmParamsList = Seq(("nb", NBAlgorithmParams(1.5)))),
-    baseEP.copy(preparatorParams = ("prep", PreparatorParams(nMin = 1, nMax = 3)),
-      algorithmParamsList = Seq(("nb", NBAlgorithmParams(5))))
-  )
-```
-
-In the latter block of code, the preparatorParams field must be filled with a tuple consisting of the Preparator name and Params extension object. The name of the Preparator is specified in your `engine.json` file:
-
-```
-...
-"preparator": {
-    "name" : "prep",
-    "params": {
-      "nMin": 1,
-      "nMax": 2,
-      "inverseIdfMin" : 0.15,
-      "inverseIdfMax" : 0.85
-    }
-  },
-...
 ```
 
 
