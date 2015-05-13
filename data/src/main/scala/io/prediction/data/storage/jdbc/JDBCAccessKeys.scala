@@ -37,13 +37,13 @@ class JDBCAccessKeys(client: String, config: StorageClientConfig, prefix: String
   }
 
   def insert(accessKey: AccessKey): Option[String] = DB localTx { implicit s =>
-    val generatedkey = Random.alphanumeric.take(64).mkString
+    val key = if (accessKey.key.isEmpty) generateKey else accessKey.key
     sql"""
     insert into $tableName values(
-      $generatedkey,
+      $key,
       ${accessKey.appid},
       ${accessKey.events.mkString(",")})""".update().apply()
-    Some(generatedkey)
+    Some(key)
   }
 
   def get(key: String): Option[AccessKey] = DB readOnly { implicit session =>

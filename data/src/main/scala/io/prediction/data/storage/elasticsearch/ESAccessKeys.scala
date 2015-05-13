@@ -53,10 +53,9 @@ class ESAccessKeys(client: Client, config: StorageClientConfig, index: String)
   }
 
   def insert(accessKey: AccessKey): Option[String] = {
-    val generatedkey = Random.alphanumeric.take(64).mkString
-    val realaccesskey = accessKey.copy(key = generatedkey)
-    update(realaccesskey)
-    Some(generatedkey)
+    val key = if (accessKey.key.isEmpty) generateKey else accessKey.key
+    update(accessKey.copy(key = key))
+    Some(key)
   }
 
   def get(key: String): Option[AccessKey] = {

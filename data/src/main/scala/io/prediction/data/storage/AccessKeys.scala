@@ -17,6 +17,8 @@ package io.prediction.data.storage
 
 import io.prediction.annotation.DeveloperApi
 
+import scala.util.Random
+
 /** :: DeveloperApi ::
   * Stores mapping of access keys, app IDs, and lists of allowed event names
   *
@@ -38,7 +40,9 @@ case class AccessKey(
   */
 @DeveloperApi
 trait AccessKeys {
-  /** Insert a new [[AccessKey]]. Returns a generated access key. */
+  /** Insert a new [[AccessKey]]. If the key field is empty, a key will be
+    * generated.
+    */
   def insert(k: AccessKey): Option[String]
 
   /** Get an [[AccessKey]] by key */
@@ -55,4 +59,7 @@ trait AccessKeys {
 
   /** Delete an [[AccessKey]] */
   def delete(k: String): Unit
+
+  /** Default implementation of key generation */
+  def generateKey: String = Random.alphanumeric.take(64).mkString
 }
