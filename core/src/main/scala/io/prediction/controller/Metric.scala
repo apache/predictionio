@@ -38,7 +38,9 @@ abstract class Metric[EI, Q, P, A, R](implicit rOrder: Ordering[R])
 extends Serializable {
   /** Java friendly constructor
     *
-    * @param comparator Comparator for sorting the metric results
+    * @param comparator A serializable comparator for sorting the metric results. The comparator
+    *                   needs to implement [[_root_.java.io.Serializable]].
+    *
     */
   def this(comparator: Comparator[R]) = {
     this()(Ordering.comparatorToOrdering(comparator))
