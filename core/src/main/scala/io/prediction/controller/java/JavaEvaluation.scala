@@ -41,7 +41,7 @@ abstract class JavaEvaluation extends Evaluation {
     */
   def setEngineMetric[EI, Q, P, A](
     baseEngine: BaseEngine[EI, Q, P, A],
-    metric: Metric[EI, Q, P, A, _]) = {
+    metric: Metric[EI, Q, P, A, _]) {
 
     engineMetric = (baseEngine, metric)
   }
@@ -59,7 +59,7 @@ abstract class JavaEvaluation extends Evaluation {
   def setEngineMetrics[EI, Q, P, A](
     baseEngine: BaseEngine[EI, Q, P, A],
     metric: Metric[EI, Q, P, A, _],
-    metrics: java.util.List[_ <: Metric[EI, Q, P, A, _]]) = {
+    metrics: java.util.List[_ <: Metric[EI, Q, P, A, _]]) {
 
     engineMetrics = (baseEngine, metric, asScalaBuffer(metrics))
   }

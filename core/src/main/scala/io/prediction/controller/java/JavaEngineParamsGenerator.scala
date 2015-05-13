@@ -33,7 +33,7 @@ abstract class JavaEngineParamsGenerator extends EngineParamsGenerator {
     *
     * @param engineParams A list of engine params
     */
-  def setEngineParamsList(engineParams: java.util.List[_ <: EngineParams]) = {
+  def setEngineParamsList(engineParams: java.util.List[_ <: EngineParams]) {
     engineParamsList = asScalaBuffer(engineParams)
   }
 }
