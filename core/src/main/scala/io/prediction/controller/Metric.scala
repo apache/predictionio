@@ -15,8 +15,7 @@
 
 package io.prediction.controller
 
-import _root_.java.util.Comparator
-
+import _root_.io.prediction.controller.java.SerializableComparator
 import io.prediction.core.BaseEngine
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -38,11 +37,10 @@ abstract class Metric[EI, Q, P, A, R](implicit rOrder: Ordering[R])
 extends Serializable {
   /** Java friendly constructor
     *
-    * @param comparator A serializable comparator for sorting the metric results. The comparator
-    *                   needs to implement [[_root_.java.io.Serializable]].
+    * @param comparator A serializable comparator for sorting the metric results.
     *
     */
-  def this(comparator: Comparator[R]) = {
+  def this(comparator: SerializableComparator[R]) = {
     this()(Ordering.comparatorToOrdering(comparator))
   }
 
