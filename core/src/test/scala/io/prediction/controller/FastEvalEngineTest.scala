@@ -54,7 +54,7 @@ extends FunSuite with Inside with SharedSparkContext {
       qpaSeq should have size qn
 
       forAll (qpaSeq) { case (q, p, a) => 
-        val Query(qId, qEx, qQx) = q
+        val Query(qId, qEx, qQx, _) = q
         val Actual(aId, aEx, aQx) = a
         qId shouldBe aId
         qEx shouldBe ex

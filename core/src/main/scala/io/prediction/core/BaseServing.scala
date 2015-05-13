@@ -16,6 +16,7 @@
 package io.prediction.core
 
 import io.prediction.annotation.DeveloperApi
+import io.prediction.annotation.Experimental
 
 /** :: DeveloperApi ::
   * Base class of all serving controller classes
@@ -26,6 +27,16 @@ import io.prediction.annotation.DeveloperApi
 @DeveloperApi
 abstract class BaseServing[Q, P]
   extends AbstractDoer {
+  /** :: Experimental ::
+    * Engine developers should not use this directly. This is called by serving
+    * layer to supplement process the query before sending it to algorithms.
+    *
+    * @param q Query
+    * @return A supplement Query
+    */
+  @Experimental
+  def supplementBase(q: Q): Q
+
   /** :: DeveloperApi ::
     * Engine developers should not use this directly. This is called by serving
     * layer to combine multiple predicted results from multiple algorithms, and

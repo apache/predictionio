@@ -470,6 +470,7 @@ class ServerActor[Q, P](
               val servingStartTime = DateTime.now
               val jsonExtractorOption = args.jsonExtractor
               val queryTime = DateTime.now
+              // Extract Query from Json
               val query = JsonExtractor.extract(
                 jsonExtractorOption,
                 queryString,
@@ -477,9 +478,15 @@ class ServerActor[Q, P](
                 algorithms.head.querySerializer,
                 algorithms.head.gsonTypeAdapterFactories
               )
+              // Deploy logic. First call Serving.supplement, then Algo.predict,
+              // finally Serving.serve.
+              val supplementedQuery = serving.supplementBase(query)
+              // TODO: Parallelize the following.
               val predictions = algorithms.zipWithIndex.map { case (a, ai) =>
-                a.predictBase(models(ai), query)
+                a.predictBase(models(ai), supplementedQuery)
               }
+              // Notice that it is by design to call Serving.serve with the
+              // *original* query.
               val prediction = serving.serveBase(query, predictions)
               val predictionJValue = JsonExtractor.toJValue(
                 jsonExtractorOption,

@@ -256,7 +256,7 @@ extends FunSuite with Inside with SharedSparkContext {
       qpaSeq should have size qn
 
       forAll (qpaSeq) { case (q, p, a) => 
-        val Query(qId, qEx, qQx) = q
+        val Query(qId, qEx, qQx, _) = q
         val Actual(aId, aEx, aQx) = a
         qId shouldBe aId
         qEx shouldBe ex
@@ -440,7 +440,7 @@ extends FunSuite with Inside with SharedSparkContext {
 
       val qpaSeq: Seq[(Query, Prediction, Actual)] = qpaRDD.collect
       forAll (qpaSeq) { case (q, p, a) => 
-        val Query(qId, qEx, qQx) = q
+        val Query(qId, qEx, qQx, _) = q
         val Actual(aId, aEx, aQx) = a
         qId shouldBe aId
         qEx shouldBe ex
@@ -487,7 +487,7 @@ extends FunSuite with Inside with SharedSparkContext {
 
       val qpaSeq: Seq[(Query, Prediction, Actual)] = qpaRDD.collect
       forAll (qpaSeq) { case (q, p, a) => 
-        val Query(qId, qEx, qQx) = q
+        val Query(qId, qEx, qQx, _) = q
         val Actual(aId, aEx, aQx) = a
         qId shouldBe aId
         qEx shouldBe ex
@@ -503,6 +503,58 @@ extends FunSuite with Inside with SharedSparkContext {
             Prediction(id = 3, q = q, models = Some(model0)),
             Prediction(id = 4, q = q, models = Some(model1)),
             Prediction(id = 5, q = q, models = Some(model2))
+          )
+        }}
+      }
+    }}
+  }
+  
+  test("Parallel DS/P/A/S with Supplemented Query") {
+    val en = 2
+    val qn = 5
+
+    val evalDataSet: Seq[(EvalInfo, RDD[(Query, Prediction, Actual)])] = 
+    Engine.eval(
+      sc,
+      new PDataSource1(id = 1, en = en, qn = qn),
+      new PPreparator0(id = 2),
+      Seq(
+        new PAlgo0(id = 3), 
+        new PAlgo1(id = 4),
+        new NAlgo1(id = 5)),
+      new LServing2(id = 10))
+
+    val pd = ProcessedData(2, TrainingData(1))
+    val model0 = PAlgo0.Model(3, pd)
+    val model1 = PAlgo1.Model(4, pd)
+    val model2 = NAlgo1.Model(5, pd)
+
+    forAll(evalDataSet.zipWithIndex) { case (evalData, ex) => {
+      val (evalInfo, qpaRDD) = evalData
+      evalInfo shouldBe EvalInfo(1)
+
+      val qpaSeq: Seq[(Query, Prediction, Actual)] = qpaRDD.collect
+      forAll (qpaSeq) { case (q, p, a) => 
+        val Query(qId, qEx, qQx, qSupp) = q
+        val Actual(aId, aEx, aQx) = a
+        qId shouldBe aId
+        qEx shouldBe ex
+        aEx shouldBe ex
+        qQx shouldBe aQx
+        qSupp shouldBe false
+
+        inside (p) { case Prediction(pId, pQ, pModels, pPs) => {
+          pId shouldBe 10
+          pQ shouldBe q
+          pModels shouldBe None
+          pPs should have size 3
+          // queries inside prediction should have supp set to true, since it
+          // represents what the algorithms see.
+          val qSupp = q.copy(supp = true)
+          pPs shouldBe Seq(
+            Prediction(id = 3, q = qSupp, models = Some(model0)),
+            Prediction(id = 4, q = qSupp, models = Some(model1)),
+            Prediction(id = 5, q = qSupp, models = Some(model2))
           )
         }}
       }
@@ -535,7 +587,7 @@ extends FunSuite with Inside with SharedSparkContext {
 
       val qpaSeq: Seq[(Query, Prediction, Actual)] = qpaRDD.collect
       forAll (qpaSeq) { case (q, p, a) => 
-        val Query(qId, qEx, qQx) = q
+        val Query(qId, qEx, qQx, _) = q
         val Actual(aId, aEx, aQx) = a
         qId shouldBe aId
         qEx shouldBe ex

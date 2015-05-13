@@ -21,7 +21,7 @@ object Engine0 {
   case class EvalInfo(id: Int)
   case class ProcessedData(id: Int, td: TrainingData)
 
-  case class Query(id: Int, ex: Int = 0, qx: Int = 0)
+  case class Query(id: Int, ex: Int = 0, qx: Int = 0, supp: Boolean = false)
   case class Actual(id: Int, ex: Int = 0, qx: Int = 0)
   case class Prediction(
     id: Int, q: Query, models: Option[Any] = None, 
@@ -398,6 +398,15 @@ object Engine0 {
   class LServing1(params: LServing1.Params) extends LServing[Query, Prediction] {
     def serve(q: Query, ps: Seq[Prediction]): Prediction = {
       Prediction(params.id, q, ps=ps)
+    }
+  }
+  
+  class LServing2(id: Int) extends LServing[Query, Prediction] {
+    override
+    def supplement(q: Query): Query = q.copy(supp = true)
+
+    def serve(q: Query, ps: Seq[Prediction]): Prediction = {
+      Prediction(id, q, ps=ps)
     }
   }
 }

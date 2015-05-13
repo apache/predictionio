@@ -762,11 +762,15 @@ object Engine {
       algoMap.mapValues(_.trainBase(sc,pd))
     }}
 
+    val suppQAsMap: Map[EX, RDD[(QX, (Q, A))]] = evalQAsMap.mapValues { qas => 
+      qas.map { case (qx, (q, a)) => (qx, (serving.supplementBase(q), a)) }
+    }
+
     val algoPredictsMap: Map[EX, RDD[(QX, Seq[P])]] = (0 until evalCount)
     .map { ex => {
       val modelMap: Map[AX, Any] = algoModelsMap(ex)
 
-      val qs: RDD[(QX, Q)] = evalQAsMap(ex).mapValues(_._1)
+      val qs: RDD[(QX, Q)] = suppQAsMap(ex).mapValues(_._1)
 
       val algoPredicts: Seq[RDD[(QX, (AX, P))]] = (0 until algoCount)
       .map { ax => {
@@ -793,6 +797,8 @@ object Engine {
 
     val servingQPAMap: Map[EX, RDD[(Q, P, A)]] = algoPredictsMap
     .map { case (ex, psMap) => {
+      // The query passed to serving.serve is the original one, not
+      // supplemented.
       val qasMap: RDD[(QX, (Q, A))] = evalQAsMap(ex)
       val qpsaMap: RDD[(QX, Q, Seq[P], A)] = psMap.join(qasMap)
       .map { case (qx, t) => (qx, t._2._1, t._1, t._2._2) }
