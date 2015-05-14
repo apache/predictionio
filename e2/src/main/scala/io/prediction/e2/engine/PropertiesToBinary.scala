@@ -36,7 +36,8 @@ class PropertiesToBinary (propertyMap : HashMap[(String, String), Int]) {
 
 
 object PropertiesToBinary {
-  def apply (input : RDD[HashMap[String, String]], properties : HashSet[String]) : PropertiesToBinary = {
+  def apply (input : RDD[HashMap[String, String]], properties : HashSet[String]) :
+  PropertiesToBinary = {
     new PropertiesToBinary(HashMap(
       input.flatMap(identity)
         .filter(e => properties.contains(e._1))
@@ -46,3 +47,6 @@ object PropertiesToBinary {
     ))
   }
 }
+
+
+
