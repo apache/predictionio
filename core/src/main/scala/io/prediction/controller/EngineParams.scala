@@ -42,7 +42,7 @@ class EngineParams(
     * @param dataSourceParams Data Source parameters
     * @param preparatorName Preparator name
     * @param preparatorParams Preparator parameters
-    * @param algorithmNameParams Map of algorithm name-parameters
+    * @param algorithmParamsList Map of algorithm name-parameters
     * @param servingName Serving name
     * @param servingParams Serving parameters
     */
@@ -51,14 +51,15 @@ class EngineParams(
     dataSourceParams: Params,
     preparatorName: String,
     preparatorParams: Params,
-    algorithmNameParams: _root_.java.util.Map[String, _ <: Params],
+    algorithmParamsList: _root_.java.util.Map[String, _ <: Params],
     servingName: String,
     servingParams: Params) = {
 
+    // To work around a json4s weird limitation, the parameter names can not be changed
     this(
       (dataSourceName, dataSourceParams),
       (preparatorName, preparatorParams),
-      JavaConversions.mapAsScalaMap(algorithmNameParams).toSeq,
+      JavaConversions.mapAsScalaMap(algorithmParamsList).toSeq,
       (servingName, servingParams)
     )
   }
