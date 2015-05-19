@@ -2,8 +2,7 @@
 title: Downloading an Engine Template
 ---
 
-The first step to create a new engine is to browse [PredictionIO template gallery](http://templates.prediction.io/).
-Choose an engine template that matches your use case the best. You can further customize the engine later if you like.
+The first step to create a new engine is to browse [PredictionIO template gallery](http://templates.prediction.io/) where you could find Engine Templates for all kinds of machine learning tasks. Choose an engine template that matches your use case the best. You can further customize the engine later if you like.
 
 To download a template, run:
 
@@ -19,4 +18,4 @@ $ pio template get PredictionIO/template-scala-parallel-recommendation MyRecomme
 
 NOTE: `pio` is a command available in the `bin/` of the installed PredictionIO directory. You may add the installed Prediction's bin/ directory path to you environment PATH.
 
-Please browse the [template gallery]((http://templates.prediction.io/)) to choose an engine template.
+Please browse the [PredictionIO template gallery]((http://templates.prediction.io/)) to choose an engine template.
