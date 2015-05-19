@@ -11,7 +11,7 @@ To download a template, run:
 $ pio template get <template-repo-path> <new-engine-directory>
 ```
 
-For example, to download the tempalte "template-scala-parallel-recommendation" to your directory "MyRecommendation", run:
+For example, to download the template "PredictionIO/template-scala-parallel-recommendation" to your directory "MyRecommendation", run:
 
 ```
 $ pio template get PredictionIO/template-scala-parallel-recommendation MyRecommendation
