@@ -75,7 +75,7 @@ Please see **How to start HBase** below.
 
 ### Q: How to start ElasticSearch?
 
-If you used the [install script](/install/install-linux/#quick-install) to install PredictionIO, the ElasticSearch is installed at `~/PredictionIO/vendors/elasticsearch-x.y.z/` where x.y.z is the 
+If you used the [install script](/install/install-linux/#quick-install) to install PredictionIO, the ElasticSearch is installed at `~/PredictionIO/vendors/elasticsearch-x.y.z/` where x.y.z is the
 version number (currently it's 1.4.4). To start it, run:
 
 ```
@@ -137,6 +137,26 @@ The following command increase the frameSize to 1024MB.
 ```
 $ pio train -- --conf spark.akka.frameSize=1024
 ```
+
+## Deploy Engine
+
+### Q: How to increase heap space memory for "pio deploy"?
+
+If you see the following error during `pio deploy`, it means there is not enough heap space memory.
+
+```
+...
+[ERROR] [LocalFSModels] Java heap space
+[ERROR] [OneForOneStrategy] None.get
+...
+```
+
+To increase the heap space, specify the "-- --driver-memory " parameter in the command. For example, set the driver memory to 8G when deploy the engine:
+
+```
+$ pio deploy -- --driver-memory 8G
+```
+
 
 ## Building PredictionIO
 
