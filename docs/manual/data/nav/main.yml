@@ -168,7 +168,7 @@ root:
     url: '#'
     children:
       -
-        body: 'Tapster - Similar Product Template'
+        body: 'Comics Recommendation Demo'
         url: '/demo/tapster/'
       -
         body: 'Community Contributed Demo'
