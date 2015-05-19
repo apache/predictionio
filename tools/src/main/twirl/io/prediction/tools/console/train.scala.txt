@@ -1,6 +1,7 @@
 Usage: pio train [--batch <value>] [--skip-sanity-check]
                  [--stop-after-read] [--stop-after-prepare]
                  [--engine-factory <value>] [--engine-params-key <value>]
+                 [--scratch-uri <value>]
                  [common options...]
 
 Kick off a training using an engine (variant) to produce an engine instance.
@@ -21,3 +22,7 @@ command.
       Override engine factory class.
   --engine-params-key
       Retrieve engine parameters programmatically from the engine factory class.
+  --scratch-uri
+      URI of the working scratch space. Specify this when you want to have all
+      necessary files transferred to a remote location. You will usually want to
+      specify this when you use --deploy-mode cluster.

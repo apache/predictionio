@@ -82,6 +82,7 @@ case class ServerConfig(
   engineInstanceId: String = "",
   engineId: Option[String] = None,
   engineVersion: Option[String] = None,
+  env: Option[String] = None,
   ip: String = "0.0.0.0",
   port: Int = 8000,
   feedback: Boolean = false,
@@ -121,6 +122,10 @@ object CreateServer extends Logging {
       opt[String]("ip") action { (x, c) =>
         c.copy(ip = x)
       }
+      opt[String]("env") action { (x, c) =>
+        c.copy(env = Some(x))
+      } text("Comma-separated list of environmental variables (in 'FOO=BAR' " +
+        "format) to pass to the Spark execution environment.")
       opt[Int]("port") action { (x, c) =>
         c.copy(port = x)
       } text("Port to bind to (default: 8000).")

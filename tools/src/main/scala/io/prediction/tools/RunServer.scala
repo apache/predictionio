@@ -15,15 +15,15 @@
 
 package io.prediction.tools
 
+import java.io.File
+import java.net.URI
+
+import grizzled.slf4j.Logging
 import io.prediction.data.storage.EngineManifest
 import io.prediction.tools.console.ConsoleArgs
 import io.prediction.workflow.WorkflowUtils
 
-import grizzled.slf4j.Logging
-
 import scala.sys.process._
-
-import java.io.File
 
 object RunServer extends Logging {
   def runServer(
@@ -139,5 +139,37 @@ object RunServer extends Logging {
       }
     }))
     proc.exitValue()
+  }
+
+  def newRunServer(
+    ca: ConsoleArgs,
+    em: EngineManifest,
+    engineInstanceId: String): Int = {
+    val jarFiles = em.files.map(new URI(_)) ++ new File(ca.common.pioHome.get, "plugins")
+      .listFiles().map(_.toURI)
+    val args = Seq(
+      "--engineInstanceId",
+      engineInstanceId,
+      "--ip",
+      ca.deploy.ip,
+      "--port",
+      ca.deploy.port.toString,
+      "--event-server-ip",
+      ca.eventServer.ip,
+      "--event-server-port",
+      ca.eventServer.port.toString) ++
+      (if (ca.accessKey.accessKey != "") {
+        Seq("--accesskey", ca.accessKey.accessKey)
+      } else {
+        Nil
+      }) ++
+      (if (ca.eventServer.enabled) Seq("--feedback") else Nil) ++
+      (if (ca.common.batch != "") Seq("--batch", ca.common.batch) else Nil) ++
+      (if (ca.common.verbose) Seq("--verbose") else Nil) ++
+      ca.deploy.logUrl.map(x => Seq("--log-url", x)).getOrElse(Nil) ++
+      ca.deploy.logPrefix.map(x => Seq("--log-prefix", x)).getOrElse(Nil) ++
+      Seq("--json-extractor", ca.common.jsonExtractor.toString)
+
+    Runner.runOnSpark("io.prediction.workflow.CreateServer", args, ca, jarFiles)
   }
 }

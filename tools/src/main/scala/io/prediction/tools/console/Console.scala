@@ -16,6 +16,7 @@
 package io.prediction.tools.console
 
 import java.io.File
+import java.net.URI
 
 import grizzled.slf4j.Logging
 import io.prediction.controller.Utils
@@ -37,7 +38,6 @@ import io.prediction.workflow.JsonExtractorOption
 import io.prediction.workflow.JsonExtractorOption.JsonExtractorOption
 import io.prediction.workflow.WorkflowUtils
 import org.apache.commons.io.FileUtils
-import org.apache.hadoop.fs.Path
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization.read
@@ -90,6 +90,7 @@ case class CommonArgs(
   verbose: Boolean = false,
   verbosity: Int = 0,
   sparkKryo: Boolean = false,
+  scratchUri: Option[URI] = None,
   jsonExtractor: JsonExtractorOption = JsonExtractorOption.Both)
 
 case class BuildArgs(
@@ -159,22 +160,10 @@ object Console extends Logging {
         "deployment.")
       opt[File]("variant") abbr("v") action { (x, c) =>
         c.copy(common = c.common.copy(variantJson = x))
-      } validate { x =>
-        if (x.exists) {
-          success
-        } else {
-          failure(s"${x.getCanonicalPath} does not exist.")
-        }
-      } text("Path to an engine variant JSON file. Default: engine.json")
+      }
       opt[File]("manifest") abbr("m") action { (x, c) =>
         c.copy(common = c.common.copy(manifestJson = x))
-      } validate { x =>
-        if (x.exists) {
-          success
-        } else {
-          failure(s"${x.getCanonicalPath} does not exist.")
-        }
-      } text("Path to an engine manifest JSON file. Default: manifest.json")
+      }
       opt[File]("sbt") action { (x, c) =>
         c.copy(build = c.build.copy(sbt = Some(x)))
       } validate { x =>
@@ -189,6 +178,9 @@ object Console extends Logging {
       }
       opt[Unit]("spark-kryo") abbr("sk") action { (x, c) =>
         c.copy(common = c.common.copy(sparkKryo = true))
+      }
+      opt[String]("scratch-uri") action { (x, c) =>
+        c.copy(common = c.common.copy(scratchUri = Some(new URI(x))))
       }
       note("")
       cmd("version").
@@ -759,9 +751,9 @@ object Console extends Logging {
         case Seq("template", "list") =>
           Template.list(ca)
         case Seq("export") =>
-          Export.eventsToFile(ca, coreAssembly(ca.common.pioHome.get))
+          Export.eventsToFile(ca)
         case Seq("import") =>
-          Import.fileToEvents(ca, coreAssembly(ca.common.pioHome.get))
+          Import.fileToEvents(ca)
         case _ =>
           System.err.println(help(ca.commands))
           1
@@ -813,28 +805,15 @@ object Console extends Logging {
     compile(ca)
     info("Looking for an engine...")
     val jarFiles = jarFilesForScala
-    if (jarFiles.size == 0) {
+    if (jarFiles.isEmpty) {
       error("No engine found. Your build might have failed. Aborting.")
       return 1
     }
     jarFiles foreach { f => info(s"Found ${f.getName}")}
-    val copyLocal = if (sys.env.contains("HADOOP_CONF_DIR")) {
-      info("HADOOP_CONF_DIR is set. Assuming HDFS is available.")
-      true
-    } else {
-      info("HADOOP_CONF_DIR is not set. Assuming HDFS is unavailable.")
-      false
-    }
-    val finalJarFiles = if (sys.env.contains("HADOOP_CONF_DIR") && !ca.build.uberJar) {
-      info("Also copying PredictionIO core assembly.")
-      jarFiles :+ coreAssembly(ca.common.pioHome.get)
-    } else {
-      jarFiles
-    }
     RegisterEngine.registerEngine(
       ca.common.manifestJson,
-      finalJarFiles,
-      copyLocal)
+      jarFiles,
+      false)
     info("Your engine is ready for training.")
     0
   }
@@ -849,20 +828,7 @@ object Console extends Logging {
       ca.common.manifestJson,
       ca.common.engineId,
       ca.common.engineVersion) { em =>
-      if (ca.build.uberJar) {
-        val uniqueJars =
-          em.files.map(_.split(Path.SEPARATOR_CHAR).last).groupBy(identity).keys
-        if (uniqueJars.size > 1) {
-          error("Uber JAR mode cannot be turned on when current build produced " +
-            "more than 1 engine JAR files. Aborting.")
-          return 1
-        }
-      }
-      RunWorkflow.runWorkflow(
-        ca,
-        coreAssembly(ca.common.pioHome.get),
-        em,
-        ca.common.variantJson)
+      RunWorkflow.newRunWorkflow(ca, em)
     }
   }
 
@@ -887,11 +853,7 @@ object Console extends Logging {
         engineInstances.getLatestCompleted(em.id, em.version, variantId)
       }
       engineInstance map { r =>
-        RunServer.runServer(
-          ca,
-          coreAssembly(ca.common.pioHome.get),
-          em,
-          r.id)
+        RunServer.newRunServer(ca, em, r.id)
       } getOrElse {
         ca.engineInstanceId map { eid =>
           error(
@@ -1263,7 +1225,7 @@ object Console extends Logging {
 
   def getSparkHome(sparkHome: Option[String]): String = {
     sparkHome getOrElse {
-      sys.env.get("SPARK_HOME").getOrElse(".")
+      sys.env.getOrElse("SPARK_HOME", ".")
     }
   }
 
