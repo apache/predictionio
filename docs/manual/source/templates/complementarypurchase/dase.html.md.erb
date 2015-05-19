@@ -226,6 +226,9 @@ Parameter description:
 - **minLift**: The minimum *lift* required for the rule. It should be set to 1 to find high quality rule. It's the confidence of the rule divided by the support of the consequence. It is used to filter out rules that the consequence is very frequent anyway regardless of the condition.
 - **maxNumRulesPerCond**: Maximum number of rules generated per condition and stored in the model. By default, the top rules are sorted by *lift* score.
 
+INFO: If you import your own data and the engine doesn't return any results, it could be caused by the following reasons: (1) the algorithm parameter constraint is too high and the algo couldn't find rules that satisfy the condition. you could try setting the following param to 0: **minSupport**, **minConfidence**, **minLift** and then see if anything returned (regardless of recommendation quality), and then adjust the parameter accordingly. (2) the complementary purchase engine requires buy event with correct eventTime. If you import data without specifying eventTime, the SDK will use current time because it assumes the event happens in real time (which is not the case if you import as batch offline), resulting in that all buy events are treated as one big transcation while they should be treated as multiple transcations.
+
+
 The values of these parameters can be specified in *algorithms* of
 MyComplementaryPurchase/***engine.json***:
 
