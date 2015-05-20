@@ -26,8 +26,11 @@ The purpose of this tutorial is to illustrate how you can go about doing this us
 
 Before getting started, please make sure that you have the latest version of PredictionIO [installed](https://docs.prediction.io/install/). You will also need PredictionIO's [Python SDK](https://github.com/PredictionIO/PredictionIO-Python-SDK), and the [Scikit learn library](http://scikit-learn.org/stable/) for importing a sample data set into the PredictionIO Event Server. Any Python version greater than 2.7 will work for the purposes of executing the `data/import_eventserver.py` script provided with this engine template. Moreover, we emphasize here that this is an engine template written in **Scala** and can be more generally thought of as an SBT project containing all the necessary components.
 
-You should also download the engine template named [Text Classification Engine](http://templates.prediction.io/) that accompanies this tutorial.
+You should also download the engine template named Text Classification Engine that accompanies this tutorial by cloning the template repository:
 
+```
+git clone https://github.com/PredictionIO/template-scala-parallel-textclassification.git
+```
 
 
 ## Engine Overview
@@ -46,15 +49,7 @@ Here category is the model's class assignment for this new text document (i.e. t
 
 `{category : String}`.
 
-This is used in the evaluation stage when estimating the performance of your predictive model (how well does the model predict categories).
-
-In addition to the DASE components, we also introduce the Data Model and Training Model abstractions. The Data Model abstraction refers to the set of Scala classes dealing with the implementation of modeling choices relating to feature **extraction**, **preparation**, and/or **selection**. For this illustration, this only includes the vectorization of text and t.f.-i.d.f. processing which is entirely implemented in the PreparedData class. The Training Model abstraction refers to any set of classes that individually take in a set of feature observations and output a predictive model. This predictive model is leveraged by the Algorithm component to produce prediction results to queries in real-time. In the engine template, this abstraction is implemented in the NBModel class. **Please note that these are conceptual abstractions that are designed to make engine development easier by decoupling class functionality.** Keeping these abstractions in mind will help you in the future with debugging your code, and also make it easier to incorporate different modeling ideas into your engine. 
-
-The figure below shows a graphical representation of the engine architecture just described, as well as its interactions with your web/app and a provided Event Server:
-
-
-![Engine Overview](/images/demo/text_classification_template/engine_overview.png)
-
+This is used in the evaluation stage when estimating the performance of your predictive model (how well does the model predict categories). Please refer to the [following tutorial](https://docs.prediction.io/customize/) for a more detailed explanation of how your engine will interact with your web application, as well as an in depth-overview of DASE.
 
 
 ## Quick Start
@@ -80,7 +75,7 @@ $ python import_eventserver.py --access_key access
 {
   "id": "default",
   "description": "Default settings",
-  "engineFactory": "org.template.textclassification.TextManipulationEngine",
+  "engineFactory": "org.template.textclassification.TextClassificationEngine",
   "datasource": {
     "params": {
       "appName": "MyTextApp",
@@ -90,12 +85,14 @@ $ python import_eventserver.py --access_key access
   "preparator": {
     "params": {
       "nMin": 1,
-      "nMax": 2
+      "nMax": 2,
+      "inverseIdfMin" : 0.15,
+      "inverseIdfMax" : 0.85
     }
   },
   "algorithms": [
     {
-      "name": "sup",
+      "name": "nb",
       "params": {
         "lambda": 0.5
       }
@@ -145,10 +142,10 @@ Now, refer to the quick start guide for the commands used to import your data. O
 Importing data.....
 Imported 11314 events.
 Importing stop words.....
-Imported 318 stop words.
+Imported 350 stop words.
 ```
 
- This data import process greatly exemplifies the advantages of using PredictionIO's Event Server for data storage. It allows you to import data from different sources and store it using the same server. The [event-style format](https://docs.prediction.io/datacollection/eventapi/) allows for a standardized method of storing data which facilitates the process of reading in your data and incorporating different data sources. For example, the provided data script imports both the text observations and stop words which are going to inevitably differ in nature. In short, PredictionIO's Event Server is yet another abstraction that exacerbates your development productivity, as well as the ability to focus on the modeling stages involved in building your predictive engine.
+This data import process greatly exemplifies the advantages of using PredictionIO's Event Server for data storage. It allows you to import data from different sources and store it using the same server. The [event-style format](https://docs.prediction.io/datacollection/eventapi/) allows for a standardized method of storing data which facilitates the process of reading in your data and incorporating different data sources. For example, the provided data script imports both the text observations and stop words which are going to inevitably differ in nature. In short, PredictionIO's Event Server is yet another abstraction that exacerbates your development productivity, as well as the ability to focus on the modeling stages involved in building your predictive engine.
 
 
 
@@ -161,7 +158,7 @@ The class DataSourceParams is used to specify the parameters needed to read and 
 
 The final and most important ingredient is the DataSource class. This is initialized with its corresponding parameter class, and extends PDataSource. This **must** implement the method readTraining which returns an instance of type TrainingData. This method completely relies on the defined private methods readEventData and readStopWords. Both of these functions read data observations as Event instances, create an RDD containing these events and finally transforms the RDD of events into an object of the appropriate type as seen below:
 
-```
+```scala
 ...
 private def readEventData(sc: SparkContext) : RDD[Observation] = {
     //Get RDD of Events.
@@ -199,19 +196,20 @@ Note that readEventData and readStopWords use different entity types and event n
 
 
 
-## Processing the Data : The Preparator Component and Data Model Implementation
+## Preparator : Data Processing With DASE
 
-This section deals with the aspect of transforming the data you read in the previous stage into something that you can actually use to train a predictive model. 
+Recall that the Preparator stage is used for doing any prior data processing needed to fit a predictive model. In line with the separation of concerns, the Data Model implementation, PreparedData, is built to do the heavy lifting needed for this data processing. The Preparator must simply implement the prepare method which outputs an object of type PreparedData. This requires you to specify two n-gram window components, and two inverse i.d.f. window components (these terms will be defined in the following section). Therefore a custom class of parameters for the Preparator component, PreparatorParams, must be incorporated. The code defining the full Preparator component is given below:
 
+```scala
+// 1. Initialize Preparator parameters. Recall that for our data
+// representation we are only required to input the n-gram window
+// components.
 
-### Preparator : Data Processing in DASE
-
-Recall that the Preparator stage is used for doing any prior data processing needed to fit a predictive model. In line with the separation of concerns, the Data Model implementation, PreparedData, is built to do the heavy lifting needed for this data processing. The Preparator must simply implement the prepare method which outputs an object of type PreparedData. This requires you to specify two n-gram window components (defined in the following section), a custom class of parameters for the Preparator component, PreparatorParams, must be incorporated. 
-
-```
 case class PreparatorParams(
   nMin: Int,
-  nMax: Int
+  nMax: Int,
+  inverseIdfMin : Double,
+  inverseIdfMax : Double
 ) extends Params
 
 
@@ -222,43 +220,39 @@ class Preparator(pp: PreparatorParams) extends PPreparator[TrainingData, Prepare
 
   // Prepare your training data.
   def prepare(sc : SparkContext, td: TrainingData): PreparedData = {
-    new PreparedData(new DataModel(td, pp.nMin, pp.nMax))
+    new PreparedData(td, pp.nMin, pp.nMax, pp.inverseIdfMin, pp. inverseIdfMax)
   }
 }
 
-
-// Define PreparedData, a wrapper for our data model.
-class PreparedData(
-  val dataModel: DataModel
-) extends Serializable
 ```
 
 The simplicity of this stage implementation truly exemplifies one of the benefits of using the PredictionIO platform. For developers, it is easy to incorporate different classes and tools into the DASE framework so that the process of creating an engine is greatly simplified which helps increase your productivity. For data scientists, the load of implementation details you need to worry about is minimized so that you can focus on what is important to you: training a good predictive model. 
 
-The following section actually explains the meat of the conversion process from text documents to feature vectors.
+The following subsection explains the class PreparedData, which actually handles the transformation of text documents to feature vectors. 
 
+### PreparedData: Text Vectorization and Feature Reduction 
 
-### Data Model : Ideas Behind the PreparedData Implementation
+The Scala class PreparedData which takes the parameters td, nMin, nMax, inverseIdfMin, and inverseIdfMax, where td is an object of class TrainingData. The other four parameters are the components of the model n-gram window and inverse i.d.f. window, which will be defined shortly. 
 
-For this Text Classification Engine, the Data Model abstraction is implemented in Prepared Data which takes the parameters td, nMin, nMax, where td is an object of class TrainingData. The other two parameters are the components of the model n-gram window which will be defined shortly. It will be easier to explain the preparation process with an example, so consider the document:
+It will be easier to explain the preparation process with an example, so consider the document \\(d\\):
 
 `"Hello, my name is Marco."`
 
-The first thing you need to do is break up D into an array of "allowed tokens." You can think of a token as a terminating sequence of characters that exist in a document (think of a word in a sentence). For example, the list of tokens that appear in D is:
+The first thing you need to do is break up \\(d\\) into an array of "allowed tokens." You can think of a token as a terminating sequence of characters that exist in a document (think of a word in a sentence). For example, the list of tokens that appear in \\(d\\) is:
 
-```
+```scala
 val A = Array("Hello", ",", "my",  "name", "is", "Marco", ".")
 ```
 
-Recall that a set of stop words was also imported in the previous sections. This set of stop words contains all the words (or tokens) that you do not want to include once documents are tokenized. Those tokens that appear in D and are not contained in the set of stop words will be called allowed tokens. So, if the set of stop words is `{"my", "is"}`, then the list of allowed tokens appearing in D is:
+Recall that a set of stop words was also imported in the previous sections. This set of stop words contains all the words (or tokens) that you do not want to include once documents are tokenized. Those tokens that appear in \\(d\\) and are not contained in the set of stop words will be called allowed tokens. So, if the set of stop words is `{"my", "is"}`, then the list of allowed tokens appearing in \\(d\\) is:
 
-```
+```scala
 val A = Array("Hello", ",",  "name", "Marco", ".")
 ```
 
-All of this functionality is implemented in the private method tokenize of the DataModel class. This method uses the SimpleTokenizer from OpenNLP's library to implement this (note that you must add the Maven dependency declaration to your `build.sbt` file to incorporate this library into your engine). 
+All of this functionality is implemented in the private method tokenize. This method uses the SimpleTokenizer from OpenNLP's library to implement this (note that you must add the Maven dependency declaration to your `build.sbt` file to incorporate this library into your engine). 
 
-```
+```scala
 ...
   // 1. Tokenizer: document => token list.
   // Takes an individual document and converts it to
@@ -266,19 +260,19 @@ All of this functionality is implemented in the private method tokenize of the D
 
   private def tokenize (doc : String): Array[String] = {
     SimpleTokenizer.INSTANCE
-      .tokenize(doc)
+      .tokenize(doc.toLowerCase)
       .filter(e => ! td.stopWords.contains(e))
   }
 ...
 ```
 
-You may want to extend this functionality so that all letters in your document are transformed to lowercase so that, for example, the tokens `"Hello"` and `"hello"` are considered equivalent. This is a **modeling choice** that is not implemented in the engine template. However, you may choose to easily include this to reduce the number of features you create by replacing `doc` with `doc.toLowerCase` in the body of the function. 
+Note that all letters are transformed to lowercase, so that the tokens `"Hello"` and `"hello"` are considered to be equivalent. This is a **modeling choice**, and is something that can be removed if desired (it will affect your feature extraction process). Another modeling choice that is made implicitly in the default template settings is to remove the possibility of having punctuation characters as tokens. This, however, is actually dealt with when importing the data, since individual punctuation characters are included in the default set of stop words.
 
 The next step in the data representation is to take the array of allowed tokens and extract a set of n-grams and a corresponding value indicating the number of times a given n-gram appears. The set of n-grams for n equal to 1 and 2 in the running example is the set of elements of the form `[A(`\\(i\\)`)]` and `[A(`\\(j\\)`), A(`\\(j + 1\\)`)]`, respectively. In the general case, the set of n-grams extracted from an array of allowed tokens `A` will be of the form `[A(`\\(i\\)`), A(`\\(i + 1\\)`), ..., A(`\\(i + n - 1\\)`)]` for \\(i = 0, 1, 2, ...,\\) `A.size` \\(- n\\). The n-gram window is an interval of integers for which you want to extract grams for each element in the interval. nMin and nMax are the smallest and largest integer values in the interval, respectively. The default model only includes unigrams and bigrams (\\(n = 1\\) and \\(n = 2\\), respectively).
 
 The n-gram extraction and counting procedure is carried out by the private method hash, which, given a document, returns a Map with keys, n-grams, and values, the number of times each n-gram is extracted from the document. OpenNLP's NGramModel class is used to extract n-grams.
 
-```
+```scala
 ...
   // 2. Hasher: Array[tokens] => Map(n-gram -> n-gram document tf).
 
@@ -300,9 +294,21 @@ The n-gram extraction and counting procedure is carried out by the private metho
 ...
 ```
 
-The next step is, once all of the observations have been hashed, to collect all n-grams and compute their corresponding [t.f.-i.d.f. value](http://en.wikipedia.org/wiki/Tf%E2%80%93idf). The t.f.-i.d.f. transformation is a transformation that helps to give less weight to those n-grams that appear with high frequency across all documents, and vice versa. This helps to leverage the predictive power of those words that appear rarely, but can make a big difference in the categorization of a given article. The private method createUniverse outputs an RDD of pairs, where an n-gram is matched with it's i.d.f. value. This RDD is collected as a HashMap (this will be used in future RDD computations so that this object should be serializable), and then create a second hash map with n-grams associated to indices. This gives a global index to each n-gram and ensures that each document observation is vectorized in the same manner. 
+The next step is, once all of the observations have been hashed, to collect all n-grams and compute their corresponding [t.f.-i.d.f. value](http://en.wikipedia.org/wiki/Tf%E2%80%93idf). The t.f.-i.d.f. transformation is defined for n-grams, and helps to give less weight to those n-grams that appear with high frequency across all documents, and vice versa. This helps to leverage the predictive power of those words that appear rarely, but can make a big difference in the categorization of a given text document. The private method createUniverse outputs an RDD of pairs, where an n-gram \\(g\\) is matched with its i.d.f. value. This RDD is collected as a HashMap (this will be used in future RDD computations so that this object should be serializable).
 
-```
+Now, for a corpus (or set) of documents \\(D\\), the i.d.f. value of an n-gram \\(g\\) is defined as
+
+$$
+\text{idf}(g) = \log\left(\frac{|D|}{|\\{d \in D : g \\ \text{is extracted from} \\ d\\}|}\right).
+$$
+
+Here \\(|S|\\) denotes the number of elements contained in a set \\(S\\). Plainly speaking, this term approaches 1 as the number of documents in the corpus from which \\(g\\) is extracted increases, and grows larger than 1 as this number decreases. Hence the inverse i.d.f. of an n-gram \\(g\\) \\(\left(\frac{1}{\text{idf}(g)}\right)\\) will lie between 0 and 1. Those n-grams whose inverse i.d.f. value is close to 0 rarely appear in any corpus documents, and those with value closely to 1 appear in a large proportion of the documents. The inverse i.d.f. window is defined as an interval \\([a, b]\\), \\(0 \leq a < b \leq 1\\), which restricts the n-grams we choose as features to those with inverse i.d.f. values lying in this interval. That is, all n-grams whose inverse i.d.f. less than a or greater than b, our inverse i.d.f. window components, are excluded. The PreparedData class parameters inverseIdfMin and inverseIdfMax values correspond to \\(a\\) and \\(b\\), respectively. 
+
+The latter discussion implies that modifying the inverse i.d.f. window components will reduce the number of features used for model training, and therefore will reduce computation time. However, reducing the number of features may affect your fit. This is another modeling choice that needs to be assessed by the modeler.
+
+Once these n-grams are filtered out of the i.d.f. HashMap created, a second hash map is created with n-grams associated to indices. This gives a global index to each n-gram and ensures that each document observation is vectorized in the same manner. 
+
+```scala
 ...
   // 4. Set private class variables for use in data transformations.
 
@@ -313,8 +319,14 @@ The next step is, once all of the observations have been hashed, to collect all 
       td.data
       .map(e => hash(tokenize(e.text)))
     ).collect: _*
+  // Cut out n-grams with inverse i.d.f. greater/less than or equal to min/max
+  // cutoff.
+  ).filter(
+    e => (1 / e._2) >= inverseIdfMin && (1 / e._2) <= inverseIdfMax
   )
+
 ...
+
   // Create n-gram to global index hashmap:
   //    Map(n-gram -> global index)
   private val globalIndex : HashMap[String, Int] = HashMap(
@@ -326,7 +338,7 @@ The next step is, once all of the observations have been hashed, to collect all 
 
 The last two functions that will be mentioned are the methods you will actually use for the data transformation. The method transform takes a document and outputs a sparse vector (MLLib implementation). The transformData method simply transforms the TrainingData input (a corpus of documents) into a set of vectors that can now be used for training. The method transform is used both to transform the training data and future queries. It is important to note that using all 11,314 news article observations without any pre-processing of the documents results in over 1 million unigram and bigram features, so that a sparse vector representation is necessary to save some serious computation time.
 
-```
+```scala
 ...
   def transform(doc: String): Vector = {
     // Map(n-gram -> document tf)
@@ -349,23 +361,21 @@ The last two functions that will be mentioned are the methods you will actually 
 }
 ```
 
+The last and final object implemented in this class simply creates a Map with keys being class labels and values, the corresponding category.
 
 
-## Training The Model
-
-This section will guide you through the two Training Model implementations that come with this engine template. Recall that the Training Model abstraction refers to an arbitrary set Scala Class that outputs a predictive model (i.e. implements some method that can be used for prediction). The general problem this engine template is tackling is text classification, so that our Training Model abstraction domain is restricted to implementations producing classifiers. In particular, the classification model that is implemented in this engine template is based on Multinomial Naive Bayes using t.f.-i.d.f. vectorized text. 
 
 
-### Algorithm Component
+## Algorithm Component
 
-The Training Model implementation in this engine is accompanied by a corresponding algorithm component. In particular, NBModel accompanies NBAlgorithm. The Training Model abstraction allows you to take care of the modeling implementation details in the model class. Again this demonstrates how easy it is to incorporate different modeling choices into the DASE architecture. We first describe the actual Algorithm component, and describe where it leverages the Training Model abstraction.
-
-The algorithm component actually follows a very general form. Firstly, a parameter class must again be initialized to feed in the corresponding Algorithm model parameters. For example, NBAlgorithm incorporates NBAlgorithmParams which holds the appropriate additive smoothing parameter lambda for the Naive Bayes model. 
+The algorithm component in this engine, NBAlgorithm, actually follows a very general form. Firstly, a parameter class must again be initialized to feed in the corresponding Algorithm model parameters. For example, NBAlgorithm incorporates NBAlgorithmParams which holds the appropriate additive smoothing parameter lambda for the Naive Bayes model. 
 
 
-The main class of interest in this component is the class that extends [P2LAlgorithm](https://docs.prediction.io/api/current/#io.prediction.controller.P2LAlgorithm). This class must implement a method named train which will output your Training Model implementation. It must also implement a predict method that transforms a query to an appropriate feature vector, and uses this to predict with the fitted model. The vectorization function is implemented by a PreparedData object, and the categorization (prediction) is handled by an instance of your Training Model Implementation. Again, this demonstrates the facility with which different models can be incorporated into PredictionIO's DASE architecture.
+The main class of interest in this component is the class that extends [P2LAlgorithm](https://docs.prediction.io/api/current/#io.prediction.controller.P2LAlgorithm). This class must implement a method named train which will output your predictive model (as a concrete object, this will be implemented via a Scala  class). It must also implement a predict method that transforms a query to an appropriate feature vector, and uses this to predict with the fitted model. The vectorization function is implemented by a PreparedData object, and the categorization (prediction) is handled by an instance of the NBModel implementation. Again, this demonstrates the facility with which different models can be incorporated into PredictionIO's DASE architecture.
 
-Now, turn your attention to the TextManipulationEngine object defined in the script `Engine.scala`. You can see here that the engine is initialized by specifying the DataSource, Preparator, and Serving classes, as well as a Map of algorithm names to Algorithm classes. This tells the engine which algorithms to run. In practice, you can have as many as you would like, you simply have to implement a new Training Model and Training Algorithm pair. 
+The model class itself will be discussed in the following section, however, turn your attention to the TextManipulationEngine object defined in the script `Engine.scala`. You can see here that the engine is initialized by specifying the DataSource, Preparator, and Serving classes, as well as a Map of algorithm names to Algorithm classes. This tells the engine which algorithms to run. In practice, you can have as many statistical learning models as you'd like, you simply have to implement a new algorithm component to do this. However, this general design form will persist, and the main meat of the work should be in the implementation of your model class.
+
+The following subsection will go over our Naive Bayes implementation in NBModel.
 
 
 ### Naive Bayes Classification
@@ -387,7 +397,7 @@ is a vector with C components that represent the posterior class membership prob
 
 The private methods innerProduct and getScores are implemented to do the matrix computation above. 
 
-```
+```scala
 ...
   // 2. Set up framework for performing the required Matrix
   // Multiplication for the prediction rule explained in the
@@ -424,7 +434,7 @@ The private methods innerProduct and getScores are implemented to do the matrix 
 
 Once you have a vector of class probabilities, you can classify the text document to the category with highest posterior probability, and, finally, return both the category as well as the probability of belonging to that category (i.e. the confidence in the prediction) given the observed data. This is implemented in the method predict.
 
-```
+```scala
 ...
   def predict(doc : String) : PredictedResult = {
     val x: Array[Double] = getScores(doc)
@@ -448,7 +458,7 @@ For example, you could choose to slightly modify the implementation to return cl
  Second you must define an evaluation object (i.e. extends the class [Evaluation](https://docs.prediction.io/api/current/#io.prediction.controller.Evaluation)).
 Here, you must specify the actual engine and metric components that are to be used for the evaluation. In the engine template, the specified engine is the TextManipulationEngine object, and metric, Accuracy. Lastly, you must specify the parameter values that you want to test in the cross validation. You see in the following block of code:
 
-```
+```scala
 object EngineParamsList extends EngineParamsGenerator {
 
   // Set data source and preparator parameters.
@@ -465,26 +475,7 @@ object EngineParamsList extends EngineParamsGenerator {
   )
 ```
 
-In the latter block of code, only the parameter values that show up in the algorithm stage are assessed. However, it is plausible that you may want to assess parameter values in the Data Model implementation, PreparedData. This can easily be done by placing the preparator parameter choices as follows:
 
-```
-object EngineParamsList extends EngineParamsGenerator {
-
-  // Set data source and preparator parameters.
-  private[this] val baseEP = EngineParams(
-    dataSourceParams = DataSourceParams(appName = "marco-MyTextApp", evalK = Some(5))
-  )
-
-  // Set the algorithm params for which we will assess an accuracy score.
-  engineParamsList = Seq(
-    baseEP.copy(preparatorParams = ("preparator", PreparatorParams(nMin = 1, nMax = 2)),
-      algorithmParamsList = Seq(("nb", NBAlgorithmParams(0.5)))),
-    baseEP.copy(preparatorParams = ("preparator", PreparatorParams(nMin = 2, nMax = 3)),
-      algorithmParamsList = Seq(("nb", NBAlgorithmParams(1.5)))),
-    baseEP.copy(preparatorParams = ("preparator", PreparatorParams(nMin = 1, nMax = 3)),
-      algorithmParamsList = Seq(("nb", NBAlgorithmParams(5))))
-  )
-```
 ## Engine Deployment 
 
 Once an engine is ready for deployment it can interact with your web application in real-time. This section will cover how to send and receive queries from your engine, gather more data, and re-training your model with the newly gathered data. 
@@ -526,7 +517,7 @@ $ pio build
 **2.a.** Evaluate your training model and tune parameters.
 
 ```
-$ pio eval
+$ pio eval org.template.textclassification.AccuracyEvaluation org.template.textclassification.EngineParamsList
 ```
 
 **2.b.** Train your model and deploy.

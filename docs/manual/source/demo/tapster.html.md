@@ -1,10 +1,10 @@
 ---
-title: Tapster - Similar Product Template
+title: Comics Recommendation Demo
 ---
 
 ## Introduction
 
-In this demo, we will show you how to build a Tinder-style web application recommending comics to users based on their likes/dislikes of episodes interactively.
+In this demo, we will show you how to build a Tinder-style web application (named "Tapster") recommending comics to users based on their likes/dislikes of episodes interactively.
 
 The demo will use [Similar Product Template](http://docs.prediction.io/templates/similarity/quickstart/). Similar Product Template is a great choice if you want to make recommendations based on immediate user activities or for new users with limited history. It uses MLLib Alternating Least Squares (ALS) recommendation algorithm, a [Collaborative filtering](http://en.wikipedia.org/wiki/Recommender_system#Collaborative_filtering) (CF) algorithm commonly used for recommender systems. These techniques aim to fill in the missing entries of a user-item association matrix. Users and products are described by a small set of latent factors that can be used to predict missing entries. A layman's interpretation of Collaborative Filtering is "People who like this comic, also like these comics."
 
@@ -54,7 +54,7 @@ $ rake db:create
 $ rake db:migrate
 ```
 
-At this point, you should have the demo application ready but with an empty database. Lets import the episodes data into our database. We will do this with: `$ rake import:episodes`. An "Episode" is a single [comic strip](http://en.wikipedia.org/wiki/Comic_strip). 
+At this point, you should have the demo application ready but with an empty database. Lets import the episodes data into our database. We will do this with: `$ rake import:episodes`. An "Episode" is a single [comic strip](http://en.wikipedia.org/wiki/Comic_strip).
 
 [View on GitHub](https://github.com/PredictionIO/Demo-Tapster/blob/master/lib/tasks/import/episodes.rake)
 
@@ -184,7 +184,7 @@ $ ./stop-hbase.sh
 $ ./start-hbase.sh
 ```
 
-The key event we are importing into PredictionIO event server is the "Like" event (for example, user X likes episode Y). 
+The key event we are importing into PredictionIO event server is the "Like" event (for example, user X likes episode Y).
 
 We will send this data to PredictionIO by executing `$ rake import:predictionio` command.
 

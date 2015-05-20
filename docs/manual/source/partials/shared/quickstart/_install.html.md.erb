@@ -9,15 +9,16 @@ For convenience, add PredictionIO's binary command path to your `PATH`, i.e.
 $ PATH=$PATH:/home/yourname/PredictionIO/bin; export PATH
 ```
 
-NOTE: If you installed from AWS Marketplace, the path is located at
+NOTE: If you lauched **PredictionIO AWS instance**, the path is located at
 `/opt/PredictionIO/bin`.
 
 Once you have completed the installation process, please make sure all the
 components (PredictionIO Event Server, Elasticsearch, and HBase) are up and
 running.
 
-NOTE: You can skip `pio-start-all` if you have launched from the AWS
-Marketplace. All components should have been started automatically.
+NOTE: If you lauched **PredictionIO AWS instance**, you can skip `pio-start-all`. All components should have been started automatically.
+
+Run the following to start all PrediciotnIO components:
 
 ```
 $ pio-start-all
@@ -27,6 +28,15 @@ You can check the status by running:
 
 ```
 $ pio status
+```
+
+If everything is OK, you should see the following outputs:
+
+```
+...
+
+(sleeping 5 seconds for all messages to show up...)
+Your system is all ready to go.
 ```
 
 NOTE: To further troubleshoot, please see [FAQ - Using

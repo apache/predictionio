@@ -40,34 +40,33 @@ pio train --stop-after-prepare
 
 ##  Sanity Check
 
-If you overrides `toString()` method in the data classes (TrainingData,
-PreparedData, and Model), PredictionIO will print the data to the console output
-for debugging purpose.
-
-In addition, you can extend a trait `SanityCheck` and implement the method
+You can extend a trait `SanityCheck` and implement the method
 `sanityCheck()` with your error checking code. The `sanityCheck()` is called
-when the data is generated.
+when the data is generated. This can be applied to `TrainingData` and `PreparedData`.
 
 For example, one frequent error with the Recommendation Template is that the
 TrainingData is empty because the DataSource is not reading data correctly. You
 can add the check of empty data inside the `sanityCheck()` function. You can
 easily add other checking logic into the `sanityCheck()` function based on your
-own needs.
+own needs. Also, If you implement `toString()` method in your TrainingData. You can call
+`toString()` inside `sanityCheck()` to print out some data for visual checking.
 
-Modify DataSource.scala in the Recommendation Template:
+For example, to print TrainingData to console and check if the `ratings` is empty, you can
+do the following:
 
 ```scala
 import io.prediction.controller.SanityCheck // ADDED
 
 class TrainingData(
   val ratings: RDD[Rating]
-) extends Serializable with SanityCheck { // MODIFIED
+) extends Serializable with SanityCheck { // EXTEND SanityCheck
   override def toString = {
     s"ratings: [${ratings.count()}] (${ratings.take(2).toList}...)"
   }
 
-  // ADDED
+  // IMPLEMENT sanityCheck()
   override def sanityCheck(): Unit = {
+    println(toString())
     // add your other checking here
     require(!ratings.take(1).isEmpty, s"ratings cannot be empty!")
   }
@@ -109,4 +108,35 @@ You should see the checking is skipped such as the following output:
 [INFO] [CoreWorkflow$] Data Source
 ...
 [INFO] [CoreWorkflow$] Training interrupted by io.prediction.workflow.StopAfterReadInterruption.
+```
+
+## pio-shell
+
+PredictionIO also provides `pio-shell` in which you can easily access PredictionIO API,
+Spark context and Spark API for quickly testing code or debugging purposes.
+
+To bring up the shell, simply run:
+
+```
+$ pio-shell --with-spark
+```
+
+(`pio-shell` is available inside `bin/` directory of installed PredictionIO directory, you should be able to access it if you have added PredictionIO/bin into your environment variable `PATH`)
+
+Note that the Spark context is available as variable `sc` inside the shell.
+
+For example, to get the events of `MyApp1` using PEventStore API inside the pio-shell and collect them into an array `c`. run the following in the shell:
+
+```
+> import io.prediction.data.store.PEventStore
+> val eventsRDD = PEventStore.find(appName="MyApp1")(sc)
+> val c = eventsRDD.collect()
+```
+
+Then you should see following returned in the shell:
+
+```
+...
+15/05/18 14:24:42 INFO DAGScheduler: Job 0 finished: collect at <console>:24, took 1.850779 s
+c: Array[io.prediction.data.storage.Event] = Array(Event(id=Some(AaQUUBsFZxteRpDV_7fDGQAAAU1ZfRW1tX9LSWdZSb0),event=$set,eType=item,eId=i42,tType=None,tId=None,p=DataMap(Map(categories -> JArray(List(JString(c2), JString(c1), JString(c6), JString(c3))))),t=2015-05-15T21:31:19.349Z,tags=List(),pKey=None,ct=2015-05-15T21:31:19.354Z), Event(id=Some(DjvP3Dnci9F4CWmiqoLabQAAAU1ZfROaqdRYO-pZ_no),event=$set,eType=user,eId=u9,tType=None,tId=None,p=DataMap(Map()),t=2015-05-15T21:31:18.810Z,tags=List(),pKey=None,ct=2015-05-15T21:31:18.817Z), Event(id=Some(DjvP3Dnci9F4CWmiqoLabQAAAU1ZfRq7tsanlemwmZQ),event=view,eType=user,eId=u9,tType=Some(item),tId=Some(i25),p=DataMap(Map()),t=2015-05-15T21:31:20.635Z,tags=List(),pKey=None,ct=2015-05-15T21:31:20.639Z), Event(id=Some(DjvP3Dnci9F4CWmiqoLabQAAAU1ZfR...
 ```
