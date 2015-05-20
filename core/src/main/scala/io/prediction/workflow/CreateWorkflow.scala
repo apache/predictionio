@@ -228,7 +228,7 @@ object CreateWorkflow extends Logging {
         engineVersion = wfc.engineVersion,
         engineVariant = variantId,
         engineFactory = engineFactory,
-        batch = if (wfc.batch == "") engineFactory else wfc.batch,
+        batch = wfc.batch,
         env = pioEnvVars,
         sparkConf = workflowParams.sparkEnv,
         dataSourceParams =
