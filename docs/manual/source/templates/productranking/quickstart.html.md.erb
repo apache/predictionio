@@ -44,11 +44,9 @@ INFO: This template can easily be customized to consider more user events such a
 
 Next, let's collect some training data for the app of this Engine. By default,
 the Product Ranking Engine Template supports 2 types of entities: **user** and
-**item**, and event **view**. A user can view an item.
+**item**, and event **view**. A user can view an item. This template requires '$set' user event, '$set' item event and user-view-item events.
 
 <%= partial 'shared/quickstart/install_sdk' %>
-
-The following is sample code of using different SDKs to import events of setting user and item, and user-view-item events:
 
 <div class="tabs">
   <div data-tab="Python SDK" data-lang="python">
@@ -240,9 +238,9 @@ The properties of the `user` and `item` can be set, unset, or delete by special 
 
 A Python import script `import_eventserver.py` is provided to import sample data. It imports 10 users (with user ID "u1" to "u10") and 50 items (with item ID "i1" to "i50"). Each user then randomly view 10 items.
 
-NOTE: You need to install Python SDK to run the import script. Please follow [Python SDK README](https://github.com/PredictionIO/PredictionIO-Python-SDK) to install.
+<%= partial 'shared/quickstart/install_python_sdk' %>
 
-First, make sure you are under the `MyProductRanking` directory. Execute the following to import the data (Replace the value of access_key parameter with your **Access Key**):
+Make sure you are under the `MyProductRanking` directory. Execute the following to import the data (Replace the value of access_key parameter with your **Access Key**):
 
 ```
 $ cd MyProductRanking

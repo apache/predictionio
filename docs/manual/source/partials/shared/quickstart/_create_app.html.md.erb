@@ -1,6 +1,6 @@
-Let's assume you want to use this engine in an application named "MyApp1".
-You will need to collect some training data for machine learning modeling.
-You can generate an **App ID** and **Access Key** that represent "MyApp1" on the Event Server easily:
+You will need to create a new App in PredictionIO to store all the data of your app. The data collected will be used for machine learning modeling.
+
+Let's assume you want to use this engine in an application named "MyApp1".  Run the following to create a new app "MyApp1":
 
 ```
 $ pio app new MyApp1
@@ -17,17 +17,17 @@ You should find the following in the console output:
 [INFO] [App$] Access Key: 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
 ```
 
-New
-Take note of the **Access Key** and **App Name**. You will need the **Access Key**
-to refer to "MyApp1" when you collect data. At the same time, you will use **App
-Name** to refer to "MyApp1" in parameters defined in `engine.json`.
+Note that *App ID**, **Access Key** are created for this App "MyApp1". You will need the **Access Key** when you collect data with EventServer for this App.
 
-NOTE: If you are using old template with App ID as parameter. Also take note of the **App ID**. You will use the App ID to refer to "MyApp1" in parameters defined in `engine.json`.
-
-`$ pio app list` will return a list of names and IDs of apps created in the Event Server.
+You can list all of the apps created its corresponding ID and Access Key by running the following command:
 
 ```
 $ pio app list
+```
+
+You should see a list of apps created. For example:
+
+```
 [INFO] [App$]                 Name |   ID |                                                       Access Key | Allowed Event(s)
 [INFO] [App$]               MyApp1 |    1 | 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F | (all)
 [INFO] [App$]               MyApp2 |    2 | io5lz6Eg4m3Xe4JZTBFE13GMAf1dhFl6ZteuJfrO84XpdOz9wRCrDU44EUaYuXq5 | (all)
