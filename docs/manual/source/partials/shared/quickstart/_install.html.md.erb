@@ -9,16 +9,24 @@ For convenience, add PredictionIO's binary command path to your `PATH`, i.e.
 $ PATH=$PATH:/home/yourname/PredictionIO/bin; export PATH
 ```
 
-NOTE: If you lauched **PredictionIO AWS instance**, the path is located at
+NOTE: If you launched **PredictionIO AWS instance**, the path is located at
 `/opt/PredictionIO/bin`.
 
 Once you have completed the installation process, please make sure all the
 components (PredictionIO Event Server, Elasticsearch, and HBase) are up and
 running.
 
-NOTE: If you lauched **PredictionIO AWS instance**, you can skip `pio-start-all`. All components should have been started automatically.
+NOTE: If you launched **PredictionIO AWS instance**, you can skip `pio-start-all`. All components should have been started automatically.
 
-Run the following to start all PrediciotnIO components:
+If you are using PostgreSQL or MySQL, run the following to start PredictionIO
+Event Server:
+
+```
+$ pio eventserver &
+```
+
+If instead you are running HBase and Elasticsearch, run the following to start
+all PredictionIO Event Server, HBase, and Elasticsearch:
 
 ```
 $ pio-start-all

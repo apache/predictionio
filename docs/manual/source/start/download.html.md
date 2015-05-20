@@ -18,4 +18,4 @@ $ pio template get PredictionIO/template-scala-parallel-recommendation MyRecomme
 
 NOTE: `pio` is a command available in the `bin/` of the installed PredictionIO directory. You may add the installed Prediction's bin/ directory path to you environment PATH.
 
-Please browse the [PredictionIO template gallery]((http://templates.prediction.io/)) to choose an engine template.
+Please browse the [PredictionIO template gallery](http://templates.prediction.io/) to choose an engine template.

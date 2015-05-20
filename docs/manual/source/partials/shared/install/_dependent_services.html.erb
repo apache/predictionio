@@ -1,5 +1,9 @@
 ### Start PredictionIO and Dependent Services
 
+WARNING: If you are using PostgreSQL or MySQL, skip `pio-start-all` and
+`pio-stop-all`, and do `PredictionIO-<%= data.versions.pio %>/bin/pio eventserver &`
+instead.
+
 Simply do `PredictionIO-<%= data.versions.pio %>/bin/pio-start-all` and you
 should see something similar to the following:
 
