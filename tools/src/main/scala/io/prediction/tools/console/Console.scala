@@ -963,8 +963,13 @@ object Console extends Logging {
         dst,
         true)
     } else {
-      info(s"Uber JAR disabled. Making sure lib/${core.getName} is absent.")
-      new File("lib", core.getName).delete()
+      if (new File("engine.json").exists()) {
+        info(s"Uber JAR disabled. Making sure lib/${core.getName} is absent.")
+        new File("lib", core.getName).delete()
+      } else {
+        info("Uber JAR disabled, but current working directory does not look " +
+          s"like an engine project directory. Please delete lib/${core.getName} manually.")
+      }
     }
     info(s"Going to run: ${buildCmd}")
     try {
