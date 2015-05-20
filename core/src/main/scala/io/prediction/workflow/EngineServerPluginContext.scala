@@ -15,11 +15,15 @@
 
 package io.prediction.workflow
 
-import java.io.File
+import java.net.URI
 import java.util.ServiceLoader
 
 import akka.event.LoggingAdapter
+import com.google.common.io.ByteStreams
 import grizzled.slf4j.Logging
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.Path
 import org.json4s.DefaultFormats
 import org.json4s.Formats
 import org.json4s.JObject
@@ -28,7 +32,6 @@ import org.json4s.native.JsonMethods._
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
-import scala.io.Source
 
 class EngineServerPluginContext(
     val plugins: mutable.Map[String, mutable.Map[String, EngineServerPlugin]],
@@ -43,14 +46,13 @@ class EngineServerPluginContext(
 object EngineServerPluginContext extends Logging {
   implicit val formats: Formats = DefaultFormats
 
-  def apply(log: LoggingAdapter): EngineServerPluginContext = {
+  def apply(log: LoggingAdapter, engineVariant: String): EngineServerPluginContext = {
     val plugins = mutable.Map[String, mutable.Map[String, EngineServerPlugin]](
       EngineServerPlugin.outputBlocker -> mutable.Map(),
       EngineServerPlugin.outputSniffer -> mutable.Map())
     val pluginParams = mutable.Map[String, JValue]()
     val serviceLoader = ServiceLoader.load(classOf[EngineServerPlugin])
-    // TODO: Make this programmable after cleaning up deployment
-    val variantJson = parse(Source.fromFile(new File("engine.json")).mkString)
+    val variantJson = parse(stringFromFile(engineVariant))
     (variantJson \ "plugins").extractOpt[JObject].foreach { pluginDefs =>
       pluginDefs.obj.foreach { pluginParams += _ }
     }
@@ -70,5 +72,17 @@ object EngineServerPluginContext extends Logging {
       plugins,
       pluginParams,
       log)
+  }
+
+  private def stringFromFile(filePath: String): String = {
+    try {
+      val uri = new URI(filePath)
+      val fs = FileSystem.get(uri, new Configuration())
+      new String(ByteStreams.toByteArray(fs.open(new Path(uri))).map(_.toChar))
+    } catch {
+      case e: java.io.IOException =>
+        error(s"Error reading from file: ${e.getMessage}. Aborting.")
+        sys.exit(1)
+    }
   }
 }

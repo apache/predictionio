@@ -151,6 +151,8 @@ object RunServer extends Logging {
     val args = Seq(
       "--engineInstanceId",
       engineInstanceId,
+      "--engine-variant",
+      ca.common.variantJson.toURI.toString,
       "--ip",
       ca.deploy.ip,
       "--port",

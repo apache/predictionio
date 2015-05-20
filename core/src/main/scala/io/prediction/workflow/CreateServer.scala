@@ -82,6 +82,7 @@ case class ServerConfig(
   engineInstanceId: String = "",
   engineId: Option[String] = None,
   engineVersion: Option[String] = None,
+  engineVariant: String = "",
   env: Option[String] = None,
   ip: String = "0.0.0.0",
   port: Int = 8000,
@@ -119,6 +120,9 @@ object CreateServer extends Logging {
       opt[String]("engineVersion") action { (x, c) =>
         c.copy(engineVersion = Some(x))
       } text("Engine version.")
+      opt[String]("engine-variant") required() action { (x, c) =>
+        c.copy(engineVariant = x)
+      } text("Engine variant JSON.")
       opt[String]("ip") action { (x, c) =>
         c.copy(ip = x)
       }
@@ -412,8 +416,9 @@ class ServerActor[Q, P](
   def actorRefFactory: ActorContext = context
 
   implicit val timeout = Timeout(5, TimeUnit.SECONDS)
-  val pluginsActorRef = context.actorOf(Props[PluginsActor], "PluginsActor")
-  val pluginContext = EngineServerPluginContext(log)
+  val pluginsActorRef =
+    context.actorOf(Props(classOf[PluginsActor], args.engineVariant), "PluginsActor")
+  val pluginContext = EngineServerPluginContext(log, args.engineVariant)
 
   def receive: Actor.Receive = runRoute(myRoute)
 
