@@ -115,8 +115,6 @@ object Runner extends Logging {
       FileSystem.get(uri, new Configuration())
     }
 
-    val core = console.Console.coreAssembly(ca.common.pioHome.get)
-
     // Collect and serialize PIO_* environmental variables
     val pioEnvVars = sys.env.filter(kv => kv._1.startsWith("PIO_")).map(kv =>
       s"${kv._1}=${kv._2}"
@@ -139,6 +137,7 @@ object Runner extends Logging {
       } getOrElse {
         Nil
       }
+
     val extraClasspaths =
       driverClassPathPrefix ++ WorkflowUtils.thirdPartyClasspaths
 
