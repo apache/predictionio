@@ -218,8 +218,14 @@ object CreateServer extends Logging {
       kryo.invert(modeldata.get(engineInstance.id).get.models).get.
       asInstanceOf[Seq[Any]]
 
+    val batch = if (engineInstance.batch.nonEmpty) {
+      s"${engineInstance.engineFactory} (${engineInstance.batch})"
+    } else {
+      engineInstance.engineFactory
+    }
+
     val sparkContext = WorkflowContext(
-      batch = if (sc.batch == "") engineInstance.batch else sc.batch,
+      batch = batch,
       executorEnv = engineInstance.env,
       mode = "Serving",
       sparkEnv = engineInstance.sparkConf)
