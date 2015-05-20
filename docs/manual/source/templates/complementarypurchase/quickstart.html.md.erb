@@ -236,9 +236,22 @@ Now, You can query the engine. For example, return top 3 items which are frequen
 
 If you include one or more items in the query, the engine will use each combination of the query items as condition, and return recommended items if there is any for this condition. For example, if you query items are ["A", "B"], then the engine will use ["A"], ["B"], and ["A", "B"] as condition and try to find top n recommended items for each combination.
 
-You can simply send a query by making a HTTP request or through the `EngineClient` of an SDK:
+You can simply send a query by making a HTTP request or through the `EngineClient` of an SDK.
+
+With the deployed engine running, open another temrinal and run the following `curl` command or use SDK to send the query:
 
 <div class="tabs">
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -H "Content-Type: application/json" \
+-d '{
+  "items" : ["s2i1"],
+  "num" : 3
+}' \
+http://localhost:8000/queries.json
+
+```
+  </div>
   <div data-tab="Python SDK" data-lang="python">
 ```python
 import predictionio
@@ -300,17 +313,6 @@ JsonObject response = engineClient.sendQuery(ImmutableMap.<String, Object>of(
   "items", ImmutableList.of("s2i1"),
   "num", 3
 ));
-```
-  </div>
-  <div data-tab="REST API" data-lang="json">
-```
-$ curl -H "Content-Type: application/json" \
--d '{
-  "items" : ["s2i1"],
-  "num" : 3
-}' \
-http://localhost:8000/queries.json
-
 ```
   </div>
 </div>

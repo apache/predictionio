@@ -40,7 +40,16 @@ Now your engine is ready to deploy. Run:
 $ pio deploy
 ```
 
-This will deploy an engine that binds to http://localhost:8000. You can visit
+When the engine is deployed successfully and running, you should see a console message similar to the following:
+
+```
+[INFO] [HttpListener] Bound to /0.0.0.0:8000
+[INFO] [MasterActor] Bind successful. Ready to serve.
+```
+
+Do not kill the deployed engine process.
+
+By default, the deployed engine binds to http://localhost:8000. You can visit
 that page in your web browser to check its status.
 
 ![Engine Status](/images/engine-server.png)

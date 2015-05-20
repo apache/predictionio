@@ -377,9 +377,18 @@ Now, You can try to retrieve predicted results. For example, to predict the
 label (i.e. *plan* in this case) of a user with attr0=2, attr1=0 and attr2=0,
 you send this JSON { "features": [2, 0, 0] } to the deployed engine and it will
 return a JSON of the predicted plan. Simply send a query by making a HTTP
-request or through the `EngineClient` of an SDK:
+request or through the `EngineClient` of an SDK.
+
+With the deployed engine running, open another temrinal and run the following `curl` command or use SDK to send the query:
 
 <div class="tabs">
+  <div data-tab="REST API" data-lang="bash">
+```bash
+$ curl -H "Content-Type: application/json" \
+-d '{ "features": [2, 0, 0] }' http://localhost:8000/queries.json
+
+```
+  </div>
   <div data-tab="Python SDK" data-lang="python">
 ```python
 import predictionio
@@ -426,12 +435,6 @@ EngineClient engineClient = new EngineClient(<ENGINE DEPLOY URL>);
 JsonObject response = engineClient.sendQuery(ImmutableMap.<String, Object>of(
         "features", ImmutableList.of(2, 0, 0)
     ));
-```
-  </div>
-  <div data-tab="REST API" data-lang="bash">
-```bash
-$ curl -H "Content-Type: application/json" -d '{ "features": [2, 0, 0] }' http://localhost:8000/queries.json
-
 ```
   </div>
 </div>

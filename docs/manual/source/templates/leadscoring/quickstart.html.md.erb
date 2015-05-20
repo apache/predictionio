@@ -288,11 +288,24 @@ please update the Python SDK to the latest version.
 
 ## 6. Use the Engine
 
-Now, You can retrieve the results. When a user lands on your page "example.com/page9", with referrer "referrer10.com" and browser "Firefox", you can get the predicted lead score by sending this JSON '{ "landingPageId" : "example.com/page9", "referrerId" : "referrer10.com", "browser": "Firefox" }' to the deployed engine. The engine will return a JSON with the score
+Now, You can retrieve the results. When a user lands on your page "example.com/page9", with referrer "referrer10.com" and browser "Firefox", you can get the predicted lead score by sending this JSON '{ "landingPageId" : "example.com/page9", "referrerId" : "referrer10.com", "browser": "Firefox" }' to the deployed engine. The engine will return a JSON with the score.
 
-Simply send a query by making a HTTP request or through the `EngineClient` of an SDK:
+Simply send a query by making a HTTP request or through the `EngineClient` of an SDK.
+
+With the deployed engine running, open another temrinal and run the following `curl` command or use SDK to send the query:
 
 <div class="tabs">
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -H "Content-Type: application/json" \
+-d '{
+  "landingPageId" : "example.com/page9",
+  "referrerId" : "referrer10.com",
+  "browser": "Firefox" }' \
+http://localhost:8000/queries.json
+
+```
+  </div>
   <div data-tab="Python SDK" data-lang="python">
 ```python
 import predictionio
@@ -358,17 +371,6 @@ JsonObject response = engineClient.sendQuery(ImmutableMap.<String, Object>of(
   "referrerId", "referrer10.com",
   "browser", "Firefox"
 ));
-```
-  </div>
-  <div data-tab="REST API" data-lang="json">
-```
-$ curl -H "Content-Type: application/json" \
--d '{
-  "landingPageId" : "example.com/page9",
-  "referrerId" : "referrer10.com",
-  "browser": "Firefox" }' \
-http://localhost:8000/queries.json
-
 ```
   </div>
 </div>

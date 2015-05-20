@@ -249,9 +249,19 @@ INFO: By default, the template train the model with "rate" events (explicit rati
 Now, You can try to retrieve predicted results. To recommend 4 movies to user
 whose id is 1, you send this JSON `{ "user": "1", "num": 4 }` to the deployed
 engine and it will return a JSON of the recommended movies. Simply send a query
-by making a HTTP request or through the `EngineClient` of an SDK:
+by making a HTTP request or through the `EngineClient` of an SDK.
+
+With the deployed engine running, open another temrinal and run the following `curl` command or use SDK to send the query:
 
 <div class="tabs">
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -H "Content-Type: application/json" \
+-d '{ "user": "1", "num": 4 }' http://localhost:8000/queries.json
+
+```
+  </div>
+
   <div data-tab="Python SDK" data-lang="python">
 ```python
 import predictionio
@@ -299,12 +309,6 @@ JsonObject response = engineClient.sendQuery(ImmutableMap.<String, Object>of(
         "user", "1",
         "num",  4
     ));
-```
-  </div>
-  <div data-tab="REST API" data-lang="json">
-```
-$ curl -H "Content-Type: application/json" -d '{ "user": "1", "num": 4 }' http://localhost:8000/queries.json
-
 ```
   </div>
 </div>
