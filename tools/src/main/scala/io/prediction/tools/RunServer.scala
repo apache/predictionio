@@ -74,8 +74,8 @@ object RunServer extends Logging {
         }
       }
 
-    val jarFiles = (em.files ++ new File(ca.common.pioHome.get, "plugins")
-      .listFiles().map(_.getAbsolutePath)).mkString(",")
+    val jarFiles = (em.files ++ Option(new File(ca.common.pioHome.get, "plugins")
+      .listFiles()).getOrElse(Array.empty[File]).map(_.getAbsolutePath)).mkString(",")
 
     val sparkSubmit =
       Seq(Seq(sparkHome, "bin", "spark-submit").mkString(File.separator)) ++
@@ -145,8 +145,9 @@ object RunServer extends Logging {
     ca: ConsoleArgs,
     em: EngineManifest,
     engineInstanceId: String): Int = {
-    val jarFiles = em.files.map(new URI(_)) ++ new File(ca.common.pioHome.get, "plugins")
-      .listFiles().map(_.toURI)
+    val jarFiles = em.files.map(new URI(_)) ++
+      Option(new File(ca.common.pioHome.get, "plugins").listFiles())
+        .getOrElse(Array.empty[File]).map(_.toURI)
     val args = Seq(
       "--engineInstanceId",
       engineInstanceId,
