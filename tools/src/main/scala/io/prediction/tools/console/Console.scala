@@ -1076,7 +1076,8 @@ object Console extends Logging {
           "Please make sure they are correct.")
         storage.Storage.config.get("sources") map { src =>
           src foreach { case (s, p) =>
-            error(s"Source Name: $s; Type: ${p("type")}; Configuration: ${p("config")}")
+            error(s"Source Name: $s; Type: ${p.getOrElse("type", "(error)")}; " +
+              s"Configuration: ${p.getOrElse("config", "(error)")}")
           }
         } getOrElse {
           error("No properly configured storage backend sources.")
