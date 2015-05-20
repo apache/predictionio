@@ -13,75 +13,95 @@ developers can implement their own backend driver as an external library.
 ## Concepts
 
 In this section, we will visit some storage layer concepts that are common to
-users, engine developers, and advanced developers.
+users, engine developers, and advanced developers:
 
+- **Repository** is the highest level of data access abstraction and is where all
+engines and PredictionIO itself access data with.
+
+- **Source** is the actual data store backend that provide data access. A source is an
+implementation of the set of data access interfaces defined by *repositories*.
+
+Each of them will be explained in detail below:
 
 ### Repositories
 
-Repository is the highest level of data access abstraction and is where all
+*Repository* is the highest level of data access abstraction and is where all
 engines and PredictionIO itself access data with.
 
 The storage layer currently defines three mandatory data repositories: *meta
 data*, *event data*, and *model data*. Each repository has its own set of data
 access interfaces.
 
-*Meta data* is used by PredictionIO to store engine training and evaluation
+- **Meta data** is used by PredictionIO to store engine training and evaluation
 information. Commands like `pio build`, `pio train`, `pio deploy`, and `pio
 eval` all access meta data.
 
-*Event data* is used by the Event Server to collect events, and by engines to
+- **Event data** is used by the Event Server to collect events, and by engines to
 source data.
 
-*Model data* is used by PredictionIO for automatic persistence of trained
+- **Model data** is used by PredictionIO for automatic persistence of trained
 models.
 
-To configure these repositories, look for the following configuration variables
-in `conf/pio-env.sh`.
+The following configuration variables are used for configure these repositories:
+
+  - *Meta data* is configured by the `PIO_STORAGE_REPOSITORIES_METADATA_XXX` variables.
+  - *Event data* is configured by the `PIO_STORAGE_REPOSITORIES_EVENTDATA_XXX` variables.
+  - *Model data* is configured by the `PIO_STORAGE_REPOSITORIES_MODELDATA_XXX` variables.
+
+Configuration variables will be explained in more details in later sections below (see Data Store Configuration).
+
+For example, you may see the following configuration variables defined in `conf/pio-env.sh`
 
 ```shell
-PIO_STORAGE_REPOSITORIES_METADATA_NAME=pio_metadata
-PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=PGSQL
+PIO_STORAGE_REPOSITORIES_METADATA_NAME=predictionio_metadata
+PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=ELASTICSEARCH
 
-PIO_STORAGE_REPOSITORIES_EVENTDATA_NAME=pio_eventdata
+PIO_STORAGE_REPOSITORIES_EVENTDATA_NAME=predictionio_eventdata
 PIO_STORAGE_REPOSITORIES_EVENTDATA_SOURCE=HBASE
 
-PIO_STORAGE_REPOSITORIES_MODELDATA_NAME=pio_modeldata
-PIO_STORAGE_REPOSITORIES_MODELDATA_SOURCE=HDFS
+PIO_STORAGE_REPOSITORIES_MODELDATA_NAME=pio_
+PIO_STORAGE_REPOSITORIES_MODELDATA_SOURCE=LOCALFS
 ```
-
-Notice that repository names (*METADATA*, *EVENTDATA*, and *MODELDATA*) are
-fixed.
 
 The configuration variable with the *NAME* suffix controls the namespace used by
 the *source*.
 
 The configuration variable with the *SOURCE* suffix points to the actual
-*source* that will back this repository. *Source* will be explained below.
+**source** that will back this repository. *Source* will be explained below.
 
 
 ### Sources
 
-Sources are actual data store backends that provide data access. A source is an
-implementation of the set of data access interfaces defined by repositories.
+*Sources* are actual data store backends that provide data access. A source is an
+implementation of the set of data access interfaces defined by *repositories*.
 
 PredictionIO comes with the following sources:
 
--   Meta Data
-    -   JDBC (tested on MySQL and PostgreSQL)
-    -   Elasticsearch
--   Event Data
-    -   JDBC (tested on MySQL and PostgreSQL)
-    -   Apache HBase
--   Model Data
-    -   JDBC (tested on MySQL and PostgreSQL)
-    -   Local file system
-    -   HDFS
+- **JDBC** (tested on MySQL and PostgreSQL):
+  * Type name is **jdbc**.
+  * Can be used for *Meta Data*, *Event Data* and *Model Data* repositories
 
-Each repository can be configured to use different sources as shown before.
+- **Elasticsearch**:
+  * Type name is **elasticsearch**
+  * Can be used for *Meta Data* repository
 
-Each source has its own set of configuration parameters. Configuration variables
-are documented in sections below. The following is an example source
-configuration:
+- **Apache HBase**:
+  * Type name is **hbase**
+  * Can be used for *Event Data* repository
+
+- **Local file system**:
+  * Type name is **localfs**
+  * Can be used for *Model Data* repository
+
+- **HDFS**:
+  * Type name is **hdfs**.
+  * Can be used for *Model Data* repository
+
+Each repository can be configured to use different sources as shown above.
+
+Each source has its own set of configuration parameters. Configuration variables will be explained in more details in later sections below (see Data Store Configuration).
+
+The following is an example source configuration with name "PGSQL" with type `jdbc`:
 
 ```shell
 PIO_STORAGE_SOURCES_PGSQL_TYPE=jdbc
@@ -90,6 +110,12 @@ PIO_STORAGE_SOURCES_PGSQL_USERNAME=pio
 PIO_STORAGE_SOURCES_PGSQL_PASSWORD=pio
 ```
 
+The following is an example of using this source "PGSQL" for the *meta data* repository:
+
+```shell
+PIO_STORAGE_REPOSITORIES_METADATA_NAME=predictionio_metadata
+PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=PGSQL
+```
 
 ## Data Store Configuration
 
@@ -99,29 +125,28 @@ perform a `pio` command, e.g. `pio train`.
 
 Notice that all variables are prefixed by `PIO_STORAGE_`.
 
-
-### Repositories
+### Repositories Configuration
 
 Variable Format: `PIO_STORAGE_REPOSITORIES_<REPO>_<KEY>`
 
 Configuration variables of repositories are prefixed by
 `PIO_STORAGE_REPOSITORIES_`, followed by the repository name (e.g. `METADATA`),
-and either `NAME` or `SOURCE`.
+and then either `NAME` or `SOURCE`.
 
 Consider the following example:
 
 ```shell
-PIO_STORAGE_REPOSITORIES_METADATA_NAME=pio_metadata
+PIO_STORAGE_REPOSITORIES_METADATA_NAME=predictionio_metadata
 PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=PGSQL
 ```
 
 The above configures PredictionIO to look for a source configured with the name
-`PGSQL`, and use `pio_metadata` as the namespace within such source. There is no
+`PGSQL`, and use `predictionio_metadata` as the namespace within such source. There is no
 restriction on namespace usage by the source, so behavior may vary. As an
 example, the official JDBC source uses the namespace as database table prefix.
 
 
-### Sources
+### Sources Configuration
 
 Variable Format: `PIO_STORAGE_SOURCES_<NAME>_<KEY>`
 
@@ -136,7 +161,7 @@ Depending on what the source `TYPE` is, different configuration keys are
 required.
 
 
-#### JDBC
+#### JDBC Configuration
 
 Variable Format: `PIO_STORAGE_SOURCES_[NAME]_TYPE=jdbc`
 
@@ -168,9 +193,9 @@ When `TYPE` is set to `jdbc`, the following configuration keys are supported.
     `PIO_STORAGE_SOURCES_PGSQL_PARTITIONS=4`
 
 
-#### Apache HBase
+#### Apache HBase Configuration
 
-Variable Format: `PIO_STORAGE_SOURCES_[NAME]_TYPE=elasticsearch`
+Variable Format: `PIO_STORAGE_SOURCES_[NAME]_TYPE=hbase`
 
 Supported Repositories: **event**
 
@@ -181,7 +206,7 @@ client side HBase configuration must be done through `hbase-site.xml` pointed
 by the `HBASE_CONF_DIR` configuration variable.
 
 
-#### Elasticsearch
+#### Elasticsearch Configuration
 
 Variable Format: `PIO_STORAGE_SOURCES_[NAME]_TYPE=elasticsearch`
 
@@ -209,7 +234,7 @@ INFO: Other advanced Elasticsearch parameters can be set by pointing
 `ES_CONF_DIR` configuration variable to the location of `elasticsearch.yml`.
 
 
-#### Local File System
+#### Local File System Configuration
 
 Variable Format: `PIO_STORAGE_SOURCES_[NAME]_TYPE=localfs`
 
@@ -224,7 +249,7 @@ supported.
     `PIO_STORAGE_SOURCES_FS_PATH=/mymodels`
 
 
-#### HDFS
+#### HDFS Configuration
 
 Variable Format: `PIO_STORAGE_SOURCES_[NAME]_TYPE=hdfs`
 

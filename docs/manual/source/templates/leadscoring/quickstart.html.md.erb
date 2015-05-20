@@ -51,9 +51,9 @@ Next, let's collect training data for this Engine. By default,
 
 Note that a "sessionId" property is required to indicate these events happen in the same session. In the first visit of a user, you should specify the optional "referrral ID" and "browser" information. These are used to determine where the user comes from and the browser information.
 
-<%= partial 'shared/quickstart/install_sdk' %>
+In summary, this template requires user-view-page event and user-buy-item events with the session ID, referrer ID and browser properties.
 
-The following is sample code of using different SDKs to import events of user-view-page, user-buy-item with the session ID, referrer ID and browser properties.
+<%= partial 'shared/quickstart/install_sdk' %>
 
 <div class="tabs">
   <div data-tab="Python SDK" data-lang="python">
@@ -253,9 +253,9 @@ curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
 
 A Python import script `import_eventserver.py` is provided to import sample data. The sample data includes 50 sessions of events. In each session, a randomly selected user (with user ID "u1" to "u10") lands on a page (randomly selected from example.com/page1 to example.com/page20) with referrerId (randomly selected from referrer1.com to referrer10.com) and browser information. The user may view more pages, and may or may not buy an item (with item ID "i1" to "i50").
 
-NOTE: You need to install Python SDK to run the import script. Please follow [Python SDK README](https://github.com/PredictionIO/PredictionIO-Python-SDK) to install.
+<%= partial 'shared/quickstart/install_python_sdk' %>
 
-First, make sure you are under the `MyLeadScoring` directory. Execute the following to import the data (Replace the value of access_key parameter with your **Access Key**):
+Make sure you are under the `MyLeadScoring` directory. Execute the following to import the data (Replace the value of access_key parameter with your **Access Key**):
 
 ```
 $ cd MyLeadScoring
@@ -288,11 +288,24 @@ please update the Python SDK to the latest version.
 
 ## 6. Use the Engine
 
-Now, You can retrieve the results. When a user lands on your page "example.com/page9", with referrer "referrer10.com" and browser "Firefox", you can get the predicted lead score by sending this JSON '{ "landingPageId" : "example.com/page9", "referrerId" : "referrer10.com", "browser": "Firefox" }' to the deployed engine. The engine will return a JSON with the score
+Now, You can retrieve the results. When a user lands on your page "example.com/page9", with referrer "referrer10.com" and browser "Firefox", you can get the predicted lead score by sending this JSON '{ "landingPageId" : "example.com/page9", "referrerId" : "referrer10.com", "browser": "Firefox" }' to the deployed engine. The engine will return a JSON with the score.
 
-Simply send a query by making a HTTP request or through the `EngineClient` of an SDK:
+Simply send a query by making a HTTP request or through the `EngineClient` of an SDK.
+
+With the deployed engine running, open another temrinal and run the following `curl` command or use SDK to send the query:
 
 <div class="tabs">
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -H "Content-Type: application/json" \
+-d '{
+  "landingPageId" : "example.com/page9",
+  "referrerId" : "referrer10.com",
+  "browser": "Firefox" }' \
+http://localhost:8000/queries.json
+
+```
+  </div>
   <div data-tab="Python SDK" data-lang="python">
 ```python
 import predictionio
@@ -358,17 +371,6 @@ JsonObject response = engineClient.sendQuery(ImmutableMap.<String, Object>of(
   "referrerId", "referrer10.com",
   "browser", "Firefox"
 ));
-```
-  </div>
-  <div data-tab="REST API" data-lang="json">
-```
-$ curl -H "Content-Type: application/json" \
--d '{
-  "landingPageId" : "example.com/page9",
-  "referrerId" : "referrer10.com",
-  "browser": "Firefox" }' \
-http://localhost:8000/queries.json
-
 ```
   </div>
 </div>

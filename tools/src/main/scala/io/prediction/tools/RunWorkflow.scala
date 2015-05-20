@@ -15,18 +15,18 @@
 
 package io.prediction.tools
 
+import java.io.File
+import java.net.URI
+
+import grizzled.slf4j.Logging
 import io.prediction.data.storage.EngineManifest
 import io.prediction.tools.console.ConsoleArgs
 import io.prediction.workflow.WorkflowUtils
-
-import grizzled.slf4j.Logging
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 
 import scala.sys.process._
-
-import java.io.File
 
 object RunWorkflow extends Logging {
   def runWorkflow(
@@ -168,5 +168,45 @@ object RunWorkflow extends Logging {
 
     info(s"Submission command: ${sparkSubmit.mkString(" ")}")
     Process(sparkSubmit, None, "CLASSPATH" -> "", "SPARK_YARN_USER_ENV" -> pioEnvVars).!
+  }
+
+  def newRunWorkflow(ca: ConsoleArgs, em: EngineManifest): Int = {
+    val jarFiles = em.files.map(new URI(_))
+    val args = Seq(
+      "--engine-id",
+      em.id,
+      "--engine-version",
+      em.version,
+      "--engine-variant",
+      ca.common.variantJson.toURI.toString,
+      "--verbosity",
+      ca.common.verbosity.toString) ++
+      ca.common.engineFactory.map(
+        x => Seq("--engine-factory", x)).getOrElse(Seq()) ++
+      ca.common.engineParamsKey.map(
+        x => Seq("--engine-params-key", x)).getOrElse(Seq()) ++
+      (if (ca.common.batch != "") Seq("--batch", ca.common.batch) else Seq()) ++
+      (if (ca.common.verbose) Seq("--verbose") else Seq()) ++
+      (if (ca.common.skipSanityCheck) Seq("--skip-sanity-check") else Seq()) ++
+      (if (ca.common.stopAfterRead) Seq("--stop-after-read") else Seq()) ++
+      (if (ca.common.stopAfterPrepare) {
+        Seq("--stop-after-prepare")
+      } else {
+        Seq()
+      }) ++
+      ca.common.evaluation.map(x => Seq("--evaluation-class", x)).
+        getOrElse(Seq()) ++
+      // If engineParamsGenerator is specified, it overrides the evaluation.
+      ca.common.engineParamsGenerator.orElse(ca.common.evaluation)
+        .map(x => Seq("--engine-params-generator-class", x))
+        .getOrElse(Seq()) ++
+      (if (ca.common.batch != "") Seq("--batch", ca.common.batch) else Seq()) ++
+      Seq("--json-extractor", ca.common.jsonExtractor.toString)
+
+    Runner.runOnSpark(
+      "io.prediction.workflow.CreateWorkflow",
+      args,
+      ca,
+      jarFiles)
   }
 }

@@ -53,8 +53,16 @@ As long as the appId is valid, this Vanilla Engine template does not require eve
 
 Now, You can try to retrieve predicted results. The engine accepts JSON query with the field 'q': `{ "q" : "foo" }`. A prefix is added to the query data and return as PredictedResult.
 
+With the deployed engine running, open another temrinal and run the following `curl` command or use SDK to send the query:
 
 <div class="tabs">
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -H "Content-Type: application/json" \
+-d '{ "q": "foo" }' http://localhost:8000/queries.json
+
+```
+  </div>
   <div data-tab="Python SDK" data-lang="python">
 ```python
 import predictionio
@@ -101,12 +109,6 @@ EngineClient engineClient = new EngineClient(<ENGINE DEPLOY URL>);
 JsonObject response = engineClient.sendQuery(ImmutableMap.<String, Object>of(
         "q", "foo"
     ));
-```
-  </div>
-  <div data-tab="REST API" data-lang="json">
-```
-$ curl -H "Content-Type: application/json" -d '{ "q": "foo" }' http://localhost:8000/queries.json
-
 ```
   </div>
 </div>

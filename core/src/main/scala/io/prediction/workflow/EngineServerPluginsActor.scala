@@ -20,11 +20,11 @@ import akka.event.Logging
 import io.prediction.data.storage.EngineInstance
 import org.json4s.JValue
 
-class PluginsActor() extends Actor {
+class PluginsActor(engineVariant: String) extends Actor {
   implicit val system = context.system
   val log = Logging(system, this)
 
-  val pluginContext = EngineServerPluginContext(log)
+  val pluginContext = EngineServerPluginContext(log, engineVariant)
 
   def receive: PartialFunction[Any, Unit] = {
     case (ei: EngineInstance, q: JValue, p: JValue) =>

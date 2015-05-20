@@ -2,7 +2,7 @@ Usage: pio deploy [--ip <value>] [--port <value>]
                   [--engine-instance-id <value>]
                   [--feedback] [--accesskey <value>]
                   [--event-server-ip <value>] [--event-server-port <value>]
-                  [--batch <value>]
+                  [--batch <value>] [--scratch-uri <value>]
 
 Deploy an engine instance as a prediction server. This command will pass all
 pass-through arguments to its underlying spark-submit command.
@@ -23,3 +23,7 @@ pass-through arguments to its underlying spark-submit command.
       Event server port. Default: 7070
   --batch <value>
       Batch label of the deployment.
+  --scratch-uri
+      URI of the working scratch space. Specify this when you want to have all
+      necessary files transferred to a remote location. You will usually want to
+      specify this when you use --deploy-mode cluster.

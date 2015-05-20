@@ -82,6 +82,8 @@ case class ServerConfig(
   engineInstanceId: String = "",
   engineId: Option[String] = None,
   engineVersion: Option[String] = None,
+  engineVariant: String = "",
+  env: Option[String] = None,
   ip: String = "0.0.0.0",
   port: Int = 8000,
   feedback: Boolean = false,
@@ -118,9 +120,16 @@ object CreateServer extends Logging {
       opt[String]("engineVersion") action { (x, c) =>
         c.copy(engineVersion = Some(x))
       } text("Engine version.")
+      opt[String]("engine-variant") required() action { (x, c) =>
+        c.copy(engineVariant = x)
+      } text("Engine variant JSON.")
       opt[String]("ip") action { (x, c) =>
         c.copy(ip = x)
       }
+      opt[String]("env") action { (x, c) =>
+        c.copy(env = Some(x))
+      } text("Comma-separated list of environmental variables (in 'FOO=BAR' " +
+        "format) to pass to the Spark execution environment.")
       opt[Int]("port") action { (x, c) =>
         c.copy(port = x)
       } text("Port to bind to (default: 8000).")
@@ -342,7 +351,8 @@ class MasterActor(
           s"${manifest.version}. Abort reloading.")
       }
     case x: Http.Bound =>
-      log.info("Bind successful. Ready to serve.")
+      val serverUrl = s"http://${sc.ip}:${sc.port}"
+      log.info(s"Engine is deployed and running. Engine API is live at ${serverUrl}.")
       sprayHttpListener = Some(sender)
     case x: Http.CommandFailed =>
       if (retry > 0) {
@@ -407,8 +417,9 @@ class ServerActor[Q, P](
   def actorRefFactory: ActorContext = context
 
   implicit val timeout = Timeout(5, TimeUnit.SECONDS)
-  val pluginsActorRef = context.actorOf(Props[PluginsActor], "PluginsActor")
-  val pluginContext = EngineServerPluginContext(log)
+  val pluginsActorRef =
+    context.actorOf(Props(classOf[PluginsActor], args.engineVariant), "PluginsActor")
+  val pluginContext = EngineServerPluginContext(log, args.engineVariant)
 
   def receive: Actor.Receive = runRoute(myRoute)
 

@@ -15,6 +15,8 @@
 
 package io.prediction.workflow
 
+import java.net.URI
+
 import com.github.nscala_time.time.Imports._
 import com.google.common.io.ByteStreams
 import grizzled.slf4j.Logging
@@ -57,22 +59,11 @@ object CreateWorkflow extends Logging {
 
   case class AlgorithmParams(name: String, params: JValue)
 
-  val hadoopConf = new Configuration
-  val hdfs = FileSystem.get(hadoopConf)
-  val localfs = FileSystem.getLocal(hadoopConf)
-
-  private def stringFromFile(
-      basePath: String,
-      filePath: String,
-      fs: FileSystem = hdfs): String = {
+  private def stringFromFile(filePath: String): String = {
     try {
-      val p =
-        if (basePath == "") {
-          new Path(filePath)
-        } else {
-          new Path(basePath + Path.SEPARATOR + filePath)
-        }
-      new String(ByteStreams.toByteArray(fs.open(p)).map(_.toChar))
+      val uri = new URI(filePath)
+      val fs = FileSystem.get(uri, new Configuration())
+      new String(ByteStreams.toByteArray(fs.open(new Path(uri))).map(_.toChar))
     } catch {
       case e: java.io.IOException =>
         error(s"Error reading from file: ${e.getMessage}. Aborting workflow.")
@@ -148,8 +139,7 @@ object CreateWorkflow extends Logging {
     val wfc = wfcOpt.get
 
     WorkflowUtils.modifyLogging(wfc.verbose)
-    val targetfs = if (wfc.deployMode == "cluster") hdfs else localfs
-    val variantJson = parse(stringFromFile("", wfc.engineVariant, targetfs))
+    val variantJson = parse(stringFromFile(wfc.engineVariant))
     val engineFactory = if (wfc.engineFactory == "") {
       variantJson \ "engineFactory" match {
         case JString(s) => s

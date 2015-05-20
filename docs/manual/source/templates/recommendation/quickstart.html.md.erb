@@ -48,11 +48,9 @@ NOTE: You can customize to use other event.
 
 Next, let's collect some training data. By default,
 the Recommendation Engine Template supports 2 types of events: **rate** and
-**buy**. A user can give a rating score to an item or he can buy an item.
+**buy**. A user can give a rating score to an item or he can buy an item. This template requires user-view-item and user-buy-item events.
 
 <%= partial 'shared/quickstart/install_sdk' %>
-
-The following is the sample code of using some SDKs to import user-view-item and user-buy-item events:
 
 <div class="tabs">
   <div data-tab="Python SDK" data-lang="python">
@@ -206,24 +204,19 @@ curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
 
 <%= partial 'shared/quickstart/import_sample_data' %>
 
-Execute the following to get the sample movie dataset from MLlib repo:
-
-WARNING: These commands must be executed in the Engine directory, for example: `MyRecomendation`.
-
-```
-$ curl https://raw.githubusercontent.com/apache/spark/master/data/mllib/sample_movielens_data.txt --create-dirs -o data/sample_movielens_data.txt
-```
-
 A Python import script `import_eventserver.py` is provided in the template to import the data to
 Event Server using Python SDK. Please upgrade to the latest Python SDK.
 
-NOTE: You need to install Python SDK to run the import script. Please follow [Python SDK README](https://github.com/PredictionIO/PredictionIO-Python-SDK) to install.
+<%= partial 'shared/quickstart/install_python_sdk' %>
 
 Replace the value of access_key parameter by your
 **Access Key** and run:
 
+WARNING: These commands must be executed in the Engine directory, for example: `MyRecomendation`.
+
 ```
 $ cd MyRecomendation
+$ curl https://raw.githubusercontent.com/apache/spark/master/data/mllib/sample_movielens_data.txt --create-dirs -o data/sample_movielens_data.txt
 $ python data/import_eventserver.py --access_key 3mZWDzci2D5YsqAnqNnXH9SB6Rg3dsTBs8iHkK6X2i54IQsIZI1eEeQQyMfs7b3F
 ```
 
@@ -256,9 +249,19 @@ INFO: By default, the template train the model with "rate" events (explicit rati
 Now, You can try to retrieve predicted results. To recommend 4 movies to user
 whose id is 1, you send this JSON `{ "user": "1", "num": 4 }` to the deployed
 engine and it will return a JSON of the recommended movies. Simply send a query
-by making a HTTP request or through the `EngineClient` of an SDK:
+by making a HTTP request or through the `EngineClient` of an SDK.
+
+With the deployed engine running, open another temrinal and run the following `curl` command or use SDK to send the query:
 
 <div class="tabs">
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -H "Content-Type: application/json" \
+-d '{ "user": "1", "num": 4 }' http://localhost:8000/queries.json
+
+```
+  </div>
+
   <div data-tab="Python SDK" data-lang="python">
 ```python
 import predictionio
@@ -306,12 +309,6 @@ JsonObject response = engineClient.sendQuery(ImmutableMap.<String, Object>of(
         "user", "1",
         "num",  4
     ));
-```
-  </div>
-  <div data-tab="REST API" data-lang="json">
-```
-$ curl -H "Content-Type: application/json" -d '{ "user": "1", "num": 4 }' http://localhost:8000/queries.json
-
 ```
   </div>
 </div>
