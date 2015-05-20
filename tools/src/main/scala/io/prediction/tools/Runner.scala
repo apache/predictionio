@@ -59,7 +59,7 @@ object Runner extends Logging {
         info(s"Copying $localFile to ${dest.toString}")
         fs.copyFromLocalFile(new Path(localFilePath), dest)
         dest.toUri.toString
-      case _ => localFilePath
+      case _ => localFile.toURI.toString
     }
   }
 
@@ -76,7 +76,11 @@ object Runner extends Logging {
       uri: Option[URI],
       args: Seq[String]): Seq[String] = {
     args map { arg =>
-      val f = new File(arg)
+      val f = try {
+        new File(new URI(arg))
+      } catch {
+        case e: Throwable => new File(arg)
+      }
       if (f.exists()) {
         handleScratchFile(fileSystem, uri, f)
       } else {
