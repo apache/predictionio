@@ -15,6 +15,7 @@
 
 package io.prediction.workflow
 
+import io.prediction.controller.EngineParams
 import io.prediction.controller.Params
 import io.prediction.controller.Utils
 import org.json4s.CustomSerializer
@@ -324,9 +325,47 @@ class JsonExtractorSuite extends FunSuite with Matchers {
 
     json should be ("""[{"scala":{"a":"parameter"}},{"java":{"p":"parameter2"}}]""")
   }
+
+  test("Serializing Scala EngineParams works using option Json4sNative") {
+    val ep = new EngineParams(
+      dataSourceParams = ("ds", DataSourceParams("dsp")),
+      algorithmParamsList = Seq(("a0", AlgorithmParams("ap"))))
+
+    val json = JsonExtractor.engineParamsToJson(JsonExtractorOption.Json4sNative, ep)
+
+    json should be (
+      """{"dataSourceParams":{"ds":{"a":"dsp"}},"preparatorParams":{"":{}},""" +
+        """"algorithmParamsList":[{"a0":{"a":"ap"}}],"servingParams":{"":{}}}""")
+  }
+
+  test("Serializing Java EngineParams works using option Gson") {
+    val ep = new EngineParams(
+      dataSourceParams = ("ds", new JavaParams("dsp")),
+      algorithmParamsList = Seq(("a0", new JavaParams("ap")), ("a1", new JavaParams("ap2"))))
+
+    val json = JsonExtractor.engineParamsToJson(JsonExtractorOption.Gson, ep)
+
+    json should be (
+      """{"dataSourceParams":{"ds":{"p":"dsp"}},"preparatorParams":{"":{}},""" +
+        """"algorithmParamsList":[{"a0":{"p":"ap"}},{"a1":{"p":"ap2"}}],"servingParams":{"":{}}}""")
+  }
+
+  test("Serializing Java EngineParams works using option Both") {
+    val ep = new EngineParams(
+      dataSourceParams = ("ds", new JavaParams("dsp")),
+      algorithmParamsList = Seq(("a0", new JavaParams("ap")), ("a1", new JavaParams("ap2"))))
+
+    val json = JsonExtractor.engineParamsToJson(JsonExtractorOption.Both, ep)
+
+    json should be (
+      """{"dataSourceParams":{"ds":{"p":"dsp"}},"preparatorParams":{"":{}},""" +
+        """"algorithmParamsList":[{"a0":{"p":"ap"}},{"a1":{"p":"ap2"}}],"servingParams":{"":{}}}""")
+  }
 }
 
 private case class AlgorithmParams(a: String) extends Params
+
+private case class DataSourceParams(a: String) extends Params
 
 private case class ScalaQuery(string: String, optional: Option[String], default: String = "default")
 

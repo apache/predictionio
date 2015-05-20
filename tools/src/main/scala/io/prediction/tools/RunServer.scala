@@ -74,6 +74,9 @@ object RunServer extends Logging {
         }
       }
 
+    val jarFiles = (em.files ++ new File(ca.common.pioHome.get, "plugins")
+      .listFiles().map(_.getAbsolutePath)).mkString(",")
+
     val sparkSubmit =
       Seq(Seq(sparkHome, "bin", "spark-submit").mkString(File.separator)) ++
       ca.common.sparkPassThrough ++
@@ -83,7 +86,7 @@ object RunServer extends Logging {
         "--name",
         s"PredictionIO Engine Instance: ${engineInstanceId}") ++
       (if (!ca.build.uberJar) {
-        Seq("--jars", em.files.mkString(","))
+        Seq("--jars", jarFiles)
       } else Seq()) ++
       (if (extraFiles.size > 0) {
         Seq("--files", extraFiles.mkString(","))
