@@ -19,7 +19,7 @@ import scala.collection.immutable.HashMap
 import scala.collection.immutable.HashSet
 import org.apache.spark.mllib.linalg.Vector
 
-trait PropertiesToBinaryFixture {
+trait BinaryVectorizerFixture {
 
   def base = {
     new {
