@@ -9,7 +9,7 @@
 # License: http://www.apache.org/licenses/LICENSE-2.0
 
 OS=`uname`
-PIO_VERSION=0.9.2
+PIO_VERSION=0.9.3
 SPARK_VERSION=1.3.0
 ELASTICSEARCH_VERSION=1.4.4
 HBASE_VERSION=1.0.0
