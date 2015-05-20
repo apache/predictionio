@@ -351,7 +351,8 @@ class MasterActor(
           s"${manifest.version}. Abort reloading.")
       }
     case x: Http.Bound =>
-      log.info("Bind successful. Ready to serve.")
+      val serverUrl = s"http://${sc.ip}:${sc.port}"
+      log.info(s"Engine is deployed and running. Engine API is live at ${serverUrl}.")
       sprayHttpListener = Some(sender)
     case x: Http.CommandFailed =>
       if (retry > 0) {
