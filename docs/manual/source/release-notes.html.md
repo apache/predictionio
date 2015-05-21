@@ -6,6 +6,18 @@ INFO: For upgrade instructions please refer to [this page](/resources/upgrade/).
 
 ### What's New
 
+0.9.3 Release | May 20th, 2015 | [Release Notes](https://predictionio.atlassian.net/jira/secure/ReleaseNote.jspa?projectId=10000&version=13600)
+
+- Add support of developing prediction engines in Java
+
+- Add support of PostgreSQL and MySQL
+
+- Spark 1.3.1 compatibility fix
+
+- Creation of specific app access keys
+
+- Prevent a case where `pio build` accidentally removes PredictionIO core library
+
 0.9.2 Release | April 14th, 2015 | [Release Notes](https://predictionio.atlassian.net/jira/secure/ReleaseNote.jspa?projectId=10000&version=13500)
 
 - Channels in the Event Server

@@ -9,14 +9,18 @@
 # License: http://www.apache.org/licenses/LICENSE-2.0
 
 OS=`uname`
-PIO_VERSION=0.9.2
-SPARK_VERSION=1.3.0
+PIO_VERSION=0.9.3
+SPARK_VERSION=1.3.1
 ELASTICSEARCH_VERSION=1.4.4
 HBASE_VERSION=1.0.0
 PIO_DIR=$HOME/PredictionIO
 USER_PROFILE=$HOME/.profile
 PIO_FILE=PredictionIO-${PIO_VERSION}.tar.gz
 TEMP_DIR=/tmp
+
+PGSQL="PostgreSQL"
+MYSQL="MySQL"
+ES_HB="Elasticsearch + HBase"
 
 # Ask a yes/no question, with a default of "yes".
 confirm () {
@@ -95,6 +99,7 @@ elif [[ "$1" == "-y" ]]; then
   echo -e "\033[1;33mForcing defaults!\033[0m"
   pio_dir=${PIO_DIR}
   vendors_dir=${pio_dir}/vendors
+  source_setup=${ES_HB}
 
   spark_dir=${vendors_dir}/spark-${SPARK_VERSION}
   elasticsearch_dir=${vendors_dir}/elasticsearch-${ELASTICSEARCH_VERSION}
@@ -116,15 +121,13 @@ elif [[ "$1" == "-y" ]]; then
 
   # todo: make java installation platform independent
   sudo apt-get update
-  sudo apt-get install openjdk-7-jdk libgfortran3 -y
+  sudo apt-get install openjdk-7-jdk libgfortran3 python-pip -y
+  sudo pip install predictionio
 
   echo -e "\033[1;32mJava install done!\033[0m"
 
   JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
 else
-  PGSQL="PostgreSQL"
-  MYSQL="MySQL"
-  ES_HB="Elasticsearch + HBase"
   # Interactive
   while true; do
     echo -e "\033[1mWhere would you like to install PredictionIO?\033[0m"
@@ -201,32 +204,45 @@ else
     fi
   done
 
+  distro=""
+  echo -e "\033[1mSelect your linux distribution:\033[0m"
+  select distribution in "Debian/Ubuntu" "Other"; do
+    case ${distribution} in
+      "Debian/Ubuntu")
+        distro="debian"
+        break
+        ;;
+      *)
+        ;;
+    esac
+  done
+
+
   # Java Install
   if [[ ${OS} = "Linux" ]] && confirm "\033[1mWould you like to install Java?\033[0m"; then
-    echo -e "\033[1mSelect your linux distribution:\033[0m"
-    select distribution in "Debian/Ubuntu" "Other"; do
-      case ${distribution} in
-        "Debian/Ubuntu")
-          echo -e "\033[1;36mStarting Java install...\033[0m"
+    case ${distro} in
+      "Debian/Ubuntu")
+        distro="debian"
+        echo -e "\033[1;36mStarting Java install...\033[0m"
 
-          echo -e "\033[33mThis script requires superuser access!\033[0m"
-          echo -e "\033[33mYou will be prompted for your password by sudo:\033[0m"
+        echo -e "\033[33mThis script requires superuser access!\033[0m"
+        echo -e "\033[33mYou will be prompted for your password by sudo:\033[0m"
 
-          sudo apt-get update
-          sudo apt-get install openjdk-7-jdk libgfortran3 -y
+        sudo apt-get update
+        sudo apt-get install openjdk-7-jdk libgfortran3 python-pip -y
+        sudo pip install predictionio
 
-          echo -e "\033[1;32mJava install done!\033[0m"
-          break
-          ;;
-        "Other")
-          echo -e "\033[1;31mYour disribution not yet supported for automatic install :(\033[0m"
-          echo -e "\033[1;31mPlease install Java manually!\033[0m"
-          exit 2
-          ;;
-        *)
-          ;;
-      esac
-    done
+        echo -e "\033[1;32mJava install done!\033[0m"
+        break
+        ;;
+      "Other")
+        echo -e "\033[1;31mYour disribution not yet supported for automatic install :(\033[0m"
+        echo -e "\033[1;31mPlease install Java manually!\033[0m"
+        exit 2
+        ;;
+      *)
+        ;;
+    esac
   fi
 
   # Try to find JAVA_HOME
@@ -285,67 +301,56 @@ mkdir ${vendors_dir}
 
 # Spark
 echo -e "\033[1;36mStarting Spark setup in:\033[0m $spark_dir"
-if [[ -e spark-${SPARK_VERSION}-bin-hadoop2.4.tgz ]]; then
-  if confirm "Delete existing spark-$SPARK_VERSION-bin-hadoop2.4.tgz?"; then
-    rm spark-${SPARK_VERSION}-bin-hadoop2.4.tgz
+if [[ -e spark-${SPARK_VERSION}-bin-hadoop2.6.tgz ]]; then
+  if confirm "Delete existing spark-$SPARK_VERSION-bin-hadoop2.6.tgz?"; then
+    rm spark-${SPARK_VERSION}-bin-hadoop2.6.tgz
   fi
 fi
-if [[ ! -e spark-${SPARK_VERSION}-bin-hadoop2.4.tgz ]]; then
+if [[ ! -e spark-${SPARK_VERSION}-bin-hadoop2.6.tgz ]]; then
   echo "Downloading Spark..."
-  curl -O http://d3kbcqa49mib13.cloudfront.net/spark-${SPARK_VERSION}-bin-hadoop2.4.tgz
+  curl -O http://d3kbcqa49mib13.cloudfront.net/spark-${SPARK_VERSION}-bin-hadoop2.6.tgz
 fi
-tar xf spark-${SPARK_VERSION}-bin-hadoop2.4.tgz
+tar xf spark-${SPARK_VERSION}-bin-hadoop2.6.tgz
 rm -rf ${spark_dir}
-mv spark-${SPARK_VERSION}-bin-hadoop2.4 ${spark_dir}
+mv spark-${SPARK_VERSION}-bin-hadoop2.6 ${spark_dir}
 
 echo "Updating: $pio_dir/conf/pio-env.sh"
 ${SED_CMD} "s|SPARK_HOME=.*|SPARK_HOME=$spark_dir|g" ${pio_dir}/conf/pio-env.sh
 
 echo -e "\033[1;32mSpark setup done!\033[0m"
 
-
 case $source_setup in
   "$PGSQL")
-    echo "Installing PostgreSQL"
-    sudo apt-get install postgresql -y
-
-    echo "Updating: $pio_dir/conf/pio-env.sh"
-    ${SED_CMD} "s|PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=ELASTICSEARCH|PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=PGSQL|" ${pio_dir}/conf/pio-env.sh
-    ${SED_CMD} "s|PIO_STORAGE_REPOSITORIES_MODELDATA_SOURCE=LOCALFS|PIO_STORAGE_REPOSITORIES_MODELDATA_SOURCE=PGSQL|" ${pio_dir}/conf/pio-env.sh
-    ${SED_CMD} "s|PIO_STORAGE_REPOSITORIES_EVENTDATA_SOURCE=HBASE|PIO_STORAGE_REPOSITORIES_EVENTDATA_SOURCE=PGSQL|" ${pio_dir}/conf/pio-env.sh
-
-    ${SED_CMD} "s|HBASE_CONF_DIR=\$PIO_HOME/conf|# HBASE_CONF_DIR=\$PIO_HOME/conf|" ${pio_dir}/conf/pio-env.sh
-    ${SED_CMD} "s|PIO_STORAGE_SOURCES_ELASTICSEARCH|# PIO_STORAGE_SOURCES_ELASTICSEARCH|" ${pio_dir}/conf/pio-env.sh
-    ${SED_CMD} "s|PIO_STORAGE_SOURCES_LOCALFS|# PIO_STORAGE_SOURCES_LOCALFS|" ${pio_dir}/conf/pio-env.sh
-    ${SED_CMD} "s|PIO_STORAGE_SOURCES_HBASE|# PIO_STORAGE_SOURCES_HBASE|" ${pio_dir}/conf/pio-env.sh
-
-    echo "PIO_STORAGE_SOURCES_PGSQL_TYPE=jdbc" >> ${pio_dir}/conf/pio-env.sh
-    echo "PIO_STORAGE_SOURCES_PGSQL_URL=jdbc:postgresql:predictionio" >> ${pio_dir}/conf/pio-env.sh
-    echo "PIO_STORAGE_SOURCES_PGSQL_USERNAME=pio" >> ${pio_dir}/conf/pio-env.sh
-    echo "PIO_STORAGE_SOURCES_PGSQL_PASSWORD=pio" >> ${pio_dir}/conf/pio-env.sh
-
-    break
+    if [[ ${distro} = "debian" ]]; then
+      echo -e "\033[1;36mInstalling PostgreSQL...\033[0m"
+      sudo apt-get install postgresql -y
+      echo -e "\033[1;36mPlease use the default password 'pio' when prompted to enter one\033[0m"
+      sudo -u postgres createdb pio
+      sudo -u postgres createuser -P pio
+      echo -e "\033[1;36mPlease update $pio_dir/conf/pio-env.sh if you did not enter the default password\033[0m"
+    else
+      echo -e "\033[1;31mYour disribution not yet supported for automatic install :(\033[0m"
+      echo -e "\033[1;31mPlease install PostgreSQL manually!\033[0m"
+      exit 3
+    fi
     ;;
   "$MYSQL")
-    echo "Installing MySQL"
-    sudo apt-get install mysql-server -y
-
-    echo "Updating: $pio_dir/conf/pio-env.sh"
-    ${SED_CMD} "s|PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=ELASTICSEARCH|PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=MYSQL|" ${pio_dir}/conf/pio-env.sh
-    ${SED_CMD} "s|PIO_STORAGE_REPOSITORIES_MODELDATA_SOURCE=LOCALFS|PIO_STORAGE_REPOSITORIES_MODELDATA_SOURCE=MYSQL|" ${pio_dir}/conf/pio-env.sh
-    ${SED_CMD} "s|PIO_STORAGE_REPOSITORIES_EVENTDATA_SOURCE=HBASE|PIO_STORAGE_REPOSITORIES_EVENTDATA_SOURCE=MYSQL|" ${pio_dir}/conf/pio-env.sh
-
-    ${SED_CMD} "s|HBASE_CONF_DIR=\$PIO_HOME/conf|# HBASE_CONF_DIR=\$PIO_HOME/conf|" ${pio_dir}/conf/pio-env.sh
-    ${SED_CMD} "s|PIO_STORAGE_SOURCES_ELASTICSEARCH|# PIO_STORAGE_SOURCES_ELASTICSEARCH|" ${pio_dir}/conf/pio-env.sh
-    ${SED_CMD} "s|PIO_STORAGE_SOURCES_LOCALFS|# PIO_STORAGE_SOURCES_LOCALFS|" ${pio_dir}/conf/pio-env.sh
-    ${SED_CMD} "s|PIO_STORAGE_SOURCES_HBASE|# PIO_STORAGE_SOURCES_HBASE|" ${pio_dir}/conf/pio-env.sh
-
-    echo "PIO_STORAGE_SOURCES_MYSQL_TYPE=jdbc" >> ${pio_dir}/conf/pio-env.sh
-    echo "PIO_STORAGE_SOURCES_MYSQL_URL=jdbc:mysql:predictionio" >> ${pio_dir}/conf/pio-env.sh
-    echo "PIO_STORAGE_SOURCES_MYSQL_USERNAME=pio" >> ${pio_dir}/conf/pio-env.sh
-    echo "PIO_STORAGE_SOURCES_MYSQL_PASSWORD=pio" >> ${pio_dir}/conf/pio-env.sh
-
-    break
+    if [[ ${distro} = "debian" ]]; then
+      echo -e "\033[1;36mInstalling MySQL...\033[0m"
+      echo -e "\033[1;36mPlease update $pio_dir/conf/pio-env.sh with your database configuration\033[0m"
+      sudo apt-get install mysql-server -y
+      sudo mysql -e "create database pio; grant all on pio.* to pio@localhost identified by 'pio'"
+      echo -e "\033[1;36mUpdating: $pio_dir/conf/pio-env.sh\033[0m"
+      ${SED_CMD} "s|PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=PGSQL|PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=MYSQL|" ${pio_dir}/conf/pio-env.sh
+      ${SED_CMD} "s|PIO_STORAGE_REPOSITORIES_MODELDATA_SOURCE=PGSQL|PIO_STORAGE_REPOSITORIES_MODELDATA_SOURCE=MYSQL|" ${pio_dir}/conf/pio-env.sh
+      ${SED_CMD} "s|PIO_STORAGE_REPOSITORIES_EVENTDATA_SOURCE=PGSQL|PIO_STORAGE_REPOSITORIES_EVENTDATA_SOURCE=MYSQL|" ${pio_dir}/conf/pio-env.sh
+      ${SED_CMD} "s|PIO_STORAGE_SOURCES_PGSQL|# PIO_STORAGE_SOURCES_PGSQL|" ${pio_dir}/conf/pio-env.sh
+      ${SED_CMD} "s|# PIO_STORAGE_SOURCES_MYSQL|PIO_STORAGE_SOURCES_MYSQL|" ${pio_dir}/conf/pio-env.sh
+    else
+      echo -e "\033[1;31mYour disribution not yet supported for automatic install :(\033[0m"
+      echo -e "\033[1;31mPlease install MySQL manually!\033[0m"
+      exit 4
+    fi
     ;;
   "$ES_HB")
     # Elasticsearch
@@ -367,7 +372,13 @@ case $source_setup in
     echo 'network.host: 127.0.0.1' >> ${elasticsearch_dir}/config/elasticsearch.yml
 
     echo "Updating: $pio_dir/conf/pio-env.sh"
-    echo "PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME=$elasticsearch_dir" >> ${pio_dir}/conf/pio-env.sh
+    ${SED_CMD} "s|PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=PGSQL|PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=ELASTICSEARCH|" ${pio_dir}/conf/pio-env.sh
+    ${SED_CMD} "s|PIO_STORAGE_REPOSITORIES_MODELDATA_SOURCE=PGSQL|PIO_STORAGE_REPOSITORIES_MODELDATA_SOURCE=LOCALFS|" ${pio_dir}/conf/pio-env.sh
+    ${SED_CMD} "s|PIO_STORAGE_REPOSITORIES_EVENTDATA_SOURCE=PGSQL|PIO_STORAGE_REPOSITORIES_EVENTDATA_SOURCE=HBASE|" ${pio_dir}/conf/pio-env.sh
+    ${SED_CMD} "s|PIO_STORAGE_SOURCES_PGSQL|# PIO_STORAGE_SOURCES_PGSQL|" ${pio_dir}/conf/pio-env.sh
+    ${SED_CMD} "s|# PIO_STORAGE_SOURCES_LOCALFS|PIO_STORAGE_SOURCES_LOCALFS|" ${pio_dir}/conf/pio-env.sh
+    ${SED_CMD} "s|# PIO_STORAGE_SOURCES_ELASTICSEARCH_TYPE|PIO_STORAGE_SOURCES_ELASTICSEARCH_TYPE|" ${pio_dir}/conf/pio-env.sh
+    ${SED_CMD} "s|# PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME=.*|PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME=$elasticsearch_dir|" ${pio_dir}/conf/pio-env.sh
 
     echo -e "\033[1;32mElasticsearch setup done!\033[0m"
 
@@ -404,12 +415,12 @@ EOT
     ${SED_CMD} "s|# export JAVA_HOME=/usr/java/jdk1.6.0/|export JAVA_HOME=$JAVA_HOME|" ${hbase_dir}/conf/hbase-env.sh
 
     echo "Updating: $pio_dir/conf/pio-env.sh"
-    echo "PIO_STORAGE_SOURCES_HBASE_HOME=$hbase_dir" >> ${pio_dir}/conf/pio-env.sh
-    ${SED_CMD} "s|HBASE_CONF_DIR=\$PIO_HOME/conf|HBASE_CONF_DIR=$hbase_dir/conf|" ${pio_dir}/conf/pio-env.sh
+    ${SED_CMD} "s|# PIO_STORAGE_SOURCES_HBASE|PIO_STORAGE_SOURCES_HBASE|" ${pio_dir}/conf/pio-env.sh
+    ${SED_CMD} "s|PIO_STORAGE_SOURCES_HBASE_HOME=.*|PIO_STORAGE_SOURCES_HBASE_HOME=$hbase_dir|" ${pio_dir}/conf/pio-env.sh
+    ${SED_CMD} "s|# HBASE_CONF_DIR=.*|HBASE_CONF_DIR=$hbase_dir/conf|" ${pio_dir}/conf/pio-env.sh
 
     echo -e "\033[1;32mHBase setup done!\033[0m"
 
-    break
     ;;
 esac
 
@@ -438,10 +449,16 @@ echo -e "\033[1;32mInstallation of PredictionIO $PIO_VERSION complete!\033[0m"
 echo -e "\033[1;32mPlease follow documentation at http://docs.prediction.io/start/download/ to download the engine template based on your needs\033[0m"
 echo -e
 echo -e "\033[1;33mCommand Line Usage Notes:\033[0m"
-echo -e "To start PredictionIO and dependencies, run: '\033[1mpio-start-all\033[0m'"
+if [[ ${source_setup} = $ES_HB ]]; then
+  echo -e "To start PredictionIO and dependencies, run: '\033[1mpio-start-all\033[0m'"
+else
+  echo -e "To start PredictionIO Event Server in the background, run: '\033[1mpio eventserver &\033[0m'"
+fi
 echo -e "To check the PredictionIO status, run: '\033[1mpio status\033[0m'"
 echo -e "To train/deploy engine, run: '\033[1mpio [train|deploy|...]\033[0m' commands"
-echo -e "To stop PredictionIO and dependencies, run: '\033[1mpio-stop-all\033[0m'"
+if [[ ${source_setup} = $ES_HB ]]; then
+  echo -e "To stop PredictionIO and dependencies, run: '\033[1mpio-stop-all\033[0m'"
+fi
 echo -e ""
 echo -e "Please report any problems to: \033[1;34msupport@prediction.io\033[0m"
 echo "--------------------------------------------------------------------------------"

@@ -21,14 +21,14 @@ import org.apache.spark.mllib.linalg.Vector
 import scala.collection.immutable.HashMap
 import scala.collection.immutable.HashSet
 
-class PropertiesToBinary (val propertyMap : HashMap[(String, String), Int]) 
-extends Serializable{
+class BinaryVectorizer(propertyMap : HashMap[(String, String), Int])
+extends Serializable {
 
   val properties: Array[(String, String)] = propertyMap.toArray.sortBy(_._2).map(_._1)
   val numFeatures = propertyMap.size
 
   override def toString: String = {
-    s"PropertiesToBinary($numFeatures): " + properties.map(e => s"(${e._1}, ${e._2})").mkString(",")
+    s"BinaryVectorizer($numFeatures): " + properties.map(e => s"(${e._1}, ${e._2})").mkString(",")
   }
 
   def toBinary(map :  Array[(String, String)]) : Vector = {
@@ -41,10 +41,10 @@ extends Serializable{
 }
 
 
-object PropertiesToBinary {
+object BinaryVectorizer {
   def apply (input : RDD[HashMap[String, String]], properties : HashSet[String])
-  : PropertiesToBinary = {
-    new PropertiesToBinary(HashMap(
+  : BinaryVectorizer = {
+    new BinaryVectorizer(HashMap(
       input.flatMap(identity)
         .filter(e => properties.contains(e._1))
         .distinct
@@ -52,9 +52,9 @@ object PropertiesToBinary {
         .zipWithIndex : _*
     ))
   }
-  
-  def apply(input: Seq[(String, String)]): PropertiesToBinary = {
+
+  def apply(input: Seq[(String, String)]): BinaryVectorizer = {
     val indexed: Seq[((String, String), Int)] = input.zipWithIndex
-    new PropertiesToBinary(HashMap(indexed:_*))
+    new BinaryVectorizer(HashMap(indexed:_*))
   }
 }

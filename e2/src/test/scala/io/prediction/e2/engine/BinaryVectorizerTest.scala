@@ -15,7 +15,7 @@
 
 package io.prediction.e2.engine
 
-import io.prediction.e2.fixture.PropertiesToBinaryFixture
+import io.prediction.e2.fixture.BinaryVectorizerFixture
 import io.prediction.e2.fixture.SharedSparkContext
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.rdd.RDD
@@ -26,11 +26,11 @@ import scala.collection.immutable.HashMap
 
 import scala.language.reflectiveCalls
 
-class PropertiesToBinaryTest extends FlatSpec with Matchers with SharedSparkContext
-with PropertiesToBinaryFixture{
+class BinaryVectorizerTest extends FlatSpec with Matchers with SharedSparkContext
+with BinaryVectorizerFixture{
 
   "toBinary" should "produce the following summed values:" in {
-    val testCase = PropertiesToBinary(sc.parallelize(base.maps), base.properties)
+    val testCase = BinaryVectorizer(sc.parallelize(base.maps), base.properties)
     val vectorTwoA = testCase.toBinary(testArrays.twoA)
     val vectorTwoB = testCase.toBinary(testArrays.twoB)
 
