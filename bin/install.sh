@@ -18,6 +18,9 @@ USER_PROFILE=$HOME/.profile
 PIO_FILE=PredictionIO-${PIO_VERSION}.tar.gz
 TEMP_DIR=/tmp
 
+DISTRO_DEBIAN="Debian/Ubuntu"
+DISTRO_OTHER="Other"
+
 PGSQL="PostgreSQL"
 MYSQL="MySQL"
 ES_HB="Elasticsearch + HBase"
@@ -204,12 +207,13 @@ else
     fi
   done
 
-  distro=""
   echo -e "\033[1mSelect your linux distribution:\033[0m"
-  select distribution in "Debian/Ubuntu" "Other"; do
-    case ${distribution} in
-      "Debian/Ubuntu")
-        distro="debian"
+  select distribution in "$DISTRO_DEBIAN" "$DISTRO_OTHER"; do
+    case $distribution in
+      "$DISTRO_DEBIAN")
+        break
+        ;;
+      "$DISTRO_OTHER")
         break
         ;;
       *)
@@ -217,12 +221,10 @@ else
     esac
   done
 
-
   # Java Install
   if [[ ${OS} = "Linux" ]] && confirm "\033[1mWould you like to install Java?\033[0m"; then
-    case ${distro} in
-      "Debian/Ubuntu")
-        distro="debian"
+    case ${distribution} in
+      "$DISTRO_DEBIAN")
         echo -e "\033[1;36mStarting Java install...\033[0m"
 
         echo -e "\033[33mThis script requires superuser access!\033[0m"
@@ -235,7 +237,7 @@ else
         echo -e "\033[1;32mJava install done!\033[0m"
         break
         ;;
-      "Other")
+      "$DISTRO_OTHER")
         echo -e "\033[1;31mYour disribution not yet supported for automatic install :(\033[0m"
         echo -e "\033[1;31mPlease install Java manually!\033[0m"
         exit 2
@@ -321,7 +323,7 @@ echo -e "\033[1;32mSpark setup done!\033[0m"
 
 case $source_setup in
   "$PGSQL")
-    if [[ ${distro} = "debian" ]]; then
+    if [[ ${distribution} = "$DISTRO_DEBIAN" ]]; then
       echo -e "\033[1;36mInstalling PostgreSQL...\033[0m"
       sudo apt-get install postgresql -y
       echo -e "\033[1;36mPlease use the default password 'pio' when prompted to enter one\033[0m"
@@ -335,7 +337,7 @@ case $source_setup in
     fi
     ;;
   "$MYSQL")
-    if [[ ${distro} = "debian" ]]; then
+    if [[ ${distribution} = "$DISTRO_DEBIAN" ]]; then
       echo -e "\033[1;36mInstalling MySQL...\033[0m"
       echo -e "\033[1;36mPlease update $pio_dir/conf/pio-env.sh with your database configuration\033[0m"
       sudo apt-get install mysql-server -y
