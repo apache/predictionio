@@ -36,7 +36,7 @@ which one to be deployed when you create an Engine.
 
 ## The Roles of an Engine
 
-THe main functions of an engine are:
+The main functions of an engine are:
 
 * Train a model using the training data and be deployed as a web service
 * Respond to prediction query in real-time
