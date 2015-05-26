@@ -52,14 +52,20 @@ $ mkdir PredictionIO-<%= data.versions.pio %>/vendors
 
 ### Storage Setup
 
-#### Elasticsearch Setup
+#### PostgreSQL Setup 
+
+<%=partial 'shared/install/postgres' %>
+
+#### HBase and Elasticsearch Setup
+
+##### Elasticsearch Setup
 
 WARNING: You may skip this section if you are using PostgreSQL or MySQL.
 
 <%= partial 'shared/install/elasticsearch' %>
 
 
-#### <a name="hbase"></a>HBase Setup
+##### <a name="hbase"></a>HBase Setup
 
 WARNING: You may skip this section if you are using PostgreSQL or MySQL.
 
@@ -75,6 +81,10 @@ export JAVA_HOME=/usr/lib/jvm/java-8-oracle
 
 
 <%= partial 'shared/install/dependent_services' %>
+
+
+
+
 
 Now you have installed everything you need!
 
