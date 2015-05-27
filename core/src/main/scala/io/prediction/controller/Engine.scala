@@ -633,7 +633,7 @@ object Engine {
     if (params.skipSanityCheck) {
       logger.info("Data sanity check is off.")
     } else {
-      logger.info("Data santiy check is on.")
+      logger.info("Data sanity check is on.")
     }
 
     val td = try {
