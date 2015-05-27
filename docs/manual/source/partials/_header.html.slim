@@ -1,11 +1,18 @@
-header#header
-  .github
-    iframe src="/github/?user=PredictionIO&repo=PredictionIO&type=watch&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="110" height="20"
-    iframe src="/github/?user=PredictionIO&repo=PredictionIO&type=fork&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="95" height="20"
-  = link_to '<i class="fa fa-bars"></i>', '/', id: 'active-navigation'
-  = link_to 'http://prediction.io/', class: 'logo' do
-    = image_tag 'logos/header.png', alt: 'PredictionIO'
-  .group
-    = partial 'nav/header'
-    = link_to '<i class="fa fa-arrow-circle-o-down"></i> Download', '/install/', class: 'button-download'
-    = partial 'nav/swiftype'
+header
+  .container#header-wrapper
+    #logo-wrapper
+      span#drawer-toggle
+      a href="#"
+      = link_to 'http://prediction.io/' do
+        = image_tag 'logos/logo.png', alt: 'PredictionIO', id: 'logo'
+    #menu-wrapper
+      #header-nav-options-wrapper
+        ul
+          li>: a href="#" About
+          li>: a href="#" Install & Doc
+          li>: a href="#" Use Cases
+          li>: a href="#" Templates
+          li>: a href="#" Support
+      #pill-wrapper
+        a.pill.left> href="#" ENTERPRISE
+        a.pill.right href="#" OPEN SOURCE

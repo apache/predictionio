@@ -1,11 +1,21 @@
+// Named colors;
+$white: #ffffff;
+
 // General
+
 $body-font-color: #373535;
 $link-color: #1ba4d8;
 $border-color: #e3e3e3;
-$header-background-color: #eaf6fc;
 $header-icon-color: #373535;
 $off-canvas-background-color: #ffffff;
 $main-background-color: #ffffff;
+
+// Header 
+$header-border-bottom-color: #249DEC;
+$header-left-pill-background-color: #249DEC;
+$header-right-pill-background-color: #72D6FF;
+$header-left-pill-hover-backgounr-color: #0087DF;
+$header-right-pill-hover-backgounr-color: #57CBFA;
 
 // Alerts
 $info-color: #0f99dd;
@@ -75,12 +85,20 @@ $table-of-contents-font-color: #828385;
 $table-of-contents-background-color: #f0f0f0;
 
 // Footer
+$footer-seperator-color: #eeeeee;
 $footer-background-color: #ffffff;
-$footer-link-color: #828385;
-$footer-link-hover-color: #373535;
-$footer-social-link-color: #828385;
-$footer-social-link-hover-color: #373535;
-$footer-heading-2-color: #828385;
+$footer-link-color: #888888;
+$footer-heading-4-color: #262626;
+$footer-bottom-background-color: #262626;
+
+// Subscribe Form
+$form-wrapper-border-color: #ccc;
+$subscribe-form-pill-button-background-color: #2499E6;
+$disabled-pill-button-background-color: #ccc;
+$invalid-input-border-color: #ffd654;
+$valid-input-border-color: #EBF1F9;
+$errored-input-border-color: #a94442;
+$subscribe-form-placeholder-color: #e5e5e5;
 
 // Copyright
 $copyright-font-color: #828385;

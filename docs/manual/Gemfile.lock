@@ -13,6 +13,9 @@ GEM
       execjs
       json
     backports (3.6.4)
+    bootstrap-sass (3.3.4.1)
+      autoprefixer-rails (>= 5.0.0.1)
+      sass (>= 3.2.19)
     builder (3.2.2)
     celluloid (0.16.0)
       timers (~> 4.0.0)
@@ -240,6 +243,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  bootstrap-sass
   middleman (~> 3.3.10)
   middleman-autoprefixer
   middleman-livereload (~> 3.4.2)

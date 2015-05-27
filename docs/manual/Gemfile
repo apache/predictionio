@@ -16,6 +16,7 @@ gem 'redcarpet', '>= 3.2.3'
 gem 'travis'
 gem 'nokogiri'
 gem 'rainbow'
+gem "bootstrap-sass", require: false
 
 platforms :mswin, :mingw do
   gem 'tzinfo-data'

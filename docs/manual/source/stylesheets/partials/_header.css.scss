@@ -1,38 +1,96 @@
-#header {
-  height: 90px;
-  text-align: right;
-  background-color: $header-background-color;
-  border-bottom: 1px solid $border-color;
-  display: inline-block;
-  box-sizing: border-box;
-  width: 100%;
+header {
+  font-family: $standard-font-family;
+  background-color: $white;
+  line-height: 83px;
+  border-bottom: 3px solid $header-border-bottom-color;
   position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 1000;
+  width: 100%;
+  z-index: 9999;
+  top:0;
 
-  .logo {
-    width: 200px;
-    display: block;
-    margin: 8px 0 0 25px;
-    float: left;
+  #header-wrapper {
+    height: 100%;
   }
 
-  .button-download {
-    text-align: center;
-    float: right;
-    display: none;
-    margin: 0 25px 0 0;
-    @include x-large {
-      display: block;
+  #logo {
+    width: 169px;
+  }
+
+  ul {
+    margin-bottom: 0;
+    padding-left:20px;
+    li {
+      display: inline;
+      a {
+        color: black;
+        padding-left: 25px;
+        padding-right: 25px;
+      }
+      a:hover {
+        text-decoration: none;
+      }
     }
   }
 
-  .github {
-    padding: 2px 17px 0 0;
+  .pill {
+    display: inline-block;
+    height: 38px;
+    line-height: 38px;
+    text-align: center;
+    font-size: 12px;
+    letter-spacing: 3px;
+    padding: 0 15px;
+    transition:All 0.3s ease;
+    -webkit-transition:All 0.3s ease;
+    -moz-transition:All 0.3s ease;
+    -o-transition:All 0.3s ease;
+    -webkit-font-smoothing: subpixel-antialiased;
+
+  a {
+      color: $white;
+    }
   }
 
-  .group {
-    margin-top: 5px;
+  .pill.left {
+    background-color: $header-left-pill-background-color;
+    border-top-left-radius: 3em;
+    border-bottom-left-radius: 3em;
+    padding-left: 20px;
+  }
+
+  .pill.right {
+    background-color: $header-right-pill-background-color;
+    border-top-right-radius: 3em;
+    border-bottom-right-radius: 3em;
+    padding-right: 20px;
+  }
+
+  .pill.left:hover {
+    background-color: $header-left-pill-hover-backgounr-color;
+    text-decoration: none;
+  }
+
+  .pill.right:hover {
+    background-color: $header-right-pill-hover-backgounr-color;
+    text-decoration: none;
+  }
+
+  .pill.left:hover , .pill.right:hover {
+    @include jump-on-hover;
+  }
+
+  #pill-wrapper {
+  float: right;
+    a {
+      color: white;
+    }
+  }
+
+  #header-pills-wrapper .pill {
+    display: inline-block;
+  }
+
+  #logo-wrapper, #header-nav-options-wrapper {
+    float: left;
   }
 }
