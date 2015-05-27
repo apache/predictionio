@@ -80,13 +80,13 @@ class Preparator
 Now you can deploy the modified engine as described in [Quick
 Start](quickstart.html).
 
-Make sure the `appId` defined in the file `engine.json` match your *App ID*:
+Make sure the `appName` defined in the file `engine.json` matches your *App Name*:
 
 ```
 ...
 "datasource": {
   "params" : {
-    "appId": 1
+    "appName": "YourAppName"
   }
 },
 ...
