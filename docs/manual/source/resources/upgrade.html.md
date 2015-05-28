@@ -5,14 +5,17 @@ title: Upgrade Instructions
 
 This page highlights major changes in each version and upgrade tools.
 
+# How to upgrade
+
 To upgrade and use new version of PredictionIO, do the following:
 
-- Download and unzip the new PredictionIO binary
+- Download and unzip the new PredictionIO binary (the download path can be found in the [Download PredictionIO section](/install/install-linux/#method-2:-manual-install))
 - Retain the setting from current PredictionIO/conf/pio-env.sh to the new PredictionIO/conf/pio-env.sh.
 - If you have added PredictionIO/bin to your `PATH` environment variable before, change it to the new PredictionIO/bin as well.
 
-In addition, please take notes of the following for specific version upgrade:
+# Additional Notes for Specific Versions Upgrade
 
+In addition, please take notes of the following for specific version upgrade.
 
 ## Upgrade to 0.9.2
 
