@@ -148,6 +148,7 @@ class BatchPersistableEvaluator extends BaseEvaluator[
 
 Create a new file `BatchEvaluation.scala`. Note that the new `BatchPersistableEvaluator` is used. The `BatchEngineParamsList` specifies the parameters of the engine.
 
+Modify the appName parameter in `DataSourceParams` to match your app name.
 
 ```scala
 package org.template.recommendation
