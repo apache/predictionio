@@ -302,7 +302,7 @@ $$
 \text{idf}(g) = \log\left(\frac{|D|}{|\\{d \in D : g \\ \text{is extracted from} \\ d\\}|}\right).
 $$
 
-Here \\(|S|\\) denotes the number of elements contained in a set \\(S\\). Plainly speaking, this term approaches 1 as the number of documents in the corpus from which \\(g\\) is extracted increases, and grows larger than 1 as this number decreases. Hence the inverse i.d.f. of an n-gram \\(g\\) \\(\left(\frac{1}{\text{idf}(g)}\right)\\) will lie between 0 and 1. Those n-grams whose inverse i.d.f. value is close to 0 rarely appear in any corpus documents, and those with value closely to 1 appear in a large proportion of the documents. The inverse i.d.f. window is defined as an interval \\([a, b]\\), \\(0 \leq a < b \leq 1\\), which restricts the n-grams we choose as features to those with inverse i.d.f. values lying in this interval. That is, all n-grams whose inverse i.d.f. less than a or greater than b, our inverse i.d.f. window components, are excluded. The PreparedData class parameters inverseIdfMin and inverseIdfMax values correspond to \\(a\\) and \\(b\\), respectively. 
+Here \\(|S|\\) denotes the number of elements contained in a set \\(S\\). Plainly speaking, this term approaches 0 as the number of documents in the corpus from which \\(g\\) is extracted increases, and grows as this number decreases. Hence the inverse i.d.f. of an n-gram \\(g\\) \\(\left(\frac{1}{e^{\text{idf}(g)}}\right)\\) will lie between 0 and 1. Those n-grams whose inverse i.d.f. value is close to 0 rarely appear in any corpus documents, and those with value closely to 1 appear in a large proportion of the documents. The inverse i.d.f. window is defined as an interval \\([a, b]\\), \\(0 \leq a < b \leq 1\\), which restricts the n-grams we choose as features to those with inverse i.d.f. values lying in this interval. That is, all n-grams whose inverse i.d.f. less than a or greater than b, our inverse i.d.f. window components, are excluded. The PreparedData class parameters inverseIdfMin and inverseIdfMax values correspond to \\(a\\) and \\(b\\), respectively. 
 
 The latter discussion implies that modifying the inverse i.d.f. window components will reduce the number of features used for model training, and therefore will reduce computation time. However, reducing the number of features may affect your fit. This is another modeling choice that needs to be assessed by the modeler.
 
@@ -489,7 +489,7 @@ Recall that one of the greatest advantages of using the PredictionIO platform is
 To actually send a query you can use our REST API by typing in the following shell command:
 
 ```
-curl -H "Content-Type: application/json" -d '{ "user": "1", "num": 4 }' http://localhost:8000/queries.json
+curl -H "Content-Type: application/json" -d '{ "text":"I like speed and fast motorcycles." }' http://localhost:8000/queries.json
 ```
 
 There are a number of [SDK's](https://github.com/PredictionIO) you can use to send your queries and obtain a response. Recall that our predicted response is of the form 
