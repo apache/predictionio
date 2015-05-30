@@ -1,18 +1,20 @@
 header
   .container#header-wrapper
-    #logo-wrapper
-      span#drawer-toggle
-      a href="#"
-      = link_to 'http://prediction.io/' do
-        = image_tag 'logos/logo.png', alt: 'PredictionIO', id: 'logo'
-    #menu-wrapper
-      #header-nav-options-wrapper
-        ul
-          li>: a href="#" About
-          li>: a href="#" Install & Doc
-          li>: a href="#" Use Cases
-          li>: a href="#" Templates
-          li>: a href="#" Support
-      #pill-wrapper
-        a.pill.left> href="#" ENTERPRISE
-        a.pill.right href="#" OPEN SOURCE
+    .row
+      .col-sm-12
+        #logo-wrapper
+          span#drawer-toggle
+          a href="#"
+          = link_to 'http://prediction.io/' do
+            = image_tag 'logos/logo.png', alt: 'PredictionIO', id: 'logo'
+        #menu-wrapper
+          #header-nav-options-wrapper
+            ul
+              li>: a href="#" About
+              li>: a href="#" Install & Doc
+              li>: a href="#" Use Cases
+              li>: a href="#" Templates
+              li>: a href="#" Support
+          #pill-wrapper
+            a.pill.left> href="#" ENTERPRISE
+            a.pill.right href="#" OPEN SOURCE

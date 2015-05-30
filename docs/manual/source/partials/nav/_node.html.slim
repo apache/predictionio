@@ -2,7 +2,7 @@ li class="level-#{level}"
   - icon_or_nil = node.children ? 'caret-right' : nil
   - css = node.children ? 'expandible' : 'final'
 
-  = link_to_with_active "#{icon(icon_or_nil)} <span>#{node.body}</span>".html_safe, node.url, class: "#{node.css} #{css}".strip
+  = link_to_with_active "<span>#{node.body}</span>".html_safe, node.url, class: "#{node.css} #{css}".strip
 
   - if node.children
     ul

@@ -38,19 +38,16 @@ $todo-background-color: #fbc2fb;
 
 // Nav
 $nav-header-link-color: #373535;
-$nav-main-background-color: #f0f0f0;
-$nav-main-link-color: #3482ab;
-$nav-main-hover-background-color: #7f93a8;
-$nav-main-hover-link-color: #ffffff;
-$nav-main-level-1-background-color: #f0f0f0;
-$nav-main-level-1-font-color: #5f5f5f;
-$nav-main-level-2-background-color: #fcfcfc;
-$nav-main-level-2-hover-background-color: #444444;
-$nav-main-level-2-active-background-color: #ffffff;
-$nav-main-level-2-active-border-color: #da1111;
-$nav-main-level-2-active-link-color: #5f5f5f;
-
 $nav-page-icon-color: #828385;
+
+// Main navigation menu
+$nav-main-border-color: #e5e5e5;
+$nav-main-collapsible-anchor-color: #333333;
+$nav-main-active-menu-background-color: #F1F1F1;
+$nav-main-active-menu-bottom-border-color: #E5E5E5;
+$nav-main-active-menu-link-color: #989898;
+$nav-main-level-2-link-color: #949494;
+$nav-main-level-2-active-link-color: #249DEC;
 
 // Tabs
 $tab-background-color: #e9e9e9;
@@ -123,6 +120,7 @@ $swiftype-link-color: #3482ab;
 $swiftype-background-color: #fcfcfc;
 $swiftype-input-background-color: #ffffff;
 $swiftype-font-active-color: #ffffff;
+$swiftype-autocomplete-active-color: #7f93a8;
 
 // Edit Page
 $edit-page-background-color: #0f99dd;
@@ -144,8 +142,7 @@ $tryit-i-color: #3482ab;
 
 $global-background-color: #ffffff;
 
-$breadcrumbs-spacer-color: #828385;
-$breadcrumbs-font-color: #828385;
-$breadcrumbs-link-color: $link-color;
+$breadcrumbs-link-color: #27ABEC;
+$breadcrumbs-text-color: #6F7072;
 
 $logo-dark-color: #000000;

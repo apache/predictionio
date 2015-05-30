@@ -5,15 +5,15 @@ html
   body
     #global
       = partial 'header'
-      #page.container
-        = partial 'nav/main'
-        main#main data-swiftype-index="true"
-          .col-main
+      #page.container-fluid
+        .row
+          .col-md-3#left-menu-wrapper
+            = partial 'nav/main'
+          .col-md-9.col-sm-12
             = breadcrumbs
             = partial 'page_title'
-            #content
-              = yield
-        == table_of_contents(current_page)
+            = yield
+            /== table_of_contents(current_page)
       = partial 'footer'
     = partial 'swiftype'
     = javascript_include_tag  'application'

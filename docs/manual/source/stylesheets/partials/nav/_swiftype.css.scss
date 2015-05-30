@@ -144,7 +144,7 @@ body { // Using body forces a higher specificity over the Swiftype stylesheet!
 
   .swiftype-widget .autocomplete li.active {
     background: none;
-    background-color: $nav-main-hover-background-color;
+    background-color: $swiftype-autocomplete-active-color;
     border-bottom: 1px solid $border-color;
     border-top: 0;
     box-shadow: none;

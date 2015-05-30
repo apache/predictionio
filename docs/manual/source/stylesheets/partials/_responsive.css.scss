@@ -116,7 +116,7 @@
 
 @media (max-width: 992px) { 
   footer {
-    
+
     #content-wrapper {
     padding-top: 56px;
     } 
@@ -164,7 +164,24 @@
 
 }
 
-
-
-
 /*END FOOTER*/
+
+/* Left Nav menu */
+#left-menu-toggler {
+  display: none;
+}
+
+@media (max-width: 992px) {
+  #left-menu-wrapper {
+    display: none;
+  }
+
+  #left-menu-wrapper.active {
+    display: block;
+  }
+
+  #left-menu-toggler {
+    display: block;
+  }
+}
+/* END Left Nav menu */

@@ -4,14 +4,19 @@
 
 $(document).ready(function() {
 
-  // drawer toggler 
-  var drawerToggle = document.getElementById('drawer-toggle');
-  drawerToggle.onclick = function() {
+  // left menu toggler
+  $('#left-menu-toggler').click(function() {
+    $('#left-menu-wrapper').toggleClass('active');
+    $('#left-menu-toggler').toggleClass('btn-warning');
+  })
+
+  // header menu toggler 
+  $('#drawer-toggle').click(function() {
     toggleDrawer(
       document.getElementById('drawer-toggle'),
       document.getElementById('menu-wrapper')
     );
-  }
+  })
 
   var toggleDrawer = function(icon, menu){
     if (menu.classList.contains("active")) {
@@ -23,145 +28,7 @@ $(document).ready(function() {
     }
   }
 
-  //ajax form submit
-  $.fn.ajaxForm = function() {
-      var $form, request, $result, emailRegex, $submitInput;
-      $form = $(this);
-      $result = $form.find('.result');
-      $submitInput = $form.find("input[type=submit]");
-      emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-
-      $form.submit(function(event) {
-          event.preventDefault();
-          var validationMessage, valid = true;
-
-          $.each([ '.required', 'input[type=email]', '[data-match-string]'], function( i, value ) {
-              $form.find(value).each(function(j){
-                  $(this).removeClass('error');
-                  var result = null;
-                  switch(i) {
-                      case 0:
-                          result = validateRequired($(this));
-                          break;
-                      case 1:
-                          result = validateEmail($(this));
-                          break;
-                      case 2:
-                          result = validateMatch($(this));
-                          break;
-                      default:
-                          break;
-                  }
-                  if (result && result['pass'] === false) {
-                      $(this).addClass('error');
-                      valid = false;
-                      validationMessage = result['errorMessage'];
-                  }
-              });
-              return valid;
-          });
-
-          if (!valid) {
-              $result.addClass('error');
-              $result.text(validationMessage);
-              return;
-          }
-
-          $result.removeClass('error');
-          $result.text('');
-          if (request) {
-              request.abort();
-          }
-
-          var $inputs = $form.find("input, select, button, textarea");
-          var serializedData = $form.serialize();
-          $submitInput.val($submitInput.data('state-loading'));
-          disableForm();
-          request = $.ajax({
-              url: $form.attr('action'),
-              type: "POST",
-              dataType: "jsonp",
-              crossDomain: true,
-              data: serializedData+ "&prefix=formCallBack",
-              jsonpCallback: "formCallBack",
-              success: function(data) {
-                  if (data && data.result == "success") {
-                      onFormSubmitSuccess();
-                  } else {
-                      onFormSubmitError();
-                      console.error("error: ", data);
-                  }
-              },
-              error: function(jqXHR, textStatus, errorThrown) {
-                  onFormSubmitError();
-                  console.error(
-                      "error: "+ textStatus, errorThrown
-                  );
-              }
-          });
-
-          function enableForm() {
-              $inputs.prop("disabled", false);
-          };
-
-          function disableForm() {
-              $inputs.prop("disabled", true);
-          };
-
-          function onFormSubmitSuccess() {
-              $submitInput.val($submitInput.data('state-sucess'));
-          };
-
-          function onFormSubmitError() {
-              $submitInput.val($submitInput.data('state-normal'));
-              enableForm();
-              $result.addClass('error');
-              $result.html('Oops! An error has occurred.');
-          }
-      });
-
-      function validateRequired($input) {
-          if (!$input.val()) {
-              return {
-                  'pass': false,
-                  'errorMessage': 'Please fill out all required fields.'
-              }
-          } else {
-              return {
-                  'pass': true
-              }
-          }
-      };
-
-      function validateEmail($input) {
-          if ($input.val() && !emailRegex.test($input.val())) {
-              return {
-                  'pass': false,
-                  'errorMessage': 'Please input valid email address.'
-              }
-          } else {
-              return {
-                  'pass': true
-              }
-          }
-      };
-
-      function validateMatch($input) {
-          if ($input.val() !== $input.data('match-string')) {
-              return {
-                  'pass': false,
-                  'errorMessage': "Input doesn't match."
-              }
-          } else {
-              return {
-                  'pass': true
-              }
-          }
-      };
-  };
-
-  function formCallBack(data) {};
-
+  // add function call to subscription form
   $( "form.ajax-form" ).each(function( index ) {
     $(this).ajaxForm();
   });
@@ -229,5 +96,143 @@ $(document).ready(function() {
       window.open(this.href);
     }).addClass('external');
   });
-
 });
+
+//ajax form submit
+$.fn.ajaxForm = function() {
+  var $form, request, $result, emailRegex, $submitInput;
+  $form = $(this);
+  $result = $form.find('.result');
+  $submitInput = $form.find("input[type=submit]");
+  emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+
+  $form.submit(function(event) {
+    event.preventDefault();
+    var validationMessage, valid = true;
+
+    $.each([ '.required', 'input[type=email]', '[data-match-string]'], function( i, value ) {
+      $form.find(value).each(function(j){
+        $(this).removeClass('error');
+        var result = null;
+        switch(i) {
+          case 0:
+            result = validateRequired($(this));
+            break;
+          case 1:
+            result = validateEmail($(this));
+            break;
+          case 2:
+            result = validateMatch($(this));
+            break;
+          default:
+            break;
+        }
+        if (result && result['pass'] === false) {
+          $(this).addClass('error');
+          valid = false;
+          validationMessage = result['errorMessage'];
+        }
+      });
+      return valid;
+    });
+
+    if (!valid) {
+      $result.addClass('error');
+      $result.text(validationMessage);
+      return;
+    }
+
+    $result.removeClass('error');
+    $result.text('');
+    if (request) {
+      request.abort();
+    }
+
+    var $inputs = $form.find("input, select, button, textarea");
+    var serializedData = $form.serialize();
+    $submitInput.val($submitInput.data('state-loading'));
+    disableForm();
+    request = $.ajax({
+      url: $form.attr('action'),
+      type: "POST",
+      dataType: "jsonp",
+      crossDomain: true,
+      data: serializedData+ "&prefix=formCallBack",
+      jsonpCallback: "formCallBack",
+      success: function(data) {
+        if (data && data.result == "success") {
+          onFormSubmitSuccess();
+        } else {
+          onFormSubmitError();
+          console.error("error: ", data);
+        }
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        onFormSubmitError();
+        console.error(
+          "error: "+ textStatus, errorThrown
+        );
+      }
+    });
+
+    function enableForm() {
+      $inputs.prop("disabled", false);
+    };
+
+    function disableForm() {
+      $inputs.prop("disabled", true);
+    };
+
+    function onFormSubmitSuccess() {
+      $submitInput.val($submitInput.data('state-sucess'));
+    };
+
+    function onFormSubmitError() {
+      $submitInput.val($submitInput.data('state-normal'));
+      enableForm();
+      $result.addClass('error');
+      $result.html('Oops! An error has occurred.');
+    }
+  });
+
+  function validateRequired($input) {
+    if (!$input.val()) {
+      return {
+        'pass': false,
+        'errorMessage': 'Please fill out all required fields.'
+      }
+    } else {
+      return {
+        'pass': true
+      }
+    }
+  };
+
+  function validateEmail($input) {
+    if ($input.val() && !emailRegex.test($input.val())) {
+      return {
+        'pass': false,
+        'errorMessage': 'Please input valid email address.'
+      }
+    } else {
+      return {
+        'pass': true
+      }
+    }
+  };
+
+  function validateMatch($input) {
+    if ($input.val() !== $input.data('match-string')) {
+      return {
+        'pass': false,
+        'errorMessage': "Input doesn't match."
+      }
+    } else {
+      return {
+        'pass': true
+      }
+    }
+  };
+};
+
+function formCallBack(data) {};

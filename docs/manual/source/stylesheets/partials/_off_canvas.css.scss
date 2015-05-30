@@ -10,26 +10,8 @@
   }
 }
 
-#nav-main {
-
-  display: none;
-}
-
-
-
 #table-of-contents {
-
   display: none;
-}
-
-.active-navigation {
-  #nav-main {
-    display: block;
-  }
-
-  #main {
-
-  }
 }
 
 @include medium {
@@ -37,16 +19,11 @@
     display: none;
   }
 
-  #nav-main {
-    display: block;
-  }
-
   .active-navigation {
     #main {
       margin-right: 0;
     }
   }
-
 }
 
 // Large
@@ -57,5 +34,4 @@
       display: none;
     }
   }
-
 }
