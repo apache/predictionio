@@ -44,7 +44,7 @@ NOTE: You can customize what the "conversion" event is. It's "buy" item event by
 
 <%= partial 'shared/quickstart/create_app' %>
 
-## 4a. Collecting Data
+## 4. Collecting Data
 
 Next, let's collect training data for this Engine. By default,
  Lead Scoring Engine Template supports the following entities: **user**, **page**, and **item**. An user views a page, and buys an item.
@@ -53,9 +53,30 @@ Note that a "sessionId" property is required to indicate these events happen in 
 
 In summary, this template requires user-view-page event and user-buy-item events with the session ID, referrer ID and browser properties.
 
-<%= partial 'shared/quickstart/install_sdk' %>
+<%= partial 'shared/quickstart/collect_data' %>
+
+For example, when an user with ID u0 views a URL page "example.com/page0" on time  `2014-11-02T09:39:45.618-08:00`, with session ID "akdj230fj8ass" (current time will be used if eventTime is not specified) you can send the event to Event Server. Run the following `curl` command:
 
 <div class="tabs">
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=$ACCESS_KEY \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "view",
+  "entityType" : "user"
+  "entityId" : "u0",
+  "targetEntityType" : "page",
+  "targetEntityId" : "example.com/page0",
+  "properties" : {
+    "sessionId" : "akdj230fj8ass",
+    "referrerId" : "referrer0.com",
+    "browser" : "Firefox"
+  }
+  "eventTime" : "2014-11-02T09:39:45.618-08:00"
+}'
+```
+  </div>
   <div data-tab="Python SDK" data-lang="python">
 ```python
 import predictionio
@@ -66,7 +87,6 @@ client = predictionio.EventClient(
   threads=5,
   qsize=500
 )
-
 
 # A user views a page
 
@@ -82,24 +102,10 @@ client.create_event(
     "browser": <BROWSER> # optinal. but should specify this if you have this information when user views the landing page
   }
 )
-
-# A user buys an item
-
-client.create_event(
-  event="buy",
-  entity_type="user",
-  entity_id=<USER ID>,
-  target_entity_type="item",
-  target_entity_id=<ITEM ID>,
-  properties = {
-    "sessionId": <SESSION ID>, # required
-  }
-)
-
 ```
   </div>
-  <div data-tab="PHP SDK" data-lang="php">
 
+  <div data-tab="PHP SDK" data-lang="php">
 ```php
 <?php
 require_once("vendor/autoload.php");
@@ -120,24 +126,10 @@ $client->createEvent(array(
     'browser' => <BROWSER>
   )
 ));
-
-// A user buys an item
-$client->createEvent(array(
-  'event' => 'buy',
-  'entityType' => 'user',
-  'entityId' => <USER ID>,
-  'targetEntityType' => 'item',
-  'targetEntityId' => <ITEM ID>,
-  'properties' => array(
-    'sessionId' => <SESSION ID>
-  )
-));
-
 ?>
 ```
   </div>
   <div data-tab="Ruby SDK" data-lang="ruby">
-
 ```ruby
 # Create a client object.
 client = PredictionIO::EventClient.new(<ACCESS KEY>, <URL OF EVENTSERVER>)
@@ -156,24 +148,9 @@ client.create_event(
     }
   }
 )
-
-# A user buys an item.
-client.create_event(
-  'buy',
-  'user',
-  <USER ID>, {
-    'targetEntityType' => 'item',
-    'targetEntityId' => <ITEM ID>,
-    'properties' => {
-      'sessionId' => <SESSION ID>
-    }
-  }
-)
-
 ```
   </div>
   <div data-tab="Java SDK" data-lang="java">
-
 ```java
 import io.prediction.Event;
 import io.prediction.EventClient;
@@ -193,7 +170,84 @@ Event viewEvent = new Event()
     .property("referrerId", "<REFERRER ID>")
     .property("browser", "<BROWSER>");
 client.createEvent(viewEvent);
+```
+  </div>
+</div>
 
+
+In the same browing session "akdj230fj8ass", the user with ID u0 buys an item i0 on time `2014-11-02T09:42:00.123-08:00` (current time will be used if eventTime is not specified), you can send the following buy event. Run the following `curl` command:
+
+<div class="tabs">
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=$ACCESS_KEY \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "buy",
+  "entityType" : "user"
+  "entityId" : "u0",
+  "targetEntityType" : "item",
+  "targetEntityId" : "i0",
+  "properties" : {
+    "sessionId" : "akdj230fj8ass"
+  }
+  "eventTime" : "2014-11-02T09:42:00.123-08:00"
+}'
+```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+```python
+# A user buys an item
+
+client.create_event(
+  event="buy",
+  entity_type="user",
+  entity_id=<USER ID>,
+  target_entity_type="item",
+  target_entity_id=<ITEM ID>,
+  properties = {
+    "sessionId": <SESSION ID>, # required
+  }
+)
+```
+  </div>
+
+  <div data-tab="PHP SDK" data-lang="php">
+```php
+<?php
+// A user buys an item
+$client->createEvent(array(
+  'event' => 'buy',
+  'entityType' => 'user',
+  'entityId' => <USER ID>,
+  'targetEntityType' => 'item',
+  'targetEntityId' => <ITEM ID>,
+  'properties' => array(
+    'sessionId' => <SESSION ID>
+  )
+));
+
+?>
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
+# A user buys an item.
+client.create_event(
+  'buy',
+  'user',
+  <USER ID>, {
+    'targetEntityType' => 'item',
+    'targetEntityId' => <ITEM ID>,
+    'properties' => {
+      'sessionId' => <SESSION ID>
+    }
+  }
+)
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
 // A user buys an item
 Event buyEvent = new Event()
     .event("buy")
@@ -203,51 +257,13 @@ Event buyEvent = new Event()
     .targetEntityId(<ITEM_ID>)
     .property("sessionId", "<SESSION ID>");
 client.createEvent(buyEvent);
-
-```
-  </div>
-  <div data-tab="REST API" data-lang="json">
-```
-
-# A user views a page
-
-curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
--H "Content-Type: application/json" \
--d '{
-  "event" : "view",
-  "entityType" : "user"
-  "entityId" : <USER ID>,
-  "targetEntityType" : "page",
-  "targetEntityId" : <PAGE ID>,
-  "properties" : {
-    "sessionId" : <SESSION ID>,
-    "referrerId" : <REFERRER ID>,
-    "browser" : <BROWSER>
-  }
-  "eventTime" : <TIME OF THIS EVENT>
-}'
-
-# A user buys an item
-
-curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
--H "Content-Type: application/json" \
--d '{
-  "event" : "buy",
-  "entityType" : "user"
-  "entityId" : <USER ID>,
-  "targetEntityType" : "item",
-  "targetEntityId" : <ITEM ID>,
-  "properties" : {
-    "sessionId" : <SESSION ID>
-  }
-  "eventTime" : <TIME OF THIS EVENT>
-}'
-
 ```
   </div>
 </div>
 
-## 4b. Import Sample Data
+<%= partial 'shared/quickstart/query_eventserver' %>
+
+### Import More Sample Data
 
 <%= partial 'shared/quickstart/import_sample_data' %>
 
@@ -275,10 +291,7 @@ User u5 buys item i5
 166 events are imported.
 ```
 
-WARNING: If you see error **TypeError: __init__() got an unexpected keyword argument 'access_key'**,
-please update the Python SDK to the latest version.
-
-<%= partial 'shared/quickstart/query_eventserver' %>
+<%= partial 'shared/quickstart/query_eventserver_short' %>
 
 ## 5. Deploy the Engine as a Service
 

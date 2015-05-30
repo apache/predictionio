@@ -59,7 +59,7 @@ Likewise, if a blacklist is provided, the engine will exclude those products in 
 
 <%= partial 'shared/quickstart/create_app' %>
 
-## 4a. Collecting Data
+## 4. Collecting Data
 
 Next, let's collect training data for this Engine. By default,
 the E-Commerce Recommendation Engine Template supports 2 types of entities and 2 events: **user** and
@@ -67,9 +67,26 @@ the E-Commerce Recommendation Engine Template supports 2 types of entities and 2
 
 In summary, this template requires '$set' user event, '$set' item event, user-view-item events, user-buy-item event and '$set' constraint event.
 
-<%= partial 'shared/quickstart/install_sdk' %>
+INFO: This template can easily be customized to consider other user-to-item events.
+
+<%= partial 'shared/quickstart/collect_data' %>
+
+
+For example, when a new user with id "u0" is created in your app on time `2014-11-02T09:39:45.618-08:00` (current time will be used if eventTime is not specified), you can send a `$set` event for this user. To send this event, run the following `curl` command:
 
 <div class="tabs">
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=$ACCESS_KEY \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "user"
+  "entityId" : "u0",
+  "eventTime" : "2014-11-02T09:39:45.618-08:00"
+}'
+```
+  </div>
   <div data-tab="Python SDK" data-lang="python">
 ```python
 import predictionio
@@ -88,53 +105,10 @@ client.create_event(
   entity_type="user",
   entity_id=<USER_ID>
 )
-
-# Create a new item or set existing item's categories
-
-client.create_event(
-  event="$set",
-  entity_type="item",
-  entity_id=item_id,
-  properties={
-    "categories" : ["<CATEGORY_1>", "<CATEGORY_2>"]
-  }
-)
-
-# A user views an item
-
-client.create_event(
-  event="view",
-  entity_type="user",
-  entity_id=<USER ID>,
-  target_entity_type="item",
-  target_entity_id=<ITEM ID>
-)
-
-# A user buys an item
-
-client.create_event(
-  event="buy",
-  entity_type="user",
-  entity_id=<USER ID>,
-  target_entity_type="item",
-  target_entity_id=<ITEM ID>
-)
-
-# Set a list of unavailable items
-
-client.create_event(
-  event="$set",
-  entity_type="constraint",
-  entity_id="unavailableItems",
-  properties={
-    "items" : ["<ITEM ID1>", "<ITEM ID2>"]
-  }
-)
-
 ```
   </div>
-  <div data-tab="PHP SDK" data-lang="php">
 
+  <div data-tab="PHP SDK" data-lang="php">
 ```php
 <?php
 require_once("vendor/autoload.php");
@@ -156,39 +130,10 @@ $client->createEvent(array(
   'entityId' => <ITEM ID>
   'properties' => array('categories' => array('<CATEGORY_1>', '<CATEGORY_2>'))
 ));
-
-// A user views an item
-$client->createEvent(array(
-   'event' => 'view',
-   'entityType' => 'user',
-   'entityId' => <USER ID>,
-   'targetEntityType' => 'item',
-   'targetEntityId' => <ITEM ID>
-));
-
-// A user buys an item
-$client->createEvent(array(
-   'event' => 'buy',
-   'entityType' => 'user',
-   'entityId' => <USER ID>,
-   'targetEntityType' => 'item',
-   'targetEntityId' => <ITEM ID>
-));
-
-// Set a list of unavailable items
-$client->createEvent(array(
-  'event' => '$set',
-  'entityType' => 'constraint',
-  'entityId' => 'unavailableItems',
-  'properties' => array('items' => array('<ITEM ID1>', '<ITEM ID2>'))
-));
-
-
 ?>
 ```
   </div>
   <div data-tab="Ruby SDK" data-lang="ruby">
-
 ```ruby
 # Create a client object.
 client = PredictionIO::EventClient.new(<ACCESS KEY>, <URL OF EVENTSERVER>)
@@ -199,49 +144,9 @@ client.create_event(
   'user',
   <USER ID>
 )
-
-# Create a new item or set existing item's categories
-client.create_event(
-  '$set',
-  'item',
-  <ITEM ID>, {
-    'properties' => { 'categories' => ['<CATEGORY_1>', '<CATEGORY_2>'] }
-  }
-)
-
-# A user views an item.
-client.create_event(
-  'view',
-  'user',
-  <USER ID>, {
-    'targetEntityType' => 'item',
-    'targetEntityId' => <ITEM ID>
-  }
-)
-
-# A user buys an item.
-client.create_event(
-  'buy',
-  'user',
-  <USER ID>, {
-    'targetEntityType' => 'item',
-    'targetEntityId' => <ITEM ID>
-  }
-)
-
-# Set a list of unavailable items
-client.create_event(
-  '$set',
-  'constraint',
-  'unavailableItems', {
-    'properties' => { 'items' => ['<ITEM ID1>', '<ITEM ID2>'] }
-  }
-)
-
 ```
   </div>
   <div data-tab="Java SDK" data-lang="java">
-
 ```java
 import io.prediction.Event;
 import io.prediction.EventClient;
@@ -256,7 +161,71 @@ Event userEvent = new Event()
   .entityType("user")
   .entityId(<USER_ID>);
 client.createEvent(userEvent);
+```
+  </div>
+</div>
 
+When a new item "i0" is created in your app on time `2014-11-02T09:39:45.618-08:00` (current time will be used if eventTime is not specified), you can send a `$set` event for the item. Note that the item is set with categories properties: `"c1"` and `"c2"`. Run the following `curl` command:
+
+<div class="tabs">
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=$ACCESS_KEY \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "item"
+  "entityId" : "i0",
+  "properties" : {
+    "categories" : ["c1", "c2"]
+  }
+  "eventTime" : "2014-11-02T09:39:45.618-08:00"
+}'
+```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+```python
+# Create a new item or set existing item's categories
+
+client.create_event(
+  event="$set",
+  entity_type="item",
+  entity_id=item_id,
+  properties={
+    "categories" : ["<CATEGORY_1>", "<CATEGORY_2>"]
+  }
+)
+```
+  </div>
+
+  <div data-tab="PHP SDK" data-lang="php">
+```php
+<?php
+// Create a new item or set existing item's categories
+$client->createEvent(array(
+  'event' => '$set',
+  'entityType' => 'item',
+  'entityId' => <ITEM ID>
+  'properties' => array('categories' => array('<CATEGORY_1>', '<CATEGORY_2>'))
+));
+?>
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
+# Create a new item or set existing item's categories
+client.create_event(
+  '$set',
+  'item',
+  <ITEM ID>, {
+    'properties' => { 'categories' => ['<CATEGORY_1>', '<CATEGORY_2>'] }
+  }
+)
+
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
 // Create a new item or set existing item's categories
 Event itemEvent = new Event()
   .event("$set")
@@ -264,7 +233,73 @@ Event itemEvent = new Event()
   .entityId(<ITEM_ID>)
   .property("categories", ImmutableList.of("<CATEGORY_1>", "<CATEGORY_2>"));
 client.createEvent(itemEvent)
+```
+  </div>
+</div>
 
+The properties of the `user` and `item` can be set, unset, or delete by special events **$set**, **$unset** and **$delete**. Please refer to [Event API](/datacollection/eventapi/#note-about-properties) for more details of using these events.
+
+When the user "u0" view item "i0" on time `2014-11-10T12:34:56.123-08:00` (current time will be used if eventTime is not specified), you can send a view event. Run the following `curl` command:
+
+<div class="tabs">
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=$ACCESS_KEY \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "view",
+  "entityType" : "user"
+  "entityId" : "u0",
+  "targetEntityType" : "item",
+  "targetEntityId" : "i0",
+  "eventTime" : "2014-11-10T12:34:56.123-08:00"
+}'
+```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+```python
+# A user views an item
+
+client.create_event(
+  event="view",
+  entity_type="user",
+  entity_id=<USER ID>,
+  target_entity_type="item",
+  target_entity_id=<ITEM ID>
+)
+```
+  </div>
+
+  <div data-tab="PHP SDK" data-lang="php">
+```php
+<?php
+// A user views an item
+$client->createEvent(array(
+   'event' => 'view',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'targetEntityType' => 'item',
+   'targetEntityId' => <ITEM ID>
+));
+?>
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
+# A user views an item.
+client.create_event(
+  'view',
+  'user',
+  <USER ID>, {
+    'targetEntityType' => 'item',
+    'targetEntityId' => <ITEM ID>
+  }
+)
+
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
 // A user views an item
 Event viewEvent = new Event()
     .event("view")
@@ -273,7 +308,70 @@ Event viewEvent = new Event()
     .targetEntityType("item")
     .targetEntityId(<ITEM_ID>);
 client.createEvent(viewEvent);
+```
+  </div>
+</div>
 
+When the user "u0" buy item "i0" on time `2014-11-10T13:00:00.123-08:00` (current time will be used if eventTime is not specified), you can send a view event. Run the following `curl` command:
+
+<div class="tabs">
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=$ACCESS_KEY \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "buy",
+  "entityType" : "user"
+  "entityId" : "u0",
+  "targetEntityType" : "item",
+  "targetEntityId" : "i0",
+  "eventTime" : "2014-11-10T13:00:00.123-08:00"
+}'
+```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+```python
+# A user buys an item
+
+client.create_event(
+  event="buy",
+  entity_type="user",
+  entity_id=<USER ID>,
+  target_entity_type="item",
+  target_entity_id=<ITEM ID>
+)
+```
+  </div>
+
+  <div data-tab="PHP SDK" data-lang="php">
+```php
+<?php
+// A user buys an item
+$client->createEvent(array(
+   'event' => 'buy',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'targetEntityType' => 'item',
+   'targetEntityId' => <ITEM ID>
+));
+?>
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
+# A user buys an item.
+client.create_event(
+  'buy',
+  'user',
+  <USER ID>, {
+    'targetEntityType' => 'item',
+    'targetEntityId' => <ITEM ID>
+  }
+)
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
 // A user buys an item
 Event viewEvent = new Event()
     .event("buy")
@@ -282,90 +380,14 @@ Event viewEvent = new Event()
     .targetEntityType("item")
     .targetEntityId(<ITEM_ID>);
 client.createEvent(viewEvent);
-
-// Set a list of unavailable items
-Event itemEvent = new Event()
-  .event("$set")
-  .entityType("constraint")
-  .entityId("unavailableItems")
-  .property("items", ImmutableList.of("<ITEM ID1>", "<ITEM ID2>"));
-client.createEvent(itemEvent)
-
-```
-  </div>
-  <div data-tab="REST API" data-lang="json">
-```
-# Create a new user
-
-curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
--H "Content-Type: application/json" \
--d '{
-  "event" : "$set",
-  "entityType" : "user"
-  "entityId" : <USER ID>,
-  "eventTime" : <TIME OF THIS EVENT>
-}'
-
-# Create a new item or set existing item's categories
-
-curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
--H "Content-Type: application/json" \
--d '{
-  "event" : "$set",
-  "entityType" : "item"
-  "entityId" : <ITEM ID>,
-  "properties" : {
-    "categories" : ["<CATEGORY_1>", "<CATEGORY_2>"]
-  }
-  "eventTime" : <TIME OF THIS EVENT>
-}'
-
-# A user views an item
-
-curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
--H "Content-Type: application/json" \
--d '{
-  "event" : "view",
-  "entityType" : "user"
-  "entityId" : <USER ID>,
-  "targetEntityType" : "item",
-  "targetEntityId" : <ITEM ID>,
-  "eventTime" : <TIME OF THIS EVENT>
-}'
-
-# A user buys an item
-
-curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
--H "Content-Type: application/json" \
--d '{
-  "event" : "buy",
-  "entityType" : "user"
-  "entityId" : <USER ID>,
-  "targetEntityType" : "item",
-  "targetEntityId" : <ITEM ID>,
-  "eventTime" : <TIME OF THIS EVENT>
-}'
-
-# Set a list of unavailable items
-curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
--H "Content-Type: application/json" \
--d '{
-  "event" : "$set",
-  "entityType" : "constraint"
-  "entityId" : "unavailableItems",
-  "properties" : {
-    "categories" : ["<ITEM ID1>", "<ITEM ID2>"]
-  }
-  "eventTime" : <TIME OF THIS EVENT>
-}'
-
 ```
   </div>
 </div>
 
-The properties of `user` and `item` can be set, unset, or delete by special events **$set**, **$unset** and **$delete**. Please refer to [Event API](/datacollection/eventapi/#note-about-properties) for more details of using these events.
+<%= partial 'shared/quickstart/query_eventserver' %>
 
-## 4b. Import Sample Data
+
+### Import More Sample Data
 
 <%= partial 'shared/quickstart/import_sample_data' %>
 
@@ -394,10 +416,7 @@ User u10 buys item i40
 204 events are imported.
 ```
 
-WARNING: If you see error **TypeError: __init__() got an unexpected keyword argument 'access_key'**,
-please update the Python SDK to the latest version.
-
-<%= partial 'shared/quickstart/query_eventserver' %>
+<%= partial 'shared/quickstart/query_eventserver_short' %>
 
 ## 5. Deploy the Engine as a Service
 
@@ -514,8 +533,11 @@ Now let's send an item constraint "unavailableItems" (replace accessKey with you
 
 NOTE: You can also use SDK to send this event as described in the SDK sample above.
 
+
+<div class="tabs">
+  <div data-tab="REST API" data-lang="json">
 ```
-$ curl -i -X POST http://localhost:7070/events.json?accessKey=zPkr6sBwQoBwBjVHK2hsF9u26L38ARSe19QzkdYentuomCtYSuH0vXP5fq7advo4 \
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=$ACCESS_KEY \
 -H "Content-Type: application/json" \
 -d '{
   "event" : "$set",
@@ -527,6 +549,60 @@ $ curl -i -X POST http://localhost:7070/events.json?accessKey=zPkr6sBwQoBwBjVHK2
   "eventTime" : "2015-02-17T02:11:21.934Z"
 }'
 ```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+```python
+# Set a list of unavailable items
+
+client.create_event(
+  event="$set",
+  entity_type="constraint",
+  entity_id="unavailableItems",
+  properties={
+    "items" : ["<ITEM ID1>", "<ITEM ID2>"]
+  }
+)
+```
+  </div>
+
+  <div data-tab="PHP SDK" data-lang="php">
+```php
+<?php
+// Set a list of unavailable items
+$client->createEvent(array(
+  'event' => '$set',
+  'entityType' => 'constraint',
+  'entityId' => 'unavailableItems',
+  'properties' => array('items' => array('<ITEM ID1>', '<ITEM ID2>'))
+));
+?>
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
+# Set a list of unavailable items
+client.create_event(
+  '$set',
+  'constraint',
+  'unavailableItems', {
+    'properties' => { 'items' => ['<ITEM ID1>', '<ITEM ID2>'] }
+  }
+)
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
+// Set a list of unavailable items
+Event itemEvent = new Event()
+  .event("$set")
+  .entityType("constraint")
+  .entityId("unavailableItems")
+  .property("items", ImmutableList.of("<ITEM ID1>", "<ITEM ID2>"));
+client.createEvent(itemEvent)
+```
+  </div>
+</div>
+
 
 Try to get recommendation for user *u1* again, the unavaiable items (e.g. i4, i14, i11). won't be recommended anymore:
 

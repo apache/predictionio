@@ -44,15 +44,36 @@ NOTE: You can customize to use other event.
 
 <%= partial 'shared/quickstart/create_app' %>
 
-## 4a. Collecting Data
+## 4. Collecting Data
 
 Next, let's collect some training data. By default,
 the Recommendation Engine Template supports 2 types of events: **rate** and
 **buy**. A user can give a rating score to an item or he can buy an item. This template requires user-view-item and user-buy-item events.
 
-<%= partial 'shared/quickstart/install_sdk' %>
+INFO: This template can easily be customized to consider more user events such as *like*, *dislike* etc.
+
+<%= partial 'shared/quickstart/collect_data' %>
+
+For example, when a user with ID "u0" rate an item with ID "i0" with rating of 5 on time `2014-11-02T09:39:45.618-08:00` (current time will be used if eventTime is not specified), you can send the following "rate" event. Run the following `curl` command:
 
 <div class="tabs">
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=$ACCESS_KEY \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "rate",
+  "entityType" : "user"
+  "entityId" : "u0",
+  "targetEntityType" : "item",
+  "targetEntityId" : "i0",
+  "properties" : {
+    "rating" : 5
+  }
+  "eventTime" : "2014-11-02T09:39:45.618-08:00"
+}'
+```
+  </div>
   <div data-tab="Python SDK" data-lang="python">
 ```python
 import predictionio
@@ -73,17 +94,9 @@ client.create_event(
     target_entity_id=<ITEM ID>,
     properties= { "rating" : float(<RATING>) }
 )
-
-# A user buys an item
-client.create_event(
-    event="buy",
-    entity_type="user",
-    entity_id=<USER ID>,
-    target_entity_type="item",
-    target_entity_id=<ITEM ID>
-)
 ```
   </div>
+
   <div data-tab="PHP SDK" data-lang="php">
 ```php
 <?php
@@ -101,16 +114,6 @@ $client->createEvent(array(
    'targetEntityId' => <ITEM ID>,
    'properties' => array('rating'=> <RATING>)
 ));
-
-// A user buys an item
-$client->createEvent(array(
-   'event' => 'buy',
-   'entityType' => 'user',
-   'entityId' => <USER ID>,
-   'targetEntityType' => 'item',
-   'targetEntityId' => <ITEM ID>
-));
-
 ?>
 ```
   </div>
@@ -130,15 +133,6 @@ client.create_event(
   }
 )
 
-# A user buys an item.
-client.create_event(
-  'buy',
-  'user',
-  <USER ID>, {
-    'targetEntityType' => 'item',
-    'targetEntityId' => <ITEM ID>
-  }
-)
 ```
   </div>
   <div data-tab="Java SDK" data-lang="java">
@@ -158,6 +152,69 @@ Event rateEvent = new Event()
     .property("rating", new Float(<RATING>));
 client.createEvent(rateEvent);
 
+```
+  </div>
+</div>
+
+When a user with ID "u1" buy an item with ID "i2" on time `2014-11-10T12:34:56.123-08:00` (current time will be used if eventTime is not specified), you can send the following "rate" event. Run the following `curl` command:
+
+<div class="tabs">
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=$ACCESS_KEY \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "buy",
+  "entityType" : "user"
+  "entityId" : "u1",
+  "targetEntityType" : "item",
+  "targetEntityId" : "i2",
+  "eventTime" : "2014-11-10T12:34:56.123-08:00"
+}'
+```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+```python
+# A user buys an item
+client.create_event(
+    event="buy",
+    entity_type="user",
+    entity_id=<USER ID>,
+    target_entity_type="item",
+    target_entity_id=<ITEM ID>
+)
+```
+  </div>
+
+  <div data-tab="PHP SDK" data-lang="php">
+```php
+<?php
+// A user buys an item
+$client->createEvent(array(
+   'event' => 'buy',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'targetEntityType' => 'item',
+   'targetEntityId' => <ITEM ID>
+));
+?>
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
+# A user buys an item.
+client.create_event(
+  'buy',
+  'user',
+  <USER ID>, {
+    'targetEntityType' => 'item',
+    'targetEntityId' => <ITEM ID>
+  }
+)
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
 // A user buys an item
 Event buyEvent = new Event()
     .event("buy")
@@ -168,39 +225,11 @@ Event buyEvent = new Event()
 client.createEvent(buyEvent);
 ```
   </div>
-  <div data-tab="REST API" data-lang="json">
-```
-# A user rates an item
-curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
--H "Content-Type: application/json" \
--d '{
-  "event" : "rate",
-  "entityType" : "user"
-  "entityId" : <USER ID>,
-  "targetEntityType" : "item",
-  "targetEntityId" : <ITEM ID>,
-  "properties" : {
-    "rating" : <RATING>
-  }
-  "eventTime" : <TIME OF THIS EVENT>
-}'
-
-# A user buys an item
-curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
--H "Content-Type: application/json" \
--d '{
-  "event" : "buy",
-  "entityType" : "user"
-  "entityId" : <USER ID>,
-  "targetEntityType" : "item",
-  "targetEntityId" : <ITEM ID>,
-  "eventTime" : <TIME OF THIS EVENT>
-}'
-```
-  </div>
 </div>
 
-## 4b. Import Sample Data
+<%= partial 'shared/quickstart/query_eventserver' %>
+
+### Import More Sample Data
 
 <%= partial 'shared/quickstart/import_sample_data' %>
 
@@ -227,16 +256,11 @@ Importing data...
 1501 events are imported.
 ```
 
-WARNING: If you experience error similar to the following:
-**TypeError: __init__() got an unexpected keyword argument 'access_key'**
-please update the Python SDK to the latest version.
-
 Now the movie ratings data is stored as events inside the Event Store.
 
+<%= partial 'shared/quickstart/query_eventserver_short' %>
+
 INFO: By default, the template train the model with "rate" events (explicit rating). You can customize the engine to [read other custom events](/templates/recommendation/reading-custom-events/) and [handle events of implicit preference (such as, view, buy)](/templates/recommendation/training-with-implicit-preference/)
-
-<%= partial 'shared/quickstart/query_eventserver' %>
-
 
 ## 5. Deploy the Engine as a Service
 

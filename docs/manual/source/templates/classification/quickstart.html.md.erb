@@ -47,15 +47,36 @@ NOTE: You can customize to use other event.
 
 <%= partial 'shared/quickstart/create_app' %>
 
-## 4a. Collecting Data
+## 4. Collecting Data
 
 Next, let's collect some training data. By default, the Classification Engine Template reads 4 properties of a user record: attr0, attr1, attr2 and plan. This templates requires '$set' user events.
 
-<%= partial 'shared/quickstart/install_sdk' %>
+INFO: This template can easily be customized to use different or more number of attributes.
+
+<%= partial 'shared/quickstart/collect_data' %>
+
+To set properties "attr0", "attr1", "attr2" and "plan" for user "u0" on time `2014-11-02T09:39:45.618-08:00` (current time will be used if eventTime is not specified), you can send `$set` event for the user. To send this event, run the following `curl` command:
 
 <div class="tabs">
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=$ACCESS_KEY \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "user"
+  "entityId" : "u0",
+  "properties" : {
+    "attr0" : 0,
+    "attr1" : 1,
+    "attr2" : 0,
+    "plan" : 1
+  }
+  "eventTime" : "2014-11-02T09:39:45.618-08:00"
+}'
+```
+  </div>
   <div data-tab="Python SDK" data-lang="python">
-
 ```python
 import predictionio
 
@@ -78,42 +99,9 @@ client.create_event(
       "plan" : int(<VALUE OF PLAN>)
     }
 )
-
-# You may also set the properties one by one
-client.create_event(
-    event="$set",
-    entity_type="user",
-    entity_id=<USER ID>,
-    properties= {
-      "attr0" : int(<VALUE OF ATTR0>)
-    }
-)
-client.create_event(
-    event="$set",
-    entity_type="user",
-    entity_id=<USER ID>,
-    properties= {
-      "attr1" : int(<VALUE OF ATTR1>)
-    }
-)
-client.create_event(
-    event="$set",
-    entity_type="user",
-    entity_id=<USER ID>,
-    properties= {
-      "attr2" : int(<VALUE OF ATTR2>)
-    }
-)
-client.create_event(
-    event="$set",
-    entity_type="user",
-    entity_id=<USER ID>,
-    properties= {
-      "plan" : int(<VALUE OF PLAN>)
-    }
-)
 ```
   </div>
+
   <div data-tab="PHP SDK" data-lang="php">
 ```php
 <?php
@@ -134,44 +122,6 @@ $client->createEvent(array(
      'plan' => <VALUE OF PLAN>
    )
 ));
-
-// You may also set the properties one by one
-$client->createEvent(array(
-   'event' => '$set',
-   'entityType' => 'user',
-   'entityId' => <USER ID>,
-   'properties' => array(
-     'attr0' => <VALUE OF ATTR0>
-   )
-));
-
-$client->createEvent(array(
-   'event' => '$set',
-   'entityType' => 'user',
-   'entityId' => <USER ID>,
-   'properties' => array(
-     'attr1' => <VALUE OF ATTR1>
-   )
-));
-
-$client->createEvent(array(
-   'event' => '$set',
-   'entityType' => 'user',
-   'entityId' => <USER ID>,
-   'properties' => array(
-     'attr2' => <VALUE OF ATTR2>
-   )
-));
-
-$client->createEvent(array(
-   'event' => '$set',
-   'entityType' => 'user',
-   'entityId' => <USER ID>,
-   'properties' => array(
-     'plan' => <VALUE OF PLAN>
-   )
-));
-
 ?>
 ```
   </div>
@@ -193,7 +143,148 @@ client.create_event(
     }
   }
 )
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
+import com.google.common.collect.ImmutableMap;
+import io.prediction.Event;
+import io.prediction.EventClient;
 
+EventClient client = new EventClient(<ACCESS KEY>, <URL OF EVENTSERVER>);
+
+// set the 4 properties for a user
+Event event = new Event()
+    .event("$set")
+    .entityType("user")
+    .entityId(<USER ID>)
+    .properties(ImmutableMap.<String, Object>of(
+        "attr0", <VALUE OF ATTR0>,
+        "attr1", <VALUE OF ATTR1>,
+        "attr2", <VALUE OF ATTR2>,
+        "plan", <VALUE OF PLAN>
+    ));
+client.createEvent(event);
+```
+  </div>
+</div>
+
+
+Note that you can also set the properties for the user with multiple `$set` events (They will be aggregated during engine training).
+
+To set properties "attr0", "attr1" and "attr2", and "plan" for user "u1" at different time, you can send follwing `$set` events for the user. To send these events, run the following `curl` command:
+
+<div class="tabs">
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=$ACCESS_KEY \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "user"
+  "entityId" : "u1",
+  "properties" : {
+    "attr0" : 0
+  }
+  "eventTime" : "2014-11-02T09:39:45.618-08:00"
+}'
+
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=$ACCESS_KEY \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "user"
+  "entityId" : "u1",
+  "properties" : {
+    "attr1" : 1,
+    "attr2":  0
+  }
+  "eventTime" : "2014-11-02T09:39:45.618-08:00"
+}'
+
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=$ACCESS_KEY \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "user"
+  "entityId" : "u1",
+  "properties" : {
+    "plan" : 1
+  }
+  "eventTime" : "2014-11-02T09:39:45.618-08:00"
+}'
+```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+```python
+# You may also set the properties one by one
+client.create_event(
+    event="$set",
+    entity_type="user",
+    entity_id=<USER ID>,
+    properties= {
+      "attr0" : int(<VALUE OF ATTR0>)
+    }
+)
+client.create_event(
+    event="$set",
+    entity_type="user",
+    entity_id=<USER ID>,
+    properties= {
+      "attr1" : int(<VALUE OF ATTR1>),
+      "attr2" : int(<VALUE OF ATTR2>)
+    }
+)
+
+client.create_event(
+    event="$set",
+    entity_type="user",
+    entity_id=<USER ID>,
+    properties= {
+      "plan" : int(<VALUE OF PLAN>)
+    }
+)
+```
+  </div>
+
+  <div data-tab="PHP SDK" data-lang="php">
+```php
+<?php
+
+// You may also set the properties one by one
+$client->createEvent(array(
+   'event' => '$set',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'properties' => array(
+     'attr0' => <VALUE OF ATTR0>
+   )
+));
+
+$client->createEvent(array(
+   'event' => '$set',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'properties' => array(
+     'attr1' => <VALUE OF ATTR1>,
+     'attr2' => <VALUE OF ATTR2>
+   )
+));
+
+$client->createEvent(array(
+   'event' => '$set',
+   'entityType' => 'user',
+   'entityId' => <USER ID>,
+   'properties' => array(
+     'plan' => <VALUE OF PLAN>
+   )
+));
+
+?>
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
 # You may also set the properties one by one.
 client.create_event(
   '$set',
@@ -220,26 +311,6 @@ client.create_event(
   </div>
   <div data-tab="Java SDK" data-lang="java">
 ```java
-import com.google.common.collect.ImmutableMap;
-import io.prediction.Event;
-import io.prediction.EventClient;
-
-EventClient client = new EventClient(<ACCESS KEY>, <URL OF EVENTSERVER>);
-
-// set the 4 properties for a user
-Event event = new Event()
-    .event("$set")
-    .entityType("user")
-    .entityId(<USER ID>)
-    .properties(ImmutableMap.<String, Object>of(
-        "attr0", <VALUE OF ATTR0>,
-        "attr1", <VALUE OF ATTR1>,
-        "attr2", <VALUE OF ATTR2>,
-        "plan", <VALUE OF PLAN>
-    ));
-client.createEvent(event);
-
-/*
 // you may also set the properties one by one
 client.createEvent(new Event()
     .event("$set")
@@ -250,95 +321,23 @@ client.createEvent(new Event()
     .event("$set")
     .entityType("user")
     .entityId(<USER ID>)
-    .property("attr1", <VALUE OF ATTR1>));
-client.createEvent(new Event()
-    .event("$set")
-    .entityType("user")
-    .entityId(<USER ID>)
+    .property("attr1", <VALUE OF ATTR1>)
     .property("attr2", <VALUE OF ATTR2>));
 client.createEvent(new Event()
     .event("$set")
     .entityType("user")
     .entityId(<USER ID>)
     .property("plan", <VALUE OF PLAN>));
-*/
-```
-  </div>
-  <div data-tab="REST API" data-lang="json">
-```bash
-# Set the 4 properties for a user
-
-curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
--H "Content-Type: application/json" \
--d '{
-  "event" : "$set",
-  "entityType" : "user"
-  "entityId" : <USER ID>,
-  "properties" : {
-    "attr0" : 0,
-    "attr1" : 1,
-    "attr2" : 0,
-    "plan" : 1
-  }
-  "eventTime" : <TIME OF THIS EVENT>
-}'
-
-# You may also set the properties one by one
-
-curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
--H "Content-Type: application/json" \
--d '{
-  "event" : "$set",
-  "entityType" : "user"
-  "entityId" : <USER ID>,
-  "properties" : {
-    "attr0" : 0
-  }
-  "eventTime" : <TIME OF THIS EVENT>
-}'
-
-curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
--H "Content-Type: application/json" \
--d '{
-  "event" : "$set",
-  "entityType" : "user"
-  "entityId" : <USER ID>,
-  "properties" : {
-    "attr1" : 1
-  }
-  "eventTime" : <TIME OF THIS EVENT>
-}'
-
-curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
--H "Content-Type: application/json" \
--d '{
-  "event" : "$set",
-  "entityType" : "user"
-  "entityId" : <USER ID>,
-  "properties" : {
-    "attr2" : 0
-  }
-  "eventTime" : <TIME OF THIS EVENT>
-}'
-
-curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
--H "Content-Type: application/json" \
--d '{
-  "event" : "$set",
-  "entityType" : "user"
-  "entityId" : <USER ID>,
-  "properties" : {
-    "plan" : 1
-  }
-  "eventTime" : <TIME OF THIS EVENT>
-}'
 ```
   </div>
 </div>
 
 The properties of the `user` can be set, unset, or delete by special events **$set**, **$unset** and **$delete**. Please refer to [Event API](/datacollection/eventapi/#note-about-properties) for more details of using these events.
 
-## 4b. Import Sample Data
+
+<%= partial 'shared/quickstart/query_eventserver' %>
+
+### Import More Sample Data
 
 <%= partial 'shared/quickstart/import_sample_data' %>
 
@@ -363,7 +362,7 @@ Importing data...
 
 Now the training data is stored as events inside the Event Store.
 
-<%= partial 'shared/quickstart/query_eventserver' %>
+<%= partial 'shared/quickstart/query_eventserver_short' %>
 
 ## 5. Deploy the Engine as a Service
 

@@ -39,18 +39,35 @@ NOTE: You can customize to use other event.
 
 <%= partial 'shared/quickstart/create_app' %>
 
-## 4a. Collecting Data
+## 4. Collecting Data
 
 Next, let's collect training data for this Engine. By default,
  Complementary Purchase Engine Template supports the following entities: **user**, **item**. A user buys an item. This template requires user-buy-item events.
 
 Note that the engine requires correct buy event time being used in order to determine if the items being bought are in the same 'basket', which is configured by the 'basketWindow' parameter. Using an unreal event time for the buy events will cause an incorrect model. If you use SDK, the current time is used as event time by default.
 
-WARNING: In particular, make sure correct event time is specified if you import data in batch (or not in real time). If the event time is omitted, the SDK will use **current time** as event time which is not the actual time of the buy event in this case!
+WARNING: In particular, make sure correct event time is specified if you import data in batch (i.e. not in real time). If the event time is omitted, the SDK will use **current time** as event time which is not the actual time of the buy event in this case!
 
-<%= partial 'shared/quickstart/install_sdk' %>
+<%= partial 'shared/quickstart/collect_data' %>
+
+
+When an user u0 buys item i0 on time `2014-11-02T09:39:45.618-08:00` (current time will be used if eventTime is not specified), you can send a buy event. Run the following `curl` command:
 
 <div class="tabs">
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=$ACCESS_KEY \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "buy",
+  "entityType" : "user"
+  "entityId" : "u0",
+  "targetEntityType" : "item",
+  "targetEntityId" : "i0",
+  "eventTime" : "2014-11-02T09:39:45.618-08:00"
+}'
+```
+  </div>
   <div data-tab="Python SDK" data-lang="python">
 ```python
 import predictionio
@@ -82,8 +99,8 @@ client.create_event(
 )
 ```
   </div>
-  <div data-tab="PHP SDK" data-lang="php">
 
+  <div data-tab="PHP SDK" data-lang="php">
 ```php
 <?php
 require_once("vendor/autoload.php");
@@ -114,7 +131,6 @@ $client->createEvent(array(
 ```
   </div>
   <div data-tab="Ruby SDK" data-lang="ruby">
-
 ```ruby
 # Create a client object.
 client = PredictionIO::EventClient.new(<ACCESS KEY>, <URL OF EVENTSERVER>)
@@ -139,11 +155,9 @@ client.create_event(
     'eventTime' => <EVENT_TIME>
   }
 )
-
 ```
   </div>
   <div data-tab="Java SDK" data-lang="java">
-
 ```java
 import io.prediction.Event;
 import io.prediction.EventClient;
@@ -170,29 +184,13 @@ Event buyEvent = new Event()
     .targetEntityId(<ITEM_ID>)
     .eventTime(<EVENT_TIME>)
 client.createEvent(buyEvent);
-
-```
-  </div>
-  <div data-tab="REST API" data-lang="json">
-```
-# A user buys an item
-
-curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
--H "Content-Type: application/json" \
--d '{
-  "event" : "buy",
-  "entityType" : "user"
-  "entityId" : <USER ID>,
-  "targetEntityType" : "item",
-  "targetEntityId" : <ITEM ID>,
-  "eventTime" : <TIME OF THIS EVENT>
-}'
-
 ```
   </div>
 </div>
 
-## 4b. Import Sample Data
+<%= partial 'shared/quickstart/query_eventserver' %>
+
+### Import More Sample Data
 
 <%= partial 'shared/quickstart/import_sample_data' %>
 
@@ -219,10 +217,7 @@ User u10 buys item s2i1 at 2014-10-19 15:43:15.618000-07:53
 225 events are imported.
 ```
 
-WARNING: If you see error **TypeError: __init__() got an unexpected keyword argument 'access_key'**,
-please update the Python SDK to the latest version.
-
-<%= partial 'shared/quickstart/query_eventserver' %>
+<%= partial 'shared/quickstart/query_eventserver_short' %>
 
 ## 5. Deploy the Engine as a Service
 
