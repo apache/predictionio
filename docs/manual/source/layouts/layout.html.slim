@@ -5,15 +5,19 @@ html
   body
     #global
       = partial 'header'
+      = partial 'search_bar'
       #page.container-fluid
         .row
-          .col-md-3#left-menu-wrapper
+          #left-menu-wrapper.col-md-3
             = partial 'nav/main'
           .col-md-9.col-sm-12
-            = breadcrumbs
-            = partial 'page_title'
-            = yield
-            /== table_of_contents(current_page)
+            .content-header
+              = breadcrumbs
+              #page-title
+                = page_title
+            = partial 'table_of_content'
+            .content
+              = yield
       = partial 'footer'
     = partial 'swiftype'
     = javascript_include_tag  'application'

@@ -1,5 +1,6 @@
 #breadcrumbs {
   font-family: $standard-font-family;
+  @include anchor-no-underline;
   ul {
     display: inline-block;
     padding: 0;

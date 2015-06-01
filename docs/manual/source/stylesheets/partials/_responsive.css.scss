@@ -113,75 +113,187 @@
 
 /*FOOTER*/
 
-
 @media (max-width: 992px) { 
-  footer {
+  body {
+    footer {
+      #content-wrapper {
+      padding-top: 56px;
+      } 
 
-    #content-wrapper {
-    padding-top: 56px;
-    } 
+      #social-icons-wrapper {
+        float: none;
+        text-align: center;
+        width: 100%;
+        margin-bottom: 10px;
+      }
 
+      #footer-logo-wrapper {
+        text-align: center;
+        width: 100%;
+        margin-bottom: 20px;
+      }
 
-    #social-icons-wrapper {
-      float: none;
-      text-align: center;
-      width: 100%;
-      margin-bottom: 10px;
-    }
+      .subscription-form-wrapper {
+        margin-bottom: 40px;
+      }
 
-    #footer-logo-wrapper {
-      text-align: center;
-      width: 100%;
-      margin-bottom: 20px;
-    }
+      #news-letter-register-wrapper {
+        margin-bottom: 40px;
+      }
+      .footer-link-column {
+        .footer-link-column-row {
+          h4 {
+            font-size: 15px;
+          }
+          li {
+            font-size: 13px;
+          }
+        } 
+      }
 
-    #news-letter-register-wrapper {
-      margin-bottom: 40px;
-    }
+      .title-bar-block {
+        max-width: 100%;
+        float: none;
+      }
 
-    .footer-link-column-row p:first-child {
-      font-size: 15px;
-    }
-
-    .footer-link-column li {
-      font-size: 13px;
-    }
-
-    .title-bar-block {
-      max-width: 100%;
-      float: none;
-    }
-
-    .title-bar-content {
-      border-left: none;
-      border-top: 1px solid #fff;
-      padding-left: 0;
-      margin-left: 0;
-      padding-top: 20px;
-      margin-top: 20px;
+      .title-bar-content {
+        border-left: none;
+        border-top: 1px solid #fff;
+        padding-left: 0;
+        margin-left: 0;
+        padding-top: 20px;
+        margin-top: 20px;
+      }
     }
   }
-
 }
 
 /*END FOOTER*/
 
-/* Left Nav menu */
+/* Left Nav menu toggler */
 #left-menu-toggler {
   display: none;
 }
 
 @media (max-width: 992px) {
-  #left-menu-wrapper {
-    display: none;
-  }
-
-  #left-menu-wrapper.active {
-    display: block;
-  }
 
   #left-menu-toggler {
-    display: block;
+    display: inline-block;
+    font-size: 18px;
+    line-height: 36px;
+    color: black;
+    &:hover {
+      text-decoration: none;
+    }
+    &.active {
+      color: #1ba4d8;
+    }
   }
 }
-/* END Left Nav menu */
+/* END Left Nav menu toggler */
+
+/* Left nav menu */
+@media (max-width: 992px) {
+  html {
+    position: relative;
+    #left-menu-wrapper {
+      display: block;
+      position: absolute;
+      z-index: 9997;
+      //background-color: white;
+      left: -650px;
+      transition: left 1s ease;
+      top: 108px;
+      height: calc(100% - 108px);
+
+      &.active {
+        display: block;
+        left: -15px;
+      }
+
+      #nav-main {
+        height: 100%;
+        background-color: $white;
+        box-shadow: 3px 0 8px rgba(0,0,0,0.2);
+      }
+    }
+  }
+}
+/* END Left nav menu */
+
+/* Search bar */
+@media (max-width: 992px) {
+  body {
+
+    #search-bar-row-wrapper {
+      top: 53px;
+      .swiftype {
+        .search-form {
+          .search-box-toggler {
+            float: right;
+          }
+        }
+      }
+    }
+  }
+}
+/* End Search bar */
+
+/* Table of content & Content Header (same row) */
+@media (max-width: 992px) {
+  body {
+    .content-header {
+      width: 100%;
+      #page-title {
+        h1 {
+          margin-bottom: 28px;
+        }
+      }
+    }
+
+    #table-of-content-wrapper {
+      margin: 0;
+      clear: both;
+      float: none;
+      max-width: 320px
+    }
+  }
+}
+
+/* END Table of content */
+
+/* action call */
+@media (max-width: 992px) {
+  body {
+    .action-call {
+      display: none;
+    }
+  }
+}
+
+/* END action call */
+
+/* Page content container  */
+@media (max-width: 992px) {
+  body {
+    #page {
+      margin-top: 56px + 56px + 28px; // sum of header and serach bar row height + half row as padding.
+    }
+  }
+}
+/* END Page content container  */
+
+/* Content container */
+
+@media (max-width: 992px) {
+
+  body {
+    .content {
+      .header-anchors {
+        //jumping destination for table of content anchors.
+        top: $half-mobile-header-row-height;
+      }
+    }
+  }
+}
+/* END Content container*/

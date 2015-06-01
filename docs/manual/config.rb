@@ -8,7 +8,6 @@ set :partials_dir,  'partials'
 
 activate :directory_indexes
 activate :gzip
-activate :syntax, line_numbers: true
 activate :autoprefixer
 
 # Markdown

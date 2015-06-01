@@ -15,6 +15,12 @@ class CustomRenderer < Middleman::Renderers::MiddlemanRedcarpetHTML
     end
   end
 
+  def header(text, level)
+    id = text.downcase.tr(" ", "-")
+    #the anchor before the headings are there to provide proper jumping points.
+    "<a id=#{id} class='header-anchors'></a><h#{level} >#{text}</h#{level}>"
+  end
+
   def block_html(raw_html)
     # Render fenced code blocks first!
     replace = raw_html.gsub(/(```.*?```)/m) do |match|
@@ -53,14 +59,13 @@ class CustomRenderer < Middleman::Renderers::MiddlemanRedcarpetHTML
     end
   end
 
-
   private
 
   def convert_alerts(text)
     text.gsub(/\A(INFO|SUCCESS|WARNING|DANGER|NOTE|TODO):(.*?)(\n(?=\n)|\z)/m) do
       css_class = $1.downcase
       content = $2.strip
-      %Q(<div class="alert #{css_class}"><p>#{content}</p></div>)
+      %Q(<div class="alert-message #{css_class}"><p>#{content}</p></div>)
     end
   end
 end

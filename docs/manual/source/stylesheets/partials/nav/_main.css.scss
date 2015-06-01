@@ -1,10 +1,17 @@
 #nav-main {
   font-family: $standard-font-family;
+  @include anchor-no-underline;
+
+  a.collapsible { // to counter unknown css behavior
+    text-decoration: none;
+  }
+
   ul {
     padding: 0;
     margin: 0;
     width: 100%;
     list-style-type: none;
+    background-color: $white;
   }
   & > ul {
     border: 1px solid $nav-main-border-color;
@@ -13,7 +20,7 @@
     }
     a {
       min-height: 44px;
-      font-size: 14px;
+      font-size: 16px;
       display: flex; // a serves as container, text is inside a span
       flex-direction: column;
       justify-content: center;
@@ -36,9 +43,11 @@
         //level 2
         li {
           a { // inactive menu item
+            font-size: 14px;
             padding-left: 25px;
             color: $nav-main-level-2-link-color;
             &.active {
+              border-left: 5px solid $nav-main-level-2-active-link-left-border-color;
               color: $nav-main-level-2-active-link-color;
             }
           }

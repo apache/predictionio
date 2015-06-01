@@ -1,0 +1,25 @@
+.action-call {
+  font-family: $standard-font-family;
+  @include anchor-no-underline;
+  padding-top: 78px;
+  padding-bottom: 10px;
+
+  .action-square {
+    height: 190px;
+    background-color: #F7F7F7;
+    padding: 35px;
+    padding-top: 0;
+
+    h1 {
+      padding-top: 35px;
+      font-size: 27px;
+      text-align: center;
+      font-weight: normal;
+    }
+
+    p {
+      font-size: 16px;
+      color: #979797;
+    }
+  }
+}

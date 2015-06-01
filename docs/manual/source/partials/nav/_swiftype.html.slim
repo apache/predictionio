@@ -1,3 +1,6 @@
-#swiftype
-  form
-    input type="text" id="st-search-input" class="st-search-input" placeholder="Search..."
+.swiftype
+  form.search-form
+    = image_tag 'icons/search-glass.png', class: 'search-box-toggler'
+    .search-box
+      = image_tag 'icons/search-glass.png'
+      input type="text" id="st-search-input" class="st-search-input" placeholder="Search Doc..."

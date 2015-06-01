@@ -55,3 +55,19 @@
   -moz-box-shadow: 0px 3px 5px 1px rgba(0,0,0,0.12);
   box-shadow: 0px 3px 5px 1px rgba(0,0,0,0.12);
 }
+
+@mixin alert-border($color) {
+  border: 1px solid $color;
+  border-left: 12px solid $color;
+}
+
+@mixin anchor-no-underline {
+  a{
+    &:hover {
+      text-decoration: none;
+    }
+    &:active {
+      text-decoration: none;
+    }
+  }
+}

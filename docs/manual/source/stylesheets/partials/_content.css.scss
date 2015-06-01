@@ -1,5 +1,7 @@
-#content {
-  padding: 0 25px 0 25px;
+.content {
+  font-family: $standard-font-family;
+  @include anchor-no-underline;
+
   img {
     width: 85%;
     &.static {
@@ -15,8 +17,10 @@
   h2 {
     color: $heading-2-font-color;
     font-weight: 400;
-    font-size: 24px;
+    font-size: 20px;
     margin: 24px 0 24px 0;
+    padding-top: 100px; 
+    margin-top: -100px;
   }
 
   h3 {
@@ -39,8 +43,39 @@
   }
 
   p {
-    margin: 24px 0 24px 0;
+    margin: 30px 0 30px 0;
     font-size: 16px;
-    line-height: 24px;
+    color: $content-paragraph-font-color;
+    line-height: 28px;
+  }
+
+  a {
+    color: $content-link-color;
+  }
+
+  ul, ol {
+    li {
+      font-size: 16px;
+      line-height: 28px;
+      padding-left: 10px;
+      color: $content-paragraph-font-color;
+      a {
+        color: #1C92CF;
+      }
+    }
+  }
+
+  ul.control {
+    li {
+      padding: 0;
+    }
+  }
+
+  .header-anchors {
+    //jumping destination for table of content anchors.
+    display: block; 
+    position: relative; 
+    top: $half-header-row-height;
+    visibility: hidden;
   }
 }

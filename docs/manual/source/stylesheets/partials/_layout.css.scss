@@ -2,6 +2,11 @@
   max-width: 1170px;
 }
 
+.content-header {
+  float: left;
+  width: calc(100% - 262.5px - 20px);
+}
+
 .container-center {
   width: 1170px;
   display: inline-block;

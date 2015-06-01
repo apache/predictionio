@@ -1,13 +1,18 @@
 //= require 'jquery'
 //= require 'Tabslet'
 //= require 'jcarousel'
+//= require 'highlight'
+//= require 'highlightjs-line-numbers'
 
 $(document).ready(function() {
+
+  hljs.initHighlightingOnLoad();
+  hljs.initLineNumbersOnLoad();
 
   // left menu toggler
   $('#left-menu-toggler').click(function() {
     $('#left-menu-wrapper').toggleClass('active');
-    $('#left-menu-toggler').toggleClass('btn-warning');
+    $('#left-menu-toggler').toggleClass('active');
   })
 
   // header menu toggler 
@@ -16,6 +21,16 @@ $(document).ready(function() {
       document.getElementById('drawer-toggle'),
       document.getElementById('menu-wrapper')
     );
+  })
+
+  // searcg box toggler
+  $('.search-box-toggler').click(function() {
+    $('.search-form').toggleClass('active');
+    $('.st-search-input').focus();
+  })
+
+  $('.st-search-input').focusout(function() {
+    $('.search-form').toggleClass('active');
   })
 
   var toggleDrawer = function(icon, menu){

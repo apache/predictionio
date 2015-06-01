@@ -2,6 +2,7 @@ footer {
   font-family: $standard-font-family;
   padding:0;
   background-color: $footer-background-color;
+  @include anchor-no-underline;
 
   .seperator {
     border-top: 1px solid $footer-seperator-color;

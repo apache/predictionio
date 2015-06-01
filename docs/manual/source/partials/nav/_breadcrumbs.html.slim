@@ -1,6 +1,6 @@
 - if crumbs
   #breadcrumbs
-    .btn.btn-lg.btn-default#left-menu-toggler Menu
+    
     ul
       - crumbs.each do |node|
         li
@@ -9,6 +9,3 @@
           - else
             = link_to node.body, node.url, class: node.css
             span.spacer &gt;
-- else
-  #breadcrumbs
-    .btn.btn-lg.btn-default#left-menu-toggler Menu
