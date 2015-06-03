@@ -24,7 +24,7 @@ The purpose of this tutorial is to illustrate how you can go about doing this us
 
 ## Prerequisites
 
-Before getting started, please make sure that you have the latest version of PredictionIO [installed](https://docs.prediction.io/install/). You will also need PredictionIO's [Python SDK](https://github.com/PredictionIO/PredictionIO-Python-SDK), and the [Scikit learn library](http://scikit-learn.org/stable/) for importing a sample data set into the PredictionIO Event Server. Any Python version greater than 2.7 will work for the purposes of executing the `data/import_eventserver.py` script provided with this engine template. Moreover, we emphasize here that this is an engine template written in **Scala** and can be more generally thought of as an SBT project containing all the necessary components.
+Before getting started, please make sure that you have the latest version of PredictionIO [installed](https://docs.prediction.io/install/). You will also need PredictionIO's [Python SDK](https://github.com/PredictionIO/PredictionIO-Python-SDK) for importing a sample data set into the PredictionIO Event Server. Any Python version greater than 2.7 will work for the purposes of executing the `data/import_eventserver.py` script provided with this engine template. Moreover, we emphasize here that this is an engine template written in **Scala** and can be more generally thought of as an SBT project containing all the necessary components.
 
 You should also download the engine template named Text Classification Engine that accompanies this tutorial by cloning the template repository:
 
@@ -66,6 +66,8 @@ $ pio app new MyTextApp
 **2.** Import the tutorial data, and be sure to replace `access` with the access key obtained from the latter step. If you have forgotten your access key, use the command `pio app list` to retrieve it. 
 
 ```
+$ unzip -q data/20_newsgroups.zip -d data
+
 $ python import_eventserver.py --access_key access
 ```
 
@@ -140,9 +142,9 @@ Now, refer to the quick start guide for the commands used to import your data. O
 
 ```
 Importing data.....
-Imported 11314 events.
+Imported 19924 events.
 Importing stop words.....
-Imported 350 stop words.
+Imported 348 stop words.
 ```
 
 This data import process greatly exemplifies the advantages of using PredictionIO's Event Server for data storage. It allows you to import data from different sources and store it using the same server. The [event-style format](https://docs.prediction.io/datacollection/eventapi/) allows for a standardized method of storing data which facilitates the process of reading in your data and incorporating different data sources. For example, the provided data script imports both the text observations and stop words which are going to inevitably differ in nature. In short, PredictionIO's Event Server is yet another abstraction that exacerbates your development productivity, as well as the ability to focus on the modeling stages involved in building your predictive engine.
