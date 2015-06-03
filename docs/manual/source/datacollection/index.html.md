@@ -38,5 +38,3 @@ author, and other attributes that may be related to the the user's preference.
 Data collection varies quite a bit based on your application and your prediction
 goal. We are happy to [assist you with your
 questions](mailto:support@prediction.io).
-
-

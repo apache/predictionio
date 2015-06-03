@@ -97,6 +97,9 @@ root:
         body: 'Collecting Data with REST/SDKs'
         url: '/datacollection/eventapi/'
       -
+        body: 'Events Modeling'
+        url: '/datacollection/eventmodel/'
+      -
         body: 'Unifying Multichannel Data with Webhooks'
         url: '/datacollection/webhooks/'
       -
