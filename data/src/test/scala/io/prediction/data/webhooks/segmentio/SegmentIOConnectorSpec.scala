@@ -25,8 +25,9 @@ class SegmentIOConnectorSpec extends Specification with ConnectorTestUtil {
 
   val commonFields =
     s"""
-       |  "anonymousId": "id",
-       |  "sendAt": "sendAt",
+       |  "anonymous_id": "id",
+       |  "sent_at": "sendAt",
+       |  "version": "2",
      """.stripMargin
 
   "SegmentIOConnector" should {
@@ -49,8 +50,8 @@ class SegmentIOConnectorSpec extends Specification with ConnectorTestUtil {
           |    },
           |    "device": {
           |      "id": "B5372DB0-C21E-11E4-8DFC-AA07A5B093DB",
-          |      "advertisingId": "7A3CBEA0-BDF5-11E4-8DFC-AA07A5B093DB",
-          |      "adTrackingEnabled": true,
+          |      "advertising_id": "7A3CBEA0-BDF5-11E4-8DFC-AA07A5B093DB",
+          |      "ad_tracking_enabled": true,
           |      "manufacturer": "Apple",
           |      "model": "iPhone7,2",
           |      "name": "maguro",
@@ -62,7 +63,6 @@ class SegmentIOConnectorSpec extends Specification with ConnectorTestUtil {
           |      "name": "analytics-ios",
           |      "version": "1.8.0"
           |    },
-          |    "locale": "nl-NL",
           |    "network": {
           |      "bluetooth": false,
           |      "carrier": "T-Mobile NL",
@@ -90,7 +90,7 @@ class SegmentIOConnectorSpec extends Specification with ConnectorTestUtil {
           |      "density": 2
           |    },
           |    "timezone": "Europe/Amsterdam",
-          |    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5)"
+          |    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5)"
           |  }
         """.stripMargin
 
@@ -98,8 +98,8 @@ class SegmentIOConnectorSpec extends Specification with ConnectorTestUtil {
         s"""
            |{ $commonFields
             |  "type": "group",
-            |  "groupId": "groupId",
-            |  "userId": "userIdValue",
+            |  "group_id": "groupId",
+            |  "user_id": "userIdValue",
             |  "timestamp" : "2012-12-02T00:30:08.276Z",
             |  "traits": {
             |    "name": "groupName",
@@ -117,7 +117,7 @@ class SegmentIOConnectorSpec extends Specification with ConnectorTestUtil {
           |  "entityId": "userIdValue",
           |  "properties": {
           |    $context,
-          |    "groupId": "groupId",
+          |    "group_id": "groupId",
           |    "traits": {
           |      "name": "groupName",
           |      "employees": 329
@@ -135,8 +135,8 @@ class SegmentIOConnectorSpec extends Specification with ConnectorTestUtil {
         s"""
           |{ $commonFields
           |  "type": "group",
-          |  "groupId": "groupId",
-          |  "userId": "userIdValue",
+          |  "group_id": "groupId",
+          |  "user_id": "userIdValue",
           |  "timestamp" : "2012-12-02T00:30:08.276Z",
           |  "traits": {
           |    "name": "groupName",
@@ -152,7 +152,7 @@ class SegmentIOConnectorSpec extends Specification with ConnectorTestUtil {
           |  "entityType": "user",
           |  "entityId": "userIdValue",
           |  "properties": {
-          |    "groupId": "groupId",
+          |    "group_id": "groupId",
           |    "traits": {
           |      "name": "groupName",
           |      "employees": 329
@@ -171,7 +171,7 @@ class SegmentIOConnectorSpec extends Specification with ConnectorTestUtil {
           |{ $commonFields
           |  "type": "screen",
           |  "name": "screenName",
-          |  "userId": "userIdValue",
+          |  "user_id": "userIdValue",
           |  "timestamp" : "2012-12-02T00:30:08.276Z",
           |  "properties": {
           |    "variation": "screenVariation"
@@ -204,7 +204,7 @@ class SegmentIOConnectorSpec extends Specification with ConnectorTestUtil {
           |{ $commonFields
           |  "type": "page",
           |  "name": "pageName",
-          |  "userId": "userIdValue",
+          |  "user_id": "userIdValue",
           |  "timestamp" : "2012-12-02T00:30:08.276Z",
           |  "properties": {
           |    "title": "pageTitle",
@@ -238,8 +238,8 @@ class SegmentIOConnectorSpec extends Specification with ConnectorTestUtil {
         s"""
           |{ $commonFields
           |  "type": "alias",
-          |  "previousId": "previousIdValue",
-          |  "userId": "userIdValue",
+          |  "previous_id": "previousIdValue",
+          |  "user_id": "userIdValue",
           |  "timestamp" : "2012-12-02T00:30:08.276Z"
           |}
         """.stripMargin
@@ -251,7 +251,7 @@ class SegmentIOConnectorSpec extends Specification with ConnectorTestUtil {
           |  "entityType": "user",
           |  "entityId": "userIdValue",
           |  "properties": {
-          |    "previousId" : "previousIdValue"
+          |    "previous_id" : "previousIdValue"
           |  },
           |  "eventTime" : "2012-12-02T00:30:08.276Z"
           |}
@@ -264,7 +264,7 @@ class SegmentIOConnectorSpec extends Specification with ConnectorTestUtil {
       val track =
        s"""
           |{ $commonFields
-          |  "userId": "some_user_id",
+          |  "user_id": "some_user_id",
           |  "type": "track",
           |  "event": "Registered",
           |  "timestamp" : "2012-12-02T00:30:08.276Z",
@@ -299,11 +299,11 @@ class SegmentIOConnectorSpec extends Specification with ConnectorTestUtil {
       val identify = s"""
         { $commonFields
           "type"      : "identify",
-          "userId"    : "019mr8mf4r",
+          "user_id"    : "019mr8mf4r",
           "traits"    : {
               "email"            : "achilles@segment.com",
               "name"             : "Achilles",
-              "subscriptionPlan" : "Premium",
+              "subscription_plan" : "Premium",
               "friendCount"      : 29
           },
           "timestamp" : "2012-12-02T00:30:08.276Z"
@@ -319,7 +319,7 @@ class SegmentIOConnectorSpec extends Specification with ConnectorTestUtil {
             "traits" : {
               "email"            : "achilles@segment.com",
               "name"             : "Achilles",
-              "subscriptionPlan" : "Premium",
+              "subscription_plan" : "Premium",
               "friendCount"      : 29
             }
           },

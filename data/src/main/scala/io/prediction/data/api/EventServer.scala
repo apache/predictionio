@@ -15,6 +15,7 @@
 
 package io.prediction.data.api
 
+import java.util.Base64
 import java.util.concurrent.TimeUnit
 
 import akka.actor.Actor
@@ -71,23 +72,26 @@ class EventServiceActor(
   val rejectionHandler = Common.rejectionHandler
 
   val jsonPath = """(.+)\.json$""".r
-  val formPath = """(.+)$""".r
+  val formPath = """(.+)\.form$""".r
 
   val pluginContext = EventServerPluginContext(log)
 
   case class AuthData(appId: Int, channelId: Option[Int])
 
-  /* with accessKey in query, return appId if succeed */
+  /* with accessKey in query/header, return appId if succeed */
   def withAccessKey: RequestContext => Future[Authentication[AuthData]] = {
     ctx: RequestContext =>
       val accessKeyParamOpt = ctx.request.uri.query.get("accessKey")
       val channelParamOpt = ctx.request.uri.query.get("channel")
       Future {
+        // with accessKey in query, return appId if succeed
         accessKeyParamOpt.map { accessKeyParam =>
           val accessKeyOpt = accessKeysClient.get(accessKeyParam)
           accessKeyOpt.map { k =>
             channelParamOpt.map { ch =>
-              val channelMap = channelsClient.getByAppid(k.appid).map(c => (c.name, c.id)).toMap
+              val channelMap =
+                channelsClient.getByAppid(k.appid)
+                .map(c => (c.name, c.id)).toMap
               if (channelMap.contains(ch)) {
                 Right(AuthData(k.appid, Some(channelMap(ch))))
               } else {
@@ -96,15 +100,31 @@ class EventServiceActor(
             }.getOrElse{
               Right(AuthData(k.appid, None))
             }
-          }.getOrElse{
-            Left(AuthenticationFailedRejection(
-              AuthenticationFailedRejection.CredentialsRejected, List()))
-          }
-        }.getOrElse { Left(AuthenticationFailedRejection(
-          AuthenticationFailedRejection.CredentialsMissing, List()))
+          }.getOrElse(FailedAuth)
+        }.getOrElse {
+          // with accessKey in header, return appId if succeed
+          ctx.request.headers.find(_.name == "Authorization").map { authHeader ⇒
+            authHeader.value.split("Basic ") match {
+              case Array(_, value) ⇒
+                val appAccessKey =
+                  new String(Base64.getDecoder.decode(value)).trim.split(":")(0)
+                accessKeysClient.get(appAccessKey) match {
+                  case Some(k) ⇒ Right(AuthData(k.appid, None))
+                  case None ⇒ FailedAuth
+                }
+
+              case _ ⇒ FailedAuth
+            }
+          }.getOrElse(FailedAuth)
         }
       }
   }
+
+  private val FailedAuth = Left(
+    AuthenticationFailedRejection(
+      AuthenticationFailedRejection.CredentialsRejected, List()
+    )
+  )
 
   val statsActorRef = context.actorSelection("/user/StatsActor")
   val pluginsActorRef = context.actorSelection("/user/PluginsActor")

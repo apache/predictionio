@@ -16,8 +16,6 @@
 package io.prediction.data.api
 
 import io.prediction.data.storage.Storage
-import io.prediction.data.webhooks.JsonConnector
-import io.prediction.data.webhooks.FormConnector
 
 import akka.testkit.TestProbe
 import akka.actor.ActorSystem
