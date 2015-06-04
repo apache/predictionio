@@ -78,6 +78,9 @@ root:
         body: 'Learning DASE'
         url: '/customize/'
       -
+        body: 'Implement DASE'
+        url: '/customize/dase/'
+      -
         body: 'Troubleshooting Engine Development'
         url: '/customize/troubleshooting/'
       -

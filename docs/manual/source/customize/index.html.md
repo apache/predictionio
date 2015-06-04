@@ -72,6 +72,9 @@ The following graph shows the workflow of DASE components when a REST query is r
 
 ![Engine Overview](/images/engine-query.png)
 
+Please see [Implement DASE](/customize/dase) for DASE implementation details.
+
+Please refer to following templates and their how-to guides for concrete examples.
 
 ## Examples of DASE
 
