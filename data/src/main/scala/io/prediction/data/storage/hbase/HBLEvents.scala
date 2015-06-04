@@ -157,6 +157,9 @@ class HBLEvents(val client: HBClient, config: StorageClientConfig, val namespace
     Future[Iterator[Event]] = {
       Future {
 
+        require(!((reversed == Some(true)) && (entityType.isEmpty || entityId.isEmpty)),
+          "the parameter reversed can only be used with both entityType and entityId specified.")
+
         val table = getTable(appId, channelId)
 
         val scan = HBEventsUtil.createScan(
