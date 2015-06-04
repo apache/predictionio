@@ -29,7 +29,7 @@ Before getting started, please make sure that you have the latest version of Pre
 You should also download the engine template named Text Classification Engine that accompanies this tutorial by cloning the template repository:
 
 ```
-git clone https://github.com/PredictionIO/template-scala-parallel-textclassification.git
+pio template get PredictionIO/template-scala-parallel-textclassification < Your new engine directory >
 ```
 
 
