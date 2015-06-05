@@ -2,13 +2,24 @@
 title: PredictionIO - A Quick Intro
 ---
 
+## Overview
+
+PredictionIO consist of the following components:
+
+* **PredictionIO platform** - our open source machine learning stack for building, evaluating and deploying engines with machine learning algorithms.
+* **Event Server** - our open source machine learning analytics layer for unifying events from multiple platforms
+* **Template Gallery** - the place for you to download engine templates for different type of machine learning applications
+
+![PredictionIO Overview](/images/overview-multiengines.png)
+
+## Event Server
+
 In a common scenario, PredictionIO's **Event Server** continuously collects data from your application.
 A PredictionIO **engine** then builds predictive model(s) with one or more algorithms using the data.
 After it is deployed as a web service, it listens to queries from your application and respond with predicted results in real-time.
 
 ![PredictionIO Single Engine Overview](/images/overview-singleengine.png)
 
-## Event Server
 
 [Event Server](/datacollection/) collects data from your application, in real-time or in batch. It can also unify data that are related to your application from multiple platforms.
 After data is collected, it mainly serves two purposes:
