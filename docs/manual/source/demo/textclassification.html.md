@@ -24,7 +24,7 @@ The purpose of this tutorial is to illustrate how you can go about doing this us
 
 ## Prerequisites
 
-Before getting started, please make sure that you have the latest version of PredictionIO [installed](https://docs.prediction.io/install/). You will also need PredictionIO's [Python SDK](https://github.com/PredictionIO/PredictionIO-Python-SDK) for importing a sample data set into the PredictionIO Event Server. Any Python version greater than 2.7 will work for the purposes of executing the `data/import_eventserver.py` script provided with this engine template. Moreover, we emphasize here that this is an engine template written in **Scala** and can be more generally thought of as an SBT project containing all the necessary components.
+Before getting started, please make sure that you have the latest version of PredictionIO [installed](https://docs.prediction.io/install/). We emphasize here that this is an engine template written in **Scala** and can be more generally thought of as an SBT project containing all the necessary components.
 
 You should also download the engine template named Text Classification Engine that accompanies this tutorial by cloning the template repository:
 
@@ -57,18 +57,20 @@ This is used in the evaluation stage when estimating the performance of your pre
 This is a quick start guide in case you want to start using the engine right away. For more detailed information, read the subsequent sections.
 
 
-**1.** Create a new application. After the application is created, you will be given an access key for the application.
+**1.** Create a new application. After the application is created, you will be given an access key and application ID for the application.
 
 ```
 $ pio app new MyTextApp
 ```
 
-**2.** Import the tutorial data, and be sure to replace `access` with the access key obtained from the latter step. If you have forgotten your access key, use the command `pio app list` to retrieve it. 
+**2.** Import the tutorial data. There are three different data sets available, each giving a different use case for this engine. Please refer to the **Data Source: Reading Event Data** section to see how to appropriate modify the `DataSource` class for use with each respective data set. The default data set is an e-mail spam data set.
+
+These data sets have already been processed and are ready for [batch import](/datacollection/batchimport/). Replace `***` with your actual application ID.
 
 ```
-$ unzip -q data/20_newsgroups.zip -d data
+$ pio import --appid *** --input data/stopwords.json
 
-$ python import_eventserver.py --access_key access
+$ pio import --appid *** --input data/emails.json
 ```
 
 **3.** Set the engine parameters in the file `engine.json`. The default settings are shown below.
@@ -81,14 +83,14 @@ $ python import_eventserver.py --access_key access
   "datasource": {
     "params": {
       "appName": "MyTextApp",
-      "evalK": 5
+      "evalK": 3
     }
   },
   "preparator": {
     "params": {
       "nMin": 1,
       "nMax": 2,
-      "inverseIdfMin" : 0.15,
+      "inverseIdfMin" : 0,
       "inverseIdfMax" : 0.85
     }
   },
@@ -96,7 +98,7 @@ $ python import_eventserver.py --access_key access
     {
       "name": "nb",
       "params": {
-        "lambda": 0.5
+        "lambda": 0.25
       }
     }
   ]
@@ -126,7 +128,7 @@ $ pio deploy
 Depending on your needs, in steps (5.x.) above, you can configure your Spark settings by typing a command of the form:
 
 ```
-$ pio command -- --master url --driver-memory {0}G --executor-memory {1}G --conf spark.akka.framesize={2} --total_executor_cores {3}
+$ pio command command_parameters -- --master url --driver-memory {0}G --executor-memory {1}G --conf spark.akka.framesize={2} --total_executor_cores {3}
 ```
 
 Only the latter commands are listed as these are some of the more commonly modified values. See the [Spark documentation](https://spark.apache.org/docs/latest/spark-standalone.html) and the [PredictionIO FAQ's](https://docs.prediction.io/resources/faq/) for more information.
@@ -136,29 +138,16 @@ Only the latter commands are listed as these are some of the more commonly modif
 
 ## Importing Data
 
-For the remainder of the tutorial, your present working directory is assumed to be the engine template root directory. For illustration purposes, the script `import_eventserver.py` (located in the data directory) is included for importing two different sources of sample data into PredictionIO's Event Server: a [corpus of text documents](http://qwone.com/~jason/20Newsgroups/) that are categorized into a set of topics, as well as a set of stop words. Stop words are words that you do not want to include in the corpus when modeling a set of text data. 
-
-Now, refer to the quick start guide for the commands used to import your data. Once the data has been successfully imported you should see the following output:
-
-```
-Importing data.....
-Imported 19924 events.
-Importing stop words.....
-Imported 348 stop words.
-```
-
-This data import process greatly exemplifies the advantages of using PredictionIO's Event Server for data storage. It allows you to import data from different sources and store it using the same server. The [event-style format](https://docs.prediction.io/datacollection/eventapi/) allows for a standardized method of storing data which facilitates the process of reading in your data and incorporating different data sources. For example, the provided data script imports both the text observations and stop words which are going to inevitably differ in nature. In short, PredictionIO's Event Server is yet another abstraction that exacerbates your development productivity, as well as the ability to focus on the modeling stages involved in building your predictive engine.
-
-
+Follow the Quick Start instructions for importing data. Make sure that the Data Source is modified accordingly to match the `event`, `entityType`, and `properties` fields set for the specific dataset. The following section explains this in more detail.
 
 
 ## Data Source: Reading Event Data
 
-Now that the data has been imported into PredictionIO's Event Server, it needs to be read from storage to be used by the engine. This is precisely what the DataSource engine component is for, which is implemented in the template script `DataSource.scala`. The class Observation serves as a wrapper for storing the information about a news document needed to train a model. The attribute label refers to the label of the category a document belongs to, and text, stores the actual document content as a string. The class TrainingData is used to store an RDD of Observation objects along with the set of stop words. 
+Now that the data has been imported into PredictionIO's Event Server, it needs to be read from storage to be used by the engine. This is precisely what the DataSource engine component is for, which is implemented in the template script `DataSource.scala`. The class `Observation` serves as a wrapper for storing the information about a news document needed to train a model. The attribute label refers to the label of the category a document belongs to, and text, stores the actual document content as a string. The class TrainingData is used to store an RDD of Observation objects along with the set of stop words. 
 
-The class DataSourceParams is used to specify the parameters needed to read and prepare the data for processing. This class is initialized with two parameters appName and evalK. The first parameter specifies your application name (i.e. MyTextApp), which is needed so that the DataSource component knows where to pull the event data from. The second parameter is used for model evaluation and specifies the number of folds to use in [cross-validation](http://en.wikipedia.org/wiki/Cross-validation_%28statistics%29) when estimating a model performance metric.
+The class `DataSourceParams` is used to specify the parameters needed to read and prepare the data for processing. This class is initialized with two parameters `appName` and `evalK`. The first parameter specifies your application name (i.e. MyTextApp), which is needed so that the DataSource component knows where to pull the event data from. The second parameter is used for model evaluation and specifies the number of folds to use in [cross-validation](http://en.wikipedia.org/wiki/Cross-validation_%28statistics%29) when estimating a model performance metric.
 
-The final and most important ingredient is the DataSource class. This is initialized with its corresponding parameter class, and extends PDataSource. This **must** implement the method readTraining which returns an instance of type TrainingData. This method completely relies on the defined private methods readEventData and readStopWords. Both of these functions read data observations as Event instances, create an RDD containing these events and finally transforms the RDD of events into an object of the appropriate type as seen below:
+The final and most important ingredient is the DataSource class. This is initialized with its corresponding parameter class, and extends `PDataSource`. This **must** implement the method `readTraining` which returns an instance of type TrainingData. This method completely relies on the defined private methods readEventData and readStopWords. Both of these functions read data observations as Event instances, create an RDD containing these events and finally transforms the RDD of events into an object of the appropriate type as seen below:
 
 ```scala
 ...
@@ -166,15 +155,19 @@ private def readEventData(sc: SparkContext) : RDD[Observation] = {
     //Get RDD of Events.
     PEventStore.find(
       appName = dsp.appName,
-      entityType = Some("source"), // specify data entity type
-      eventNames = Some(List("documents")) // specify data event name
+      entityType = Some("content"), // specify data entity type
+      eventNames = Some(List("e-mail")) // specify data event name
 
       // Convert collected RDD of events to and RDD of Observation
       // objects.
-    )(sc).map(e => Observation(
-      e.properties.get[Double]("label"),
-      e.properties.get[String]("text")
-    )).cache
+    )(sc).map(e => {
+      val label : String = e.properties.get[String]("label")
+      Observation(
+        if (label == "spam") 1.0 else 0.0,
+        e.properties.get[String]("text"),
+        label
+      )
+    }).cache
   }
 
   // Helper function used to store stop words from
@@ -194,9 +187,113 @@ private def readEventData(sc: SparkContext) : RDD[Observation] = {
 ...
 ```
 
-Note that readEventData and readStopWords use different entity types and event names, but use the same application name. This is because the sample import script imports two different data types, documents and stop words. These field distinctions are required for distinguishing between the two. The method readEval also relies on readEventData and readStopWords, and its function is to prepare the different cross-validation folds needed for evaluating your model and tuning hyper parameters. 
+Note that `readEventData` and `readStopWords` use different entity types and event names, but use the same application name. This is because the sample import script imports two different data types, documents and stop words. These field distinctions are required for distinguishing between the two. The method `readEval` is used to prepare the different cross-validation folds needed for evaluating your model and tuning hyper parameters. 
 
+Now, the default dataset used for training is contained in the file `data/emails.json` and contains a set of e-mail spam data. If we want to switch over to one of the other data sets we must make sure that the `eventNames` and `entityType` fields are changed accordingly. The following show one observation from each of the provided data files:
 
+**1.** `emails.json`
+
+```
+{"eventTime": "2015-06-08T16:45:00.590+0000", "entityId": 1, "properties": {"text": "Subject: dobmeos with hgh my energy level has gone up ! stukm\nintroducing\ndoctor - formulated\nhgh\nhuman growth hormone - also called hgh\nis referred to in medical science as the master hormone . it is very plentiful\nwhen we are young , but near the age of twenty - one our bodies begin to produce\nless of it . by the time we are forty nearly everyone is deficient in hgh ,\nand at eighty our production has normally diminished at least 90 - 95 % .\nadvantages of hgh :\n- increased muscle strength\n- loss in body fat\n- increased bone density\n- lower blood pressure\n- quickens wound healing\n- reduces cellulite\n- improved vision\n- wrinkle disappearance\n- increased skin thickness texture\n- increased energy levels\n- improved sleep and emotional stability\n- improved memory and mental alertness\n- increased sexual potency\n- resistance to common illness\n- strengthened heart muscle\n- controlled cholesterol\n- controlled mood swings\n- new hair growth and color restore\nread\nmore at this website\nunsubscribe\n", "label": "spam"}, "event": "e-mail", "entityType": "content"}
+
+```
+
+**2.** `20newsgroups.json`
+
+```
+{"entityType": "source", "eventTime": "2015-06-08T18:01:55.003+0000", "event": "documents", "entityId": 1, "properties": {"category": "sci.crypt", "text": "From: rj@ri.cadre.com (Rob deFriesse)\nSubject: Can DES code be shipped to Canada?\nArticle-I.D.: fripp.1993Apr22.125402.27561\nReply-To: rj@ri.cadre.com\nOrganization: Cadre Technologies Inc.\nLines: 13\nNntp-Posting-Host: 192.9.200.19\n\nSomeone in Canada asked me to send him some public domain DES file\nencryption code I have.  Is it legal for me to send it?\n\nThanx.\n--\nEschew Obfuscation\n\nRob deFriesse                    Mail:  rj@ri.cadre.com\nCadre Technologies Inc.          Phone:  (401) 351-5950\n222 Richmond St.                 Fax:    (401) 351-7380\nProvidence, RI  02903\n\nI don't speak for my employer.\n", "label": 11.0}}
+```
+
+**3.** `semanticanalysis.json`
+
+```
+{"eventTime": "2015-06-08T16:58:14.278+0000", "entityId": 23714, "entityType": "source", "properties": {"phrase": "Tosca 's intoxicating ardor", "sentiment": 3}, "event": "phrases"}
+```
+
+Now, note that the `entityType`, `event`, and `properties`  fields for the `20newsgroups.json` dataset differ from the default `emails.json` set. If you want to use the newsgroups data set the engine's Data Source component must be modified accordingly. To do this, you need only modify the method `readEventData` as follows:
+
+**1.** `20newsgroups.json`
+
+```scala
+private def readEventData(sc: SparkContext) : RDD[Observation] = {
+    //Get RDD of Events.
+    PEventStore.find(
+      appName = dsp.appName,
+      entityType = Some("source"), // specify data entity type
+      eventNames = Some(List("documents")) // specify data event name
+
+      // Convert collected RDD of events to and RDD of Observation
+      // objects.
+    )(sc).map(e => {
+
+      Observation(
+        e.properties.get[Double]("label"),
+        e.properties.get[String]("text"),
+        e.properties.get[String]("category")
+      )
+    }).cache
+  }
+```
+
+**2.** `semanticanalysis.json`
+
+```scala
+private def readEventData(sc: SparkContext) : RDD[Observation] = {
+    //Get RDD of Events.
+    PEventStore.find(
+      appName = dsp.appName,
+      entityType = Some("source"), // specify data entity type
+      eventNames = Some(List("phrases")) // specify data event name
+
+      // Convert collected RDD of events to and RDD of Observation
+      // objects.
+    )(sc).map(e => {
+      val label = e.properties.get[Double]("label")
+      
+      Observation(
+        label,
+        e.properties.get[String]("text"),
+        label.toString
+      )
+    }).cache
+  }
+```
+
+Note that `event` field in the json file refers to the `eventNames` field in the `readEventData` method. When using this engine with a custom data set, you need to make sure that the respective json fields match with the corresponding fields in the DataSource component. We have included a data sanity check with this engine component that lets you know if your data is actually being read in. If you have 0 observations being read, you should see the following output when your training process performs the Training Data sanity check:
+
+`Data set is empty, make sure event fields match imported data.`
+
+This data sanity check is a PredictionIO feature available for your `TrainingData` and `PreparedData` classes. The following code block demonstrates how the sanity check is implemented:
+
+```scala
+class TrainingData(
+  val data : RDD[Observation],
+  val stopWords : Set[String]
+) extends Serializable with SanityCheck {
+
+  // Sanity check to make sure your data is being fed in correctly.
+
+  def sanityCheck {
+    try {
+      val obs : Array[Double] = data.takeSample(false, 5).map(_.label)
+
+      println()
+      (0 until 5).foreach(
+        k => println("Observation " + (k + 1) +" label: " + obs(k))
+      )
+      println()
+    } catch {
+      case (e : ArrayIndexOutOfBoundsException) => {
+        println()
+        println("Data set is empty, make sure event fields match imported data.")
+        println()
+      }
+    }
+
+  }
+
+}
+```
 
 ## Preparator : Data Processing With DASE
 
@@ -278,40 +375,62 @@ The n-gram extraction and counting procedure is carried out by the private metho
 ...
   // 2. Hasher: Array[tokens] => Map(n-gram -> n-gram document tf).
 
-  private def hash (tokenList : Array[String]): Map[String, Double] = {
+  private def hash (tokenList : Array[String]): HashMap[String, Double] = {
     // Initialize an NGramModel from OpenNLP tools library,
     // and add the list of allowable tokens to the n-gram model.
     val model : NGramModel = new NGramModel()
     model.add(new StringList(tokenList: _*), nMin, nMax)
 
-    val map : Map[String, Double] = model.iterator
-      .map(
+    val map : HashMap[String, Double] = HashMap(
+      model.iterator.map(
         x => (x.toString, model.getCount(x).toDouble)
-      ).toMap
+      ).toSeq : _*
+    )
+
+    val mapSum = map.values.sum
 
     // Divide by the total number of n-grams in the document
     // to obtain n-gram frequency.
-    map.mapValues(e => e / map.values.sum)
+    map.map(e => (e._1, e._2 / mapSum))
+
   }
 ...
 ```
 
 The next step is, once all of the observations have been hashed, to collect all n-grams and compute their corresponding [t.f.-i.d.f. value](http://en.wikipedia.org/wiki/Tf%E2%80%93idf). The t.f.-i.d.f. transformation is defined for n-grams, and helps to give less weight to those n-grams that appear with high frequency across all documents, and vice versa. This helps to leverage the predictive power of those words that appear rarely, but can make a big difference in the categorization of a given text document. The private method createUniverse outputs an RDD of pairs, where an n-gram \\(g\\) is matched with its i.d.f. value. This RDD is collected as a HashMap (this will be used in future RDD computations so that this object should be serializable).
 
-Now, for a corpus (or set) of documents \\(D\\), the i.d.f. value of an n-gram \\(g\\) is defined as
+Now, for a corpus (or set) of documents \\(D\\), the d.f. value of an n-gram \\(g\\) is defined as
 
 $$
-\text{idf}(g) = \log\left(\frac{|D|}{|\\{d \in D : g \\ \text{is extracted from} \\ d\\}|}\right).
+\text{df}(g) = \frac{|\\{d \in D : g \\ \text{is extracted from} \\ d\\}|}{|D|}.
 $$
 
-Here \\(|S|\\) denotes the number of elements contained in a set \\(S\\). Plainly speaking, this term approaches 0 as the number of documents in the corpus from which \\(g\\) is extracted increases, and grows as this number decreases. Hence the inverse i.d.f. of an n-gram \\(g\\) \\(\left(\frac{1}{e\^{\text{idf}(g)}}\right)\\) will lie between 0 and 1. Those n-grams whose inverse i.d.f. value is close to 0 rarely appear in any corpus documents, and those with value closely to 1 appear in a large proportion of the documents. The inverse i.d.f. window is defined as an interval \\([a, b]\\), \\(0 \leq a < b \leq 1\\), which restricts the n-grams we choose as features to those with inverse i.d.f. values lying in this interval. That is, all n-grams whose inverse i.d.f. less than a or greater than b, our inverse i.d.f. window components, are excluded. The PreparedData class parameters inverseIdfMin and inverseIdfMax values correspond to \\(a\\) and \\(b\\), respectively. 
+Here \\(|S|\\) denotes the number of elements contained in a set \\(S\\). Plainly speaking, this term approaches 1 as the number of documents in the corpus from which \\(g\\) is extracted increases, and approaches 0 as this number decreases. Hence the d.f. value of an n-gram \\(g\\) will lie between 0 and 1. Those n-grams whose d.f. value is close to 0 rarely appear in any corpus documents, and those with value closely to 1 appear in a large proportion of the documents. The d.f. window is defined as an interval \\([a, b]\\), \\(0 \leq a < b \leq 1\\), which restricts the n-grams we choose as features to those with d.f. values lying in this interval. That is, all n-grams whose d.f. values are less than a or greater than b, our d.f. value window components, are excluded. The PreparedData class parameters dfMin and dfMax values correspond to \\(a\\) and \\(b\\), respectively. 
 
-The latter discussion implies that modifying the inverse i.d.f. window components will reduce the number of features used for model training, and therefore will reduce computation time. However, reducing the number of features may affect your fit. This is another modeling choice that needs to be assessed by the modeler.
+The latter discussion implies that modifying the d.f. value window components will reduce the number of features used for model training, and therefore will reduce computation time. However, reducing the number of features may affect your fit. This is another modeling choice that needs to be assessed by the modeler.
 
 Once these n-grams are filtered out of the i.d.f. HashMap created, a second hash map is created with n-grams associated to indices. This gives a global index to each n-gram and ensures that each document observation is vectorized in the same manner. 
 
 ```scala
 ...
+// 3. Bigram universe extractor: RDD[bigram hashmap] => RDD[(n-gram, n-gram idf)]
+
+  private def createUniverse(u: RDD[HashMap[String, Double]]): RDD[(String, Double)] = {
+    // Total number of documents (should be 11314).
+    val numDocs: Double = td.data.count.toDouble
+    u.flatMap(e => e.map(f => (f._1, 1.0)))
+    .reduceByKey(_ + _)
+    .filter(e => {
+      val docFreq = e._2 / numDocs
+
+      // Cut out n-grams with inverse i.d.f. greater/less than or equal to min/max
+      // cutoff.
+      docFreq >= inverseIdfMin && docFreq <= inverseIdfMax
+    })
+    .map(e => (e._1, log(numDocs / e._2)))
+  }
+
+
   // 4. Set private class variables for use in data transformations.
 
   // Create ngram to idf hashmap for every n-gram in universe:
@@ -321,13 +440,14 @@ Once these n-grams are filtered out of the i.d.f. HashMap created, a second hash
       td.data
       .map(e => hash(tokenize(e.text)))
     ).collect: _*
-  // Cut out n-grams with inverse i.d.f. greater/less than or equal to min/max
-  // cutoff.
-  ).filter(
-    e => (1 / e._2) >= inverseIdfMin && (1 / e._2) <= inverseIdfMax
   )
 
-...
+
+
+
+  // Get total number n-grams used.
+  val numTokens : Int = idf.size
+
 
   // Create n-gram to global index hashmap:
   //    Map(n-gram -> global index)
@@ -370,7 +490,7 @@ The last and final object implemented in this class simply creates a Map with ke
 
 ## Algorithm Component
 
-The algorithm component in this engine, NBAlgorithm, actually follows a very general form. Firstly, a parameter class must again be initialized to feed in the corresponding Algorithm model parameters. For example, NBAlgorithm incorporates NBAlgorithmParams which holds the appropriate additive smoothing parameter lambda for the Naive Bayes model. 
+The algorithm components in this engine, `NBAlgorithm` and `LRAlgorithm`, actually follows a very general form. Firstly, a parameter class must again be initialized to feed in the corresponding Algorithm model parameters. For example, NBAlgorithm incorporates NBAlgorithmParams which holds the appropriate additive smoothing parameter lambda for the Naive Bayes model. 
 
 
 The main class of interest in this component is the class that extends [P2LAlgorithm](https://docs.prediction.io/api/current/#io.prediction.controller.P2LAlgorithm). This class must implement a method named train which will output your predictive model (as a concrete object, this will be implemented via a Scala  class). It must also implement a predict method that transforms a query to an appropriate feature vector, and uses this to predict with the fitted model. The vectorization function is implemented by a PreparedData object, and the categorization (prediction) is handled by an instance of the NBModel implementation. Again, this demonstrates the facility with which different models can be incorporated into PredictionIO's DASE architecture.
