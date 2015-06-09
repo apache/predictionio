@@ -15,7 +15,8 @@
 
 package io.prediction.data.api
 
-import java.util.Base64
+import sun.misc.BASE64Decoder
+
 import java.util.concurrent.TimeUnit
 
 import akka.actor.Actor
@@ -76,6 +77,8 @@ class EventServiceActor(
 
   val pluginContext = EventServerPluginContext(log)
 
+  private lazy val base64Decoder = new BASE64Decoder
+
   case class AuthData(appId: Int, channelId: Option[Int])
 
   /* with accessKey in query/header, return appId if succeed */
@@ -107,7 +110,7 @@ class EventServiceActor(
             authHeader.value.split("Basic ") match {
               case Array(_, value) ⇒
                 val appAccessKey =
-                  new String(Base64.getDecoder.decode(value)).trim.split(":")(0)
+                  new String(base64Decoder.decodeBuffer(value)).trim.split(":")(0)
                 accessKeysClient.get(appAccessKey) match {
                   case Some(k) ⇒ Right(AuthData(k.appid, None))
                   case None ⇒ FailedAuth
