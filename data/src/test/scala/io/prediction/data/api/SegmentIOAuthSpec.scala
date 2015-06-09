@@ -1,6 +1,6 @@
 package io.prediction.data.api
 
-import java.util.Base64
+import sun.misc.BASE64Encoder
 
 import akka.actor.ActorRefFactory
 import io.prediction.data.storage._
@@ -39,6 +39,8 @@ class SegmentIOAuthSpec
     dbName
   )
 
+  val base64Encoder = new BASE64Encoder
+
   "Event Service" should {
     "process SegmentIO identity request properly" in {
       val jsonReq =
@@ -66,7 +68,7 @@ class SegmentIOAuthSpec
         """.stripMargin
 
       val accessKey = "abc:"
-      val accessKeyEncoded = Base64.getEncoder.encode(accessKey.getBytes)
+      val accessKeyEncoded = base64Encoder.encodeBuffer(accessKey.getBytes)
       val route = new EventServiceActor(
         eventClient,
         accessKeysClient,
@@ -74,8 +76,7 @@ class SegmentIOAuthSpec
         EventServerConfig()).route
 
       Post("/webhooks/segmentio.json", jsonReq) ~>
-        addHeader("Authorization",
-          new String(accessKeyEncoded, `ISO-8859-1`.nioCharset)) ~>
+        addHeader("Authorization", accessKeyEncoded) ~>
         addHeader("ContentType", "application/json") ~>
         route ~>
         check {
