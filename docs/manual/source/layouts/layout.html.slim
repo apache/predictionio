@@ -11,11 +11,17 @@ html
           #left-menu-wrapper.col-md-3
             = partial 'nav/main'
           .col-md-9.col-sm-12
-            .content-header
+            .content-header.hidden-md.hidden-lg
               = breadcrumbs
               #page-title
                 = page_title
+
             = partial 'table_of_content'
+
+            .content-header.hidden-sm.hidden-xs
+              = breadcrumbs
+              #page-title
+                = page_title
             .content
               = yield
       = partial 'footer'

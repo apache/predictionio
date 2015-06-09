@@ -1,8 +1,9 @@
 body { // for higher priority
   .alert-message {
-    margin: 1em 0   1em 0;
-    display: inline-block;
-    width: 100%;
+    margin: 1em 0 1em 0;
+    display: block;
+    width: auto;
+    overflow:hidden;
 
     p {
       padding: 22px;

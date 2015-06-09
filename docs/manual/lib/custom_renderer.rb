@@ -17,8 +17,14 @@ class CustomRenderer < Middleman::Renderers::MiddlemanRedcarpetHTML
 
   def header(text, level)
     id = text.downcase.tr(" ", "-")
+    id = "'" + id + "'"
     #the anchor before the headings are there to provide proper jumping points.
-    "<a id=#{id} class='header-anchors'></a><h#{level} >#{text}</h#{level}>"
+    "<h#{level} id=#{id} class='header-anchors' >#{text}</h#{level}>"
+  end
+
+  def block_code(code, language)
+    language = language ? language : 'bash'
+    super
   end
 
   def block_html(raw_html)

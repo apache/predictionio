@@ -3,10 +3,10 @@
     font-family: $standard-font-family;
     margin: 0;
     margin-top: 15px;
-    margin-bottom: 56px;
-    display: inline-block;
+    margin-bottom: 32px;
     font-size: 28px;
     font-weight: 400;
+    line-height: 1.2;
     color: $page-title-font-color;
     word-wrap: break-word;
     &.missing {

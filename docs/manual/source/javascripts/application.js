@@ -1,13 +1,14 @@
 //= require 'jquery'
 //= require 'Tabslet'
 //= require 'jcarousel'
-//= require 'highlight'
-//= require 'highlightjs-line-numbers'
+
+window.onresize = function() {
+  adjustContentImageWidth();
+}
 
 $(document).ready(function() {
 
-  hljs.initHighlightingOnLoad();
-  hljs.initLineNumbersOnLoad();
+  adjustContentImageWidth();
 
   // left menu toggler
   $('#left-menu-toggler').click(function() {
@@ -251,3 +252,18 @@ $.fn.ajaxForm = function() {
 };
 
 function formCallBack(data) {};
+
+var adjustContentImageWidth = function() {
+  // prevent image in place of table of content getting squeezed to next row 
+  var tableOfContent = document.getElementById('table-of-content-wrapper');
+  var rect = tableOfContent.getBoundingClientRect();
+
+  $('.content img').each(function() {
+    var withinTableOfContentRow = this.getBoundingClientRect().top > rect.bottom;
+    if (withinTableOfContentRow) {
+      $(this).addClass('default-width');
+    } else {
+      $(this).removeClass('default-width');
+    }
+  })
+}

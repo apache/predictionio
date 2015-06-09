@@ -41,7 +41,8 @@
         font-size: 16px;
         background: none;
         background-color: $swiftype-input-background-color;
-        padding: 5px 5px 5px 10px;
+        padding: 5px;
+        padding-left: 10px;
       }
     }
 
@@ -63,7 +64,7 @@ body {
   // Using body forces a higher specificity over the Swiftype stylesheet!
   div.swiftype div.st-result-listing div.st-search-summary {
     border-bottom: 1px solid $border-color;
-    margin: 15px 0 15px 0;
+    margin: 15px 0;
     padding-bottom: 10px;
   }
 

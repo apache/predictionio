@@ -3,31 +3,38 @@
   @include anchor-no-underline;
 
   img {
-    width: 85%;
+    width: calc(100% - 282.5px);
+    max-width: 100%;
+    box-shadow:0 3px 5px rgba(0,0,0,0.2);
     &.static {
+      width: auto;
+    }
+    &.default-width {
       width: auto;
     }
   }
 
+  h1, h2, h3, h4, h5, h6 {
+    line-height: 1.5;
+  }
+
   h1 {
     color: $heading-1-font-color;
-    margin: 24px 0 24px 0;
+    margin: 24px 0;
   }
 
   h2 {
     color: $heading-2-font-color;
     font-weight: 400;
     font-size: 20px;
-    margin: 24px 0 24px 0;
-    padding-top: 100px; 
-    margin-top: -100px;
+    margin: 24px 0;
   }
 
   h3 {
     color: $heading-3-font-color;
     font-size: 18px;
     font-weight: 700;
-    margin: 24px 0 0 0;
+    margin-top: 24px;
   }
 
   h4 {
@@ -43,7 +50,7 @@
   }
 
   p {
-    margin: 30px 0 30px 0;
+    margin: 15px 0 15px 0;
     font-size: 16px;
     color: $content-paragraph-font-color;
     line-height: 28px;
@@ -51,9 +58,12 @@
 
   a {
     color: $content-link-color;
+    word-break: break-word;
   }
 
   ul, ol {
+    margin-top: 15px;
+    margin-bottom: 15px;
     li {
       font-size: 16px;
       line-height: 28px;
@@ -71,11 +81,18 @@
     }
   }
 
-  .header-anchors {
-    //jumping destination for table of content anchors.
+  blockquote p:last-child, 
+  blockquote ul:last-child, 
+  blockquote ol:last-child { 
+    margin:0;
+    font-style: italic; 
+  }
+
+  .header-anchors:before {
+    //compensate fixed header height for in page anchor jumps.
+    content: "";
     display: block; 
-    position: relative; 
-    top: $half-header-row-height;
-    visibility: hidden;
+    height: $search-bar-row-height + $header-height;
+    margin-top: ($search-bar-row-height + $header-height) * -1;
   }
 }

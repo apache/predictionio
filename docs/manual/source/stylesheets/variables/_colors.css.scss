@@ -19,6 +19,8 @@ $header-left-pill-background-color: #249DEC;
 $header-right-pill-background-color: #72D6FF;
 $header-left-pill-hover-backgounr-color: #0087DF;
 $header-right-pill-hover-backgounr-color: #57CBFA;
+$header-logo-wrapper-border-bottom-color: #BDC6D3;
+$header-nav-menu-option-border-bottom-color: #ccc;
 
 // Alerts
 $info-color: #0f99dd;
@@ -45,6 +47,7 @@ $nav-page-icon-color: #828385;
 
 // Main navigation menu
 $nav-main-border-color: #e5e5e5;
+$nav-main-mobile-active-item-border-color: #e5e5e5;
 $nav-main-collapsible-anchor-color: #333333;
 $nav-main-active-menu-background-color: #f0f0f0;
 $nav-main-active-menu-bottom-border-color: #E5E5E5;
@@ -85,6 +88,7 @@ $code-inline-color: #222;
 $table-of-contents-link-color: #27ABEB;
 $table-of-contents-font-color: #828385;
 $table-of-contents-background-color: #f0f0f0;
+$table-of-contents-edit-page-link-color: #AAAAAA;
 
 // Footer
 $footer-seperator-color: #eeeeee;
@@ -110,7 +114,7 @@ $copyright-link-color: #828385;
 $page-title-font-color: #000000;
 
 // Headings
-$heading-1-font-color: #43ab43;
+$heading-1-font-color: #000000;
 $heading-2-font-color: #000000;
 $heading-3-font-color: #373535;
 $heading-4-font-color: #373535;
@@ -129,6 +133,8 @@ $swiftype-background-color: #fcfcfc;
 $swiftype-input-background-color: #ffffff;
 $swiftype-font-active-color: #ffffff;
 $swiftype-autocomplete-active-color: #7f93a8;
+
+$mobile-page-header-label-color: #BDC6D3;
 
 // Edit Page
 $edit-page-background-color: #0f99dd;
