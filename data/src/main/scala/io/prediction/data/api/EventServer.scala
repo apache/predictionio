@@ -54,9 +54,11 @@ class EventServiceActor(
   override val config: EventServerConfig
 ) extends EventService(
   eventClient, accessKeysClient, channelsClient, config
-) with Actor with ActorLogging {
-  def actorRefFactory: ActorRefFactory = context.system
+) with Actor with ActorLogging { self ⇒
+  override def actorRefFactory: ActorRefFactory = context.system
   def receive: Actor.Receive = runRoute(route)
+  override val logger: LoggingAdapter = log
+  override def executionContext: ExecutionContext = context.dispatcher
 }
 
 abstract class  EventService(
@@ -73,11 +75,11 @@ abstract class  EventService(
       new DateTimeJson4sSupport.Serializer
   }
 
-  def log: LoggingAdapter
+  val logger: LoggingAdapter
 
   // we use the enclosing ActorContext's or ActorSystem's dispatcher for our
   // Futures
-  implicit def executionContext: ExecutionContext = actorRefFactory.dispatcher
+  implicit def executionContext: ExecutionContext
   implicit val timeout = Timeout(5, TimeUnit.SECONDS)
 
   val rejectionHandler = Common.rejectionHandler
@@ -85,7 +87,7 @@ abstract class  EventService(
   val jsonPath = """(.+)\.json$""".r
   val formPath = """(.+)\.form$""".r
 
-  val pluginContext = EventServerPluginContext(log)
+  val pluginContext = EventServerPluginContext(logger)
 
   private lazy val base64Decoder = new BASE64Decoder
 
@@ -138,8 +140,8 @@ abstract class  EventService(
     )
   )
 
-  val statsActorRef = actorRefFactory.actorSelection("/user/StatsActor")
-  val pluginsActorRef = actorRefFactory.actorSelection("/user/PluginsActor")
+  lazy val statsActorRef = actorRefFactory.actorSelection("/user/StatsActor")
+  lazy val pluginsActorRef = actorRefFactory.actorSelection("/user/PluginsActor")
 
   val route: Route =
     pathSingleSlash {
@@ -216,7 +218,7 @@ abstract class  EventService(
               val channelId = authData.channelId
               respondWithMediaType(MediaTypes.`application/json`) {
                 complete {
-                  log.debug(s"GET event ${eventId}.")
+                  logger.debug(s"GET event ${eventId}.")
                   val data = eventClient.futureGet(eventId, appId, channelId).map { eventOpt =>
                     eventOpt.map( event =>
                       (StatusCodes.OK, event)
@@ -239,7 +241,7 @@ abstract class  EventService(
               val channelId = authData.channelId
               respondWithMediaType(MediaTypes.`application/json`) {
                 complete {
-                  log.debug(s"DELETE event ${eventId}.")
+                  logger.debug(s"DELETE event ${eventId}.")
                   val data = eventClient.futureDelete(eventId, appId, channelId).map { found =>
                     if (found) {
                       (StatusCodes.OK, Map("message" -> "Found"))
@@ -267,7 +269,7 @@ abstract class  EventService(
               val channelId = authData.channelId
               entity(as[Event]) { event =>
                 complete {
-                  log.debug(s"POST events")
+                  logger.debug(s"POST events")
                   pluginContext.inputBlockers.values.foreach(
                     _.process(EventInfo(
                       appId = appId,
@@ -313,7 +315,7 @@ abstract class  EventService(
                   limit, reversed) =>
                 respondWithMediaType(MediaTypes.`application/json`) {
                   complete {
-                    log.debug(
+                    logger.debug(
                       s"GET events of appId=${appId} " +
                       s"st=${startTimeStr} ut=${untilTimeStr} " +
                       s"et=${entityType} eid=${entityId} " +
@@ -412,7 +414,7 @@ abstract class  EventService(
                       web = web,
                       data = jObj,
                       eventClient = eventClient,
-                      log = log,
+                      log = logger,
                       stats = config.stats,
                       statsActorRef = statsActorRef)
                   }
@@ -434,7 +436,7 @@ abstract class  EventService(
                     appId = appId,
                     channelId = channelId,
                     web = web,
-                    log = log)
+                    log = logger)
                 }
               }
             }
@@ -451,7 +453,7 @@ abstract class  EventService(
               val channelId = authData.channelId
               respondWithMediaType(MediaTypes.`application/json`) {
                 entity(as[FormData]){ formData =>
-                  // log.debug(formData.toString)
+                  // logger.debug(formData.toString)
                   complete {
                     // respond with JSON
                     import Json4sProtocol._
@@ -462,7 +464,7 @@ abstract class  EventService(
                       web = web,
                       data = formData,
                       eventClient = eventClient,
-                      log = log,
+                      log = logger,
                       stats = config.stats,
                       statsActorRef = statsActorRef)
                   }
@@ -487,7 +489,7 @@ abstract class  EventService(
                     appId = appId,
                     channelId = channelId,
                     web = web,
-                    log = log)
+                    log = logger)
                 }
               }
             }
@@ -543,12 +545,15 @@ object EventServer {
 
     val serverActor = system.actorOf(
       Props(
-        classOf[EventServerActor],
-        eventClient,
-        accessKeysClient,
-        channelsClient,
-        config),
-      "EventServerActor")
+        new EventServerActor(
+          eventClient,
+          accessKeysClient,
+          channelsClient,
+          config
+        )
+      ),
+      "EventServerActor"
+    )
     if (config.stats) system.actorOf(Props[StatsActor], "StatsActor")
     system.actorOf(Props[PluginsActor], "PluginsActor")
     serverActor ! StartServer(config.ip, config.port)

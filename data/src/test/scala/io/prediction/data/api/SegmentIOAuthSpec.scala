@@ -8,6 +8,8 @@ import spray.routing.HttpService
 import spray.testkit.Specs2RouteTest
 import sun.misc.BASE64Encoder
 
+import scala.concurrent.ExecutionContext
+
 class SegmentIOAuthSpec
   extends Specification
   with Specs2RouteTest
@@ -73,7 +75,8 @@ class SegmentIOAuthSpec
         channelsClient,
         EventServerConfig()) {
         override implicit def actorRefFactory: ActorRefFactory = system
-        override def log: LoggingAdapter = Logging.getLogger(system, this)
+        override val logger: LoggingAdapter = Logging.getLogger(system, this)
+        override def executionContext: ExecutionContext = system.dispatcher
       }.route
 
       Post("/webhooks/segmentio.json", jsonReq) ~>
