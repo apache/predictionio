@@ -1,14 +1,12 @@
 package io.prediction.data.api
 
-import sun.misc.BASE64Encoder
-
 import akka.actor.ActorRefFactory
+import akka.event.{Logging, LoggingAdapter}
 import io.prediction.data.storage._
-import org.specs2.mutable.Specification
-import org.specs2.mutable.After
-import spray.http.HttpCharsets._
+import org.specs2.mutable.{After, Specification}
 import spray.routing.HttpService
 import spray.testkit.Specs2RouteTest
+import sun.misc.BASE64Encoder
 
 class SegmentIOAuthSpec
   extends Specification
@@ -69,11 +67,14 @@ class SegmentIOAuthSpec
 
       val accessKey = "abc:"
       val accessKeyEncoded = base64Encoder.encodeBuffer(accessKey.getBytes)
-      val route = new EventServiceActor(
+      val route = new EventService(
         eventClient,
         accessKeysClient,
         channelsClient,
-        EventServerConfig()).route
+        EventServerConfig()) {
+        override implicit def actorRefFactory: ActorRefFactory = system
+        override def log: LoggingAdapter = Logging.getLogger(system, this)
+      }.route
 
       Post("/webhooks/segmentio.json", jsonReq) ~>
         addHeader("Authorization", accessKeyEncoded) ~>

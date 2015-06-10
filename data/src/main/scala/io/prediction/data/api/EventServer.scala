@@ -15,14 +15,12 @@
 
 package io.prediction.data.api
 
+import akka.event.LoggingAdapter
 import sun.misc.BASE64Decoder
 
 import java.util.concurrent.TimeUnit
 
-import akka.actor.Actor
-import akka.actor.ActorSystem
-import akka.actor.Props
-import akka.event.Logging
+import akka.actor._
 import akka.io.IO
 import akka.pattern.ask
 import akka.util.Timeout
@@ -50,10 +48,22 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 class EventServiceActor(
+  override val eventClient: LEvents,
+  override val accessKeysClient: AccessKeys,
+  override val channelsClient: Channels,
+  override val config: EventServerConfig
+) extends EventService(
+  eventClient, accessKeysClient, channelsClient, config
+) with Actor with ActorLogging {
+  def actorRefFactory: ActorRefFactory = context.system
+  def receive: Actor.Receive = runRoute(route)
+}
+
+abstract class  EventService(
     val eventClient: LEvents,
     val accessKeysClient: AccessKeys,
     val channelsClient: Channels,
-    val config: EventServerConfig) extends HttpServiceActor {
+    val config: EventServerConfig) extends HttpService {
 
   object Json4sProtocol extends Json4sSupport {
     implicit def json4sFormats: Formats = DefaultFormats +
@@ -63,7 +73,7 @@ class EventServiceActor(
       new DateTimeJson4sSupport.Serializer
   }
 
-  val log = Logging(context.system, this)
+  def log: LoggingAdapter
 
   // we use the enclosing ActorContext's or ActorSystem's dispatcher for our
   // Futures
@@ -89,8 +99,7 @@ class EventServiceActor(
       Future {
         // with accessKey in query, return appId if succeed
         accessKeyParamOpt.map { accessKeyParam =>
-          val accessKeyOpt = accessKeysClient.get(accessKeyParam)
-          accessKeyOpt.map { k =>
+          accessKeysClient.get(accessKeyParam).map { k =>
             channelParamOpt.map { ch =>
               val channelMap =
                 channelsClient.getByAppid(k.appid)
@@ -129,8 +138,8 @@ class EventServiceActor(
     )
   )
 
-  val statsActorRef = context.actorSelection("/user/StatsActor")
-  val pluginsActorRef = context.actorSelection("/user/PluginsActor")
+  val statsActorRef = actorRefFactory.actorSelection("/user/StatsActor")
+  val pluginsActorRef = actorRefFactory.actorSelection("/user/PluginsActor")
 
   val route: Route =
     pathSingleSlash {
@@ -487,9 +496,6 @@ class EventServiceActor(
       }
 
     }
-
-  def receive: Actor.Receive = runRoute(route)
-
 }
 
 
@@ -501,8 +507,7 @@ class EventServerActor(
     val eventClient: LEvents,
     val accessKeysClient: AccessKeys,
     val channelsClient: Channels,
-    val config: EventServerConfig) extends Actor {
-  val log = Logging(context.system, this)
+    val config: EventServerConfig) extends Actor with ActorLogging {
   val child = context.actorOf(
     Props(classOf[EventServiceActor],
       eventClient,
