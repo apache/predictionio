@@ -15,7 +15,7 @@
 
 package io.prediction.data.api
 
-import akka.event.LoggingAdapter
+import akka.event.Logging
 import sun.misc.BASE64Decoder
 
 import java.util.concurrent.TimeUnit
@@ -47,25 +47,11 @@ import spray.routing.authentication.Authentication
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
-class EventServiceActor(
-  override val eventClient: LEvents,
-  override val accessKeysClient: AccessKeys,
-  override val channelsClient: Channels,
-  override val config: EventServerConfig
-) extends EventService(
-  eventClient, accessKeysClient, channelsClient, config
-) with Actor with ActorLogging { self ⇒
-  override def actorRefFactory: ActorRefFactory = context.system
-  def receive: Actor.Receive = runRoute(route)
-  override val logger: LoggingAdapter = log
-  override def executionContext: ExecutionContext = context.dispatcher
-}
-
-abstract class  EventService(
+class  EventServiceActor(
     val eventClient: LEvents,
     val accessKeysClient: AccessKeys,
     val channelsClient: Channels,
-    val config: EventServerConfig) extends HttpService {
+    val config: EventServerConfig) extends HttpServiceActor {
 
   object Json4sProtocol extends Json4sSupport {
     implicit def json4sFormats: Formats = DefaultFormats +
@@ -75,11 +61,11 @@ abstract class  EventService(
       new DateTimeJson4sSupport.Serializer
   }
 
-  val logger: LoggingAdapter
-
+  val logger = Logging(context.system, this)
   // we use the enclosing ActorContext's or ActorSystem's dispatcher for our
   // Futures
-  implicit def executionContext: ExecutionContext
+  implicit def executionContext: ExecutionContext = context.dispatcher
+
   implicit val timeout = Timeout(5, TimeUnit.SECONDS)
 
   val rejectionHandler = Common.rejectionHandler
@@ -396,7 +382,6 @@ abstract class  EventService(
       }  // stats.json get
     } ~
     path("webhooks" / jsonPath ) { web =>
-
       import Json4sProtocol._
 
       post {
@@ -498,6 +483,8 @@ abstract class  EventService(
       }
 
     }
+
+  def receive: Actor.Receive = runRoute(route)
 }
 
 

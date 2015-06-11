@@ -1,27 +1,50 @@
 package io.prediction.data.api
 
-import akka.actor.ActorRefFactory
-import akka.event.{Logging, LoggingAdapter}
+import akka.actor.{ActorSystem, Props}
+import akka.testkit.TestProbe
 import io.prediction.data.storage._
-import org.specs2.mutable.{After, Specification}
-import spray.routing.HttpService
-import spray.testkit.Specs2RouteTest
+import org.joda.time.DateTime
+import org.specs2.mutable.Specification
+import spray.http.HttpHeaders.RawHeader
+import spray.http.{ContentTypes, HttpEntity, HttpResponse}
+import spray.httpx.RequestBuilding._
 import sun.misc.BASE64Encoder
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{Future, ExecutionContext}
 
-class SegmentIOAuthSpec
-  extends Specification
-  with Specs2RouteTest
-  with HttpService
-  with After {
+class SegmentIOAuthSpec extends Specification {
 
-  override def after: Any = system.shutdown()
+  val system = ActorSystem("EventServiceSpecSystem")
+  val eventClient = new LEvents {
+    override def init(appId: Int, channelId: Option[Int]): Boolean = true
 
-  override def actorRefFactory: ActorRefFactory = system
+    override def futureInsert(event: Event, appId: Int, channelId: Option[Int])
+        (implicit ec: ExecutionContext): Future[String] =
+      Future successful "event_id"
 
+    override def futureFind(
+      appId: Int, channelId: Option[Int], startTime: Option[DateTime],
+      untilTime: Option[DateTime], entityType: Option[String],
+      entityId: Option[String], eventNames: Option[Seq[String]],
+      targetEntityType: Option[Option[String]],
+      targetEntityId: Option[Option[String]], limit: Option[Int],
+      reversed: Option[Boolean])
+        (implicit ec: ExecutionContext): Future[Iterator[Event]] =
+      Future successful List.empty[Event].iterator
+
+    override def futureGet(eventId: String, appId: Int, channelId: Option[Int])
+        (implicit ec: ExecutionContext): Future[Option[Event]] =
+      Future successful None
+
+    override def remove(appId: Int, channelId: Option[Int]): Boolean = true
+
+    override def futureDelete(eventId: String, appId: Int, channelId: Option[Int])
+        (implicit ec: ExecutionContext): Future[Boolean] =
+      Future successful true
+
+    override def close(): Unit = {}
+  }
   val appId = 0
-  val eventClient = Storage.getLEvents()
   val accessKeysClient = new AccessKeys{
     override def insert(k: AccessKey): Option[String] = null
     override def getByAppid(appid: Int): Seq[AccessKey] = null
@@ -32,11 +55,16 @@ class SegmentIOAuthSpec
     override def get(k: String): Option[AccessKey] =
       Some(AccessKey(k, appId, Seq.empty))
   }
-
-  val dbName = "test_pio_storage_events_" + hashCode
-  val channelsClient = Storage.getDataObject[Channels](
-    StorageTestUtils.jdbcSourceName,
-    dbName
+  val channelsClient = Storage.getMetaDataChannels()
+  val eventServiceActor = system.actorOf(
+    Props(
+      new EventServiceActor(
+        eventClient,
+        accessKeysClient,
+        channelsClient,
+        EventServerConfig()
+      )
+    )
   )
 
   val base64Encoder = new BASE64Encoder
@@ -50,10 +78,10 @@ class SegmentIOAuthSpec
           |  "channel": "browser",
           |  "context": {
           |    "ip": "8.8.8.8",
-          |    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.115 Safari/537.36"
+          |    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5)"
           |  },
           |  "message_id": "022bb90c-bbac-11e4-8dfc-aa07a5b093db",
-          |  "received_at": "2015-02-23T22:28:55.387Z",
+          |  "timestamp": "2015-02-23T22:28:55.387Z",
           |  "sent_at": "2015-02-23T22:28:55.111Z",
           |  "traits": {
           |    "name": "Peter Gibbons",
@@ -63,30 +91,36 @@ class SegmentIOAuthSpec
           |  },
           |  "type": "identify",
           |  "user_id": "97980cfea0067",
-          |  "version": "1.1"Create
+          |  "version": "2"
           |}
         """.stripMargin
 
       val accessKey = "abc:"
       val accessKeyEncoded = base64Encoder.encodeBuffer(accessKey.getBytes)
-      val route = new EventService(
-        eventClient,
-        accessKeysClient,
-        channelsClient,
-        EventServerConfig()) {
-        override implicit def actorRefFactory: ActorRefFactory = system
-        override val logger: LoggingAdapter = Logging.getLogger(system, this)
-        override def executionContext: ExecutionContext = system.dispatcher
-      }.route
-
-      Post("/webhooks/segmentio.json", jsonReq) ~>
-        addHeader("Authorization", accessKeyEncoded) ~>
-        addHeader("ContentType", "application/json") ~>
-        route ~>
-        check {
-          println(responseAs[String])
-          handled ==== true
-        }
+      val probe = TestProbe()(system)
+      probe.send(
+        eventServiceActor,
+        Post(
+          "/webhooks/segmentio.json",
+          HttpEntity(ContentTypes.`application/json`, jsonReq.getBytes)
+        ).withHeaders(
+            List(
+              RawHeader("Authorization", s"Basic $accessKeyEncoded")
+            )
+          )
+      )
+      probe.expectMsg(
+        HttpResponse(
+          201,
+          HttpEntity(
+            contentType = ContentTypes.`application/json`,
+            string = """{"eventId":"event_id"}"""
+          )
+        )
+      )
+      success
     }
   }
+
+  step(system.shutdown())
 }
