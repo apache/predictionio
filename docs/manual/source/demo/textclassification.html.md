@@ -248,11 +248,11 @@ private def readEventData(sc: SparkContext) : RDD[Observation] = {
       // Convert collected RDD of events to and RDD of Observation
       // objects.
     )(sc).map(e => {
-      val label = e.properties.get[Double]("label")
+      val label = e.properties.get[Double]("sentiment")
       
       Observation(
         label,
-        e.properties.get[String]("text"),
+        e.properties.get[String]("phrase"),
         label.toString
       )
     }).cache
