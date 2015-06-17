@@ -14,11 +14,13 @@ As you can see from the Quick Start, *MyClassification* takes a JSON prediction
 query, e.g. `{ "features": [4, 3, 8] }`, and return a JSON predicted result.
 
 In MyClassification/src/main/scala/***Engine.scala***, the `Query` case class
-defines the format of **query**, such as `{ "features": [4, 3, 8] }`:
+defines the format of **query**, such as `{ "attr0":4, "attr1":3, "attr2":8 }`:
 
 ```scala
 class Query(
-  val features: Array[Double]
+  val attr0 : Double,
+  val attr1 : Double,
+  val attr2 : Double
 ) extends Serializable
 
 ```
@@ -226,11 +228,10 @@ case class AlgorithmParams(
 `NaiveBayes.train` then returns a `NaiveBayesModel` model. PredictionIO will
 automatically store the returned model.
 
-### predict(..,)
+### predict(...)
 
 The `predict` method is called when you send a JSON query to
-http://localhost:8000/queries.json. PredictionIO converts the query, such as `{
-"features": [4, 3, 8] }` to the `Query` class you defined previously.
+http://localhost:8000/queries.json. PredictionIO converts the query, such as `{ "attr0":4, "attr1":3, "attr2":8 }` to the `Query` class you defined previously.
 
 The predictive model `NaiveBayesModel` of MLlib NaiveBayes offers a function
 called `predict`. `predict` takes a dense vector of features. It predicts the
@@ -238,7 +239,9 @@ label of the item represented by this feature vector.
 
 ```scala
   def predict(model: NaiveBayesModel, query: Query): PredictedResult = {
-    val label = model.predict(Vectors.dense(query.features))
+    val label = model.predict(Vectors.dense(
+    	query.attr0, query.attr1, query.attr2
+    ))
     new PredictedResult(label)
   }
 ```

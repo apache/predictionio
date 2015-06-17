@@ -374,7 +374,7 @@ Now the training data is stored as events inside the Event Store.
 
 Now, You can try to retrieve predicted results. For example, to predict the
 label (i.e. *plan* in this case) of a user with attr0=2, attr1=0 and attr2=0,
-you send this JSON { "features": [2, 0, 0] } to the deployed engine and it will
+you send this JSON `{ "attr0":2, "attr1":0, "attr2":0 }` to the deployed engine and it will
 return a JSON of the predicted plan. Simply send a query by making a HTTP
 request or through the `EngineClient` of an SDK.
 
@@ -384,7 +384,7 @@ With the deployed engine running, open another temrinal and run the following `c
   <div data-tab="REST API" data-lang="bash">
 ```bash
 $ curl -H "Content-Type: application/json" \
--d '{ "features": [2, 0, 0] }' http://localhost:8000/queries.json
+-d '{ "attr0":2, "attr1":0, "attr2":0 }' http://localhost:8000/queries.json
 
 ```
   </div>
@@ -392,7 +392,7 @@ $ curl -H "Content-Type: application/json" \
 ```python
 import predictionio
 engine_client = predictionio.EngineClient(url="http://localhost:8000")
-print engine_client.send_query({"features": [2, 0, 0]})
+print engine_client.send_query({"attr0":2, "attr1":0, "attr2":0})
 ```
   </div>
   <div data-tab="PHP SDK" data-lang="php">
@@ -403,7 +403,7 @@ use predictionio\EngineClient;
 
 $client = new EngineClient('http://localhost:8000');
 
-$response = $client->sendQuery(array('features'=> array(2, 0, 0)));
+$response = $client->sendQuery(array('attr0'=> 2, 'attr1' => 0, 'attr2' => 0));
 print_r($response);
 
 ?>
@@ -415,7 +415,7 @@ print_r($response);
 client = PredictionIO::EngineClient.new(<ENGINE DEPLOY URL>)
 
 # Query PredictionIO.
-response = client.send_query('features' => [2, 0, 0])
+response = client.send_query('attr0' => 2, 'attr1' => 0, 'attr2' => 0)
 
 puts response
 ```

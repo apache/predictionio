@@ -47,10 +47,10 @@ Modify the `readTraining()` in DataSource.scala:
   }
 ```
 
-Lastly, the Query sent to the engine should match the size of feature vector as well. Since each feature vector has 4 values now, the features array in the query should also consist of 4 values:
+Lastly, redefine the Query class parameters to take in four double values: featureA, featureB, featureC, and featureD. Now, to send a query, the field names must be changed accordingly:
 
 ```
-$ curl -H "Content-Type: application/json" -d '{ "features": [2, 0, 0, 0] }' http://localhost:8000/queries.json
+$ curl -H "Content-Type: application/json" -d '{ "featureA":2, "featureB":0, "featureC":0, "featureD":0 }' http://localhost:8000/queries.json
 ```
 
 That's it! Now your classifcation engine is using different properties as training data.
