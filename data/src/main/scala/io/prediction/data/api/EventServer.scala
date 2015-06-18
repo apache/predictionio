@@ -115,7 +115,7 @@ class  EventServiceActor(
 
               case _ ⇒ FailedAuth
             }
-          }.getOrElse(FailedAuth)
+          }.getOrElse(MissedAuth)
         }
       }
   }
@@ -123,6 +123,12 @@ class  EventServiceActor(
   private val FailedAuth = Left(
     AuthenticationFailedRejection(
       AuthenticationFailedRejection.CredentialsRejected, List()
+    )
+  )
+
+  private val MissedAuth = Left(
+    AuthenticationFailedRejection(
+      AuthenticationFailedRejection.CredentialsMissing, List()
     )
   )
 
@@ -532,13 +538,11 @@ object EventServer {
 
     val serverActor = system.actorOf(
       Props(
-        new EventServerActor(
-          eventClient,
-          accessKeysClient,
-          channelsClient,
-          config
-        )
-      ),
+        classOf[EventServerActor],
+        eventClient,
+        accessKeysClient,
+        channelsClient,
+        config),
       "EventServerActor"
     )
     if (config.stats) system.actorOf(Props[StatsActor], "StatsActor")

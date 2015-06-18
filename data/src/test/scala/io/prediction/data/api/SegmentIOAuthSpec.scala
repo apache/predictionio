@@ -15,6 +15,8 @@ import scala.concurrent.{Future, ExecutionContext}
 class SegmentIOAuthSpec extends Specification {
 
   val system = ActorSystem("EventServiceSpecSystem")
+  sequential
+  isolated
   val eventClient = new LEvents {
     override def init(appId: Int, channelId: Option[Int]): Boolean = true
 
@@ -45,7 +47,7 @@ class SegmentIOAuthSpec extends Specification {
     override def close(): Unit = {}
   }
   val appId = 0
-  val accessKeysClient = new AccessKeys{
+  val accessKeysClient = new AccessKeys {
     override def insert(k: AccessKey): Option[String] = null
     override def getByAppid(appid: Int): Seq[AccessKey] = null
     override def update(k: AccessKey): Unit = {}
@@ -53,8 +55,12 @@ class SegmentIOAuthSpec extends Specification {
     override def getAll(): Seq[AccessKey] = null
 
     override def get(k: String): Option[AccessKey] =
-      Some(AccessKey(k, appId, Seq.empty))
+      k match {
+        case "abc" ⇒ Some(AccessKey(k, appId, Seq.empty))
+        case _ ⇒ None
+      }
   }
+
   val channelsClient = Storage.getMetaDataChannels()
   val eventServiceActor = system.actorOf(
     Props(
@@ -70,6 +76,49 @@ class SegmentIOAuthSpec extends Specification {
   val base64Encoder = new BASE64Encoder
 
   "Event Service" should {
+
+    "reject with CredentialsRejected with invalid credentials" in {
+      val accessKey = "abc123:"
+      val probe = TestProbe()(system)
+      probe.send(
+        eventServiceActor,
+        Post("/webhooks/segmentio.json")
+          .withHeaders(
+            List(
+              RawHeader("Authorization", s"Basic $accessKey")
+            )
+          )
+      )
+      probe.expectMsg(
+        HttpResponse(
+          401,
+          HttpEntity(
+            contentType = ContentTypes.`application/json`,
+            string = """{"message":"Invalid accessKey."}"""
+          )
+        )
+      )
+      success
+    }
+
+    "reject with CredentialsMissed without credentials" in {
+      val probe = TestProbe()(system)
+      probe.send(
+        eventServiceActor,
+        Post("/webhooks/segmentio.json")
+      )
+      probe.expectMsg(
+        HttpResponse(
+          401,
+          HttpEntity(
+            contentType = ContentTypes.`application/json`,
+            string = """{"message":"Missing accessKey."}"""
+          )
+        )
+      )
+      success
+    }
+
     "process SegmentIO identity request properly" in {
       val jsonReq =
         """
