@@ -15,8 +15,6 @@ module TableOfContentsHelpers
     content_without_code = content.gsub(/(```[\s\S]*?```)/, '')
     output = markdown.render(content_without_code)
 
-    #return content_without_code
-
     if output.length == 0
       return
     else

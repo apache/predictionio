@@ -21,7 +21,7 @@
       width: 100%;
       padding: 0;
 
-      #mobile-search-bar-toggler {
+      .mobile-search-bar-toggler {
         position: absolute;
         height: 23px;
         width: 23px;
@@ -55,9 +55,9 @@
     #menu-wrapper {
       max-height: 0;
       overflow: hidden;
-      -webkit-transition: max-height 0.8s;
-      -moz-transition: max-height 0.8s;
-      transition: max-height 0.8s;
+      -webkit-transition: max-height 0.5s;
+      -moz-transition: max-height 0.5s;
+      transition: max-height 0.5s;
 
       &.active {
         max-height: 500px;
@@ -122,7 +122,7 @@
     /* END action call */
     /* Page content container  */
     #page {
-      margin-top: 56px + 56px + 28px; // sum of header and serach bar row height + half row as padding.
+      margin-top: $search-bar-row-height + $mobile-header-height;
     }
     /* END Page content container  */
 
@@ -160,13 +160,15 @@
     #search-bar-row-wrapper {
       top: 53px;
       padding: 0;
-      overflow: auto;
+
       #mobile-page-heading-wrapper {
+        height: 36px;
+        overflow: hidden;
+        margin-top: ($search-bar-row-height - 35px) / 2;
         p {
           margin: 0;
           padding: 0;
-          margin-top: 14px;
-          margin-bottom: 4px;
+          margin-bottom: 4px; 
           font-size: 16px;
           color: $mobile-page-header-label-color;
         }
@@ -182,33 +184,61 @@
         }
       }
 
-      .swiftype {
-        .search-form {
-          .search-box-toggler {
-            float: right;
+      .swiftype-wrapper {
+        position: absolute;
+        background-color: white;
+        top: $search-bar-row-height * -1;
+        height: $search-bar-row-height;
+        z-index: 9990;
+        overflow: hidden;
+        transition: top 0.5s ease;
+        &.active {
+          top: 0;
+        }
+        .swiftype-row-hider {
+          position: absolute;
+          top: 15px;
+          right: 14px;
+          cursor: pointer;
+        }
+        .swiftype {
+          .search-form {
+              width: 100%;
+            .search-box {
+              margin-top: ($search-bar-row-height - $search-box-height) /2;
+              width: calc(100% - 50px);
+              .st-search-input {
+                width: 100%;
+              }
+            }
+            .search-box-toggler {
+              float: right;
+              @include clearfix;
+            }
           }
         }
+      }
+      
+      .mobile-left-menu-toggler {
+        background-color: rgba(0,0,0,0);
+        height: 56px;
+        position: relative;
+        top: 0;
+        cursor: pointer;
       }
     }
     /* End Search bar */
 
-    /* Left Nav menu toggler */
-    #left-menu-toggler {
+    /* Left Nav menu indicator */
+    #left-menu-indicator {
       position: absolute;
-      top: 20px;
+      top: ($search-bar-row-height - 11px) / 2;
       right: 12px;
-      width: 25px;
-      height: 15px;
+      width: 20px;
+      height: 11px;
       cursor: pointer;
-      background: image_url("icons/down-arrow.png");
-      &:hover {
-        text-decoration: none;
-      }
-      &.active {
-        background: image_url("icons/up-arrow.png");
-      }
     }
-    /* END Left Nav menu toggler */
+    /* END Left Nav menu indicator */
 
     /* Left nav menu */
     #left-menu-wrapper {
@@ -220,7 +250,7 @@
       width: 100%;
       max-height: 0;
       overflow: hidden;
-      transition: max-height 1s ease;
+      transition: max-height 0.5s ease;
 
       &.active {
         max-height: 1000px;
