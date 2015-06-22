@@ -336,6 +336,8 @@ WARNING: The following API are mainly for development or debugging purpose
 only. They should not be supported by SDK nor used by real application under
 normal circumstances and they are subject to changes.
 
+INFO: Instead of using `curl`, you can also install JSON browser plugins such as **JSONView** to pretty-print the JSON on your browser. With the browser plugin you can make the `GET` queries below by passing in the URL. Plugins like **Postman - REST Client** provide a more advanced interface for making queries.
+
 The `accessKey` query parameter is mandatory.
 
 Replace `<your_accessKey>` and `<your_eventId>` by a real one in the following:
