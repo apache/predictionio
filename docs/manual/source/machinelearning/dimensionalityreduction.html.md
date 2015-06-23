@@ -2,9 +2,9 @@
 title: Dimensionality Reduction With PredictionIO
 ---
 
-The purpose of this guide is to teach developers how to incorporate "dimensionality reduction" into a PredictionIO engine [Principal Component Analysis](https://en.wikipedia.org/wiki/Principal_component_analysis) on the [MNIST digit recognition dataset](https://www.kaggle.com/c/digit-recognizer). To do this, you will be modifying the PredictionIO [classification engine template](http://templates.prediction.io/PredictionIO/template-scala-parallel-classification). This guide will demonstrate how to import the specific data set in batch, and also how to change the engine components in order to incorporate the new sample data and implement PCA.
+The purpose of this guide is to teach developers how to incorporate "dimensionality reduction" into a PredictionIO engine [Principal Component Analysis](https://en.wikipedia.org/wiki/Principal_component_analysis) (PCA) on the [MNIST digit recognition dataset](https://www.kaggle.com/c/digit-recognizer). To do this, you will be modifying the PredictionIO [classification engine template](http://templates.prediction.io/PredictionIO/template-scala-parallel-classification). This guide will demonstrate how to import the specific data set in batch, and also how to change the engine components in order to incorporate the new sample data and implement PCA.
 
-In machine learning, specifically in [supervised learning](http://en.wikipedia.org/wiki/Supervised_learning), the general problem at hand is to predict a numeric outcome \\(y\\) from a numeric vector \\(\bf{x}\\). The different components of \\(\bf{x}\\) are called **features**, and usually represent observed values such as a hospital patient's age, weight, height, sex, etc.There are subtle issues that begin to arise as the number of features contained in each feature vector increases. We briefly list some of the issues that arise as the number of features grows in size:
+In machine learning, specifically in [supervised learning](http://en.wikipedia.org/wiki/Supervised_learning), the general problem at hand is to predict a numeric outcome \\(y\\) from a numeric vector \\(\bf{x}\\). The different components of \\(\bf{x}\\) are called **features**, and usually represent observed values such as a hospital patient's age, weight, height, sex, etc. There are subtle issues that begin to arise as the number of features contained in each feature vector increases. We briefly list some of the issues that arise as the number of features grows in size:
 
 
 - **Computation:** The time complexity of machine learning algorithms often times depends on the number of features used. That is, the more features one uses for prediction, the more time it takes to train a model.
@@ -19,13 +19,13 @@ In machine learning, specifically in [supervised learning](http://en.wikipedia.o
 | ![Square Samples](/images/machinelearning/featureselection/square100.png) | ![Cube Samples](/images/machinelearning/featureselection/cube100.png) |
 |                                                          |                                                      |
 
-Dimensionality reduction is the process of applying a transformation to your feature vectors in order to produce a vector with the same or less number of features. Principal component Analysis, or PCA, is a widely used technique for dimensionality reduction. This can be treated as a data processing technique, and so with respect to the [DASE](/customize/) framework, it will fall into the Data Preparator engine component. This guide will also help to solidify the concept of taking an engine template and customizing it for a particular use case: hand-written numeric digit recognition.
+Dimensionality reduction is the process of applying a transformation to your feature vectors in order to produce a vector with the same or less number of features. Principal component Analysis (PCA) is a technique for dimensionality reduction. This can be treated as a data processing technique, and so with respect to the [DASE](/customize/) framework, it will fall into the Data Preparator engine component. 
 
-The guide begins with first getting familiar with the data by first importing it into the event server.
+This guide will also help to solidify the concept of taking an engine template and customizing it for a particular use case: hand-written numeric digit recognition.
 
-## Guiding Data Example
+## Data Example
 
-As a guiding example, a base data set, the [MNIST digit recognition dataset](https://www.kaggle.com/c/digit-recognizer/data), is used. This is a perfect data set for dimensionality reduction, as for this data set the features that will be used for learning is a vector consisting of pixel information. There is really no direct interpretation of any one feature, so that you do not lose anything in applying a transformation that will treat the features as linear combinations of some set "convenient" vectors. 
+As a guiding example, a base data set, the [MNIST digit recognition dataset](https://www.kaggle.com/c/digit-recognizer/data), is used. This is a perfect data set for dimensionality reduction, for, in this data set, the features that will be used for learning are pixel entries in a \\(28 \times 28\\) pixel image. There is really no direct interpretation of any one feature, so that you do not lose anything in applying a transformation that will treat the features as [linear combinations](https://en.wikipedia.org/wiki/Linear_combination) of some set "convenient" vectors. 
 
 Now, we first pull the [classification engine template](http://templates.prediction.io/PredictionIO/template-scala-parallel-classification) via the following bash line
 
@@ -153,7 +153,26 @@ If the data has been successfully imported, you should see output of the form:
 [INFO] [FileToEvents$] Done.
 ```
 
-You are now ready to start modifying the classification engine. 
+The data is now in the event server.
+
+
+## Principal Component Analysis
+
+
+PCA begins with the data matrix \\(\bf X\\) whose rows are feature vectors corresponding to a set of observations. In our case, each row represents the pixel information of the corresponding hand-written numerc digit image. The model then computes the [covariance matrix](https://en.wikipedia.org/wiki/Covariance_matrix) estimated from the data matrix \\(\bf X\\). The algorithm then takes the covariance matrix and computes the [eigenvectors](https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors) that correspond to its \\(k\\) (some integer) largest [eigenvalues](https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors). The data matrix is then mapped to the space generated by these \\(k\\) vectors, which are called the \\(k\\) **ptincipal components** of \\(\bf X\\). What this is doing is mapping the data observations into a lower-dimensional space that explains the largest variability in the data (contains the most information). The algorithm for implementing PCA is listed as follows:
+
+### PCA Algorithm
+
+**Input:** \\(N \times p\\) data matrix \\(\bf X\\); \\(k \leq p\\), the number of desired features.
+
+**1.** For each column in the data matrix: compute the average of all the entries contained in the column, and then subtract this average from each of the column entries. 
+
+**2.** Compute the \\(k\\) eigenvectors corresponding to the \\(k\\) largest eigenvalues of the matrix obtained in the first step.
+
+**Output:** \\(p \times k\\) matrix \\(P\\) whose \\(k\\) rows are the eigenvectors computed in the second step.
+
+Now, to transform a \\(p \times 1\\) feature vector \\(\bf {x}\\), you multiply by the matrix \\(P\^T\\). Now, the vector \\(P\^T {\bf x}\\) is a feature vector with only \\(k\\) components, which has accomplished the desired dimensionality reduction. Also, as a side note, the first step in the algorithm reduces the covariance matrix computation to that of only performing [SVD](https://spark.apache.org/docs/1.3.1/mllib-dimensionality-reduction.html#singular-value-decomposition-svd) on matrix obtained from step 1, which is numerically preferred, and necessary to extract the required eigenvectors.
+
 
 ## Modifying the Engine Template
 
@@ -252,27 +271,7 @@ The motivation for defining the `Observation` class is to make it easy to mainta
 
 ### Preparator Modifications
 
-Remember that the Data Preparator is the engine component that takes care of the necessary data processing prior to the fitting of a predictive model in the Algorithm component. Hence this stage is where you will implement PCA. The following digression will give a brief overview of PCA.
-
-----------
-**Principal Component Analysis**
-
-
-PCA begins with the data matrix \\(\bf X\\) whose rows are feature vectors corresponding to a set of observations. In our case, each row represents the pixel information of the corresponding hand-written numerc digit image. The model then computes the [covariance matrix](https://en.wikipedia.org/wiki/Covariance_matrix) estimated from the data matrix \\(\bf X\\). The algorithm then takes the covariance matrix and computes the [eigenvectors](https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors) that correspond to its \\(k\\) (some integer) largest [eigenvalues](https://en.wikipedia.org/wiki/Eigenvalues_and_eigenvectors). The data matrix is then mapped to the space generated by these \\(k\\) vectors. What this is doing is mapping the data observations into a lower-dimensional space that maintains the largest amount of variability, or information, contained in the data set's feature observations. The algorithm for implementing PCA is listed as follows:
-
-**PCA Algorithm**
-
-**Input:** \\(N \times p\\) data matrix \\(\bf X\\); \\(k \leq p\\), the number of desired features.
-
-**1.** For each column in the data matrix: compute the average of all the entries contained in the column, and then subtract this average from each of the column entries. 
-
-**2.** Compute the \\(k\\) eigenvectors corresponding to the \\(k\\) largest eigenvalues of the matrix obtained in the first step.
-
-Output: \\(p \times k\\) matrix \\(P\\) whose \\(k\\) rows are the eigenvectors computed in the second step.
-
-Now, to transform a \\(p \times 1\\) feature vector \\(\bf {x}\\), you multiply by the matrix \\(P\^T\\). Now, the vector \\(P\^T {\bf x}\\) is a feature vector with only \\(k\\) components, which has accomplished the desired dimensionality reduction. Also, as a side note, the first step in the algorithm reduces the covariance matrix computation to that of only performing [SVD](https://spark.apache.org/docs/1.3.1/mllib-dimensionality-reduction.html#singular-value-decomposition-svd) on matrix obtained from step 1, which is numerically preferred, and necessary to extract the required eigenvectors.
-
-------------
+Remember that the Data Preparator is the engine component that takes care of the necessary data processing prior to the fitting of a predictive model in the Algorithm component. Hence this stage is where you will implement PCA. 
 
 To make sure there is no confusion, replace the import statements in the `Preparator.scala` script with the following:
 
