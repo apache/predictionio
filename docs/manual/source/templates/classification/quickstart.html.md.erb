@@ -29,7 +29,9 @@ NOTE: You can customize to use other event.
 
 ### Input Query
 
-- array of features values
+- individual attributes values (for version >= v0.3.1)
+
+WARNING: for version < v0.3.1, it is array of features values
 
 ### Output PredictedResult
 
@@ -432,11 +434,15 @@ import io.prediction.EngineClient;
 EngineClient engineClient = new EngineClient(<ENGINE DEPLOY URL>);
 
 JsonObject response = engineClient.sendQuery(ImmutableMap.<String, Object>of(
-        "features", ImmutableList.of(2, 0, 0)
+        "attr0", 2,
+        "attr1", 0,
+        "attr2", 0
     ));
 ```
   </div>
 </div>
+
+WARNING: The Query format is changed since version v0.3.1. If you are using old Classification template version v0.3.0 or earlier, the query format is array of feature values instead: `{ "features": [2, 0, 0] } `.
 
 The following is sample JSON response:
 
@@ -445,8 +451,10 @@ The following is sample JSON response:
 ```
 
 Similarly, to predict the label (i.e. *plan* in this case) of a user with
-attr0=4, attr1=3 and attr2=8, you send this JSON `{ "features": [4, 3, 8] }` to
+attr0=4, attr1=3 and attr2=8, you send this JSON `{ "attr0": 4, "attr1": 3, "attr2": 8] }` to
 the deployed engine and it will return a JSON of the predicted plan.
+
+WARNING: For classification template version v0.3.0 or earlier, the query JSON would be `{ "features": [4, 3, 8] }`.
 
 *MyClassification* is now running.
 
