@@ -20,7 +20,6 @@
   }
 }
 
-
 #page {
-  margin-top: 90px;
+  margin-top: $header-height + $search-box-height + ($search-bar-row-vertical-padding * 2) + 50px; // header height
 }

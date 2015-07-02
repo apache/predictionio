@@ -1,11 +1,22 @@
-header#header
-  .github
-    iframe src="/github/?user=PredictionIO&repo=PredictionIO&type=watch&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="110" height="20"
-    iframe src="/github/?user=PredictionIO&repo=PredictionIO&type=fork&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="95" height="20"
-  = link_to '<i class="fa fa-bars"></i>', '/', id: 'active-navigation'
-  = link_to 'http://prediction.io/', class: 'logo' do
-    = image_tag 'logos/header.png', alt: 'PredictionIO'
-  .group
-    = partial 'nav/header'
-    = link_to '<i class="fa fa-arrow-circle-o-down"></i> Download', '/install/', class: 'button-download'
-    = partial 'nav/swiftype'
+header
+  .container#header-wrapper
+    .row
+      .col-sm-12
+        #logo-wrapper
+          span#drawer-toggle
+          a href="#"
+          = link_to 'http://prediction.io/' do
+            = image_tag 'logos/logo.png', alt: 'PredictionIO', id: 'logo'
+        #menu-wrapper
+          #header-nav-options-wrapper
+            ul
+              li>: a href="//prediction.io/whatispredictionio" About
+              li>: a href="/" Install & Doc
+              li>: a href="//blog.prediction.io/category/usecase/" Use Cases
+              li>: a href="//templates.prediction.io/" Templates
+              li>: a href="/support" Support
+          #pill-wrapper
+            a.pill.left> href="//prediction.io/enterprise" ENTERPRISE
+            a.pill.right href="//github.com/PredictionIO/PredictionIO/" OPEN SOURCE
+        = image_tag 'icons/search-glass.png', class: 'mobile-search-bar-toggler hidden-md hidden-lg'
+

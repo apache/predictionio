@@ -1,0 +1,21 @@
+#search-bar-row-wrapper {
+  font-family: $standard-font-family;
+  height: $search-box-height + ($search-bar-row-vertical-padding * 2);
+  width: 100%;
+  position: fixed;
+  top: $header-height;
+  padding-top: $search-bar-row-vertical-padding;
+  padding-bottom: $search-bar-row-vertical-padding;
+  z-index: 9998;
+  background-color: $white;
+  box-sizing: border-box;
+  line-height: 15px;
+  border-bottom: 1px solid $search-box-wrapper-border-color;
+  #search-bar-row {
+    height: 100%;
+    max-width: 1170px;
+    h4 {
+      font-size: 15px;
+    }
+  }
+}

@@ -1,0 +1,28 @@
+.pill-button {
+  height: auto;
+  border:1px solid #2499E6;
+  border-radius: 3em;
+  font-size: 12px;
+  color: #2499E6;
+  text-align: center;
+  display: inline-block;
+  letter-spacing: 2px;
+  transition:All 0.3s ease;
+  -webkit-transition:All 0.3s ease;
+  -moz-transition:All 0.3s ease;
+  -o-transition:All 0.3s ease;
+  padding: 14px 15px;
+  -webkit-font-smoothing: subpixel-antialiased;
+}
+
+.underlined-input {
+  border:none;
+  border-bottom: 1px solid #EBF1F9;
+  outline: none;
+  padding: 5px 0;
+  
+}
+
+.underlined-input:focus {
+  border-color: #249DEC;
+}

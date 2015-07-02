@@ -1,102 +1,72 @@
 #nav-main {
-  border-right: 1px solid $border-color;
-  box-sizing: border-box;
-  width: 300px;
-  position: fixed;
-  left: 0;
-  overflow: auto;
-  bottom: 0;
-  top: 90px;
-  background-color: $nav-main-background-color;
+  font-family: $standard-font-family;
+  @include anchor-no-underline;
+
+  a.collapsible { // to counter unknown css behavior
+    text-decoration: none;
+  }
+
   ul {
     padding: 0;
     margin: 0;
-    display: inline-block;
     width: 100%;
     list-style-type: none;
+    background-color: $white;
   }
-  a {
-    color: $nav-main-link-color;
-    box-sizing: border-box;
-    display: table;
-    &:hover {
-      text-decoration: none;
-      background-color: $nav-main-hover-background-color;
-      color: $nav-main-hover-link-color;
-      border-color: $nav-main-hover-background-color;
-    }
-    i.fa {
-      display: inline-block;
-      display: table-cell;
-      width: 1em;
-    }
-
-    span {
-      display: table-cell;
-    }
-  }
-
   & > ul {
-    // Level 1
-    margin-bottom: 50px;
-    & > li {
-      background-color: $nav-main-level-1-background-color;
+    border: 1px solid $nav-main-border-color;
+    ul {
+        display: none; // hide inactive sub-levels
+    }
+    a {
+      min-height: 44px;
+      font-size: 16px;
+      display: flex; // a serves as container, text is inside a span
+      flex-direction: column;
+      justify-content: center;
+      padding:15px;
+    }
+    & > li{
+      // level 1
+      a.collapsible {
+        color: $nav-main-collapsible-anchor-color;
+        background-color: $white;
+        border-bottom: none;
+      }
+
       & > a {
-        border-bottom: 1px solid $border-color;
-        min-height: 50px;
-        display: block;
-        font-size: 16px;
-        font-weight: 400;
-
-        color: $nav-main-level-1-font-color;
-        padding: 14px 0 10px 25px;
-
+        background-color: $nav-main-active-menu-background-color;
+        border-bottom: 1px solid $nav-main-active-menu-bottom-border-color;
+        color: $nav-main-active-menu-link-color;
       }
-      // Level 2
-      ul {
-        display: none;
-        border: none;
-      }
-
-      &.expand {
-        ul {
-          display: block;
-        }
-      }
-
-      li {
-        background-color: $nav-main-level-2-background-color;
-
-        & > a {
-          min-height: 40px;
-          font-size: 14px;
-          display: block;
-          padding: 8px 0 8px 35px;
-          line-height: 20px;
-          border-left: 5px solid $nav-main-level-2-background-color;
-          &.active {
-            background-color: $nav-main-level-2-active-background-color;
-            border-left: 5px solid $nav-main-level-2-active-border-color;
-            color: $nav-main-level-2-active-link-color;
-            &:hover {
+      &>ul {
+        //level 2
+        li {
+          a { // inactive menu item
+            font-size: 14px;
+            padding-left: 25px;
+            color: $nav-main-level-2-link-color;
+            &.active {
+              border-left: 5px solid $nav-main-level-2-active-link-left-border-color;
               color: $nav-main-level-2-active-link-color;
-
             }
           }
-        }
-      }
-
-      // Level 3
-      ul ul {
-        a {
-          padding-left: 55px;
-        }
-      }
-
-      // Level 4
-      ul ul ul {
-        a {
-          padding-left: 75px;
+          &>ul {
+            //level 3
+            li {
+              a {
+                padding-left: 30px;
+              }
+              &>ul {
+                //level 4
+                li {
+                  a {
+                    padding-left: 35px;
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }

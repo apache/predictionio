@@ -1,35 +1,32 @@
-.alert {
-  min-height: 65px;
-  margin: 1em 0 1em 0;
+body { // for higher priority
+  .alert-message {
+    margin: 1em 0 1em 0;
+    display: block;
+    width: auto;
+    overflow:hidden;
 
-  p {
-    padding: 20px 20px 20px 20px;
-    margin: 0;
-  }
+    p {
+      padding: 22px;
+      margin: 0;
+    }
 
-  &.info {
-    background-color: $info-background-color;
-    border-left: 10px solid $info-color;
-  }
-  &.success {
-    background-color: $success-background-color;
-    border-left: 10px solid $success-color;
-  }
-  &.warning {
-    background-color: $warning-background-color;
-    border-left: 10px solid $warning-color;
-  }
-  &.danger {
-    background-color: $danger-background-color;
-    border-left: 10px solid $danger-color;
-  }
-  &.note {
-    background-color: $note-background-color;
-    border-left: 10px solid $note-color;
-  }
-  &.todo {
-    background-color: $todo-background-color;
-    border-left: 10px solid $todo-color;
+    &.info {
+      @include alert-border ($info-color);
+    }
+    &.success {
+      @include alert-border ($success-color);
+    }
+    &.warning {
+      @include alert-border ($warning-color);
+    }
+    &.danger {
+      @include alert-border ($danger-color);
+    }
+    &.note {
+      @include alert-border ($note-color);
+    }
+    &.todo {
+      @include alert-border ($todo-color);
+    }
   }
 }
-
