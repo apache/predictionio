@@ -72,6 +72,7 @@ object CreateWorkflow extends Logging {
   }
 
   val parser = new scopt.OptionParser[WorkflowConfig]("CreateWorkflow") {
+    override def errorOnUnknownArgument: Boolean = false
     opt[String]("batch") action { (x, c) =>
       c.copy(batch = x)
     } text("Batch label of the workflow run.")
