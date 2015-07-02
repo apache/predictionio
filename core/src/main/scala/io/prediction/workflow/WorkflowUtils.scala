@@ -397,9 +397,10 @@ class UpgradeCheckRunner(
     try {
       val upgradeData = Source.fromURL(url)
     } catch {
-      case e: FileNotFoundException => {
+      case e: FileNotFoundException =>
         debug(s"Update metainfo not found. $url")
-      }
+      case e: java.net.UnknownHostException =>
+        debug(s"${e.getClass.getName}: {e.getMessage}")
     }
     // TODO: Implement upgrade logic
   }
