@@ -1047,17 +1047,25 @@ object Console extends Logging {
       if (sparkReleaseFile.exists) {
         val sparkReleaseStrings =
           Source.fromFile(sparkReleaseFile).mkString.split(' ')
-        val sparkReleaseVersion = sparkReleaseStrings(1)
-        val parsedMinVersion = Version.apply(sparkMinVersion)
-        val parsedCurrentVersion = Version.apply(sparkReleaseVersion)
-        if (parsedCurrentVersion >= parsedMinVersion) {
-          info(stripMarginAndNewlines(
-            s"""|Apache Spark $sparkReleaseVersion detected (meets minimum
-                |requirement of $sparkMinVersion)"""))
+        if (sparkReleaseStrings.length < 2) {
+          warn(stripMarginAndNewlines(
+            s"""|Apache Spark version information cannot be found (RELEASE file
+                |is empty). This is a known issue for certain vendors (e.g.
+                |Cloudera). Please make sure you are using a version of at least
+                |$sparkMinVersion."""))
         } else {
-          error(stripMarginAndNewlines(
-            s"""|Apache Spark $sparkReleaseVersion detected (does not meet
-                |minimum requirement. Aborting."""))
+          val sparkReleaseVersion = sparkReleaseStrings(1)
+          val parsedMinVersion = Version.apply(sparkMinVersion)
+          val parsedCurrentVersion = Version.apply(sparkReleaseVersion)
+          if (parsedCurrentVersion >= parsedMinVersion) {
+            info(stripMarginAndNewlines(
+              s"""|Apache Spark $sparkReleaseVersion detected (meets minimum
+                  |requirement of $sparkMinVersion)"""))
+          } else {
+            error(stripMarginAndNewlines(
+              s"""|Apache Spark $sparkReleaseVersion detected (does not meet
+                  |minimum requirement. Aborting."""))
+          }
         }
       } else {
         warn(stripMarginAndNewlines(

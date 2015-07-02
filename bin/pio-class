@@ -49,7 +49,9 @@ if [ -z "$SPARK_HOME" ]; then
   exit 1
 elif [ -r "$SPARK_HOME/RELEASE" ]; then
   SPARK_VERSION=`head -n 1 $SPARK_HOME/RELEASE | awk '{print $2}'`
-  if semverLT ${SPARK_VERSION} ${MIN_SPARK_VERSION}; then
+  if [ -z "$SPARK_VERSION" ]; then
+    echo -e "\033[0;35m$SPARK_HOME contains an empty RELEASE file. This is a known problem with certain vendors (e.g. Cloudera). Please make sure you are using at least $MIN_SPARK_VERSION.\033[0m"
+  elif semverLT ${SPARK_VERSION} ${MIN_SPARK_VERSION}; then
     echo -e "\033[0;31mYou have Apache Spark $SPARK_VERSION at $SPARK_HOME which does not meet the minimum version requirement of $MIN_SPARK_VERSION.\033[0m"
     echo -e "\033[0;31mAborting.\033[0m"
     exit 1
