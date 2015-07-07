@@ -370,7 +370,7 @@ In addition, the following *optional* parameters are supported:
 - `entityId`: String. The entityId. Return events for this `entityId` only.
 - `limit`: Integer. The number of record events returned. Default is 20. -1 to
   get all.
-- `reversed`: Boolean. When used with both `entityType` and `entityId` specified, returns events in reversed chronological order. Default is false.
+- `reversed`: Boolean. **Must be used with both `entityType` and `entityId` specified**, returns events in reversed chronological order. Default is false.
 
 WARNING: If you are using <code>curl</code> with the <code>&</code> symbol, you should quote the entire URL by using single or double quotes.
 
