@@ -11,7 +11,7 @@ We recommend using Linux or Mac machine for serious usage.
 
 If you don't have VirtualBox installed, please follow the instructions in the
 [VirtualBox site](https://www.virtualbox.org/wiki/Downloads) to download and
-install it.
+install it. After installation is done, you don't need to setup anything in Virtual Box. Vagrant will do it for you later.
 
 ## Install Vagrant
 
@@ -29,20 +29,21 @@ $ cd PredictionIO-Vagrant/
 $ git checkout master
 ```
 
-You may modify the following line in the Vagrantfile to change the memory and
-CPU configuration setting of the VM, default is 2048 MB memory:
+Inside the directory `PredictionIO-Vagrant/`, you will find a file named `Vagrantfile` which is the configuration file used by Vagrant to setup the VM. You may modify this file if you want to change the VM configuration.
+
+For example, if you want to change the memory of the VM, you can locate the following line in the `Vagrantfile` and change the value passed to the `memory` parameter (default is 2048MB):
 
 ```
   v.customize ["modifyvm", :id, "--cpuexecutioncap", "90", "--memory", "2048"]
 ```
 
-In the directory PredictionIO-Vagrant/, bring up PredictionIO VM by running:
+In the directory `PredictionIO-Vagrant/`, bring up PredictionIO VM by running:
 
 ```
 $ vagrant up
 ```
 
-INFO: When you run 'vagrant up' for the first time, it will download the base
+INFO: When you run `vagrant up` for the first time, it will download the base
 box ubuntu/trusty64 if you don't have it. Then it will also install all
 necessary libraries and setup PredictionIO in the virtual machine.
 
@@ -62,7 +63,9 @@ When it finishes successfully, you should see somthing like the following:
 ==> default: Finish PredictionIO installation.
 ```
 
-Now you have a PredictionIO VM running!
+That's it! Now you have a PredictionIO VM running!
+
+Please see the following notes regarding how to use PredictionIO VM with vagrant.
 
 ## Using the PredictionIO VM
 
@@ -75,30 +78,17 @@ same directory where you run `vagrant up` (i.e. PredictionIO-Vagrant/)
 $ vagrant ssh
 ```
 
-Then your console prompt becomes something like:
+Then your console prompt becomes something like the following, which means you have logged into the VM:
 
 ```
 vagrant@vagrant-ubuntu-trusty-64:~$
 ```
 
-One you've logged into the VM, you can follow the one of the template quickstart
-guides to get started.
-
-To run PredictionIO Event Server and dependent services:
-
-```
-vagrant@vagrant-ubuntu-trusty-64:~$ pio-start-all
-```
-
-To deploy engine:
-
-```
-vagrant@vagrant-ubuntu-trusty-64:~/MyRecommendation$ pio deploy
-```
+One you've logged into the VM, you can proceed to [Choosing an Engine Template](/start/download) or continue the QuickStart of the Engine template you have chosen.
 
 ### Shutdown and bring up PredictionIO VM again
 
-You should shut down VM properly when you are not using PredictionIO:
+When you are not using PredictionIO VM, you should shut down VM properly, by running the following **in the host machine** (not inside VM):
 
 ```
 $ vagrant halt

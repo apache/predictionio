@@ -1,0 +1,25 @@
+Setting up [PostgreSQL](http://www.postgresql.org/) to work with PredictionIO.
+
+Make sure you have PostgreSQL installed. For Mac Users, [Homebrew](brew.sh) is recommended and can be used as
+
+```
+$ brew install postgresql
+```
+or on Ubuntu:
+```
+apt-get install postgresql-9.4 
+```
+
+Now that PostgreSQL is installed use the following comands
+
+`$ createdb pio` 
+
+If you get an error of the form `could not connect to server: No such file or directory`, then you must first start the server manually,:
+
+`$ pg_ctl -D /usr/local/var/postgres -l /usr/local/var/postgres/server.log start`
+
+Finally use the command:
+
+`$ psql -c "create user pio with password 'pio'"
+
+Your configuration  in `pio-env.sh` is now compatible to run with PostgreSQL.

@@ -78,6 +78,9 @@ root:
         body: 'Learning DASE'
         url: '/customize/'
       -
+        body: 'Implement DASE'
+        url: '/customize/dase/'
+      -
         body: 'Troubleshooting Engine Development'
         url: '/customize/troubleshooting/'
       -
@@ -96,6 +99,9 @@ root:
       -
         body: 'Collecting Data with REST/SDKs'
         url: '/datacollection/eventapi/'
+      -
+        body: 'Events Modeling'
+        url: '/datacollection/eventmodel/'
       -
         body: 'Unifying Multichannel Data with Webhooks'
         url: '/datacollection/webhooks/'

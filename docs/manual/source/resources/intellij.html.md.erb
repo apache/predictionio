@@ -177,3 +177,19 @@ This should return something like:
 INFO: If you hit a breakpoint you are likely to get a connection timeout. To see
 the data that would have been returned, just place a breakpoint where the
 response is created or run the query with no breakpoints.
+
+## Loading a Template Into Intellij IDEA
+
+To customize an existing [template](http://templates.prediction.io) using Intellij IDEA, first pull it from the template gallery:
+
+```bash
+$ pio template get <Template Source> <New Engine Directory>
+```
+
+Now, before opening the template with Intellij, run the following command in the new engine template directory
+
+```bash
+$ pio build
+```
+
+This should update the pioVersion key in SBT to the version of PredictionIO you have installed, so that Intellij loads the correct JARS via its Auto-Import feature. Now, you can go ahead and open the file `build.sbt` with Intellij IDEA. You are now ready to [customize](/customize/) your new engine template.

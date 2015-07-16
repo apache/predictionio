@@ -2,18 +2,19 @@
 title: Installing PredictionIO on Linux / Mac OS X
 ---
 
-## Quick Install
+## Method 1: Quick Install
 
-NOTE: <span class="new">**Note:**</span> PredictionIO can now be installed with a single command:<br />
+On Linux / Mac OS X, PredictionIO can now be installed with a single command:
+<br />
 `$ bash -c "$(curl -s https://install.prediction.io/install.sh)"`
 
-The above script will complete the rest of the instructions on this page for you
-so you can skip them.
+The above script will complete the installation for you.
 
+<%= partial 'shared/install/proceed_template' %>
 
-## Manual Install
+## Method 2: Manual Install
 
-If you do not want to use the install script above, you can follow the steps
+If you do not want to use the Quick Install script, you can follow the steps
 below to setup PredictionIO and its dependencies. In these instructions we will
 assume you are in your home directory. Wherever you see `/home/abc`, replace it
 with your own home directory.
@@ -86,4 +87,4 @@ export JAVA_HOME=/usr/lib/jvm/java-8-oracle
 
 Now you have installed everything you need!
 
-#### [Next: Recommendation Engine Quick Start](/templates/recommendation/quickstart/)
+<%= partial 'shared/install/proceed_template' %>

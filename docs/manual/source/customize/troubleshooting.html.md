@@ -42,7 +42,7 @@ pio train --stop-after-prepare
 
 You can extend a trait `SanityCheck` and implement the method
 `sanityCheck()` with your error checking code. The `sanityCheck()` is called
-when the data is generated. This can be applied to `TrainingData` and `PreparedData`.
+when the data is generated. This can be applied to `TrainingData`, `PreparedData` and the `Model` classes, which are outputs of DataSource's `readTraining()`, Preparator's `prepare()` and Algorithm's `train()` methods, respectively.
 
 For example, one frequent error with the Recommendation Template is that the
 TrainingData is empty because the DataSource is not reading data correctly. You
@@ -109,6 +109,10 @@ You should see the checking is skipped such as the following output:
 ...
 [INFO] [CoreWorkflow$] Training interrupted by io.prediction.workflow.StopAfterReadInterruption.
 ```
+
+## Engine Status Page
+
+After run `pio deploy`, you can access the engine status page by go to same URL and port of the deployed engine with your browser, which is "http://localhost:8000" by default. In the engine status page, you can find the Engine information, and parameters of each DASE components. In particular, you can also see the "Model" trained by the algorithm based on how `toString()` method is implemented in the Algorithm's Model class.
 
 ## pio-shell
 

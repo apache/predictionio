@@ -13,7 +13,7 @@ parameter set and deploy it.
 We assume you have run the [Recommendation Quick Start](/templates/recommendation/quickstart/)
 will skip the data collection / import instructions.
 
-### Edit the AppId
+### Edit the AppName
 
 Edit MyRecommendation/src/main/scala/***Evaluation.scala*** to specify the
 *appName* you used to import the data.
@@ -186,7 +186,7 @@ class DataSource(val dsp: DataSourceParams)
   @transient lazy val logger = Logger[this.type]
 
   def getRatings(sc: SparkContext): RDD[Rating] = {
-    
+
     val eventsRDD: RDD[Event] = PEventStore.find(
       appName = dsp.appName,
       entityType = Some("user"),

@@ -2,8 +2,11 @@
 title: Filter Recommended Items by Blacklist in Query (Recommendation)
 ---
 
-Lets imagine that we want to avoid recommendations of items that user has already seen.
-We need to slightly modify Recommendation template
+Let's say you want to supply a backList for each query to exclude some items from recommendation (For example, in the browsing session, the user just added some items to shopping cart, or you have a list of items you want to filter out, you may want to supply blackList in Query). This how-to will demonstrate how you can do it.
+
+Note that you may also use [E-Commerce Recommendation Template](http://templates.prediction.io/PredictionIO/template-scala-parallel-ecommercerecommendation) which supports this feature by default.
+
+If you are looking for filtering out items based on the specific user-to-item events logged by EventServer (eg. filter all items which the user has "buy" events on), you can use the [E-Commerce Recommendation Template](http://templates.prediction.io/PredictionIO/template-scala-parallel-ecommercerecommendation). Please refer to the algorithm parameters "unseenOnly" and "seenEvents" of the E-Commerce Recommenation Template.
 
 ## Add Query Parameter
 

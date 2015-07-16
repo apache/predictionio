@@ -58,20 +58,35 @@ Likewise, if a black-list is provided, the engine will exclude those products in
 
 <%= partial 'shared/quickstart/create_app' %>
 
-## 4a. Collecting Data
+## 4. Collecting Data
 
 Next, let's collect some training data for the app of this Engine. By default,
 the Similar Product Engine Template supports 2 types of entities: **user** and
-**item**, and event **view**. An item has the **categories** property, which is a list of category names (String). A user can view an item.
+**item**, and event **view**. An item has the **categories** property, which is a list of category names (String). A user can view an item. Respectively, this template requires '$set' user event, '$set' item event, and user-view-item events.
 
-This template requires '$set' user event, '$set' item event, and user-view-item events.
+INFO: This template can easily be customized to consider more user events such as *buy*, *rate* and *like*.
 
-<%= partial 'shared/quickstart/install_sdk' %>
+<%= partial 'shared/quickstart/collect_data' %>
+
+For example, when a new user with id "u0" is created in your app on time `2014-11-02T09:39:45.618-08:00` (current time will be used if eventTime is not specified), you can send a `$set` event for this user. To send this event, run the following `curl` command:
 
 <div class="tabs">
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=$ACCESS_KEY \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "user"
+  "entityId" : "u0",
+  "eventTime" : "2014-11-02T09:39:45.618-08:00"
+}'
+```
+  </div>
   <div data-tab="Python SDK" data-lang="python">
 ```python
 import predictionio
+from datetime import datetime
 
 client = predictionio.EventClient(
   access_key=<ACCESS KEY>,
@@ -85,9 +100,82 @@ client = predictionio.EventClient(
 client.create_event(
   event="$set",
   entity_type="user",
-  entity_id=<USER_ID>
+  entity_id=<USER_ID>,
+  # current time will be used if event_time is not specified
+  event_time=datetime(
+    2014, 11, 02, 09, 39, 45, 618000, pytz.timezone('US/Pacific')
 )
+```
+  </div>
+  <div data-tab="PHP SDK" data-lang="php">
+```php
+<?php
+require_once("vendor/autoload.php");
+use predictionio\EventClient;
 
+$client = new EventClient(<ACCESS KEY>, <URL OF EVENTSERVER>);
+
+// Create a new user
+$client->createEvent(array(
+  'event' => '$set',
+  'entityType' => 'user',
+  'entityId' => <USER ID>
+));
+?>
+```
+  </div>
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
+# Create a client object.
+client = PredictionIO::EventClient.new(<ACCESS KEY>, <URL OF EVENTSERVER>)
+
+# Create a new user
+client.create_event(
+  '$set',
+  'user',
+  <USER ID>
+)
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
+import io.prediction.Event;
+import io.prediction.EventClient;
+
+import com.google.common.collect.ImmutableList;
+
+EventClient client = new EventClient(<ACCESS KEY>, <URL OF EVENTSERVER>);
+
+// Create a new user
+Event userEvent = new Event()
+  .event("$set")
+  .entityType("user")
+  .entityId(<USER_ID>);
+client.createEvent(userEvent);
+```
+  </div>
+</div>
+
+When a new item "i0" is created in your app on time `2014-11-02T09:39:45.618-08:00` (current time will be used if eventTime is not specified), you can send a `$set` event for the item. Note that the item is set with categories properties: `"c1"` and `"c2"`. Run the following `curl` command:
+
+<div class="tabs">
+  <div data-tab="REST API" data-lang="json">
+```
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=$ACCESS_KEY \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "$set",
+  "entityType" : "item"
+  "entityId" : "i0",
+  "properties" : {
+    "categories" : ["c1", "c2"]
+  }
+  "eventTime" : "2014-11-02T09:39:45.618-08:00"
+}'
+```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+```python
 # Create a new item or set existing item's categories
 
 client.create_event(
@@ -98,7 +186,73 @@ client.create_event(
     "categories" : ["<CATEGORY_1>", "<CATEGORY_2>"]
   }
 )
+```
+  </div>
 
+  <div data-tab="PHP SDK" data-lang="php">
+
+```php
+<?php
+
+// Create a new item or set existing item's categories
+$client->createEvent(array(
+  'event' => '$set',
+  'entityType' => 'item',
+  'entityId' => <ITEM ID>
+  'properties' => array('categories' => array('<CATEGORY_1>', '<CATEGORY_2>'))
+));
+
+?>
+```
+  </div>
+
+  <div data-tab="Ruby SDK" data-lang="ruby">
+```ruby
+# Create a new item or set existing item's categories
+client.create_event(
+  '$set',
+  'item',
+  <ITEM ID>, {
+    'properties' => { 'categories' => ['<CATEGORY_1>', '<CATEGORY_2>'] }
+  }
+)
+
+```
+  </div>
+  <div data-tab="Java SDK" data-lang="java">
+```java
+// Create a new item or set existing item's categories
+Event itemEvent = new Event()
+  .event("$set")
+  .entityType("item")
+  .entityId(<ITEM_ID>)
+  .property("categories", ImmutableList.of("<CATEGORY_1>", "<CATEGORY_2>"));
+client.createEvent(itemEvent)
+```
+  </div>
+
+</div>
+
+When the user "u0" view item "i0" on time `2014-11-10T12:34:56.123-08:00` (current time will be used if eventTime is not specified), you can send a view event. Run the following `curl` command:
+
+<div class="tabs">
+  <div data-tab="REST API" data-lang="json">
+
+```
+$ curl -i -X POST http://localhost:7070/events.json?accessKey=$ACCESS_KEY \
+-H "Content-Type: application/json" \
+-d '{
+  "event" : "view",
+  "entityType" : "user"
+  "entityId" : "u0",
+  "targetEntityType" : "item",
+  "targetEntityId" : "i0",
+  "eventTime" : "2014-11-10T12:34:56.123-08:00"
+}'
+```
+  </div>
+  <div data-tab="Python SDK" data-lang="python">
+```python
 # A user views an item
 
 client.create_event(
@@ -114,26 +268,6 @@ client.create_event(
 
 ```php
 <?php
-require_once("vendor/autoload.php");
-use predictionio\EventClient;
-
-$client = new EventClient(<ACCESS KEY>, <URL OF EVENTSERVER>);
-
-// Create a new user
-$client->createEvent(array(
-  'event' => '$set',
-  'entityType' => 'user',
-  'entityId' => <USER ID>
-));
-
-// Create a new item or set existing item's categories
-$client->createEvent(array(
-  'event' => '$set',
-  'entityType' => 'item',
-  'entityId' => <ITEM ID>
-  'properties' => array('categories' => array('<CATEGORY_1>', '<CATEGORY_2>'))
-));
-
 // A user views an item
 $client->createEvent(array(
    'event' => 'view',
@@ -142,32 +276,11 @@ $client->createEvent(array(
    'targetEntityType' => 'item',
    'targetEntityId' => <ITEM ID>
 ));
-
 ?>
 ```
   </div>
   <div data-tab="Ruby SDK" data-lang="ruby">
-
 ```ruby
-# Create a client object.
-client = PredictionIO::EventClient.new(<ACCESS KEY>, <URL OF EVENTSERVER>)
-
-# Create a new user
-client.create_event(
-  '$set',
-  'user',
-  <USER ID>
-)
-
-# Create a new item or set existing item's categories
-client.create_event(
-  '$set',
-  'item',
-  <ITEM ID>, {
-    'properties' => { 'categories' => ['<CATEGORY_1>', '<CATEGORY_2>'] }
-  }
-)
-
 # A user views an item.
 client.create_event(
   'view',
@@ -177,34 +290,11 @@ client.create_event(
     'targetEntityId' => <ITEM ID>
   }
 )
-
 ```
   </div>
   <div data-tab="Java SDK" data-lang="java">
 
 ```java
-import io.prediction.Event;
-import io.prediction.EventClient;
-
-import com.google.common.collect.ImmutableList;
-
-EventClient client = new EventClient(<ACCESS KEY>, <URL OF EVENTSERVER>);
-
-// Create a new user
-Event userEvent = new Event()
-  .event("$set")
-  .entityType("user")
-  .entityId(<USER_ID>);
-client.createEvent(userEvent);
-
-// Create a new item or set existing item's categories
-Event itemEvent = new Event()
-  .event("$set")
-  .entityType("item")
-  .entityId(<ITEM_ID>)
-  .property("categories", ImmutableList.of("<CATEGORY_1>", "<CATEGORY_2>"));
-client.createEvent(itemEvent)
-
 // A user views an item
 Event viewEvent = new Event()
     .event("view")
@@ -216,53 +306,11 @@ client.createEvent(viewEvent);
 
 ```
   </div>
-  <div data-tab="REST API" data-lang="json">
-```
-# Create a new user
-
-curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
--H "Content-Type: application/json" \
--d '{
-  "event" : "$set",
-  "entityType" : "user"
-  "entityId" : <USER ID>,
-  "eventTime" : <TIME OF THIS EVENT>
-}'
-
-# Create a new item or set existing item's categories
-
-curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
--H "Content-Type: application/json" \
--d '{
-  "event" : "$set",
-  "entityType" : "item"
-  "entityId" : <ITEM ID>,
-  "properties" : {
-    "categories" : ["<CATEGORY_1>", "<CATEGORY_2>"]
-  }
-  "eventTime" : <TIME OF THIS EVENT>
-}'
-
-# A user views an item
-
-curl -i -X POST <URL OF EVENTSERVER>/events.json?accessKey=<ACCESS KEY> \
--H "Content-Type: application/json" \
--d '{
-  "event" : "view",
-  "entityType" : "user"
-  "entityId" : <USER ID>,
-  "targetEntityType" : "item",
-  "targetEntityId" : <ITEM ID>,
-  "eventTime" : <TIME OF THIS EVENT>
-}'
-
-```
-  </div>
 </div>
 
-The properties of the `user` and `item` can be set, unset, or delete by special events **$set**, **$unset** and **$delete**. Please refer to [Event API](/datacollection/eventapi/#note-about-properties) for more details of using these events.
+<%= partial 'shared/quickstart/query_eventserver' %>
 
-## 4b. Import Sample Data
+### Import More Sample Data
 
 <%= partial 'shared/quickstart/import_sample_data' %>
 
@@ -290,11 +338,7 @@ User u10 views item i29
 160 events are imported.
 ```
 
-WARNING: If you see error **TypeError: __init__() got an unexpected keyword argument 'access_key'**,
-please update the Python SDK to the latest version.
-
-<%= partial 'shared/quickstart/query_eventserver' %>
-
+<%= partial 'shared/quickstart/query_eventserver_short' %>
 
 ## 5. Deploy the Engine as a Service
 

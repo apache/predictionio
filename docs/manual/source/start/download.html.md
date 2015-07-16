@@ -7,14 +7,10 @@ The first step to create a new engine is to browse [PredictionIO template galler
 To download a template, run:
 
 ```
-$ pio template get <template-repo-path> <new-engine-directory>
+$ pio template get <template-repo-path> <your-new-engine-directory>
 ```
 
-For example, to download the template "PredictionIO/template-scala-parallel-recommendation" to your directory "MyRecommendation", run:
-
-```
-$ pio template get PredictionIO/template-scala-parallel-recommendation MyRecommendation
-```
+You will find the `<template-repo-path>` of the chosen the template in the [PredictionIO template gallery](http://templates.prediction.io/).
 
 NOTE: `pio` is a command available in the `bin/` of the installed PredictionIO directory. You may add the installed Prediction's bin/ directory path to you environment PATH.
 

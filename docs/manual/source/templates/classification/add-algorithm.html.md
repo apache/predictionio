@@ -80,7 +80,9 @@ class RandomForestAlgorithm(val ap: RandomForestAlgorithmParams) // CHANGED
     model: RandomForestModel, // CHANGED
     query: Query): PredictedResult = {
 
-    val label = model.predict(Vectors.dense(query.features))
+    val label = model.predict(Vectors.dense(
+        query.attr0, query.attr1, query.attr2
+    ))
     new PredictedResult(label)
   }
 
