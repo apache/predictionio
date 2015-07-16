@@ -58,7 +58,7 @@ $ pio eval org.template.classification.AccuracyEvaluation \
 (See MyClassification/src/main/scala/***Evaluation.scala*** for full usage.)
 
 
-## Exmaple 2: Precision Metric
+## Example 2: Precision Metric
 
 Precision is a metric for binary classifier 
 capturing the portion of correction prediction among 
