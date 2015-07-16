@@ -256,7 +256,8 @@ class EventServiceActor(
                     }
                     data
                   } else {
-                    (StatusCodes.Forbidden, Map("message" -> s"${event.event} events are not allowed"))
+                    (StatusCodes.Forbidden,
+                      Map("message" -> s"${event.event} events are not allowed"))
                   }
                 }
               }
