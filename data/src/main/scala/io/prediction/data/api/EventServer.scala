@@ -75,7 +75,7 @@ class EventServiceActor(
 
   val pluginContext = EventServerPluginContext(log)
 
-  case class AuthData(appId: Int, channelId: Option[Int])
+  case class AuthData(appId: Int, channelId: Option[Int], events: Seq[String])
 
   /* with accessKey in query, return appId if succeed */
   def withAccessKey: RequestContext => Future[Authentication[AuthData]] = {
@@ -89,12 +89,12 @@ class EventServiceActor(
             channelParamOpt.map { ch =>
               val channelMap = channelsClient.getByAppid(k.appid).map(c => (c.name, c.id)).toMap
               if (channelMap.contains(ch)) {
-                Right(AuthData(k.appid, Some(channelMap(ch))))
+                Right(AuthData(k.appid, Some(channelMap(ch)), k.events))
               } else {
                 Left(ChannelRejection(s"Invalid channel '$ch'."))
               }
             }.getOrElse{
-              Right(AuthData(k.appid, None))
+              Right(AuthData(k.appid, None, k.events))
             }
           }.getOrElse{
             Left(AuthenticationFailedRejection(
@@ -233,26 +233,31 @@ class EventServiceActor(
             authenticate(withAccessKey) { authData =>
               val appId = authData.appId
               val channelId = authData.channelId
+              val events = authData.events
               entity(as[Event]) { event =>
                 complete {
                   log.debug(s"POST events")
-                  pluginContext.inputBlockers.values.foreach(
-                    _.process(EventInfo(
-                      appId = appId,
-                      channelId = channelId,
-                      event = event), pluginContext))
-                  val data = eventClient.futureInsert(event, appId, channelId).map { id =>
-                    pluginsActorRef ! EventInfo(
-                      appId = appId,
-                      channelId = channelId,
-                      event = event)
-                    val result = (StatusCodes.Created, Map("eventId" -> s"${id}"))
-                    if (config.stats) {
-                      statsActorRef ! Bookkeeping(appId, result._1, event)
+                  if (events.isEmpty || authData.events.contains(event.event)) {
+                    pluginContext.inputBlockers.values.foreach(
+                      _.process(EventInfo(
+                        appId = appId,
+                        channelId = channelId,
+                        event = event), pluginContext))
+                    val data = eventClient.futureInsert(event, appId, channelId).map { id =>
+                      pluginsActorRef ! EventInfo(
+                        appId = appId,
+                        channelId = channelId,
+                        event = event)
+                      val result = (StatusCodes.Created, Map("eventId" -> s"${id}"))
+                      if (config.stats) {
+                        statsActorRef ! Bookkeeping(appId, result._1, event)
+                      }
+                      result
                     }
-                    result
+                    data
+                  } else {
+                    (StatusCodes.Forbidden, Map("message" -> s"${event.event} events are not allowed"))
                   }
-                  data
                 }
               }
             }

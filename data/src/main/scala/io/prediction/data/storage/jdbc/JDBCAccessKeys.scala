@@ -38,11 +38,12 @@ class JDBCAccessKeys(client: String, config: StorageClientConfig, prefix: String
 
   def insert(accessKey: AccessKey): Option[String] = DB localTx { implicit s =>
     val key = if (accessKey.key.isEmpty) generateKey else accessKey.key
+    val events = if (accessKey.events.isEmpty) None else Some(accessKey.events.mkString(","))
     sql"""
     insert into $tableName values(
       $key,
       ${accessKey.appid},
-      ${accessKey.events.mkString(",")})""".update().apply()
+      $events)""".update().apply()
     Some(key)
   }
 
@@ -61,10 +62,11 @@ class JDBCAccessKeys(client: String, config: StorageClientConfig, prefix: String
   }
 
   def update(accessKey: AccessKey): Unit = DB localTx { implicit session =>
+    val events = if (accessKey.events.isEmpty) None else Some(accessKey.events.mkString(","))
     sql"""
     UPDATE $tableName SET
       appid = ${accessKey.appid},
-      events = ${accessKey.events.mkString(",")}
+      events = $events
     WHERE accesskey = ${accessKey.key}""".update().apply()
   }
 
@@ -77,6 +79,6 @@ class JDBCAccessKeys(client: String, config: StorageClientConfig, prefix: String
     AccessKey(
       key = rs.string("accesskey"),
       appid = rs.int("appid"),
-      events = rs.string("events").split(","))
+      events = rs.stringOpt("events").map(_.split(",").toSeq).getOrElse(Nil))
   }
 }
