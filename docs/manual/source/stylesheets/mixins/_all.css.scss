@@ -29,3 +29,45 @@
     @content
   }
 }
+
+@mixin placeholder-color ($color) {
+  :-moz-placeholder {
+    color: $color;
+  }
+  :-ms-input-placeholder {
+    color: $color;
+  }
+  ::-moz-placeholder {
+    color: $color;
+  }
+  ::-webkit-input-placeholder {
+    color: $color;
+  } 
+}
+
+@mixin jump-on-hover {
+  -moz-transform: translateX(0px) translateY(-3px);
+  -webkit-transform: translateX(0px) translateY(-3px);
+  -o-transform: translateX(0px) translateY(-3px);
+  -ms-transform: translateX(0px) translateY(-3px);
+  transform: translateX(0px) translateY(-3px);
+  -webkit-box-shadow: 0px 3px 5px 1px rgba(0,0,0,0.12);
+  -moz-box-shadow: 0px 3px 5px 1px rgba(0,0,0,0.12);
+  box-shadow: 0px 3px 5px 1px rgba(0,0,0,0.12);
+}
+
+@mixin alert-border($color) {
+  border: 1px solid $color;
+  border-left: 12px solid $color;
+}
+
+@mixin anchor-no-underline {
+  a{
+    &:hover {
+      text-decoration: none;
+    }
+    &:active {
+      text-decoration: none;
+    }
+  }
+}

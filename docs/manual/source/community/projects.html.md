@@ -36,6 +36,17 @@ Run PredictionIO inside Docker.
 - Status: It works with PredictionIO v0.8 - Under active development
 
 
+## Another Docker Installation for PredictionIO
+
+URL: https://github.com/sphereio/docker-predictionio
+
+Docker container for PredictionIO-based machine learning services.
+
+- Core Author: Fabian M. Borschel
+
+- Status: Runs latest PredictionIO v0.9.3 - Under active development
+
+
 ## GraphX Parallel SimRank Algorithm
 
 URL: https://github.com/ZhouYii/PIO-Parallel-Simrank-Engine

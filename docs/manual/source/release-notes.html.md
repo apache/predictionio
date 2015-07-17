@@ -6,6 +6,16 @@ INFO: For upgrade instructions please refer to [this page](/resources/upgrade/).
 
 ### What's New
 
+0.9.4 Release | July 16th, 2015 | [Release Notes](https://predictionio.atlassian.net/jira/secure/ReleaseNote.jspa?projectId=10000&version=13700)
+
+- Support event permissions with different access keys at the Event Server interface
+
+- Support detection of 3rd party Apache Spark distributions
+
+- Support running `pio eval` without `engine.json`
+
+- Fix an issue where `--verbose` is not handled properly by `pio train`
+
 0.9.3 Release | May 20th, 2015 | [Release Notes](https://predictionio.atlassian.net/jira/secure/ReleaseNote.jspa?projectId=10000&version=13600)
 
 - Add support of developing prediction engines in Java

@@ -58,6 +58,3 @@ object BinaryVectorizer {
     new BinaryVectorizer(HashMap(indexed:_*))
   }
 }
-
-
-

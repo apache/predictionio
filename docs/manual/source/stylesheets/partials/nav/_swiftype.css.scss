@@ -1,33 +1,70 @@
-#swiftype {
-  display: none;
+.swiftype {
+  transition: width 1s ease;
   float: right;
-  margin: 0 25px 0 0;
+  width: 100%;
   box-sizing: border-box;
 
-  .st-search-input {
-    color: $body-font-color;
-    border-radius: 5px;
-    height: 40px;
-    box-sizing: border-box;
-    border: 1px solid $border-color;
-    box-shadow: none;
-    font-weight: 400;
-    font-size: 16px;
-    background: none;
-    background-color: $swiftype-input-background-color;
-    padding: 5px 5px 5px 10px;
-    width: 220px;
-  }
+  .search-form {
+    transition: width 1s ease;
+    float: right;
+    width: 10%;
 
-  @include large {
-    display: block;
+    .search-box-toggler {
+      float: left;
+      top: 8px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .search-box {
+      position: relative;
+      width: 0;
+      overflow: hidden;
+      img {
+        position: absolute;
+        top: 8px;
+        left: 13px;
+      }
+
+      .st-search-input {
+        float: right;
+        color: $body-font-color;
+        border-radius: 40px;
+        line-height: $search-box-height;
+        height: $search-box-height;
+        width: 100%;
+        text-indent: 30px;
+        box-sizing: border-box;
+        border: 1px solid $search-box-border-color;
+        box-shadow: none;
+        font-weight: 400;
+        font-size: 16px;
+        background: none;
+        background-color: $swiftype-input-background-color;
+        padding: 5px;
+        padding-left: 10px;
+      }
+    }
+
+    &.active {
+      width: 100%;
+      .search-box-toggler {
+        display: none;
+      }
+
+      .search-box {
+        width: 100%;
+      }
+    }
   }
 }
 
-body { // Using body forces a higher specificity over the Swiftype stylesheet!
+body { 
+  // style for swiftype result listings
+  // Using body forces a higher specificity over the Swiftype stylesheet!
   div.swiftype div.st-result-listing div.st-search-summary {
     border-bottom: 1px solid $border-color;
-    margin: 15px 0 15px 0;
+    margin: 15px 0;
     padding-bottom: 10px;
   }
 
@@ -144,7 +181,7 @@ body { // Using body forces a higher specificity over the Swiftype stylesheet!
 
   .swiftype-widget .autocomplete li.active {
     background: none;
-    background-color: $nav-main-hover-background-color;
+    background-color: $swiftype-autocomplete-active-color;
     border-bottom: 1px solid $border-color;
     border-top: 0;
     box-shadow: none;

@@ -72,6 +72,7 @@ object CreateWorkflow extends Logging {
   }
 
   val parser = new scopt.OptionParser[WorkflowConfig]("CreateWorkflow") {
+    override def errorOnUnknownArgument: Boolean = false
     opt[String]("batch") action { (x, c) =>
       c.copy(batch = x)
     } text("Batch label of the workflow run.")
@@ -139,32 +140,6 @@ object CreateWorkflow extends Logging {
     val wfc = wfcOpt.get
 
     WorkflowUtils.modifyLogging(wfc.verbose)
-    val variantJson = parse(stringFromFile(wfc.engineVariant))
-    val engineFactory = if (wfc.engineFactory == "") {
-      variantJson \ "engineFactory" match {
-        case JString(s) => s
-        case _ =>
-          error("Unable to read engine factory class name from " +
-            s"${wfc.engineVariant}. Aborting.")
-            sys.exit(1)
-      }
-    } else wfc.engineFactory
-    val variantId = variantJson \ "id" match {
-      case JString(s) => s
-      case _ =>
-        error("Unable to read engine variant ID from " +
-          s"${wfc.engineVariant}. Aborting.")
-        sys.exit(1)
-    }
-    val (engineLanguage, engineFactoryObj) = try {
-      WorkflowUtils.getEngine(engineFactory, getClass.getClassLoader)
-    } catch {
-      case e @ (_: ClassNotFoundException | _: NoSuchMethodException) =>
-        error(s"Unable to obtain engine: ${e.getMessage}. Aborting workflow.")
-        sys.exit(1)
-    }
-
-    val engine: BaseEngine[_, _, _, _] = engineFactoryObj()
 
     val evaluation = wfc.evaluationClass.map { ec =>
       try {
@@ -196,16 +171,42 @@ object CreateWorkflow extends Logging {
       ).toMap
     ).getOrElse(Map())
 
-    val customSparkConf = WorkflowUtils.extractSparkConf(variantJson)
-    val workflowParams = WorkflowParams(
-      verbose = wfc.verbosity,
-      skipSanityCheck = wfc.skipSanityCheck,
-      stopAfterRead = wfc.stopAfterRead,
-      stopAfterPrepare = wfc.stopAfterPrepare,
-      sparkEnv = WorkflowParams().sparkEnv ++ customSparkConf)
-
-
     if (evaluation.isEmpty) {
+      val variantJson = parse(stringFromFile(wfc.engineVariant))
+      val engineFactory = if (wfc.engineFactory == "") {
+        variantJson \ "engineFactory" match {
+          case JString(s) => s
+          case _ =>
+            error("Unable to read engine factory class name from " +
+              s"${wfc.engineVariant}. Aborting.")
+            sys.exit(1)
+        }
+      } else wfc.engineFactory
+      val variantId = variantJson \ "id" match {
+        case JString(s) => s
+        case _ =>
+          error("Unable to read engine variant ID from " +
+            s"${wfc.engineVariant}. Aborting.")
+          sys.exit(1)
+      }
+      val (engineLanguage, engineFactoryObj) = try {
+        WorkflowUtils.getEngine(engineFactory, getClass.getClassLoader)
+      } catch {
+        case e @ (_: ClassNotFoundException | _: NoSuchMethodException) =>
+          error(s"Unable to obtain engine: ${e.getMessage}. Aborting workflow.")
+          sys.exit(1)
+      }
+
+      val engine: BaseEngine[_, _, _, _] = engineFactoryObj()
+
+      val customSparkConf = WorkflowUtils.extractSparkConf(variantJson)
+      val workflowParams = WorkflowParams(
+        verbose = wfc.verbosity,
+        skipSanityCheck = wfc.skipSanityCheck,
+        stopAfterRead = wfc.stopAfterRead,
+        stopAfterPrepare = wfc.stopAfterPrepare,
+        sparkEnv = WorkflowParams().sparkEnv ++ customSparkConf)
+
       // Evaluator Not Specified. Do training.
       if (!engine.isInstanceOf[Engine[_,_,_,_,_,_]]) {
         throw new NoSuchMethodException(s"Engine $engine is not trainable")
@@ -250,6 +251,12 @@ object CreateWorkflow extends Logging {
         engineParams = engineParams,
         engineInstance = engineInstance.copy(id = engineInstanceId))
     } else {
+      val workflowParams = WorkflowParams(
+        verbose = wfc.verbosity,
+        skipSanityCheck = wfc.skipSanityCheck,
+        stopAfterRead = wfc.stopAfterRead,
+        stopAfterPrepare = wfc.stopAfterPrepare,
+        sparkEnv = WorkflowParams().sparkEnv)
       val evaluationInstance = EvaluationInstance(
         evaluationClass = wfc.evaluationClass.get,
         engineParamsGeneratorClass = wfc.engineParamsGeneratorClass.get,

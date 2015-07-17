@@ -1,0 +1,13 @@
+- if table_of_contents(current_page)
+  #table-of-content-wrapper
+    h5 On this page
+    == table_of_contents(current_page)
+    hr
+    = link_to github_url, id: 'edit-page-link'
+      = image_tag 'icons/edit-pencil.png'
+      | Edit this page
+- else
+  #table-of-content-wrapper
+    = link_to github_url, id: 'edit-page-link'
+      = image_tag 'icons/edit-pencil.png'
+      | Edit this page

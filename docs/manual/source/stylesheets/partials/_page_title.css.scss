@@ -1,14 +1,13 @@
 #page-title {
-  display: flex;
   h1 {
+    font-family: $standard-font-family;
     margin: 0;
-    display: inline-block;
-    width: 100%;
-    font-size: 36px;
+    margin-top: 15px;
+    margin-bottom: 32px;
+    font-size: 28px;
     font-weight: 400;
-    padding: 15px 15px 0 25px;
+    line-height: 1.2;
     color: $page-title-font-color;
-    margin-right: 100px;
     word-wrap: break-word;
     &.missing {
       color: $danger-color;

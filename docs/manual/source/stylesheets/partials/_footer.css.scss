@@ -1,67 +1,65 @@
-
-
-#footer {
-  float: left;
-  display: inline-block;
-  justify-content: flex-start;
-
-
-
+footer {
+  font-family: $standard-font-family;
+  padding:0;
   background-color: $footer-background-color;
-  width: 800px;
-  margin-left: 0;
+  @include anchor-no-underline;
 
-  .column {
-    padding: 0 30px 0 30px;
+  .seperator {
+    border-top: 1px solid $footer-seperator-color;
+    margin: 50px 0;
   }
 
-  ul {
-    list-style-type: none;
-    padding: 0;
-    &.social {
-      li {
-        display: inline-block;
-      }
-      a {
-        color: $footer-social-link-color;
-        font-size: 40px;
-        line-height: 40px;
-        height: 40px;
-        margin-right: 20px;
-        &:hover {
-          text-decoration: none;
-          color: $footer-social-link-hover-color;
-        }
+  .footer-link-column {
+    a {
+      color: $footer-link-color;
+    }
+
+    ul {
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      list-style: none;
+      font-size: 12px;
+      line-height: 24px;
+    }
+    .footer-link-column-row {
+      margin-bottom: 20px;
+
+      h4 {
+        color: $footer-heading-4-color;
+        font-size: 18px;
+        font-weight: normal;
       }
     }
   }
 
-  a {
-    color: $footer-link-color;
-    &:hover {
-      color: $footer-link-hover-color;
+  #footer-bottom {
+    background: $footer-bottom-background-color;
+    padding: 15px 0;
+    margin-top: 50px;
+
+    #footer-logo-wrapper {
+      float:left;
     }
-  }
 
-  p {
-    color: $footer-social-link-color;
-  }
+    #social-icons-wrapper {
+      zoom:1;
+      float: right;
 
-  h2 {
-    text-transform: uppercase;
-    font-weight: 400;
-    color: $footer-heading-2-color;
-  }
+      iframe {
+        vertical-align: middle;
+        margin: 0 5px;
+      }
 
-}
+      img{
+        padding:0 5px;
+      }
 
-@include medium {
-  #footer {
-    display: flex;
-    justify-content: space-between;
-    margin-left: 300px;
-  }
-  .column {
-    width: auto;
+      &:after {
+        clear:both;
+      }
+    }
   }
 }

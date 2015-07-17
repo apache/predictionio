@@ -1,0 +1,72 @@
+.subscription-form-wrapper {
+  background-color: $white;
+  border: 1px solid $form-wrapper-border-color;
+  padding: 25px 20px;
+
+  h4 {
+    font-size: 18px;
+    color: $footer-heading-4-color;
+    font-weight: normal;
+  }
+
+  p {
+    color: $white;
+  }
+
+  .pill-button {
+    background-color: $subscribe-form-pill-button-background-color;
+    display: inline-block;
+    padding-left: 30px;
+    padding-right: 30px;
+    border-radius: 3em;
+    border:none;
+    letter-spacing: 3px;
+    color: $white;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+
+    &:hover {
+      @include jump-on-hover;
+    }
+
+    &:disabled {
+      background-color: $disabled-pill-button-background-color !important;
+      border-color: $disabled-pill-button-background-color !important;
+        -webkit-transform: none;
+           -moz-transform: none;
+            -ms-transform: none;
+             -o-transform: none;
+                transform: none;
+       -webkit-box-shadow: none;
+          -moz-box-shadow: none;
+               box-shadow: none;
+    }
+  }
+
+  input{
+    margin-bottom: 17px;
+  }
+
+  input[type="email"] {
+    width: 100%;
+  }
+
+  input:focus:invalid, input:invalid {
+    border-color: $invalid-input-border-color;
+  }
+
+  input:valid{
+    border-color: $valid-input-border-color;
+  }
+
+  input.error, .form-control.error{
+    border-color: $errored-input-border-color;
+  }
+
+  form .error {
+    color: $errored-input-border-color;
+  }
+
+  @include placeholder-color ($subscribe-form-placeholder-color);
+}

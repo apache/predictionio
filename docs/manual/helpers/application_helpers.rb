@@ -24,6 +24,41 @@ module ApplicationHelpers
     base + path
   end
 
+  def page_title_in_nav_menu(nodes)
+    def is_current_page(node)
+      if node.url == current_page.url
+        return true
+      else
+        return false
+      end
+    end
+
+    if nodes
+      result = ""
+      nodes.each do |node|
+        if node.children
+          node.children.each do |child|
+            if is_current_page(child)
+              result = child
+            end
+          end
+        else
+          if is_current_page(node)
+            result = node
+          end
+        end
+      end
+      if result != ""
+        return result.body
+      else
+        return current_page.data.title
+      end
+    else
+      return "Welcome to PredictionIO Docs!"
+    end
+
+  end
+
   def link_to_with_active(body, url, options = {})
     if url == current_page.url
       link_to body, url, options.merge(class: [options[:class], 'active'].join(' '))

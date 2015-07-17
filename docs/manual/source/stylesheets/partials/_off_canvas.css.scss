@@ -10,35 +10,9 @@
   }
 }
 
-#nav-main {
-
-  display: none;
-}
-
-
-
-#table-of-contents {
-
-  display: none;
-}
-
-.active-navigation {
-  #nav-main {
-    display: block;
-  }
-
-  #main {
-
-  }
-}
-
 @include medium {
   #active-navigation {
     display: none;
-  }
-
-  #nav-main {
-    display: block;
   }
 
   .active-navigation {
@@ -46,7 +20,6 @@
       margin-right: 0;
     }
   }
-
 }
 
 // Large
@@ -57,5 +30,4 @@
       display: none;
     }
   }
-
 }

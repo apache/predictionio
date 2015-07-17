@@ -1,0 +1,14 @@
+#search-bar-row-wrapper
+  .container-fluid#search-bar-row
+    .row
+      .col-md-9.col-sm-11.col-xs-11
+        .hidden-md.hidden-lg#mobile-page-heading-wrapper
+          p PredictionIO Docs
+          h4
+            = page_title_in_nav_menu data.nav.main.root
+        h4.hidden-sm.hidden-xs PredictionIO Docs
+      .col-md-3.col-sm-1.col-xs-1.hidden-md.hidden-lg
+        = image_tag 'icons/down-arrow.png', id: 'left-menu-indicator'
+      .col-md-3.col-sm-12.col-xs-12.swiftype-wrapper
+        = partial 'nav/swiftype'
+      .mobile-left-menu-toggler.hidden-md.hidden-lg
