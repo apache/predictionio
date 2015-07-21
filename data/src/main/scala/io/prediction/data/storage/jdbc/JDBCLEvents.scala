@@ -146,8 +146,8 @@ class JDBCLEvents(
     DB readOnly { implicit session =>
       val tableName = sqls.createUnsafely(JDBCUtils.eventTableName(namespace, appId, channelId))
       val whereClause = sqls.toAndConditionOpt(
-        startTime.map(x => sqls"startTime >= $x"),
-        untilTime.map(x => sqls"endTime < $x"),
+        startTime.map(x => sqls"eventTime >= $x"),
+        untilTime.map(x => sqls"eventTime < $x"),
         entityType.map(x => sqls"entityType = $x"),
         entityId.map(x => sqls"entityId = $x"),
         eventNames.map(x =>
