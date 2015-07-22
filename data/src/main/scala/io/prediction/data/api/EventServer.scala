@@ -30,6 +30,7 @@ import io.prediction.data.storage.Channels
 import io.prediction.data.storage.DateTimeJson4sSupport
 import io.prediction.data.storage.Event
 import io.prediction.data.storage.EventJson4sSupport
+import io.prediction.data.storage.BatchEventsJson4sSupport
 import io.prediction.data.storage.LEvents
 import io.prediction.data.storage.Storage
 import org.json4s.DefaultFormats
@@ -46,6 +47,7 @@ import spray.routing.authentication.Authentication
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
+import scala.util.{Try, Success, Failure}
 
 class EventServiceActor(
     val eventClient: LEvents,
@@ -56,6 +58,7 @@ class EventServiceActor(
   object Json4sProtocol extends Json4sSupport {
     implicit def json4sFormats: Formats = DefaultFormats +
       new EventJson4sSupport.APISerializer +
+      new BatchEventsJson4sSupport.APISerializer +
       // NOTE: don't use Json4s JodaTimeSerializers since it has issues,
       // some format not converted, or timezone not correct
       new DateTimeJson4sSupport.Serializer
@@ -350,40 +353,47 @@ class EventServiceActor(
               val appId = authData.appId
               val channelId = authData.channelId
               val allowedEvents = authData.events
-              val handleEvent = (event: Event) => {
-                if (allowedEvents.isEmpty || allowedEvents.contains(event.event)) {
-                  pluginContext.inputBlockers.values.foreach(
-                    _.process(EventInfo(
-                      appId = appId,
-                      channelId = channelId,
-                      event = event), pluginContext))
-                  val data = eventClient.futureInsert(event, appId, channelId).map { id =>
-                    pluginsActorRef ! EventInfo(
-                      appId = appId,
-                      channelId = channelId,
-                      event = event)
-                    val status = StatusCodes.Created
-                    val result = Map(
-                      "status" -> status.intValue,
-                      "eventId" -> s"${id}")
-                    if (config.stats) {
-                      statsActorRef ! Bookkeeping(appId, status, event)
+              val handleEvent: PartialFunction[Try[Event], Future[Map[String, Any]]] = {
+                case Success(event) => {
+                  if (allowedEvents.isEmpty || allowedEvents.contains(event.event)) {
+                    pluginContext.inputBlockers.values.foreach(
+                      _.process(EventInfo(
+                        appId = appId,
+                        channelId = channelId,
+                        event = event), pluginContext))
+                    val data = eventClient.futureInsert(event, appId, channelId).map { id =>
+                      pluginsActorRef ! EventInfo(
+                        appId = appId,
+                        channelId = channelId,
+                        event = event)
+                      val status = StatusCodes.Created
+                      val result = Map(
+                        "status" -> status.intValue,
+                        "eventId" -> s"${id}")
+                      if (config.stats) {
+                        statsActorRef ! Bookkeeping(appId, status, event)
+                      }
+                      result
+                    }.recover { case exception =>
+                      Map(
+                        "status" -> StatusCodes.InternalServerError.intValue,
+                        "message" -> s"${exception.getMessage()}")
                     }
-                    result
-                  }.recover { case exception =>
-                    Map(
-                      "status" -> StatusCodes.InternalServerError.intValue,
-                      "message" -> s"${exception.getMessage()}")
+                    data
+                  } else {
+                    Future.successful(Map(
+                      "status" -> StatusCodes.Forbidden.intValue,
+                      "message" -> s"${event.event} events are not allowed"))
                   }
-                  data
-                } else {
+                }
+                case Failure(exception) => {
                   Future.successful(Map(
-                    "status" -> StatusCodes.Forbidden.intValue,
-                    "message" -> s"${event.event} events are not allowed"))
+                    "status" -> StatusCodes.BadRequest.intValue,
+                    "message" -> s"${exception.getMessage()}"))
                 }
               }
 
-              entity(as[Seq[Event]]) { events =>
+              entity(as[Seq[Try[Event]]]) { events =>
                 complete {
                   Future.traverse(events)(handleEvent)
                 }
