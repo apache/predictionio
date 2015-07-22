@@ -64,6 +64,8 @@ class EventServiceActor(
       new DateTimeJson4sSupport.Serializer
   }
 
+  val MaxNumberOfEventsPerBatchRequest = 50
+
   val log = Logging(context.system, this)
 
   // we use the enclosing ActorContext's or ActorSystem's dispatcher for our
@@ -395,7 +397,13 @@ class EventServiceActor(
 
               entity(as[Seq[Try[Event]]]) { events =>
                 complete {
-                  Future.traverse(events)(handleEvent)
+                  if (events.length <= MaxNumberOfEventsPerBatchRequest) {
+                    Future.traverse(events)(handleEvent)
+                  } else {
+                    (StatusCodes.BadRequest,
+                      Map("message" -> (s"Batch request must have less than or equal to " +
+                        s"${MaxNumberOfEventsPerBatchRequest} events")))
+                  }
                 }
               }
             }
