@@ -339,6 +339,60 @@ class EventServiceActor(
         }
       }
     } ~
+    path("batch" / "events.json") {
+
+      import Json4sProtocol._
+
+      post {
+        handleExceptions(Common.exceptionHandler) {
+          handleRejections(rejectionHandler) {
+            authenticate(withAccessKey) { authData =>
+              val appId = authData.appId
+              val channelId = authData.channelId
+              val allowedEvents = authData.events
+              val handleEvent = (event: Event) => {
+                if (allowedEvents.isEmpty || allowedEvents.contains(event.event)) {
+                  pluginContext.inputBlockers.values.foreach(
+                    _.process(EventInfo(
+                      appId = appId,
+                      channelId = channelId,
+                      event = event), pluginContext))
+                  val data = eventClient.futureInsert(event, appId, channelId).map { id =>
+                    pluginsActorRef ! EventInfo(
+                      appId = appId,
+                      channelId = channelId,
+                      event = event)
+                    val status = StatusCodes.Created
+                    val result = Map(
+                      "status" -> status.intValue,
+                      "eventId" -> s"${id}")
+                    if (config.stats) {
+                      statsActorRef ! Bookkeeping(appId, status, event)
+                    }
+                    result
+                  }.recover { case exception =>
+                    Map(
+                      "status" -> StatusCodes.InternalServerError.intValue,
+                      "message" -> s"${exception.getMessage()}")
+                  }
+                  data
+                } else {
+                  Future.successful(Map(
+                    "status" -> StatusCodes.Forbidden.intValue,
+                    "message" -> s"${event.event} events are not allowed"))
+                }
+              }
+
+              entity(as[Seq[Event]]) { events =>
+                complete {
+                  Future.traverse(events)(handleEvent)
+                }
+              }
+            }
+          }
+        }
+      }
+    } ~
     path("stats.json") {
 
       import Json4sProtocol._
