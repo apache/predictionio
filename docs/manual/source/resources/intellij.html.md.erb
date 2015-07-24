@@ -73,9 +73,13 @@ automatically or prompt you to refresh.
 
 ### Dependencies
 
-Right click on the project and click *Open Module Settings*. Under *Modules*, go
-to the *Dependencies* tab on the right hand side, and click the **+** button to
-add the following two JARs:
+IntelliJ has the annoying tendency to drop some dependencies when you refresh your build.sbt after any changes. 
+To avoid this we put any jars that must be available at runtime into a separate empty module in the project then 
+we make the main engine project depend on this dummy module for runtime classes.
+
+Right click on the project and click *Open Module Settings*. In the second modules column hit **+** and create a
+new Scala module. Name it pio-runtime-jars and add these assemblies under the module dependencies tab and remember to
+change the scope of the jars to **runtime**:
 
 -   `pio-assembly-<%= data.versions.pio %>.jar`
 
@@ -87,8 +91,11 @@ add the following two JARs:
     This JAR can be found inside the `assembly` or `lib` directory of your Apache Spark
     installation directory.
 
+![Create empty module and add dependencies](/images/intellij/pio-runtime-jar-deps.png)
 
-![Adding Dependencies](/images/intellij/intellij-dependencies.png)
+Now make your engine module dependent on the pio-runtime-jars module for scope = runtime.  
+
+![Create empty module and add dependencies](/images/intellij/pio-runtime-jars.png)
 
 
 ## Running and Debugging in IntelliJ IDEA
