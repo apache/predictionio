@@ -60,7 +60,7 @@ At this point, you should have the demo application ready but with an empty data
 
 This script is pretty simple. It loops through the CSV file and creates a new episode for each line in the file in our local database.
 
-You can start the app and point your browser to [http://locahost:3000](http://localhost.com/)
+You can start the app and point your browser to [http://localhost:3000](http://localhost.com/)
 
 ```
 $rails server
