@@ -8,7 +8,7 @@ curl -X POST \
     -H "Content-Type: application/json" \
     -d @- \
     http://localhost:7070/webhooks/segmentio.json?accessKey=$accessKey
-
+echo ''
 
 # normal case api key in header for identify event
 curl -H "Accept: application/json; version=2.0" \
@@ -18,6 +18,7 @@ curl -X POST \
      -H "Content-Type: application/json" \
      -d @- \
      http://localhost:7070/webhooks/segmentio.json
+echo ''
 
 # normal case api key in header for track event
 curl -H "Accept: application/json; version=2.0" \
@@ -27,7 +28,7 @@ curl -X POST \
      -H "Content-Type: application/json" \
      -d @- \
      http://localhost:7070/webhooks/segmentio.json
-
+echo ''
 
 # normal case api key in header for page event
 curl -H "Accept: application/json; version=2.0" \
@@ -37,6 +38,7 @@ curl -X POST \
      -H "Content-Type: application/json" \
      -d @- \
      http://localhost:7070/webhooks/segmentio.json
+echo ''
 
 # normal case api key in header for screen event
 curl -H "Accept: application/json; version=2.0" \
@@ -46,6 +48,7 @@ curl -X POST \
      -H "Content-Type: application/json" \
      -d @- \
      http://localhost:7070/webhooks/segmentio.json
+echo ''
 
 # normal case api key in header for group event
 curl -H "Accept: application/json; version=2.0" \
@@ -55,6 +58,7 @@ curl -X POST \
      -H "Content-Type: application/json" \
      -d @- \
      http://localhost:7070/webhooks/segmentio.json
+echo ''
 
 # normal case api key in header for alias event
 curl -H "Accept: application/json; version=2.0" \
@@ -64,7 +68,7 @@ curl -X POST \
      -H "Content-Type: application/json" \
      -d @- \
      http://localhost:7070/webhooks/segmentio.json
-
+echo ''
 
 # invalid type
 curl -i -X POST http://localhost:7070/webhooks/segmentio.json?accessKey=$accessKey \
@@ -73,6 +77,7 @@ curl -i -X POST http://localhost:7070/webhooks/segmentio.json?accessKey=$accessK
   "version"   : 1,
   "type"      : "invalid_type",
   "userId"    : "019mr8mf4r",
+  "sent_at":"2015-08-21T15:25:32.799Z",
   "traits"    : {
       "email"            : "achilles@segment.com",
       "name"             : "Achilles",
@@ -82,6 +87,7 @@ curl -i -X POST http://localhost:7070/webhooks/segmentio.json?accessKey=$accessK
   "timestamp" : "2012-12-02T00:30:08.276Z"
 }' \
 -w %{time_total}
+echo ''
 
 # invalid data format
 curl -i -X POST http://localhost:7070/webhooks/segmentio.json?accessKey=$accessKey \
@@ -89,6 +95,7 @@ curl -i -X POST http://localhost:7070/webhooks/segmentio.json?accessKey=$accessK
 -d '{
   "version"   : 1,
   "userId"    : "019mr8mf4r",
+  "sent_at":"2015-08-21T15:25:32.799Z",
   "traits"    : {
       "email"            : "achilles@segment.com",
       "name"             : "Achilles",
@@ -98,7 +105,7 @@ curl -i -X POST http://localhost:7070/webhooks/segmentio.json?accessKey=$accessK
   "timestamp" : "2012-12-02T00:30:08.276Z"
 }' \
 -w %{time_total}
-
+echo ''
 
 # invalid webhooks path
 curl -i -X POST http://localhost:7070/webhooks/invalidpath.json?accessKey=$accessKey \
@@ -107,6 +114,7 @@ curl -i -X POST http://localhost:7070/webhooks/invalidpath.json?accessKey=$acces
   "version"   : 1,
   "type"      : "identify",
   "userId"    : "019mr8mf4r",
+  "sent_at":"2015-08-21T15:25:32.799Z",
   "traits"    : {
       "email"            : "achilles@segment.com",
       "name"             : "Achilles",
@@ -116,14 +124,16 @@ curl -i -X POST http://localhost:7070/webhooks/invalidpath.json?accessKey=$acces
   "timestamp" : "2012-12-02T00:30:08.276Z"
 }' \
 -w %{time_total}
-
+echo ''
 
 # get request
 curl -i -X GET http://localhost:7070/webhooks/segmentio.json?accessKey=$accessKey \
 -H "Content-Type: application/json" \
 -w %{time_total}
+echo ''
 
 # get invalid
 curl -i -X GET http://localhost:7070/webhooks/invalidpath.json?accessKey=$accessKey \
 -H "Content-Type: application/json" \
 -w %{time_total}
+echo ''

@@ -20,7 +20,7 @@ import org.json4s._
 
 private[prediction] object SegmentIOConnector extends JsonConnector {
 
-  private lazy val supportedAPI = Vector("2", "2.0", "2.0.0")
+  //private lazy val supportedAPI = Vector("2", "2.0", "2.0.0")
 
   implicit val json4sFormats: Formats = DefaultFormats
 
@@ -28,11 +28,13 @@ private[prediction] object SegmentIOConnector extends JsonConnector {
   def toEventJson(data: JObject): JObject = {
     try {
       val version: String = data.values("version").toString
+/*
       if (!supportedAPI.contains(version)) {
         throw new ConnectorException(
           s"Supported segment.io API versions: [2]. got [$version]"
         )
       }
+*/
     } catch { case _: Throwable ⇒
       throw new ConnectorException(s"Failed to get segment.io API version.")
     }
@@ -194,12 +196,12 @@ object Events {
   )
 
   private[prediction] case class Screen(
-    name: String,
+    name: Option[String] = None,
     properties: Option[JObject] = None
   )
 
   private[prediction] case class Page(
-    name: String,
+    name: Option[String] = None,
     properties: Option[JObject] = None
   )
 
