@@ -41,7 +41,7 @@ class JDBCApps(client: String, config: StorageClientConfig, prefix: String)
       """
     } else {
       sql"""
-      insert into $tableName values(${app.id}, ${app.name}, $app{description}())
+      insert into $tableName values(${app.id}, ${app.name}, ${app.description})
       """
     }
     Some(q.updateAndReturnGeneratedKey().apply().toInt)
