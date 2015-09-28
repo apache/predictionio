@@ -500,7 +500,7 @@ To use the alternative multinomial logistic regression algorithm change your `en
     {
       "name": "regParam",
       "params": {
-        "regParam": 2,5
+        "regParam": 0.1
       }
     }
   ]
