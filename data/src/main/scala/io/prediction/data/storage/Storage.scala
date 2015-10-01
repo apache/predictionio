@@ -228,9 +228,10 @@ object Storage extends Logging {
 
   /** Get the StorageClient config data from PIO Framework's environment variables */
   def getConfig(sourceName: String): Option[StorageClientConfig] = {
-    if (s2cm.contains(sourceName) && s2cm.get(sourceName).nonEmpty && s2cm.get(sourceName).get.nonEmpty)
+    if (s2cm.contains(sourceName) && s2cm.get(sourceName).nonEmpty
+      && s2cm.get(sourceName).get.nonEmpty) {
       Some(s2cm.get(sourceName).get.get.config)
-    else None
+    } else None
   }
 
   private def updateS2CM(k: String, parallel: Boolean, test: Boolean):
