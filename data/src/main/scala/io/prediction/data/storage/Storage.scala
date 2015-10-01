@@ -15,6 +15,8 @@
 
 package io.prediction.data.storage
 
+import java.lang.reflect.InvocationTargetException
+
 import grizzled.slf4j.Logging
 import io.prediction.annotation.DeveloperApi
 
@@ -208,8 +210,8 @@ object Storage extends Logging {
   }
 
   private def getClient(
-      clientConfig: StorageClientConfig,
-      pkg: String): BaseStorageClient = {
+    clientConfig: StorageClientConfig,
+    pkg: String): BaseStorageClient = {
     val className = "io.prediction.data.storage." + pkg + ".StorageClient"
     try {
       Class.forName(className).getConstructors()(0).newInstance(clientConfig).
@@ -222,6 +224,14 @@ object Storage extends Logging {
       case e: java.lang.reflect.InvocationTargetException =>
         throw e.getCause
     }
+  }
+
+  /** Get the StorageClient config data from PIO Framework's environment variables */
+  def getConfig(sourceName: String): Option[StorageClientConfig] = {
+    if (s2cm.contains(sourceName) && s2cm.get(sourceName).nonEmpty
+      && s2cm.get(sourceName).get.nonEmpty) {
+      Some(s2cm.get(sourceName).get.get.config)
+    } else None
   }
 
   private def updateS2CM(k: String, parallel: Boolean, test: Boolean):
