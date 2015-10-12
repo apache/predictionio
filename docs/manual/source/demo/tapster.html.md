@@ -8,8 +8,6 @@ In this demo, we will show you how to build a Tinder-style web application (name
 
 The demo will use [Similar Product Template](http://docs.prediction.io/templates/similarity/quickstart/). Similar Product Template is a great choice if you want to make recommendations based on immediate user activities or for new users with limited history. It uses MLLib Alternating Least Squares (ALS) recommendation algorithm, a [Collaborative filtering](http://en.wikipedia.org/wiki/Recommender_system#Collaborative_filtering) (CF) algorithm commonly used for recommender systems. These techniques aim to fill in the missing entries of a user-item association matrix. Users and products are described by a small set of latent factors that can be used to predict missing entries. A layman's interpretation of Collaborative Filtering is "People who like this comic, also like these comics."
 
-If you haven't already you can check out the final live demo here: [tapster.prediction.io](http://tapster.prediction.io/)
-
 All the code and data is on GitHub at: [github.com/PredictionIO/Demo-Tapster](https://github.com/PredictionIO/Demo-Tapster).
 
 ### Data
@@ -60,7 +58,7 @@ At this point, you should have the demo application ready but with an empty data
 
 This script is pretty simple. It loops through the CSV file and creates a new episode for each line in the file in our local database.
 
-You can start the app and point your browser to [http://locahost:3000](http://localhost.com/)
+You can start the app and point your browser to [http://localhost:3000](http://localhost.com/)
 
 ```
 $rails server
@@ -374,7 +372,6 @@ Thats it. You’re done! If Ruby is not your language of choice check out our ot
 
 ## Links
 Source code is on GitHub at: [github.com/PredictionIO/Demo-Tapster](https://github.com/PredictionIO/Demo-Tapster)
-Live demo is available at: [tapster.prediction.io](http://tapster.prediction.io)
 
 ## Conclusion
 

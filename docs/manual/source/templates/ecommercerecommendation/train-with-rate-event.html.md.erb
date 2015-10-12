@@ -93,7 +93,7 @@ Modify `readTraining()` function of `DataSource` to read "rate" events (commente
 
 ```
 
-### Prepartar.scala
+### Preparator.scala
 
 Modify Preparator to pass rateEvents to algorithm as PreparedData (Replace all `ViewEvent` with `RateEvent`. Replace all `viewEvent` with `rateEvent`)
 
@@ -124,7 +124,7 @@ class PreparedData(
 
 ```
 
-### ALSAlgorithm.scala
+### ECommAlgorithm.scala
 
 Modify `train()` method to train with rate event.
 
@@ -177,7 +177,7 @@ Change the following from:
       iterations = ap.numIterations,
       lambda = ap.lambda,
       blocks = -1,
-      alpha = 1.0,
+      alpha = 1.0, // WILL BE REMOVED
       seed = seed)
     ...
 

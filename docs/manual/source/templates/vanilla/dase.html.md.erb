@@ -16,7 +16,7 @@ PredictionIO supports two types of algorithms:
 
 ### P2LAlgorithm
 
-By default, the Algorithm of the Vanilla template trains a simple model which does not contain RDD, as you can see you in Algorithm.scala:
+By default, the Algorithm of the Vanilla template trains a simple model which does not contain RDD, as you can see in Algorithm.scala:
 
 ```scala
 
@@ -83,6 +83,7 @@ class Model(
       s"mc=${mc}" +
       // ADDED for debugging
       s"mRdd=[${mRdd.count()}] (${mRdd.take(2).toList}...)"
+    }
 }
 
 ```

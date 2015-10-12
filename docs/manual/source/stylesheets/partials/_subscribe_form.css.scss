@@ -1,11 +1,11 @@
 .subscription-form-wrapper {
-  background-color: $white;
+  background-color: $form-wrapper-color;
   border: 1px solid $form-wrapper-border-color;
   padding: 25px 20px;
 
   h4 {
     font-size: 18px;
-    color: $footer-heading-4-color;
+    color: $form-wrapper-heading-4-color;
     font-weight: normal;
   }
 
@@ -50,6 +50,11 @@
 
   input[type="email"] {
     width: 100%;
+    padding-left: 12px;
+  	padding-right: 12px;
+  	border-radius: 5px;
+  	font-size: 14px;
+  	line-height: 26px;
   }
 
   input:focus:invalid, input:invalid {
