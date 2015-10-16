@@ -37,8 +37,8 @@ jar_file () {
 
 acquire_sbt_jar () {
   SBT_VERSION=`awk -F "=" '/sbt\\.version/ {print $2}' $sbt_bin_dir/../project/build.properties`
-  URL1=http://typesafe.artifactoryonline.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/${SBT_VERSION}/sbt-launch.jar
-  URL2=http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/${SBT_VERSION}/sbt-launch.jar
+  URL1=http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/${SBT_VERSION}/sbt-launch.jar
+  URL2=http://typesafe.artifactoryonline.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/${SBT_VERSION}/sbt-launch.jar
   JAR=$sbt_bin_dir/sbt-launch-${SBT_VERSION}.jar
 
   sbt_jar=$JAR
@@ -50,9 +50,9 @@ acquire_sbt_jar () {
     printf "Attempting to fetch sbt\n"
     JAR_DL=${JAR}.part
     if hash curl 2>/dev/null; then
-      (curl --progress-bar ${URL1} > ${JAR_DL} || curl --progress-bar ${URL2} > ${JAR_DL}) && mv ${JAR_DL} ${JAR}
+      (curl -L --verbose --progress-bar ${URL1} > ${JAR_DL} || curl -L --verbose --progress-bar ${URL2} > ${JAR_DL}) && mv ${JAR_DL} ${JAR}
     elif hash wget 2>/dev/null; then
-      (wget --progress=bar ${URL1} -O ${JAR_DL} || wget --progress=bar ${URL2} -O ${JAR_DL}) && mv ${JAR_DL} ${JAR}
+      (wget --verbose --progress=bar ${URL1} -O ${JAR_DL} || wget --verbose --progress=bar ${URL2} -O ${JAR_DL}) && mv ${JAR_DL} ${JAR}
     else
       printf "You do not have curl or wget installed, please install sbt manually from http://www.scala-sbt.org/\n"
       exit -1

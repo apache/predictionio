@@ -442,3 +442,43 @@ checkGET "/events.json?accessKey=$accessKey&startTime=abc" 400
 checkGET "/events.json?accessKey=$accessKey&untilTime=abc" 400
 
 checkGET "/events.json?accessKey=$accessKey&startTime=2004-12-13T21:39:45.618Z&untilTime=2004-12-15T21:39:45.618Z" 200
+
+# -----
+# batch request
+# ----
+
+# normal request
+testdata='[{
+  "event" : "my_event",
+  "entityType" : "user",
+  "entityId" : "uid",
+  "targetEntityType" : "item",
+  "targetEntityId" : "iid",
+  "properties" : {
+    "someProperty" : "value1",
+    "anotherProperty" : "value2"
+  },
+  "eventTime" : "2004-12-13T21:39:45.618Z"
+}]'
+
+checkPOST "/batch/events.json?accessKey=$accessKey" "$testdata" 200
+
+# request with a malformed event (2nd event)
+# the response code is succesful but the error for individual event is reflected in the response's body.
+testdata='[{
+  "event" : "my_event_1",
+  "entityType" : "user",
+  "entityId" : "uid",
+  "eventTime" : "2004-12-13T21:39:45.618Z"
+}, {
+  "eve" : "my_event_2",
+  "entityType" : "user",
+  "entityId" : "uid",
+  "eventTime" : "2015-12-13T21:39:45.618Z"
+}]'
+
+checkPOST "/batch/events.json?accessKey=$accessKey" "$testdata" 200
+
+# request with too many events (more than 50)
+testdata=`cat data/very_long_batch_request.txt`
+checkPOST "/batch/events.json?accessKey=$accessKey" "$testdata" 400

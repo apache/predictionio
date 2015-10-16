@@ -19,6 +19,7 @@ import io.prediction.annotation.DeveloperApi
 import io.prediction.data.{Utils => DataUtils}
 import org.joda.time.DateTime
 import org.json4s._
+import scala.util.{Try, Success, Failure}
 
 /** :: DeveloperApi ::
   * Support library for dealing with [[Event]] and JSON4S
@@ -210,4 +211,26 @@ object EventJson4sSupport {
   @DeveloperApi
   class APISerializer extends CustomSerializer[Event](format => (
     readJson, writeJson))
+}
+
+
+@DeveloperApi
+object BatchEventsJson4sSupport {
+  implicit val formats = DefaultFormats
+
+  @DeveloperApi
+  def readJson: PartialFunction[JValue, Seq[Try[Event]]] = {
+    case JArray(events) => {
+      events.map { event =>
+        try {
+          Success(EventJson4sSupport.readJson(event))
+        } catch {
+          case e: Exception => Failure(e)
+        }
+      }
+    }
+  }
+
+  @DeveloperApi
+  class APISerializer extends CustomSerializer[Seq[Try[Event]]](format => (readJson, Map.empty))
 }

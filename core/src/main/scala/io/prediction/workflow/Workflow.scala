@@ -103,7 +103,7 @@ object Workflow {
       evaluator: BaseEvaluator[EEI, EQ, EP, EA, ER],
       env: Map[String, String] = WorkflowUtils.pioEnvVars,
       params: WorkflowParams = WorkflowParams()) {
-    runEvaluation(
+    runEvaluationViaCoreWorkflow(
       evaluation = evaluation,
       engine = engine,
       engineParamsList = engineParamsList,
@@ -115,7 +115,7 @@ object Workflow {
 
   /** :: Experimental :: */
   @Experimental
-  def runEvaluation[EI, Q, P, A, R <: BaseEvaluatorResult](
+  def runEvaluationViaCoreWorkflow[EI, Q, P, A, R <: BaseEvaluatorResult](
       evaluation: Evaluation,
       engine: BaseEngine[EI, Q, P, A],
       engineParamsList: Seq[EngineParams],

@@ -22,7 +22,7 @@ libraryDependencies ++= Seq(
   "com.github.scopt"       %% "scopt"          % "3.2.0",
   "io.spray"               %% "spray-can"      % "1.3.2",
   "io.spray"               %% "spray-routing"  % "1.3.2",
-  "me.lessis"              %% "semverfi"       % "0.1.3",
+  "me.lessis"              % "semverfi_2.10"  % "0.1.3",
   "org.apache.hadoop"       % "hadoop-common"  % "2.5.0",
   "org.apache.hadoop"       % "hadoop-hdfs"    % "2.5.0",
   "org.apache.spark"       %% "spark-core"     % sparkVersion.value % "provided",
