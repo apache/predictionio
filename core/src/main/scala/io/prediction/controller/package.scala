@@ -33,8 +33,8 @@ package io.prediction
   * There are 3 typical engine configurations:
   *
   *  1. [[PDataSource]], [[PPreparator]], [[P2LAlgorithm]], [[LServing]]
-  *  1. [[PDataSource]], [[PPreparator]], [[PAlgorithm]], [[LServing]]
-  *  1. [[LDataSource]], [[LPreparator]], [[LAlgorithm]], [[LServing]]
+  *  2. [[PDataSource]], [[PPreparator]], [[PAlgorithm]], [[LServing]]
+  *  3. [[LDataSource]], [[LPreparator]], [[LAlgorithm]], [[LServing]]
   *
   * In both configurations 1 and 2, data is sourced and prepared in a
   * parallelized fashion, with data type as RDD.
