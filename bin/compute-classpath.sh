@@ -60,5 +60,8 @@ fi
 if [ -n "$ES_CONF_DIR" ]; then
   CLASSPATH="$CLASSPATH:$ES_CONF_DIR"
 fi
+if [ -n "$POSTGRES_JDBC_DRIVER" ]; then
+  CLASSPATH="$CLASSPATH:$POSTGRES_JDBC_DRIVER"
+fi
 
 echo "$CLASSPATH"
