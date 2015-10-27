@@ -262,6 +262,7 @@ object WorkflowUtils extends Logging {
       "PIO_CONF_DIR",
       "ES_CONF_DIR",
       "POSTGRES_JDBC_DRIVER",
+      "MYSQL_JDBC_DRIVER",
       "HADOOP_CONF_DIR",
       "HBASE_CONF_DIR")
     thirdPartyPaths.map(p =>
