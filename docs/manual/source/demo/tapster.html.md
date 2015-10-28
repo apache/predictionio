@@ -28,10 +28,10 @@ The data structure looks like this:
 192,587 rows. Each row represents one user like for the given episode.
 
 The tutorial has four major steps:
-Demo application setup
-PredictionIO installation and setup
-Import data into database and PredictionIO
-Integrate demo application with PredictionIO
+* Demo application setup
+* PredictionIO installation and setup
+* Import data into database and PredictionIO
+* Integrate demo application with PredictionIO
 
 ## Tapster Demo Application
 The demo application is built using Rails.
