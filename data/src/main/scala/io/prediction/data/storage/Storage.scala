@@ -15,6 +15,8 @@
 
 package io.prediction.data.storage
 
+import java.lang.reflect.InvocationTargetException
+
 import grizzled.slf4j.Logging
 import io.prediction.annotation.DeveloperApi
 
@@ -208,8 +210,8 @@ object Storage extends Logging {
   }
 
   private def getClient(
-      clientConfig: StorageClientConfig,
-      pkg: String): BaseStorageClient = {
+    clientConfig: StorageClientConfig,
+    pkg: String): BaseStorageClient = {
     val className = "io.prediction.data.storage." + pkg + ".StorageClient"
     try {
       Class.forName(className).getConstructors()(0).newInstance(clientConfig).
@@ -222,6 +224,14 @@ object Storage extends Logging {
       case e: java.lang.reflect.InvocationTargetException =>
         throw e.getCause
     }
+  }
+
+  /** Get the StorageClient config data from PIO Framework's environment variables */
+  def getConfig(sourceName: String): Option[StorageClientConfig] = {
+    if (s2cm.contains(sourceName) && s2cm.get(sourceName).nonEmpty
+      && s2cm.get(sourceName).get.nonEmpty) {
+      Some(s2cm.get(sourceName).get.get.config)
+    } else None
   }
 
   private def updateS2CM(k: String, parallel: Boolean, test: Boolean):
@@ -246,7 +256,7 @@ object Storage extends Logging {
   }
 
   private[prediction]
-  def getDataObject[T](repo: String, test: Boolean = false)
+  def getDataObjectFromRepo[T](repo: String, test: Boolean = false)
     (implicit tag: TypeTag[T]): T = {
     val repoDOMeta = repositoriesToDataObjectMeta(repo)
     val repoDOSourceName = repoDOMeta.sourceName
@@ -348,31 +358,31 @@ object Storage extends Logging {
   }
 
   private[prediction] def getMetaDataEngineManifests(): EngineManifests =
-    getDataObject[EngineManifests](MetaDataRepository)
+    getDataObjectFromRepo[EngineManifests](MetaDataRepository)
 
   private[prediction] def getMetaDataEngineInstances(): EngineInstances =
-    getDataObject[EngineInstances](MetaDataRepository)
+    getDataObjectFromRepo[EngineInstances](MetaDataRepository)
 
   private[prediction] def getMetaDataEvaluationInstances(): EvaluationInstances =
-    getDataObject[EvaluationInstances](MetaDataRepository)
+    getDataObjectFromRepo[EvaluationInstances](MetaDataRepository)
 
   private[prediction] def getMetaDataApps(): Apps =
-    getDataObject[Apps](MetaDataRepository)
+    getDataObjectFromRepo[Apps](MetaDataRepository)
 
   private[prediction] def getMetaDataAccessKeys(): AccessKeys =
-    getDataObject[AccessKeys](MetaDataRepository)
+    getDataObjectFromRepo[AccessKeys](MetaDataRepository)
 
   private[prediction] def getMetaDataChannels(): Channels =
-    getDataObject[Channels](MetaDataRepository)
+    getDataObjectFromRepo[Channels](MetaDataRepository)
 
   private[prediction] def getModelDataModels(): Models =
-    getDataObject[Models](ModelDataRepository)
+    getDataObjectFromRepo[Models](ModelDataRepository)
 
   /** Obtains a data access object that returns [[Event]] related local data
     * structure.
     */
   def getLEvents(test: Boolean = false): LEvents =
-    getDataObject[LEvents](EventDataRepository, test = test)
+    getDataObjectFromRepo[LEvents](EventDataRepository, test = test)
 
   /** Obtains a data access object that returns [[Event]] related RDD data
     * structure.
