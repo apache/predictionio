@@ -2,19 +2,18 @@
 title: Hyperparameter Tuning
 ---
 
-A PredictionIO engine is instantiated by a set of parameters, these parameters
-determines which algorithm is used as well as the parameter for the algorithm.
-It naturally raises a question of how to choose the best set of parameters.
+A PredictionIO engine is instantiated by a set of parameters. These parameters
+define which algorithm is to be used, as well supply the parameters for the algorithm itself. This naturally raises the question of how to choose the best set of parameters.
 The evaluation module streamlines the process of *tuning* the engine to the best
-parameter set and deploy it.
+parameter set and deploys it.
 
 ## Quick Start
 
 We demonstrate the evaluation with [the classification template]
 (/templates/classification/quickstart/).
-The classification template uses naive bayesian algorithm that has a smoothing
-parameter. We evaluate the prediction quality against different parameter value
-to find the best parameter, and then deploy it.
+The classification template uses a naive bayesian algorithm that has a smoothing
+parameter. We evaluate the prediction quality against different parameter values
+to find the best parameter values, and then deploy it.
 
 ### Edit the AppId
 
@@ -31,11 +30,11 @@ object EngineParamsList extends EngineParamsGenerator {
 ```
 
 ### Build and run the evaluation
-To run evaluation, the command `pio eval` is used. It takes two
+To run an evaluation, the command `pio eval` is used. It takes two
 mandatory parameter, 
-1. the `Evaluation` object, it tells PredictionIO the engine and metric we use
+1. the `Evaluation` object, which tells PredictionIO the engine and metric we use
    for the evaluation; and 
-2. the `EngineParamsGenerator`, it contains a list of engine params to test
+2. the `EngineParamsGenerator`, which contains a list of engine params to test
    against. 
 The following command kickstarts the evaluation 
 workflow for the classification template.
@@ -124,17 +123,17 @@ through the evaluation process.
 
 ## Detailed Explanation
 
-An engine often depends on a number of parameters, for example, naive bayesian
+An engine often depends on a number of parameters, for example, the naive bayesian
 classification algorithm has a smoothing parameter to make the model more
-adaptive to unseen data. Comparing with parameters which are *learnt* by the
-machine learning algorithm, this smoothing parameter *teaches* how the algorithm
-works. Therefore, they are usually called *hyperparameters*.
+adaptive to unseen data. Compared with parameters which are *learnt* by the
+machine learning algorithm, this smoothing parameter *teaches* the algorithm
+how to work. Therefore, such parameters are usually called *hyperparameters*.
 
 In PredictionIO, we always take a holistic view of an engine. An engine is
-comprised of a set of ***DAS*** controllers, as well as the parameter for each
-controller.
+comprised of a set of ***DAS*** controllers, as well as the necessary parameters for the
+controllers themselves.
 In the evaluation, we attempt to find out the best hyperparameters for an
-*engine*, which we call ***engine params***. With an engine params, we can
+*engine*, which we call ***engine params***. Using engine params we can
 deploy a complete engine.
 
 This section demonstrates how to select the optimal engine params
@@ -143,10 +142,10 @@ module.
 
 ## The Evaluation Design
 
-The PredictionIO evaluation module finds out the best engine params for an
+The PredictionIO evaluation module tests for the best engine params for an
 engine.
 
-Given a engine params, we instantiate an engine and evaluate it with existing data.
+Given a set of engine params, we instantiate an engine and evaluate it with existing data.
 The data is splitted into two sets, a training set and a validation set. 
 The training
 set is used to train the engine, the same way as how we deploy a prediction
