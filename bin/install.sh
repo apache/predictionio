@@ -13,6 +13,8 @@ PIO_VERSION=0.9.5
 SPARK_VERSION=1.5.1
 ELASTICSEARCH_VERSION=1.4.4
 HBASE_VERSION=1.0.0
+POSTGRES_VERSION=9.4-1204.jdbc41
+MYSQL_VERSION=5.1.37
 PIO_DIR=$HOME/PredictionIO
 USER_PROFILE=$HOME/.profile
 PIO_FILE=PredictionIO-${PIO_VERSION}.tar.gz
@@ -336,6 +338,8 @@ case $source_setup in
       echo -e "\033[1;31mPlease install PostgreSQL manually!\033[0m"
       exit 3
     fi
+    curl -O https://jdbc.postgresql.org/download/postgresql-${POSTGRES_VERSION}.jar
+    mv postgresql-${POSTGRES_VERSION}.jar ${PIO_DIR}/lib/
     ;;
   "$MYSQL")
     if [[ ${distribution} = "$DISTRO_DEBIAN" ]]; then
@@ -354,6 +358,8 @@ case $source_setup in
       echo -e "\033[1;31mPlease install MySQL manually!\033[0m"
       exit 4
     fi
+    curl -O http://central.maven.org/maven2/mysql/mysql-connector-java/5.1.37/mysql-connector-java-${MYSQL_VERSION}.jar
+    mv mysql-connector-java-${MYSQL_VERSION}.jar ${PIO_DIR}/lib/
     ;;
   "$ES_HB")
     # Elasticsearch
