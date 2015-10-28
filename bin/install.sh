@@ -239,7 +239,7 @@ else
         break
         ;;
       "$DISTRO_OTHER")
-        echo -e "\033[1;31mYour disribution not yet supported for automatic install :(\033[0m"
+        echo -e "\033[1;31mYour distribution not yet supported for automatic install :(\033[0m"
         echo -e "\033[1;31mPlease install Java manually!\033[0m"
         exit 2
         ;;
@@ -332,7 +332,7 @@ case $source_setup in
       sudo -u postgres createuser -P pio
       echo -e "\033[1;36mPlease update $pio_dir/conf/pio-env.sh if you did not enter the default password\033[0m"
     else
-      echo -e "\033[1;31mYour disribution not yet supported for automatic install :(\033[0m"
+      echo -e "\033[1;31mYour distribution not yet supported for automatic install :(\033[0m"
       echo -e "\033[1;31mPlease install PostgreSQL manually!\033[0m"
       exit 3
     fi
@@ -350,7 +350,7 @@ case $source_setup in
       ${SED_CMD} "s|PIO_STORAGE_SOURCES_PGSQL|# PIO_STORAGE_SOURCES_PGSQL|" ${pio_dir}/conf/pio-env.sh
       ${SED_CMD} "s|# PIO_STORAGE_SOURCES_MYSQL|PIO_STORAGE_SOURCES_MYSQL|" ${pio_dir}/conf/pio-env.sh
     else
-      echo -e "\033[1;31mYour disribution not yet supported for automatic install :(\033[0m"
+      echo -e "\033[1;31mYour distribution not yet supported for automatic install :(\033[0m"
       echo -e "\033[1;31mPlease install MySQL manually!\033[0m"
       exit 4
     fi
