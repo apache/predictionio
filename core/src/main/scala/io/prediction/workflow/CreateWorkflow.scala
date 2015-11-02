@@ -55,6 +55,7 @@ object CreateWorkflow extends Logging {
     verbose: Boolean = false,
     debug: Boolean = false,
     logFile: Option[String] = None,
+    secondaryEvent: Option[String] = None,
     jsonExtractor: JsonExtractorOption = JsonExtractorOption.Both)
 
   case class AlgorithmParams(name: String, params: JValue)
@@ -124,6 +125,9 @@ object CreateWorkflow extends Logging {
     }
     opt[String]("log-file") action { (x, c) =>
       c.copy(logFile = Some(x))
+    }
+    opt[String]("secondary-event") action { (x, c) =>
+      c.copy(secondaryEvent = Some(x))
     }
     opt[String]("json-extractor") action { (x, c) =>
       c.copy(jsonExtractor = JsonExtractorOption.withName(x))

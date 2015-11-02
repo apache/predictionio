@@ -53,6 +53,7 @@ import scalaj.http.Http
 case class ConsoleArgs(
   common: CommonArgs = CommonArgs(),
   build: BuildArgs = BuildArgs(),
+  train: TrainArgs = TrainArgs(),
   app: AppArgs = AppArgs(),
   accessKey: AccessKeyArgs = AccessKeyArgs(),
   deploy: DeployArgs = DeployArgs(),
@@ -92,6 +93,10 @@ case class CommonArgs(
   sparkKryo: Boolean = false,
   scratchUri: Option[URI] = None,
   jsonExtractor: JsonExtractorOption = JsonExtractorOption.Both)
+
+case class TrainArgs(
+  secondaryEvent: String = "") // used only with the UR for evaluation, provide a single eventName
+// to be used with the Primary for iterative MAP calculation.
 
 case class BuildArgs(
   sbt: Option[File] = None,
@@ -233,6 +238,9 @@ object Console extends Logging {
         action { (_, c) =>
           c.copy(commands = c.commands :+ "train")
         } children(
+          opt[String]("secondary-event") action { (x, c) =>
+            c.copy(train = c.train.copy(secondaryEvent = x))
+          },
           opt[String]("batch") action { (x, c) =>
             c.copy(common = c.common.copy(batch = x))
           } text("Batch label of the run."),
