@@ -188,7 +188,7 @@ This class is used to store the actual label of the data (contrast to
 ### Implement Data Generation Method in DataSource
 
 In MyClassification/src/main/scala/***DataSource.scala***, the method
-`readEval` reads, and selects, data from datastore and returns a 
+`readEval` reads and selects data from datastore and returns a 
 sequence of (training, validation) data.
 
 ```scala
@@ -259,10 +259,10 @@ The `readEval` method returns a sequence of (`TrainingData`, `EvaluationInfo`,
 `TrainingData` is the same class we use for deploy,
 `RDD[(Query, ActualResult)]` is the 
 validation set, `EvaluationInfo` can be used to hold some global evaluation data
-, it is not used in the current example.
+; it is not used in the current example.
 
-Lines 11 to 41 is the logic of reading and transformating data from the
-datastore, it is equvialent to the existing `readTraining` method. After line
+Lines 11 to 41 is the logic of reading and transforming data from the
+datastore; it is equvialent to the existing `readTraining` method. After line
 41, the variable `labeledPoints` contains the complete dataset with which we use
 to generate the (training, validation) sequence.
 
@@ -274,8 +274,8 @@ For each point in the validation set, we construct the `Query` and
 
 ## Evaluation Metrics
 
-We define a `Metric` which gives a *score* to engine params, the higher the
-score, the better the engine params is. 
+We define a `Metric` which gives a *score* to engine params. The higher the
+score, the better the engine params are. 
 In this template, we use accuray score which measures
 the portion of correct prediction among all data points.
 
