@@ -568,56 +568,56 @@ The order in the response array is corresponding to the order of the request arr
 
 ###Sample Request:
 
-	curl -i -X POST http://localhost:7070/batch/events.json?accessKey=...
-	-H "Content-Type: application/json" -d ‘ \
-	[
-		{
-			"event": "$create",
-			"entityType": "user",
-			"entityId": "uid",
-			"properties": {
-				...
-			}
-	    },
-		{
-			"event": "like",
-			"entityType": "user",
-			"entityId": "uid",
-			"targetEntityType": "item",
-			"targetEntityId": "iid",
-			"properties": {
-				....
-			}
-		    "eventTime": "2004-12-13T21:39:45.618-07:00"
-		},
+    curl -i -X POST http://localhost:7070/batch/events.json?accessKey=...
+    -H "Content-Type: application/json" -d ‘ \
+    [
+        {
+            "event": "$create",
+            "entityType": "user",
+            "entityId": "uid",
+            "properties": {
+                ...
+            }
+        },
+        {
+            "event": "like",
+            "entityType": "user",
+            "entityId": "uid",
+            "targetEntityType": "item",
+            "targetEntityId": "iid",
+            "properties": {
+                ...
+            }
+            "eventTime": "2004-12-13T21:39:45.618-07:00"
+        },
     	...
-	]‘
+    ]‘
 
 
 ###Sample Response:
 
-	HTTP/1.1 200 Successful
-	Server: spray-can/1.2.1
-	Date: Wed, 10 Sep 2014 22:51:33 GMT
-	Content-Type: application/json; charset=UTF-8
-	Content-Length: 41
-	[
-		{"eventId":"AAAABAAAAQDP3-jSlTMGVu0waj8"},
-		{
-			"status": 201,
-			"eventId": "AAAABAAAAQDP3-jSlTMGVu0waj8"
-		},
-		{
-			"status": 201,
-			"eventId":"AAAABAAAAQDP3-jSlTMGVu0waj9"
-		},
+    HTTP/1.1 200 Successful
+    Server: spray-can/1.2.1
+    Date: Wed, 10 Sep 2014 22:51:33 GMT
+    Content-Type: application/json; charset=UTF-8
+    Content-Length: 41
+    [
+        {"eventId":"AAAABAAAAQDP3-jSlTMGVu0waj8"},
+        {
+            "status": 201,
+            "eventId": "AAAABAAAAQDP3-jSlTMGVu0waj8"
+        },
+        {
+            "status": 201,
+            "eventId":"AAAABAAAAQDP3-jSlTMGVu0waj9"
+        },
+         …
+        {
+            "status": 400,
+            "message":"Required entityType is missing”
+        },
 		…
-		{
-			"status": 400,
-			"message":"Required entityType is missing”
-		},
-		…
-	]
+    ]
 
 
 Notice that each subrequest receives a status responce. The limit of 50 events per batch requests is in line with Facebook, Mixpanel, SegmentIO and other event syncs that accept batches.
