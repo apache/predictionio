@@ -10,8 +10,9 @@ For example, your application may have users and some items which the user can i
 
 An entity may peform some events (e.g user 1 does something), and entity may have properties associated with it (e.g. user may have gender, age, email etc). Hence, **events** involve **entities** and there are two types of events, respectively:
 
-1. Generic events performed by an entity.
-2. Special events for recording changes of an entity's properties
+1. [Generic events](#1-generic-events-performed-by-an-entity) performed by an entity.
+2. [Special events](#2-special-events-for-recording-changes-of-an-entity-s-properties) for recording changes of an entity's properties
+3. [Batch events](#3-batch-events)
 
 They are explained in details below.
 
@@ -550,7 +551,7 @@ Array((2,PropertyMap(Map(b -> JInt(5), a -> JInt(3), c -> JInt(6)), 2014-09-09T1
 
 As you have seen in the example above, the state of user-2 is different depending on the available events or the time you are looking at the data. Recording events in logging fashioned allows us to re-construct the state the entity according to the time.
 
-## Batch Events to the EventServer
+## 3. Batch Events to the EventServer
 
 Using a different REST address on the usual EventServer port, as of PredictionIO 0.9.5 you can send batches of up to 50 events as a time. The format is as described above but the JSON payload is packaged as an array of Event objects.
 
