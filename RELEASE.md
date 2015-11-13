@@ -2,9 +2,17 @@
 
 **Note:** For upgrade instructions please refer to [this page](/resources/upgrade/).
 
+###v0.9.6
+
+November, 2015 | [Release Notes](https://github.com/PredictionIO/PredictionIO/blob/master/RELEASE.md) have been moved to Github and you are reading them. For a detailed list of commits check [this page](https://github.com/PredictionIO/PredictionIO/commits/master)
+
+- Upgrade components for runtime, Hbase 1, Elasticsearch 2, Spark 1.5
+- Support for maintaining a moving window of events by discarding old evnets from the EventStore
+- CLI changes to support UR Evaluation from and external script by providing certain engine params on command line.
+
 ###v0.9.5 
 
-October 14th, 2015 | [Release Notes](https://github.com/PredictionIO/PredictionIO/blob/master/RELEASE.md) have been moved to Github and you are reading them. For a detailed list of commits check [this page](https://github.com/PredictionIO/PredictionIO/commits/master)
+October 14th, 2015 | [Release Notes](https://github.com/PredictionIO/PredictionIO/blob/master/RELEASE.md) have been moved to Github and you are reading them. For a detailed list of commits check [this page](https://github.com/PredictionIO/PredictionIO/commits/v0.9.5)
 
 - Support batches of events sent to the EventServer as json arrays
 - Support creating an Elasticsearch StorageClient created for an Elasticsearch cluster from variables in pio-env.sh

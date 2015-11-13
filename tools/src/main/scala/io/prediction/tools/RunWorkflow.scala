@@ -186,6 +186,7 @@ object RunWorkflow extends Logging {
       ca.common.engineParamsKey.map(
         x => Seq("--engine-params-key", x)).getOrElse(Seq()) ++
       (if (ca.common.batch != "") Seq("--batch", ca.common.batch) else Seq()) ++
+      (if (ca.train.secondaryEvent != "") Seq("--secondary-event", ca.train.secondaryEvent) else Seq()) ++
       (if (ca.common.verbose) Seq("--verbose") else Seq()) ++
       (if (ca.common.skipSanityCheck) Seq("--skip-sanity-check") else Seq()) ++
       (if (ca.common.stopAfterRead) Seq("--stop-after-read") else Seq()) ++
