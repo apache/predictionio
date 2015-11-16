@@ -155,7 +155,8 @@ class Engine[TD, EI, PD, Q, P, A](
       sc: SparkContext,
       engineParams: EngineParams,
       engineInstanceId: String,
-      params: WorkflowParams): Seq[Any] = {
+      params: WorkflowParams,
+      rawCLIParams: CreateWorkflow.WorkflowConfig): Seq[Any] = {
     val (dataSourceName, dataSourceParams) = engineParams.dataSourceParams
     val dataSource = Doer(dataSourceClassMap(dataSourceName), dataSourceParams)
 

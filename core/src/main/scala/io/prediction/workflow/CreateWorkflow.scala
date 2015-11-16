@@ -29,9 +29,12 @@ import io.prediction.workflow.JsonExtractorOption.JsonExtractorOption
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
+import org.apache.spark.Logging
 import org.json4s.JValue
 import org.json4s.JString
 import org.json4s.native.JsonMethods.parse
+import org.spark
+import org.spark
 
 import scala.language.existentials
 
@@ -55,7 +58,6 @@ object CreateWorkflow extends Logging {
     verbose: Boolean = false,
     debug: Boolean = false,
     logFile: Option[String] = None,
-    secondaryEvent: Option[String] = None,
     jsonExtractor: JsonExtractorOption = JsonExtractorOption.Both)
 
   case class AlgorithmParams(name: String, params: JValue)
@@ -125,9 +127,6 @@ object CreateWorkflow extends Logging {
     }
     opt[String]("log-file") action { (x, c) =>
       c.copy(logFile = Some(x))
-    }
-    opt[String]("secondary-event") action { (x, c) =>
-      c.copy(secondaryEvent = Some(x))
     }
     opt[String]("json-extractor") action { (x, c) =>
       c.copy(jsonExtractor = JsonExtractorOption.withName(x))
