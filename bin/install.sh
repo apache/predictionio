@@ -11,7 +11,8 @@
 OS=`uname`
 PIO_VERSION=0.9.6
 SPARK_VERSION=1.5.1
-ELASTICSEARCH_VERSION=2.0
+# Looks like support for Elasticsearch 2.0 will require 2.0 so deferring
+ELASTICSEARCH_VERSION=1.4.1
 HBASE_VERSION=1.1.2
 PIO_DIR=$HOME/PredictionIO
 USER_PROFILE=$HOME/.profile
