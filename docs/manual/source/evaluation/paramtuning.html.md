@@ -146,13 +146,12 @@ The PredictionIO evaluation module tests for the best engine params for an
 engine.
 
 Given a set of engine params, we instantiate an engine and evaluate it with existing data.
-The data is splitted into two sets, a training set and a validation set. 
-The training
-set is used to train the engine, the same way as how we deploy a prediction
-engine described in earlier sections. The validation set is used to validate the
-engine, we query the engine with the test set data. 
+The data is split into two sets, a training set and a validation set. 
+The training set is used to train the engine, which is deployed using the same steps described in earlier sections. 
+We query the engine with the test set data, and compare the predicted values in the response 
+with the actual data contained in the validation set.
 We define a ***metric*** to compare ***predicted result*** returned from
-the engine with the ***actual result*** which we obtained from the test data.
+the engine with the ***actual result*** which we obtained from the test data. 
 The goal is to maximize the metric score.
 
 This process is repeated many times with a series of engine params.
@@ -165,7 +164,7 @@ We demonstrate the evaluation with [the classification template]
 
 In evaluation data generation, the goal is to generate a sequence of (training, 
 validation) data tuple. A common way is to use a *k-fold* generation process. 
-The data set is splitted into *k folds*. We generate k tuples of training and
+The data set is split into *k folds*. We generate k tuples of training and
 validation sets, for each tuple, the training set takes *k - 1* of the folds and
 the validation set takes the remaining fold.
 
@@ -189,7 +188,7 @@ This class is used to store the actual label of the data (contrast to
 ### Implement Data Generation Method in DataSource
 
 In MyClassification/src/main/scala/***DataSource.scala***, the method
-`readEval` reads, and selects, data from datastore and returns a 
+`readEval` reads and selects data from datastore and returns a 
 sequence of (training, validation) data.
 
 ```scala
@@ -260,10 +259,10 @@ The `readEval` method returns a sequence of (`TrainingData`, `EvaluationInfo`,
 `TrainingData` is the same class we use for deploy,
 `RDD[(Query, ActualResult)]` is the 
 validation set, `EvaluationInfo` can be used to hold some global evaluation data
-, it is not used in the current example.
+; it is not used in the current example.
 
-Lines 11 to 41 is the logic of reading and transformating data from the
-datastore, it is equvialent to the existing `readTraining` method. After line
+Lines 11 to 41 is the logic of reading and transforming data from the
+datastore; it is equvialent to the existing `readTraining` method. After line
 41, the variable `labeledPoints` contains the complete dataset with which we use
 to generate the (training, validation) sequence.
 
@@ -275,8 +274,8 @@ For each point in the validation set, we construct the `Query` and
 
 ## Evaluation Metrics
 
-We define a `Metric` which gives a *score* to engine params, the higher the
-score, the better the engine params is. 
+We define a `Metric` which gives a *score* to engine params. The higher the
+score, the better the engine params are. 
 In this template, we use accuray score which measures
 the portion of correct prediction among all data points.
 
