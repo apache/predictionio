@@ -15,20 +15,15 @@
 
 package io.prediction.data.storage.jdbc
 
-import java.sql.DriverManager
-import java.sql.ResultSet
+import java.sql.{DriverManager, ResultSet}
 
 import com.github.nscala_time.time.Imports._
-import io.prediction.data.storage.DataMap
-import io.prediction.data.storage.Event
-import io.prediction.data.storage.PEvents
-import io.prediction.data.storage.StorageClientConfig
+import io.prediction.data.storage.{DataMap, Event, PEvents, StorageClientConfig}
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.JdbcRDD
-import org.apache.spark.rdd.RDD
+import org.apache.spark.rdd.{JdbcRDD, RDD}
+import org.apache.spark.sql.{SQLContext, SaveMode}
 import org.json4s.JObject
 import org.json4s.native.Serialization
-import scalikejdbc._
 
 /** JDBC implementation of [[PEvents]] */
 class JDBCPEvents(client: String, config: StorageClientConfig, namespace: String) extends PEvents {
@@ -119,32 +114,47 @@ class JDBCPEvents(client: String, config: StorageClientConfig, namespace: String
   }
 
   def write(events: RDD[Event], appId: Int, channelId: Option[Int])(sc: SparkContext): Unit = {
-    @transient lazy val tableName =
-      sqls.createUnsafely(JDBCUtils.eventTableName(namespace, appId, channelId))
-    events.foreachPartition { events =>
-      val batchParams = events.map { event =>
-        Seq(
-          event.eventId.getOrElse(JDBCUtils.generateId),
-          event.event,
-          event.entityType,
-          event.entityId,
-          event.targetEntityType,
-          event.targetEntityId,
-          Serialization.write(event.properties.toJObject),
-          event.eventTime,
-          event.eventTime.getZone.getID,
-          if (event.tags.nonEmpty) Some(event.tags.mkString(",")) else None,
-          event.prId,
-          event.creationTime,
-          event.creationTime.getZone.getID)
-      }.toSeq
-      DB localTx { implicit session =>
-        @transient lazy val q =
-          sql"""
-          insert into $tableName values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-          """
-        q.batch(batchParams: _*).apply()
-      }
-    }
+    val sqlContext = new SQLContext(sc)
+
+    import sqlContext.implicits._
+
+    val tableName = JDBCUtils.eventTableName(namespace, appId, channelId)
+
+    val eventTableColumns = Seq[String](
+        "id"
+      , "event"
+      , "entityType"
+      , "entityId"
+      , "targetEntityType"
+      , "targetEntityId"
+      , "properties"
+      , "eventTime"
+      , "eventTimeZone"
+      , "tags"
+      , "prId"
+      , "creationTime"
+      , "creationTimeZone")
+
+    val eventDF = events.map { event =>
+      (event.eventId.getOrElse(JDBCUtils.generateId)
+        , event.event
+        , event.entityType
+        , event.entityId
+        , event.targetEntityType.orNull
+        , event.targetEntityId.orNull
+        , if (!event.properties.isEmpty) Serialization.write(event.properties.toJObject) else null
+        , new java.sql.Timestamp(event.eventTime.getMillis)
+        , event.eventTime.getZone.getID
+        , if (event.tags.nonEmpty) Some(event.tags.mkString(",")) else null
+        , event.prId
+        , new java.sql.Timestamp(event.creationTime.getMillis)
+        , event.creationTime.getZone.getID)
+    }.toDF(eventTableColumns:_*)
+
+    // spark version 1.4.0 or higher
+    val prop = new java.util.Properties
+    prop.setProperty("user", config.properties("USERNAME"))
+    prop.setProperty("password", config.properties("PASSWORD"))
+    eventDF.write.mode(SaveMode.Append).jdbc(client, tableName, prop)
   }
 }
