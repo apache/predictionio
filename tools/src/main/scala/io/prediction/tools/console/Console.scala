@@ -129,9 +129,7 @@ case class UpgradeArgs(
 )
 
 object Console extends Logging {
-  var argv: Array[String] = _
   def main(args: Array[String]): Unit = {
-    argv = args
     val parser = new scopt.OptionParser[ConsoleArgs]("pio") {
       override def showUsageOnError: Boolean = false
       head("PredictionIO Command Line Interface Console", BuildInfo.version)
