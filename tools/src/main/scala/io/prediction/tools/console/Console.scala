@@ -68,8 +68,7 @@ case class ConsoleArgs(
   metricsParamsJsonPath: Option[String] = None,
   paramsPath: String = "params",
   engineInstanceId: Option[String] = None,
-  mainClass: Option[String] = None,
-  rawArgv: Array[String] = Array.empty[String])
+  mainClass: Option[String] = None)
 
 case class CommonArgs(
   batch: String = "",
