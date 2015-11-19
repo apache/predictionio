@@ -68,7 +68,8 @@ case class ConsoleArgs(
   metricsParamsJsonPath: Option[String] = None,
   paramsPath: String = "params",
   engineInstanceId: Option[String] = None,
-  mainClass: Option[String] = None)
+  mainClass: Option[String] = None,
+  rawArgv: Array[String] = Array.empty[String])
 
 case class CommonArgs(
   batch: String = "",
@@ -129,7 +130,9 @@ case class UpgradeArgs(
 )
 
 object Console extends Logging {
+  var argv: Array[String] = _
   def main(args: Array[String]): Unit = {
+    argv = args
     val parser = new scopt.OptionParser[ConsoleArgs]("pio") {
       override def showUsageOnError: Boolean = false
       head("PredictionIO Command Line Interface Console", BuildInfo.version)
