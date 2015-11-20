@@ -16,8 +16,6 @@
 package io.prediction.data.api
 
 import io.prediction.data.storage.Storage
-import io.prediction.data.webhooks.JsonConnector
-import io.prediction.data.webhooks.FormConnector
 
 import akka.testkit.TestProbe
 import akka.actor.ActorSystem
@@ -39,11 +37,15 @@ class EventServiceSpec extends Specification {
   val channelsClient = Storage.getMetaDataChannels()
   
   val eventServiceActor = system.actorOf(
-    Props(classOf[EventServiceActor],
-      eventClient,
-      accessKeysClient,
-      channelsClient,
-      EventServerConfig()))
+    Props(
+      new EventServiceActor(
+        eventClient,
+        accessKeysClient,
+        channelsClient,
+        EventServerConfig()
+      )
+    )
+  )
 
   "GET / request" should {
     "properly produce OK HttpResponses" in {

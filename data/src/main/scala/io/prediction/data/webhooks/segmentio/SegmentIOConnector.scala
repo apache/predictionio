@@ -20,11 +20,24 @@ import org.json4s._
 
 private[prediction] object SegmentIOConnector extends JsonConnector {
 
+  //private lazy val supportedAPI = Vector("2", "2.0", "2.0.0")
+
   implicit val json4sFormats: Formats = DefaultFormats
 
   override
   def toEventJson(data: JObject): JObject = {
-    // TODO: check segmentio API version
+    try {
+      val version: String = data.values("version").toString
+/*
+      if (!supportedAPI.contains(version)) {
+        throw new ConnectorException(
+          s"Supported segment.io API versions: [2]. got [$version]"
+        )
+      }
+*/
+    } catch { case _: Throwable ⇒
+      throw new ConnectorException(s"Failed to get segment.io API version.")
+    }
 
     val common = try {
       data.extract[Common]
@@ -102,7 +115,7 @@ private[prediction] object SegmentIOConnector extends JsonConnector {
 
   def toEventJson(common: Common, alias: Events.Alias): JObject = {
     import org.json4s.JsonDSL._
-    toJson(common, "previousId" → alias.previousId)
+    toJson(common, "previous_id" → alias.previous_id)
   }
 
   def toEventJson(common: Common, screen: Events.Screen): JObject = {
@@ -124,7 +137,7 @@ private[prediction] object SegmentIOConnector extends JsonConnector {
   def toEventJson(common: Common, group: Events.Group): JObject = {
     import org.json4s.JsonDSL._
     val eventProperties =
-      ("groupId" → group.groupId) ~
+      ("group_id" → group.group_id) ~
       ("traits" → group.traits)
     toJson(common, eventProperties)
   }
@@ -153,7 +166,7 @@ private[prediction] object SegmentIOConnector extends JsonConnector {
 
   private def commonToJson(common: Common, typ: String): JObject = {
     import org.json4s.JsonDSL._
-      common.userId.orElse(common.anonymousId) match {
+      common.user_id.orElse(common.anonymous_id) match {
         case Some(userId) ⇒
           ("event" → typ) ~
             ("entityType" → "user") ~
@@ -175,25 +188,25 @@ object Events {
     properties: Option[JObject] = None
   )
 
-  private[prediction] case class Alias(previousId: String, userId: String)
+  private[prediction] case class Alias(previous_id: String, user_id: String)
 
   private[prediction] case class Group(
-    groupId: String,
+    group_id: String,
     traits: Option[JObject] = None
   )
 
   private[prediction] case class Screen(
-    name: String,
+    name: Option[String] = None,
     properties: Option[JObject] = None
   )
 
   private[prediction] case class Page(
-    name: String,
+    name: Option[String] = None,
     properties: Option[JObject] = None
   )
 
   private[prediction] case class Identify(
-    userId: String,
+    user_id: String,
     traits: Option[JObject]
   )
 
@@ -209,19 +222,18 @@ object Common {
   )
 
   private[prediction] case class Context(
-    app: App,
-    campaign: Campaign,
-    device: Device,
     ip: String,
     library: Library,
-    locale: String,
-    network: Network,
-    location: Location,
-    os: OS,
-    referrer: Referrer,
-    screen: Screen,
-    timezone: String,
-    userAgent: String
+    user_agent: String,
+    app: Option[App] = None,
+    campaign: Option[Campaign] = None,
+    device: Option[Device] = None,
+    network: Option[Network] = None,
+    location: Option[Location] = None,
+    os: Option[OS] = None,
+    referrer: Option[Referrer] = None,
+    screen: Option[Screen] = None,
+    timezone: Option[String] = None
   )
 
   private[prediction] case class Screen(width: Int, height: Int, density: Int)
@@ -238,6 +250,14 @@ object Common {
     speed: Option[Int] = None
   )
 
+  case class Page(
+    path: String,
+    referrer: String,
+    search: String,
+    title: String,
+    url: String
+  )
+
   private[prediction] case class Network(
     bluetooth: Option[Boolean] = None,
     carrier: Option[String] = None,
@@ -249,8 +269,8 @@ object Common {
 
   private[prediction] case class Device(
     id: Option[String] = None,
-    advertisingId: Option[String] = None,
-    adTrackingEnabled: Option[Boolean] = None,
+    advertising_id: Option[String] = None,
+    ad_tracking_enabled: Option[Boolean] = None,
     manufacturer: Option[String] = None,
     model: Option[String] = None,
     name: Option[String] = None,
@@ -276,10 +296,11 @@ object Common {
 
 private[prediction] case class Common(
   `type`: String,
-  sendAt: String,
+  sent_at: String,
   timestamp: String,
-  anonymousId: Option[String] = None,
-  userId: Option[String] = None,
+  version: String,
+  anonymous_id: Option[String] = None,
+  user_id: Option[String] = None,
   context: Option[Common.Context] = None,
   integrations: Option[Common.Integrations] = None
 )
