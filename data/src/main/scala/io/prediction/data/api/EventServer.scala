@@ -116,7 +116,7 @@ class  EventServiceActor(
                 val appAccessKey =
                   new String(base64Decoder.decodeBuffer(value)).trim.split(":")(0)
                 accessKeysClient.get(appAccessKey) match {
-                  case Some(k) ⇒ Right(AuthData(k.appid, None))
+                  case Some(k) ⇒ Right(AuthData(k.appid, None, k.events))
                   case None ⇒ FailedAuth
                 }
 
