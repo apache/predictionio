@@ -38,9 +38,38 @@ class JDBCLEvents(
   implicit private val formats = org.json4s.DefaultFormats
 
   def init(appId: Int, channelId: Option[Int] = None): Boolean = {
+
+    // To use index, it must be varchar less than 255 characters on a VARCHAR column
+    val useIndex = config.properties.contains("INDEX") &&
+      config.properties("INDEX").equalsIgnoreCase("enabled")
+
+    val tableName = JDBCUtils.eventTableName(namespace, appId, channelId)
+    val entityIdIndexName = s"idx_${tableName}_ei"
+    val entityTypeIndexName = s"idx_${tableName}_et"
     DB autoCommit { implicit session =>
-      SQL(s"""
-      create table if not exists ${JDBCUtils.eventTableName(namespace, appId, channelId)} (
+      if (useIndex) {
+        SQL(s"""
+      create table if not exists $tableName (
+        id varchar(32) not null primary key,
+        event varchar(255) not null,
+        entityType varchar(255) not null,
+        entityId varchar(255) not null,
+        targetEntityType text,
+        targetEntityId text,
+        properties text,
+        eventTime timestamp not null,
+        eventTimeZone varchar(50) not null,
+        tags text,
+        prId text,
+        creationTime timestamp not null,
+        creationTimeZone varchar(50) not null)""").execute().apply()
+
+        // create index
+        SQL(s"create index $entityIdIndexName on $tableName (entityId)").execute().apply()
+        SQL(s"create index $entityTypeIndexName on $tableName (entityType)").execute().apply()
+      } else {
+        SQL(s"""
+      create table if not exists $tableName (
         id varchar(32) not null primary key,
         event text not null,
         entityType text not null,
@@ -54,6 +83,7 @@ class JDBCLEvents(
         prId text,
         creationTime timestamp not null,
         creationTimeZone varchar(50) not null)""").execute().apply()
+      }
       true
     }
   }
