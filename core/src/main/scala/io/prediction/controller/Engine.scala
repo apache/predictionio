@@ -188,6 +188,7 @@ class Engine[TD, EI, PD, Q, P, A](
       algoTuples = algoTuples)
   }
 
+  //Deprecated
   /** Algorithm models can be persisted before deploy. However, it is also
     * possible that models are not persisted. This method retrains non-persisted
     * models and return a list of models that can be used directly in deploy.
