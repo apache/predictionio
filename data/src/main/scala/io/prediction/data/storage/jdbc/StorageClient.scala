@@ -36,10 +36,15 @@ class StorageClient(val config: StorageClientConfig)
     throw new StorageClientException("The PASSWORD variable is not set!", null)
   }
 
+  // set max size of connection pool
+  val maxSize: Int = config.properties.getOrElse("CONNECTIONS", "8").toInt
+  val settings = ConnectionPoolSettings(maxSize = maxSize)
+
   ConnectionPool.singleton(
     config.properties("URL"),
     config.properties("USERNAME"),
-    config.properties("PASSWORD"))
+    config.properties("PASSWORD"),
+    settings)
   /** JDBC connection URL. Connections are managed by ScalikeJDBC. */
   val client = config.properties("URL")
 }
