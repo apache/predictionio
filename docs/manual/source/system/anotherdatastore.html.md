@@ -192,6 +192,11 @@ When `TYPE` is set to `jdbc`, the following configuration keys are supported.
     use when it reads from the JDBC connection, e.g.
     `PIO_STORAGE_SOURCES_PGSQL_PARTITIONS=4`
 
+-   CONNECTIONS (optional, default to 8)
+
+    This value is used by scalikejdbc library to determine the max size of connection pool, e.g.
+    `PIO_STORAGE_SOURCES_PGSQL_CONNECTIONS=8`
+
 -   INDEX (optional since v0.9.6, default to disabled)
 
     This value is used by creating indexes on entityId and entityType columns to
