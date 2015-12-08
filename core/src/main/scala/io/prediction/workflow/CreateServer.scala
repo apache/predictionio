@@ -224,6 +224,20 @@ object CreateServer extends Logging {
       engineInstance.engineFactory
     }
 
+    val sparkContext = WorkflowContext(
+      batch = batch,
+      executorEnv = engineInstance.env,
+      mode = "Serving",
+      sparkEnv = engineInstance.sparkConf)
+
+    val models = engine.prepareDeploy(
+      sparkContext,
+      engineParams,
+      engineInstance.id,
+      modelsFromEngineInstance,
+      params = WorkflowParams()
+    )
+
     val algorithms = engineParams.algorithmParamsList.map { case (n, p) =>
       Doer(engine.algorithmClassMap(n), p)
     }
@@ -245,7 +259,7 @@ object CreateServer extends Logging {
         engineParams.preparatorParams._2,
         algorithms,
         engineParams.algorithmParamsList.map(_._2),
-        modelsFromEngineInstance,
+        models,
         serving,
         engineParams.servingParams._2))
   }
