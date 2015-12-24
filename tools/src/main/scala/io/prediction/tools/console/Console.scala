@@ -512,7 +512,7 @@ object Console extends Logging {
               arg[String]("<name>") action { (x, c) =>
                 c.copy(app = c.app.copy(name = x))
               } text("Name of the app to be deleted."),
-              opt[Unit]("yes") abbr("y") action { (x, c) =>
+              opt[Unit]("force") abbr("f") action { (x, c) =>
                 c.copy(app = c.app.copy(force = true))
               } text("Delete an app without prompting for confirmation")
             ),
@@ -531,7 +531,7 @@ object Console extends Logging {
               opt[Unit]("all") action { (x, c) =>
                 c.copy(app = c.app.copy(all = true))
               } text("Delete data of all channels including default"),
-              opt[Unit]("yes") abbr("y") action { (x, c) =>
+              opt[Unit]("force") abbr("f") action { (x, c) =>
                 c.copy(app = c.app.copy(force = true))
               } text("Delete data of an app without prompting for confirmation")
             ),
@@ -560,7 +560,7 @@ object Console extends Logging {
               arg[String]("<channel>") action { (x, c) =>
                 c.copy(app = c.app.copy(channel = x))
               } text ("Channel name to be deleted."),
-              opt[Unit]("yes") abbr("y") action { (x, c) =>
+              opt[Unit]("force") abbr("f") action { (x, c) =>
                 c.copy(app = c.app.copy(force = true))
               } text("Delete a channel of the app without prompting for confirmation")
             )

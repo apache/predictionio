@@ -26,17 +26,17 @@ Show details of an app.
       App name.
 
 
-Usage: pio app delete <name> [-y]
+Usage: pio app delete <name> [--force]
 
 Name of the app to be deleted.
 
   <name>
       App name.
-  --yes, -y
+  --force, -f
       Delete data without prompting for confirmation
 
 
-Usage: pio app data-delete <name> [--channel <name>] [--all] [-y]
+Usage: pio app data-delete <name> [--channel <name>] [--all] [--force]
 
 Delete data of an app.
 
@@ -46,7 +46,7 @@ Delete data of an app.
       Delete data of the specified channel (default channel if not specified)
   --all
       Delete all data of this app (including both default and all channels)
-  --yes, -y
+  --force, -f
       Delete data without prompting for confirmation
 
 
@@ -61,7 +61,7 @@ Create a new channel for the app.
       Channel name to be created.
 
 
-Usage: pio app channel-delete <name> <channel> [-y]
+Usage: pio app channel-delete <name> <channel> [--force]
 
 Delete a channel for the app.
 
@@ -70,5 +70,5 @@ Delete a channel for the app.
 
   <channel>
       Channel name to be deleted.
-  --yes, -y
+  --force, -f
       Delete data without prompting for confirmation
