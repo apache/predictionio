@@ -25,6 +25,7 @@ case class AppArgs(
   channel: String = "",
   dataDeleteChannel: Option[String] = None,
   all: Boolean = false,
+  force: Boolean = false,
   description: Option[String] = None)
 
 object App extends Logging {
@@ -171,7 +172,7 @@ object App extends Logging {
         info(f"              ${ch.name}%16s | ${ch.id}%10s")
       }
 
-      val choice = readLine("Enter 'YES' to proceed: ")
+      val choice = if(ca.app.force) "YES" else readLine("Enter 'YES' to proceed: ")
       choice match {
         case "YES" => {
           // delete channels
@@ -280,7 +281,7 @@ object App extends Logging {
         info(s" Description: ${app.description}")
       }
 
-      val choice = readLine("Enter 'YES' to proceed: ")
+      val choice = if(ca.app.force) "YES" else readLine("Enter 'YES' to proceed: ")
 
       choice match {
         case "YES" => {
@@ -356,7 +357,7 @@ object App extends Logging {
         info(f"              ${ch.name}%16s | ${ch.id}%10s")
       }
 
-      val choice = readLine("Enter 'YES' to proceed: ")
+      val choice = if(ca.app.force) "YES" else readLine("Enter 'YES' to proceed: ")
       choice match {
         case "YES" => {
           // delete channels
@@ -494,7 +495,7 @@ object App extends Logging {
         info(s"      Channel ID: ${channelMap(deleteChannel)}")
         info(s"        App Name: ${app.name}")
         info(s"          App ID: ${app.id}")
-        val choice = readLine("Enter 'YES' to proceed: ")
+        val choice = if(ca.app.force) "YES" else readLine("Enter 'YES' to proceed: ")
         choice match {
           case "YES" => {
             // NOTE: remove storage first before remove meta data (in case remove storage failed)
