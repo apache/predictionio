@@ -20,11 +20,11 @@ name := "tools"
 
 libraryDependencies ++= Seq(
   "com.github.scopt"       %% "scopt"          % "3.2.0",
-  "io.spray"               %% "spray-can"      % "1.3.2",
-  "io.spray"               %% "spray-routing"  % "1.3.2",
+  "io.spray"               %% "spray-can"      % "1.3.3",
+  "io.spray"               %% "spray-routing"  % "1.3.3",
   "me.lessis"              % "semverfi_2.10"  % "0.1.3",
-  "org.apache.hadoop"       % "hadoop-common"  % "2.5.0",
-  "org.apache.hadoop"       % "hadoop-hdfs"    % "2.5.0",
+  "org.apache.hadoop"       % "hadoop-common"  % "2.7.1",
+  "org.apache.hadoop"       % "hadoop-hdfs"    % "2.7.1",
   "org.apache.spark"       %% "spark-core"     % sparkVersion.value % "provided",
   "org.apache.spark"       %% "spark-sql"      % sparkVersion.value % "provided",
   "org.clapper"            %% "grizzled-slf4j" % "1.0.2",
@@ -32,7 +32,7 @@ libraryDependencies ++= Seq(
   "org.json4s"             %% "json4s-ext"     % json4sVersion.value,
   "org.scalaj"             %% "scalaj-http"    % "1.1.0",
   "org.spark-project.akka" %% "akka-actor"     % "2.3.4-spark",
-  "io.spray" %% "spray-testkit" % "1.3.2" % "test",
+  "io.spray" %% "spray-testkit" % "1.3.3" % "test",
   "org.specs2" %% "specs2" % "2.3.13" % "test",
   "org.spark-project.akka" %% "akka-slf4j"     % "2.3.4-spark")
 
