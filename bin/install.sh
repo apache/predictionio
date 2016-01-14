@@ -10,9 +10,9 @@
 
 OS=`uname`
 PIO_VERSION=0.9.6
-SPARK_VERSION=1.5.2
+SPARK_VERSION=1.6.0
 # Looks like support for Elasticsearch 2.0 will require 2.0 so deferring
-ELASTICSEARCH_VERSION=1.5.2
+ELASTICSEARCH_VERSION=1.7.3
 HBASE_VERSION=1.1.2
 POSTGRES_VERSION=9.4-1204.jdbc41
 MYSQL_VERSION=5.1.37
@@ -401,7 +401,7 @@ case $source_setup in
     fi
     if [[ ! -e hbase-${HBASE_VERSION}-bin.tar.gz ]]; then
       echo "Downloading HBase..."
-      curl -O http://archive.apache.org/dist/hbase/hbase-${HBASE_VERSION}/hbase-${HBASE_VERSION}-bin.tar.gz
+      curl -O http://archive.apache.org/dist/hbase/${HBASE_VERSION}/hbase-${HBASE_VERSION}-bin.tar.gz
     fi
     tar zxf hbase-${HBASE_VERSION}-bin.tar.gz
     rm -rf ${hbase_dir}
