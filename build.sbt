@@ -35,7 +35,7 @@ javacOptions in (ThisBuild, compile) ++= Seq("-source", "1.7", "-target", "1.7",
 
 elasticsearchVersion in ThisBuild := "1.4.4"
 
-json4sVersion in ThisBuild := "3.3.0"
+json4sVersion in ThisBuild := "3.2.10"
 
 sparkVersion in ThisBuild := "1.4.0"
 
