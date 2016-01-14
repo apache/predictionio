@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import AssemblyKeys._
 
-assemblySettings
+
+import sbtassembly.AssemblyPlugin.autoImport._
 
 name := "tools"
 
@@ -40,11 +40,19 @@ excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
   cp filter { _.data.getName match {
     case "asm-3.1.jar" => true
     case "commons-beanutils-1.7.0.jar" => true
+    case "reflectasm-1.10.1.jar" => true
     case "commons-beanutils-core-1.8.0.jar" => true
+    case "kryo-3.0.3.jar" => true
     case "slf4j-log4j12-1.7.5.jar" => true
     case _ => false
   }}
 }
+
+assemblyShadeRules in assembly := Seq(
+  ShadeRule.rename("org.objenesis.**" -> "shadeio.@1").inLibrary("com.esotericsoftware.kryo" % "kryo" % "2.21").inProject,
+  ShadeRule.rename("com.esotericsoftware.reflectasm.**" -> "shadeio.@1").inLibrary("com.esotericsoftware.kryo" % "kryo" % "2.21").inProject,
+  ShadeRule.rename("com.esotericsoftware.minlog.**" -> "shadeio.@1").inLibrary("com.esotericsoftware.kryo" % "kryo" % "2.21").inProject
+)
 
 // skip test in assembly
 test in assembly := {}
