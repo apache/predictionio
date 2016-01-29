@@ -2,6 +2,8 @@
 title: Text Classification Engine Tutorial
 ---
 
+(Updated for Text Classification Template version 3.1)
+
 ## Introduction
 
 In the real world, there are many applications that collect text as data. For example, spam detectors take email and header content to automatically determine what is or is not spam; applications can gague the general sentiment in a geographical area by analyzing Twitter data; and news articles can be automatically categorized based solely on the text content.There are a wide array of machine learning models you can use to create, or train, a predictive model to assign an incoming article, or query, to an existing category. Before you can use these techniques you must first transform the text data (in this case the set of news articles) into numeric vectors, or feature vectors, that can be used to train your model.
@@ -185,12 +187,13 @@ Only the latter commands are listed as these are some of the more commonly modif
 **Note:** We recommend you set your driver memory to `1G` or `2G` as the data size when dealing with text can be very large.
 
 
-
+# Detailed Explanation of DASE
 
 ## Importing Data
 
-Follow the Quick Start instructions for importing data. Make sure that the Data Source is modified accordingly to match the `event`, `entityType`, and `properties` fields set for the specific dataset. The following section explains this in more detail.
+In the quick start, email spam classification is used. This template can easily be modified for other types text classification.
 
+If you want to import different sets of data, follow the Quick Start instructions to import data from different files. Make sure that the Data Source is modified accordingly to match the `event`, `entityType`, and `properties` fields set for the specific dataset. The following section explains this in more detail.
 
 ## Data Source: Reading Event Data
 
@@ -240,30 +243,32 @@ private def readEventData(sc: SparkContext) : RDD[Observation] = {
 
 Note that `readEventData` and `readStopWords` use different entity types and event names, but use the same application name. This is because the sample import script imports two different data types, documents and stop words. These field distinctions are required for distinguishing between the two. The method `readEval` is used to prepare the different cross-validation folds needed for evaluating your model and tuning hyper parameters.
 
-Now, the default dataset used for training is contained in the file `data/emails.json` and contains a set of e-mail spam data. If we want to switch over to one of the other data sets we must make sure that the `eventNames` and `entityType` fields are changed accordingly. The following show one observation from each of the provided data files:
+Now, the default dataset used for training is contained in the file `data/emails.json` and contains a set of e-mail spam data. If we want to switch over to one of the other data sets we must make sure that the `eventNames` and `entityType` fields are changed accordingly.
 
-**1.** `emails.json`
+In the data/ directory, you will find different sets of data files for different types of text classifcaiton application. The following show one observation from each of the provided data files:
+
+- `emails.json`:
 
 ```
 {"eventTime": "2015-06-08T16:45:00.590+0000", "entityId": 1, "properties": {"text": "Subject: dobmeos with hgh my energy level has gone up ! stukm\nintroducing\ndoctor - formulated\nhgh\nhuman growth hormone - also called hgh\nis referred to in medical science as the master hormone . it is very plentiful\nwhen we are young , but near the age of twenty - one our bodies begin to produce\nless of it . by the time we are forty nearly everyone is deficient in hgh ,\nand at eighty our production has normally diminished at least 90 - 95 % .\nadvantages of hgh :\n- increased muscle strength\n- loss in body fat\n- increased bone density\n- lower blood pressure\n- quickens wound healing\n- reduces cellulite\n- improved vision\n- wrinkle disappearance\n- increased skin thickness texture\n- increased energy levels\n- improved sleep and emotional stability\n- improved memory and mental alertness\n- increased sexual potency\n- resistance to common illness\n- strengthened heart muscle\n- controlled cholesterol\n- controlled mood swings\n- new hair growth and color restore\nread\nmore at this website\nunsubscribe\n", "label": "spam"}, "event": "e-mail", "entityType": "content"}
 
 ```
 
-**2.** `20newsgroups.json`
+- `20newsgroups.json`:
 
 ```
 {"entityType": "source", "eventTime": "2015-06-08T18:01:55.003+0000", "event": "documents", "entityId": 1, "properties": {"category": "sci.crypt", "text": "From: rj@ri.cadre.com (Rob deFriesse)\nSubject: Can DES code be shipped to Canada?\nArticle-I.D.: fripp.1993Apr22.125402.27561\nReply-To: rj@ri.cadre.com\nOrganization: Cadre Technologies Inc.\nLines: 13\nNntp-Posting-Host: 192.9.200.19\n\nSomeone in Canada asked me to send him some public domain DES file\nencryption code I have.  Is it legal for me to send it?\n\nThanx.\n--\nEschew Obfuscation\n\nRob deFriesse                    Mail:  rj@ri.cadre.com\nCadre Technologies Inc.          Phone:  (401) 351-5950\n222 Richmond St.                 Fax:    (401) 351-7380\nProvidence, RI  02903\n\nI don't speak for my employer.\n", "label": 11.0}}
 ```
 
-**3.** `sentimentanalysis.json`
+- `sentimentanalysis.json`:
 
 ```
 {"eventTime": "2015-06-08T16:58:14.278+0000", "entityId": 23714, "entityType": "source", "properties": {"phrase": "Tosca 's intoxicating ardor", "sentiment": 3}, "event": "phrases"}
 ```
 
-Now, note that the `entityType`, `event`, and `properties`  fields for the `20newsgroups.json` dataset differ from the default `emails.json` set. If you want to use the newsgroups data set the engine's Data Source component must be modified accordingly. To do this, you need only modify the method `readEventData` as follows:
+Now, note that the `entityType`, `event`, and `properties`  fields for the `20newsgroups.json` dataset differ from the default `emails.json` set. Default DataSource implementation is to read from `email.json` data set. If you want to use others such as newsgroups data set, the engine's Data Source component must be modified accordingly. To do this, you need only modify the method `readEventData` as follows:
 
-**1.** `20newsgroups.json`
+### Modify DataSource to Read `20newsgroups.json`
 
 ```scala
 private def readEventData(sc: SparkContext) : RDD[Observation] = {
@@ -286,7 +291,7 @@ private def readEventData(sc: SparkContext) : RDD[Observation] = {
   }
 ```
 
-**2.** `sentimentanalysis.json`
+### Modify DataSource to Read `sentimentanalysis.json`
 
 ```scala
 private def readEventData(sc: SparkContext) : RDD[Observation] = {
@@ -356,7 +361,9 @@ Recall that the Preparator stage is used for doing any prior data processing nee
 // components.
 
 case class PreparatorParams(
-  nGram : Int
+  nGram: Int,
+  numFeatures: Int = 5000,
+  SPPMI: Boolean
 ) extends Params
 
 
