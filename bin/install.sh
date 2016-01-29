@@ -276,9 +276,7 @@ cd ${TEMP_DIR}
 
 # delete existing tmp file before download again
 if [[ -e  ${PIO_FILE} ]]; then
-  if confirm "Delete existing $PIO_FILE?"; then
-    rm ${PIO_FILE}
-  fi
+  rm ${PIO_FILE}
 fi
 
 if [[ ! -e ${PIO_FILE} ]]; then
@@ -304,9 +302,7 @@ mkdir ${vendors_dir}
 # Spark
 echo -e "\033[1;36mStarting Spark setup in:\033[0m $spark_dir"
 if [[ -e spark-${SPARK_VERSION}-bin-hadoop2.6.tgz ]]; then
-  if confirm "Delete existing spark-$SPARK_VERSION-bin-hadoop2.6.tgz?"; then
-    rm spark-${SPARK_VERSION}-bin-hadoop2.6.tgz
-  fi
+  rm spark-${SPARK_VERSION}-bin-hadoop2.6.tgz
 fi
 if [[ ! -e spark-${SPARK_VERSION}-bin-hadoop2.6.tgz ]]; then
   echo "Downloading Spark..."
@@ -358,9 +354,7 @@ case $source_setup in
     # Elasticsearch
     echo -e "\033[1;36mStarting Elasticsearch setup in:\033[0m $elasticsearch_dir"
     if [[ -e elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz ]]; then
-      if confirm "Delete existing elasticsearch-$ELASTICSEARCH_VERSION.tar.gz?"; then
-        rm elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
-      fi
+      rm elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
     fi
     if [[ ! -e elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz ]]; then
       echo "Downloading Elasticsearch..."
@@ -387,9 +381,7 @@ case $source_setup in
     # HBase
     echo -e "\033[1;36mStarting HBase setup in:\033[0m $hbase_dir"
     if [[ -e hbase-${HBASE_VERSION}-bin.tar.gz ]]; then
-      if confirm "Delete existing hbase-$HBASE_VERSION-bin.tar.gz?"; then
-        rm hbase-${HBASE_VERSION}-bin.tar.gz
-      fi
+      rm hbase-${HBASE_VERSION}-bin.tar.gz
     fi
     if [[ ! -e hbase-${HBASE_VERSION}-bin.tar.gz ]]; then
       echo "Downloading HBase..."
