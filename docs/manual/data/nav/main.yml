@@ -106,6 +106,9 @@ root:
         body: 'Unifying Multichannel Data with Webhooks'
         url: '/datacollection/webhooks/'
       -
+        body: 'Channel'
+        url: '/datacollection/channel/'
+      -
         body: 'Importing Data in Batch'
         url: '/datacollection/batchimport/'
       -
