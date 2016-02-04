@@ -81,10 +81,10 @@ case class Item(categories: Option[List[String]])
 
 case class ViewEvent(user: String, item: String, t: Long)
 
-class TrainingData(
-  val items: RDD[(String, Item)],
-  val viewEvents: RDD[ViewEvent]
-) extends Serializable {
+case class TrainingData(
+  items: RDD[(String, Item)],
+  viewEvents: RDD[ViewEvent]
+) {
   override def toString = {
     s"items: [${items.count()} (${items.take(2).toList}...)]" +
     s"viewEvents: [${viewEvents.count()}] (${viewEvents.take(2).toList}...)"

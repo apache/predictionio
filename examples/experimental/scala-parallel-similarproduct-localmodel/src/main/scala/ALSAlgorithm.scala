@@ -22,11 +22,11 @@ case class ALSAlgorithmParams(
   lambda: Double,
   seed: Option[Long]) extends Params
 
-class ALSLocalModel( // MODIFIED
-  val productFeatures: Map[Int, Array[Double]], // MODIFIED
-  val itemStringIntMap: BiMap[String, Int],
-  val items: Map[Int, Item]
-) extends Serializable { // MODIFIED
+case class ALSLocalModel( // MODIFIED
+  productFeatures: Map[Int, Array[Double]], // MODIFIED
+  itemStringIntMap: BiMap[String, Int],
+  items: Map[Int, Item]
+) { // MODIFIED
 
   // MODIFIED
 

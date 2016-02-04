@@ -48,9 +48,9 @@ class DataSource
   }
 }
 
-class TrainingData(
+case class TrainingData(
   val events: RDD[Int]
-) extends Serializable {
+) {
   override def toString = {
     s"events: [${events.count()}] (${events.take(2).toList}...)"
   }

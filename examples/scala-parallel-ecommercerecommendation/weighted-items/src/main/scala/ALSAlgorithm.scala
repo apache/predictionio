@@ -27,13 +27,13 @@ case class ALSAlgorithmParams(
   seed: Option[Long]
 ) extends Params
 
-class ALSModel(
-  val rank: Int,
-  val userFeatures: Map[Int, Array[Double]],
-  val productFeatures: Map[Int, (Item, Option[Array[Double]])],
-  val userStringIntMap: BiMap[String, Int],
-  val itemStringIntMap: BiMap[String, Int]
-) extends Serializable {
+case class ALSModel(
+  rank: Int,
+  userFeatures: Map[Int, Array[Double]],
+  productFeatures: Map[Int, (Item, Option[Array[Double]])],
+  userStringIntMap: BiMap[String, Int],
+  itemStringIntMap: BiMap[String, Int]
+) {
 
   @transient lazy val itemIntStringMap = itemStringIntMap.inverse
 

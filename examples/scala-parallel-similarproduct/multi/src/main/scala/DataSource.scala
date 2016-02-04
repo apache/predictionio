@@ -138,12 +138,12 @@ case class LikeEvent( // ADDED
   like: Boolean // true: like. false: dislike
 )
 
-class TrainingData(
-  val users: RDD[(String, User)],
-  val items: RDD[(String, Item)],
-  val viewEvents: RDD[ViewEvent],
-  val likeEvents: RDD[LikeEvent] // ADDED
-) extends Serializable {
+case class TrainingData(
+  users: RDD[(String, User)],
+  items: RDD[(String, Item)],
+  viewEvents: RDD[ViewEvent],
+  likeEvents: RDD[LikeEvent] // ADDED
+) {
   override def toString = {
     s"users: [${users.count()} (${users.take(2).toList}...)]" +
     s"items: [${items.count()} (${items.take(2).toList}...)]" +

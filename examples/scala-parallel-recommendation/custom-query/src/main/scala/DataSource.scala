@@ -73,8 +73,7 @@ object ItemMarshaller {
 
 case class Rating(user: String, item: String, rating: Double)
 
-class TrainingData(val ratings: RDD[Rating], val items: RDD[(String, Item)])
-  extends Serializable {
+case class TrainingData(val ratings: RDD[Rating], val items: RDD[(String, Item)] {
 
   override def toString =
     s"ratings: [${ratings.count()}] (${ratings.take(2).toList}...)" +

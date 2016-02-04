@@ -98,11 +98,11 @@ case class Rating(
   rating: Double
 )
 
-class TrainingData(
-  val users: EntityMap[User],
-  val items: EntityMap[Item],
-  val ratings: RDD[Rating]
-) extends Serializable {
+case class TrainingData(
+  users: EntityMap[User],
+  items: EntityMap[Item],
+  ratings: RDD[Rating]
+) {
   override def toString = {
     s"users: [${users.size} (${users.take(2).toString}...)]" +
     s"items: [${items.size} (${items.take(2).toString}...)]" +

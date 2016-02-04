@@ -17,11 +17,11 @@ case class RandomForestAlgorithmParams(
   maxBins: Int
 ) extends Params
 
-class PIORandomForestModel(
-  val gendersMap: Map[String, Double],
-  val educationMap: Map[String, Double],
-  val randomForestModel: RandomForestModel
-) extends Serializable
+case class PIORandomForestModel(
+  gendersMap: Map[String, Double],
+  educationMap: Map[String, Double],
+  randomForestModel: RandomForestModel
+)
 
 // extends P2LAlgorithm because the MLlib's RandomForestModel doesn't
 // contain RDD.

@@ -39,9 +39,9 @@ case class Rating(
   rating: Double
 )
 
-class TrainingData(
-  val ratings: RDD[Rating]
-) extends Serializable {
+case class TrainingData(
+  ratings: RDD[Rating]
+) {
   override def toString = {
     s"ratings: [${ratings.count()}] (${ratings.take(2).toList}...)"
   }
