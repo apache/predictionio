@@ -29,3 +29,4 @@ class Preparator(pp: CustomPreparatorParams) // ADDED CustomPreparatorParams
 case class PreparedData(
   ratings: RDD[Rating]
 )
+

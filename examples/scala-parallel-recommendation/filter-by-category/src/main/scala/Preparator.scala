@@ -18,3 +18,4 @@ case class PreparedData(
   items: RDD[Item],
   ratings: RDD[Rating]
 )
+

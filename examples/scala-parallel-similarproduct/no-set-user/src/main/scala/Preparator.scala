@@ -20,3 +20,4 @@ case class PreparedData(
   items: RDD[(String, Item)],
   viewEvents: RDD[ViewEvent]
 )
+

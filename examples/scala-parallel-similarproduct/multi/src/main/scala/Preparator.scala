@@ -24,3 +24,4 @@ case class PreparedData(
   viewEvents: RDD[ViewEvent],
   likeEvents: RDD[LikeEvent] // ADDED
 )
+

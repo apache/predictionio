@@ -22,3 +22,4 @@ case class PreparedData(
   items: RDD[(String, Item)],
   rateEvents: RDD[RateEvent]
 )
+
