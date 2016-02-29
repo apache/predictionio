@@ -228,8 +228,5 @@ root:
         body: 'Upgrade Instructions'
         url: '/resources/upgrade/'
       -
-        body: 'Download Logos'
-        url: '/logo/'
-      -
         body: 'Glossary'
         url: '/resources/glossary/'
