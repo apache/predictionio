@@ -33,7 +33,7 @@ import com.twitter.chill.ScalaKryoInstantiator
 import com.typesafe.config.ConfigFactory
 import de.javakaffee.kryoserializers.SynchronizedCollectionsSerializer
 import grizzled.slf4j.Logging
-import io.prediction.authentication.io.prediction.configuration.KeyAuthentication
+import io.prediction.authentication.KeyAuthentication
 import io.prediction.configuration.SSLConfiguration
 import io.prediction.controller.Engine
 import io.prediction.controller.Params

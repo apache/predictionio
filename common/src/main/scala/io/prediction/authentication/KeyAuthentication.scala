@@ -1,11 +1,6 @@
 package io.prediction.authentication
 
 /**
-  * Created by ykhodorkovsky on 3/1/16.
-  */
-package io.prediction.configuration
-
-/**
   * This is a (very) simple authentication for the dashboard and engine servers
   * It is highly recommended to implement a stonger authentication mechanism
   */

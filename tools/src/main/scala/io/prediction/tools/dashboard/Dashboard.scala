@@ -16,7 +16,7 @@
 package io.prediction.tools.dashboard
 
 import com.typesafe.config.ConfigFactory
-import io.prediction.authentication.io.prediction.configuration.KeyAuthentication
+import io.prediction.authentication.KeyAuthentication
 import io.prediction.configuration.SSLConfiguration
 import io.prediction.data.storage.Storage
 import spray.can.server.ServerSettings
