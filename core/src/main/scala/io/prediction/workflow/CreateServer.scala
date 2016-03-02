@@ -467,8 +467,6 @@ class ServerActor[Q, P](
     writer.toString
   }
 
-  private def getUser(up :UserPass) : String = up.user
-
   val myRoute =
     path("") {
       get {
