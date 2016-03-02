@@ -33,6 +33,7 @@ import io.prediction.data.storage.EventJson4sSupport
 import io.prediction.data.storage.BatchEventsJson4sSupport
 import io.prediction.data.storage.LEvents
 import io.prediction.data.storage.Storage
+import io.prediction.configuration.SSLConfiguration
 import org.json4s.DefaultFormats
 import org.json4s.Formats
 import org.json4s.JObject
@@ -556,7 +557,7 @@ class EventServerActor(
     val eventClient: LEvents,
     val accessKeysClient: AccessKeys,
     val channelsClient: Channels,
-    val config: EventServerConfig) extends Actor {
+    val config: EventServerConfig) extends Actor with SSLConfiguration {
   val log = Logging(context.system, this)
   val child = context.actorOf(
     Props(classOf[EventServiceActor],
