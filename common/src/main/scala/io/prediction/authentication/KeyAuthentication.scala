@@ -20,11 +20,9 @@ import scala.concurrent.Future
 trait KeyAuthentication {
 
   object ServerKey {
-    val serverConfig = ConfigFactory.parseFile(new File("conf/server.conf"))
-
-    val key = serverConfig.getString("server.accessKey")
-    def get: String = key
-    def param: String = "accessKey"
+    private val config = ConfigFactory.load("server.conf")
+    val get = config.getString("io.prediction.server.accessKey")
+    val param = "accessKey"
   }
 
   def withAccessKeyFromFile: RequestContext => Future[Authentication[HttpRequest]] = {

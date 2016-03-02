@@ -14,11 +14,11 @@ import spray.io.ServerSSLEngineProvider
 
 trait SSLConfiguration {
 
-  private val serverConfig = ConfigFactory.parseFile(new File("conf/server.conf"))
+  private val serverConfig = ConfigFactory.load("server.conf")
 
-  private val keyStoreResource = serverConfig.getString("server.ssl-keystore-resource")
-  private val password = serverConfig.getString("server.ssl-keystore-pass")
-  private val keyAlias = serverConfig.getString("server.ssl-key-alias")
+  private val keyStoreResource = serverConfig.getString("io.prediction.server.ssl-keystore-resource")
+  private val password = serverConfig.getString("io.prediction.server.ssl-keystore-pass")
+  private val keyAlias = serverConfig.getString("io.prediction.server.ssl-key-alias")
 
   private val keyStore = {
 
