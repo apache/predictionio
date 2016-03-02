@@ -24,7 +24,7 @@ trait SSLConfiguration {
 
     //Loading keystore from specified file
     val clientStore = KeyStore.getInstance("JKS")
-    val inputStream = new FileInputStream(keyStoreResource)
+    val inputStream = new FileInputStream(getClass().getClassLoader().getResource(keyStoreResource).getFile())
     clientStore.load(inputStream, password.toCharArray)
     inputStream.close()
     clientStore
