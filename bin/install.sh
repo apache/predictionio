@@ -74,7 +74,6 @@ if [[ "$OS" = "Linux" && $(cat /proc/1/cgroup) == *cpu:/docker/* ]]; then
   echo -e "\033[1;33mForcing Docker defaults!\033[0m"
   pio_dir=${PIO_DIR}
   vendors_dir=${pio_dir}/vendors
-  source_setup=${ES_HB}
 
   spark_dir=${vendors_dir}/spark-${SPARK_VERSION}
   elasticsearch_dir=${vendors_dir}/elasticsearch-${ELASTICSEARCH_VERSION}
@@ -175,7 +174,7 @@ else
       fi
       email=${email:-$guess_email}
 
-      url="http://direct.prediction.io/$PIO_VERSION/install.json/install/install/$email/"
+      url="https://direct.prediction.io/$PIO_VERSION/install.json/install/install/$email/"
       curl --silent ${url} > /dev/null
     fi
 
@@ -277,14 +276,6 @@ echo "JAVA_HOME is now set to: $JAVA_HOME"
 # PredictionIO
 echo -e "\033[1;36mStarting PredictionIO setup in:\033[0m $pio_dir"
 cd ${TEMP_DIR}
-
-# delete existing tmp file before download again
-if [[ -e  ${PIO_FILE} ]]; then
-  if confirm "Delete existing $PIO_FILE?"; then
-    rm ${PIO_FILE}
-  fi
-fi
-
 if [[ ! -e ${PIO_FILE} ]]; then
   echo "Downloading PredictionIO..."
   curl -O https://d8k1yxp8elc6b.cloudfront.net/${PIO_FILE}
@@ -307,11 +298,6 @@ mkdir ${vendors_dir}
 
 # Spark
 echo -e "\033[1;36mStarting Spark setup in:\033[0m $spark_dir"
-if [[ -e spark-${SPARK_VERSION}-bin-hadoop2.6.tgz ]]; then
-  if confirm "Delete existing spark-$SPARK_VERSION-bin-hadoop2.6.tgz?"; then
-    rm spark-${SPARK_VERSION}-bin-hadoop2.6.tgz
-  fi
-fi
 if [[ ! -e spark-${SPARK_VERSION}-bin-hadoop2.6.tgz ]]; then
   echo "Downloading Spark..."
   curl -O http://d3kbcqa49mib13.cloudfront.net/spark-${SPARK_VERSION}-bin-hadoop2.6.tgz
@@ -365,11 +351,6 @@ case $source_setup in
   "$ES_HB")
     # Elasticsearch
     echo -e "\033[1;36mStarting Elasticsearch setup in:\033[0m $elasticsearch_dir"
-    if [[ -e elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz ]]; then
-      if confirm "Delete existing elasticsearch-$ELASTICSEARCH_VERSION.tar.gz?"; then
-        rm elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
-      fi
-    fi
     if [[ ! -e elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz ]]; then
       echo "Downloading Elasticsearch..."
       curl -O https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
@@ -394,11 +375,6 @@ case $source_setup in
 
     # HBase
     echo -e "\033[1;36mStarting HBase setup in:\033[0m $hbase_dir"
-    if [[ -e hbase-${HBASE_VERSION}-bin.tar.gz ]]; then
-      if confirm "Delete existing hbase-$HBASE_VERSION-bin.tar.gz?"; then
-        rm hbase-${HBASE_VERSION}-bin.tar.gz
-      fi
-    fi
     if [[ ! -e hbase-${HBASE_VERSION}-bin.tar.gz ]]; then
       echo "Downloading HBase..."
       curl -O http://archive.apache.org/dist/hbase/${HBASE_VERSION}/hbase-${HBASE_VERSION}-bin.tar.gz
