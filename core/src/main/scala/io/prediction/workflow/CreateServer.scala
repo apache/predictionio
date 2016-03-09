@@ -297,7 +297,10 @@ class MasterActor (
     log.info(
       s"Undeploying any existing engine instance at $serverUrl")
     try {
-      val code = scalaj.http.Http(s"$serverUrl/stop").option(HttpOptions.allowUnsafeSSL).param(ServerKey.param, ServerKey.get).method("POST").asString.code
+      val code = scalaj.http.Http(s"$serverUrl/stop")
+        .option(HttpOptions.allowUnsafeSSL)
+        .param(ServerKey.param, ServerKey.get)
+        .method("POST").asString.code
       code match {
         case 200 => Unit
         case 404 => log.error(
@@ -329,7 +332,11 @@ class MasterActor (
     case x: BindServer =>
       currentServerActor map { actor =>
         val settings = ServerSettings(system)
-        IO(Http) ! Http.Bind(actor, interface = sc.ip, port = sc.port, settings = Some(settings.copy(sslEncryption = true)))
+        IO(Http) ! Http.Bind(
+          actor,
+          interface = sc.ip,
+          port = sc.port,
+          settings = Some(settings.copy(sslEncryption = true)))
       } getOrElse {
         log.error("Cannot bind a non-existing server backend.")
       }
@@ -354,7 +361,11 @@ class MasterActor (
         sprayHttpListener.map { l =>
           l ! Http.Unbind(5.seconds)
           val settings = ServerSettings(system)
-          IO(Http) ! Http.Bind(actor, interface = sc.ip, port = sc.port, settings = Some(settings.copy(sslEncryption = true)))
+          IO(Http) ! Http.Bind(
+            actor,
+            interface = sc.ip,
+            port = sc.port,
+            settings = Some(settings.copy(sslEncryption = true)))
           currentServerActor.get ! Kill
           currentServerActor = Some(actor)
         } getOrElse {

@@ -62,7 +62,11 @@ object Dashboard extends Logging with SSLConfiguration{
       system.actorOf(Props(classOf[DashboardActor], dc), "dashboard")
     implicit val timeout = Timeout(5.seconds)
     val settings = ServerSettings(system)
-    IO(Http) ? Http.Bind(service, interface = dc.ip, port = dc.port, settings = Some(settings.copy(sslEncryption = true)))
+    IO(Http) ? Http.Bind(
+      service,
+      interface = dc.ip,
+      port = dc.port,
+      settings = Some(settings.copy(sslEncryption = true)))
     system.awaitTermination
   }
 }
