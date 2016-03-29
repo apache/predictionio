@@ -9,6 +9,8 @@ rvm:
 
 gemfile: docs/manual/Gemfile
 
+sudo: false
+
 script:
   - cd docs/manual
   - bundle exec middleman build
