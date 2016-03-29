@@ -12,4 +12,5 @@ class Preparator extends PPreparator[TrainingData, PreparedData] {
 
 // HOWTO: added items(movies) list to prepared data to have possiblity to sort
 // them in predict stage.
-case class PreparedData(val ratings: RDD[Rating], val items: RDD[(String, Item)])
+class PreparedData(val ratings: RDD[Rating], val items: RDD[(String, Item)])
+  extends Serializable

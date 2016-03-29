@@ -73,10 +73,10 @@ case class User()
 
 case class FollowEvent(user: String, followedUser: String, t: Long)
 
-case class TrainingData(
-  users: RDD[(String, User)],
-  followEvents: RDD[FollowEvent]
-) {
+class TrainingData(
+  val users: RDD[(String, User)],
+  val followEvents: RDD[FollowEvent]
+) extends Serializable {
   override def toString = {
     s"users: [${users.count()} (${users.take(2).toList}...)]" +
     s"followEvents: [${followEvents.count()}] (${followEvents.take(2).toList}...)"

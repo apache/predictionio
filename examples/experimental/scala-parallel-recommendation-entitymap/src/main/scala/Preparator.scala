@@ -18,8 +18,8 @@ class Preparator
   }
 }
 
-case class PreparedData(
-  users: EntityMap[User],
-  items: EntityMap[Item],
-  ratings: RDD[Rating]
-)
+class PreparedData(
+  val users: EntityMap[User],
+  val items: EntityMap[Item],
+  val ratings: RDD[Rating]
+) extends Serializable

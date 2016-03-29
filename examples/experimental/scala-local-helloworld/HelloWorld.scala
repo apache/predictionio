@@ -6,24 +6,24 @@ import scala.io.Source
 import scala.collection.immutable.HashMap
 
 // all data need to be serializable
-case class MyTrainingData(
+class MyTrainingData(
   // list of (day, temperature) tuples
-  temperatures: List[(String, Double)]
-)
+  val temperatures: List[(String, Double)]
+) extends Serializable
 
-case class MyQuery(
-  day: String
-)
+class MyQuery(
+  val day: String
+) extends Serializable
 
-case class MyModel(
-  temperatures: HashMap[String, Double]
-) {
+class MyModel(
+  val temperatures: HashMap[String, Double]
+) extends Serializable {
   override def toString = temperatures.toString
 }
 
-case class MyPredictedResult(
-  temperature: Double
-)
+class MyPredictedResult(
+  val temperature: Double
+) extends Serializable
 
 // controller components
 class MyDataSource extends LDataSource[EmptyDataSourceParams, EmptyDataParams,

@@ -26,7 +26,6 @@ class Preparator(pp: CustomPreparatorParams) // ADDED CustomPreparatorParams
   }
 }
 
-case class PreparedData(
-  ratings: RDD[Rating]
-)
-
+class PreparedData(
+  val ratings: RDD[Rating]
+) extends Serializable

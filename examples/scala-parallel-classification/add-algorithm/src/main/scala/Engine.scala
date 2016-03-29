@@ -3,13 +3,13 @@ package org.template.classification
 import io.prediction.controller.IEngineFactory
 import io.prediction.controller.Engine
 
-case class Query(
-  features: Array[Double]
-)
+class Query(
+  val features: Array[Double]
+) extends Serializable
 
-case class PredictedResult(
-  label: Double
-)
+class PredictedResult(
+  val label: Double
+) extends Serializable
 
 object ClassificationEngine extends IEngineFactory {
   def apply() = {

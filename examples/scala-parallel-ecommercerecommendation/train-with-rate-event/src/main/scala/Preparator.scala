@@ -17,8 +17,8 @@ class Preparator
   }
 }
 
-case class PreparedData(
-  users: RDD[(String, User)],
-  items: RDD[(String, Item)],
-  rateEvents: RDD[RateEvent] // MODIFIED
-)
+class PreparedData(
+  val users: RDD[(String, User)],
+  val items: RDD[(String, Item)],
+  val rateEvents: RDD[RateEvent] // MODIFIED
+) extends Serializable

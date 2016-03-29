@@ -14,8 +14,7 @@ class Preparator
   }
 }
 
-case class PreparedData(
-  items: RDD[Item],
-  ratings: RDD[Rating]
-)
-
+class PreparedData(
+  val items: RDD[Item],
+  val ratings: RDD[Rating]
+) extends Serializable

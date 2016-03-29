@@ -59,8 +59,8 @@ class DataSource(val dsp: DataSourceParams)
   }
 }
 
-case class TrainingData(
-  labeledPoints: RDD[LabeledPoint],
-  gendersMap: Map[String,Double],
-  educationMap: Map[String,Double]
-)
+class TrainingData(
+  val labeledPoints: RDD[LabeledPoint],
+  val gendersMap: Map[String,Double],
+  val educationMap: Map[String,Double]
+) extends Serializable

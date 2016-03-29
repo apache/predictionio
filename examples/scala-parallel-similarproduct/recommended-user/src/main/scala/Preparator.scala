@@ -14,7 +14,7 @@ class Preparator
   }
 }
 
-case class PreparedData(
-  users: RDD[(String, User)],
-  followEvents: RDD[FollowEvent]
-)
+class PreparedData(
+  val users: RDD[(String, User)],
+  val followEvents: RDD[FollowEvent]
+) extends Serializable

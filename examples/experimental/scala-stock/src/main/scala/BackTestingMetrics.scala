@@ -24,11 +24,12 @@ case class BacktestingParams(
 ) extends Params {}
 
 // prediction is Ticker -> ({1:Enter, -1:Exit}, ActualReturn)
-case class DailyResult(
+class DailyResult(
   //val date: DateTime,
-  dateIdx: Int,
-  toEnter: Seq[String],
-  toExit: Seq[String])
+  val dateIdx: Int,
+  val toEnter: Seq[String],
+  val toExit: Seq[String])
+extends Serializable {}
 
 case class DailyStat (
   time: Long,
