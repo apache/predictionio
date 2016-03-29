@@ -72,9 +72,9 @@ case class DataView(val rawData: RawData, val idx: Int, val maxWindowSize: Int) 
 
 // Training data visible to the user is [untilIdx - windowSize, untilIdx).
 case class TrainingData(
-  val untilIdx: Int,
-  val maxWindowSize: Int,
-  val rawDataB: Broadcast[RawData]) {
+  untilIdx: Int,
+  maxWindowSize: Int,
+  rawDataB: Broadcast[RawData]) {
  
   def view(): DataView = DataView(rawDataB.value, untilIdx - 1, maxWindowSize)
 }
