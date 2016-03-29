@@ -154,7 +154,7 @@ root:
         body: 'Architecture Overview'
         url: '/system/'
       -
-        body: 'Production Deployment with Cloudformation'
+        body: 'Production Deployment with AWS CloudFormation'
         url: '/system/deploy-cloudformation/'
       -
         body: 'Using Another Data Store'
