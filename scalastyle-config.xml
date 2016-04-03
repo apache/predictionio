@@ -98,5 +98,4 @@ limitations under the License.
     <check level="error"
            class="org.scalastyle.file.WhitespaceEndOfLineChecker"
            enabled="true"/>
-
 </scalastyle>
