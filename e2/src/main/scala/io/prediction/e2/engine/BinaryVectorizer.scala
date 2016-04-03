@@ -21,8 +21,8 @@ import org.apache.spark.mllib.linalg.Vector
 import scala.collection.immutable.HashMap
 import scala.collection.immutable.HashSet
 
-class BinaryVectorizer(propertyMap : HashMap[(String, String), Int]) 
-extends Serializable {
+class BinaryVectorizer(propertyMap : HashMap[(String, String), Int])
+    extends Serializable {
 
   val properties: Array[(String, String)] = propertyMap.toArray.sortBy(_._2).map(_._1)
   val numFeatures = propertyMap.size
@@ -58,3 +58,4 @@ object BinaryVectorizer {
     new BinaryVectorizer(HashMap(indexed:_*))
   }
 }
+
