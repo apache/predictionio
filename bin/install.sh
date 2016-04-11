@@ -9,10 +9,13 @@
 # License: http://www.apache.org/licenses/LICENSE-2.0
 
 OS=`uname`
-PIO_VERSION=0.9.5
-SPARK_VERSION=1.5.1
-ELASTICSEARCH_VERSION=1.4.4
-HBASE_VERSION=1.0.0
+PIO_VERSION=0.9.6
+SPARK_VERSION=1.6.0
+# Looks like support for Elasticsearch 2.0 will require 2.0 so deferring
+ELASTICSEARCH_VERSION=1.7.3
+HBASE_VERSION=1.1.2
+POSTGRES_VERSION=9.4-1204.jdbc41
+MYSQL_VERSION=5.1.37
 PIO_DIR=$HOME/PredictionIO
 USER_PROFILE=$HOME/.profile
 PIO_FILE=PredictionIO-${PIO_VERSION}.tar.gz
@@ -71,7 +74,6 @@ if [[ "$OS" = "Linux" && $(cat /proc/1/cgroup) == *cpu:/docker/* ]]; then
   echo -e "\033[1;33mForcing Docker defaults!\033[0m"
   pio_dir=${PIO_DIR}
   vendors_dir=${pio_dir}/vendors
-  source_setup=${ES_HB}
 
   spark_dir=${vendors_dir}/spark-${SPARK_VERSION}
   elasticsearch_dir=${vendors_dir}/elasticsearch-${ELASTICSEARCH_VERSION}
@@ -172,7 +174,7 @@ else
       fi
       email=${email:-$guess_email}
 
-      url="http://direct.prediction.io/$PIO_VERSION/install.json/install/install/$email/"
+      url="https://direct.prediction.io/$PIO_VERSION/install.json/install/install/$email/"
       curl --silent ${url} > /dev/null
     fi
 
@@ -239,7 +241,7 @@ else
         break
         ;;
       "$DISTRO_OTHER")
-        echo -e "\033[1;31mYour disribution not yet supported for automatic install :(\033[0m"
+        echo -e "\033[1;31mYour distribution not yet supported for automatic install :(\033[0m"
         echo -e "\033[1;31mPlease install Java manually!\033[0m"
         exit 2
         ;;
@@ -274,14 +276,6 @@ echo "JAVA_HOME is now set to: $JAVA_HOME"
 # PredictionIO
 echo -e "\033[1;36mStarting PredictionIO setup in:\033[0m $pio_dir"
 cd ${TEMP_DIR}
-
-# delete existing tmp file before download again
-if [[ -e  ${PIO_FILE} ]]; then
-  if confirm "Delete existing $PIO_FILE?"; then
-    rm ${PIO_FILE}
-  fi
-fi
-
 if [[ ! -e ${PIO_FILE} ]]; then
   echo "Downloading PredictionIO..."
   curl -O https://d8k1yxp8elc6b.cloudfront.net/${PIO_FILE}
@@ -304,11 +298,6 @@ mkdir ${vendors_dir}
 
 # Spark
 echo -e "\033[1;36mStarting Spark setup in:\033[0m $spark_dir"
-if [[ -e spark-${SPARK_VERSION}-bin-hadoop2.6.tgz ]]; then
-  if confirm "Delete existing spark-$SPARK_VERSION-bin-hadoop2.6.tgz?"; then
-    rm spark-${SPARK_VERSION}-bin-hadoop2.6.tgz
-  fi
-fi
 if [[ ! -e spark-${SPARK_VERSION}-bin-hadoop2.6.tgz ]]; then
   echo "Downloading Spark..."
   curl -O http://d3kbcqa49mib13.cloudfront.net/spark-${SPARK_VERSION}-bin-hadoop2.6.tgz
@@ -332,10 +321,12 @@ case $source_setup in
       sudo -u postgres createuser -P pio
       echo -e "\033[1;36mPlease update $pio_dir/conf/pio-env.sh if you did not enter the default password\033[0m"
     else
-      echo -e "\033[1;31mYour disribution not yet supported for automatic install :(\033[0m"
+      echo -e "\033[1;31mYour distribution not yet supported for automatic install :(\033[0m"
       echo -e "\033[1;31mPlease install PostgreSQL manually!\033[0m"
       exit 3
     fi
+    curl -O https://jdbc.postgresql.org/download/postgresql-${POSTGRES_VERSION}.jar
+    mv postgresql-${POSTGRES_VERSION}.jar ${PIO_DIR}/lib/
     ;;
   "$MYSQL")
     if [[ ${distribution} = "$DISTRO_DEBIAN" ]]; then
@@ -350,19 +341,16 @@ case $source_setup in
       ${SED_CMD} "s|PIO_STORAGE_SOURCES_PGSQL|# PIO_STORAGE_SOURCES_PGSQL|" ${pio_dir}/conf/pio-env.sh
       ${SED_CMD} "s|# PIO_STORAGE_SOURCES_MYSQL|PIO_STORAGE_SOURCES_MYSQL|" ${pio_dir}/conf/pio-env.sh
     else
-      echo -e "\033[1;31mYour disribution not yet supported for automatic install :(\033[0m"
+      echo -e "\033[1;31mYour distribution not yet supported for automatic install :(\033[0m"
       echo -e "\033[1;31mPlease install MySQL manually!\033[0m"
       exit 4
     fi
+    curl -O http://central.maven.org/maven2/mysql/mysql-connector-java/5.1.37/mysql-connector-java-${MYSQL_VERSION}.jar
+    mv mysql-connector-java-${MYSQL_VERSION}.jar ${PIO_DIR}/lib/
     ;;
   "$ES_HB")
     # Elasticsearch
     echo -e "\033[1;36mStarting Elasticsearch setup in:\033[0m $elasticsearch_dir"
-    if [[ -e elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz ]]; then
-      if confirm "Delete existing elasticsearch-$ELASTICSEARCH_VERSION.tar.gz?"; then
-        rm elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
-      fi
-    fi
     if [[ ! -e elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz ]]; then
       echo "Downloading Elasticsearch..."
       curl -O https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
@@ -387,14 +375,9 @@ case $source_setup in
 
     # HBase
     echo -e "\033[1;36mStarting HBase setup in:\033[0m $hbase_dir"
-    if [[ -e hbase-${HBASE_VERSION}-bin.tar.gz ]]; then
-      if confirm "Delete existing hbase-$HBASE_VERSION-bin.tar.gz?"; then
-        rm hbase-${HBASE_VERSION}-bin.tar.gz
-      fi
-    fi
     if [[ ! -e hbase-${HBASE_VERSION}-bin.tar.gz ]]; then
       echo "Downloading HBase..."
-      curl -O http://archive.apache.org/dist/hbase/hbase-${HBASE_VERSION}/hbase-${HBASE_VERSION}-bin.tar.gz
+      curl -O http://archive.apache.org/dist/hbase/${HBASE_VERSION}/hbase-${HBASE_VERSION}-bin.tar.gz
     fi
     tar zxf hbase-${HBASE_VERSION}-bin.tar.gz
     rm -rf ${hbase_dir}

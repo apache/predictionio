@@ -251,6 +251,7 @@ class Engine[TD, EI, PD, Q, P, A](
               logger.info(
                 s"Loaded model ${m.getClass.getName} for algorithm " +
                 s"${algo.getClass.getName}")
+              sc.stop
               m
             } catch {
               case e: NullPointerException =>
@@ -309,7 +310,7 @@ class Engine[TD, EI, PD, Q, P, A](
     *         result, and actual result tuple tuple.
     */
   def eval(
-    sc: SparkContext, 
+    sc: SparkContext,
     engineParams: EngineParams,
     params: WorkflowParams)
   : Seq[(EI, RDD[(Q, P, A)])] = {
@@ -762,7 +763,7 @@ object Engine {
       algoMap.mapValues(_.trainBase(sc,pd))
     }}
 
-    val suppQAsMap: Map[EX, RDD[(QX, (Q, A))]] = evalQAsMap.mapValues { qas => 
+    val suppQAsMap: Map[EX, RDD[(QX, (Q, A))]] = evalQAsMap.mapValues { qas =>
       qas.map { case (qx, (q, a)) => (qx, (serving.supplementBase(q), a)) }
     }
 

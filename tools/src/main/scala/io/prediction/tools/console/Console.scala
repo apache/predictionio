@@ -114,11 +114,11 @@ case class EventServerArgs(
   stats: Boolean = false)
 
 case class AdminServerArgs(
-ip: String = "localhost",
+ip: String = "127.0.0.1",
 port: Int = 7071)
 
 case class DashboardArgs(
-  ip: String = "0.0.0.0",
+  ip: String = "127.0.0.1",
   port: Int = 9000)
 
 case class UpgradeArgs(
@@ -511,7 +511,10 @@ object Console extends Logging {
             } children(
               arg[String]("<name>") action { (x, c) =>
                 c.copy(app = c.app.copy(name = x))
-              } text("Name of the app to be deleted.")
+              } text("Name of the app to be deleted."),
+              opt[Unit]("force") abbr("f") action { (x, c) =>
+                c.copy(app = c.app.copy(force = true))
+              } text("Delete an app without prompting for confirmation")
             ),
           note(""),
           cmd("data-delete").
@@ -527,7 +530,10 @@ object Console extends Logging {
               } text("Name of channel whose data to be deleted."),
               opt[Unit]("all") action { (x, c) =>
                 c.copy(app = c.app.copy(all = true))
-              } text("Delete data of all channels including default")
+              } text("Delete data of all channels including default"),
+              opt[Unit]("force") abbr("f") action { (x, c) =>
+                c.copy(app = c.app.copy(force = true))
+              } text("Delete data of an app without prompting for confirmation")
             ),
           note(""),
           cmd("channel-new").
@@ -553,7 +559,10 @@ object Console extends Logging {
               } text("App name."),
               arg[String]("<channel>") action { (x, c) =>
                 c.copy(app = c.app.copy(channel = x))
-              } text ("Channel name to be deleted.")
+              } text ("Channel name to be deleted."),
+              opt[Unit]("force") abbr("f") action { (x, c) =>
+                c.copy(app = c.app.copy(force = true))
+              } text("Delete a channel of the app without prompting for confirmation")
             )
         )
       note("")

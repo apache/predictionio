@@ -15,12 +15,12 @@
 
 package io.prediction.data.api
 
+import akka.event.Logging
+import sun.misc.BASE64Decoder
+
 import java.util.concurrent.TimeUnit
 
-import akka.actor.Actor
-import akka.actor.ActorSystem
-import akka.actor.Props
-import akka.event.Logging
+import akka.actor._
 import akka.io.IO
 import akka.pattern.ask
 import akka.util.Timeout
@@ -49,7 +49,7 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.util.{Try, Success, Failure}
 
-class EventServiceActor(
+class  EventServiceActor(
     val eventClient: LEvents,
     val accessKeysClient: AccessKeys,
     val channelsClient: Channels,
@@ -64,35 +64,41 @@ class EventServiceActor(
       new DateTimeJson4sSupport.Serializer
   }
 
+
   val MaxNumberOfEventsPerBatchRequest = 50
 
-  val log = Logging(context.system, this)
+  val logger = Logging(context.system, this)
 
   // we use the enclosing ActorContext's or ActorSystem's dispatcher for our
   // Futures
-  implicit def executionContext: ExecutionContext = actorRefFactory.dispatcher
+  implicit def executionContext: ExecutionContext = context.dispatcher
+
   implicit val timeout = Timeout(5, TimeUnit.SECONDS)
 
   val rejectionHandler = Common.rejectionHandler
 
   val jsonPath = """(.+)\.json$""".r
-  val formPath = """(.+)$""".r
+  val formPath = """(.+)\.form$""".r
 
-  val pluginContext = EventServerPluginContext(log)
+  val pluginContext = EventServerPluginContext(logger)
+
+  private lazy val base64Decoder = new BASE64Decoder
 
   case class AuthData(appId: Int, channelId: Option[Int], events: Seq[String])
 
-  /* with accessKey in query, return appId if succeed */
+  /* with accessKey in query/header, return appId if succeed */
   def withAccessKey: RequestContext => Future[Authentication[AuthData]] = {
     ctx: RequestContext =>
       val accessKeyParamOpt = ctx.request.uri.query.get("accessKey")
       val channelParamOpt = ctx.request.uri.query.get("channel")
       Future {
+        // with accessKey in query, return appId if succeed
         accessKeyParamOpt.map { accessKeyParam =>
-          val accessKeyOpt = accessKeysClient.get(accessKeyParam)
-          accessKeyOpt.map { k =>
+          accessKeysClient.get(accessKeyParam).map { k =>
             channelParamOpt.map { ch =>
-              val channelMap = channelsClient.getByAppid(k.appid).map(c => (c.name, c.id)).toMap
+              val channelMap =
+                channelsClient.getByAppid(k.appid)
+                .map(c => (c.name, c.id)).toMap
               if (channelMap.contains(ch)) {
                 Right(AuthData(k.appid, Some(channelMap(ch)), k.events))
               } else {
@@ -101,18 +107,40 @@ class EventServiceActor(
             }.getOrElse{
               Right(AuthData(k.appid, None, k.events))
             }
-          }.getOrElse{
-            Left(AuthenticationFailedRejection(
-              AuthenticationFailedRejection.CredentialsRejected, List()))
-          }
-        }.getOrElse { Left(AuthenticationFailedRejection(
-          AuthenticationFailedRejection.CredentialsMissing, List()))
+          }.getOrElse(FailedAuth)
+        }.getOrElse {
+          // with accessKey in header, return appId if succeed
+          ctx.request.headers.find(_.name == "Authorization").map { authHeader ⇒
+            authHeader.value.split("Basic ") match {
+              case Array(_, value) ⇒
+                val appAccessKey =
+                  new String(base64Decoder.decodeBuffer(value)).trim.split(":")(0)
+                accessKeysClient.get(appAccessKey) match {
+                  case Some(k) ⇒ Right(AuthData(k.appid, None, k.events))
+                  case None ⇒ FailedAuth
+                }
+
+              case _ ⇒ FailedAuth
+            }
+          }.getOrElse(MissedAuth)
         }
       }
   }
 
-  val statsActorRef = context.actorSelection("/user/StatsActor")
-  val pluginsActorRef = context.actorSelection("/user/PluginsActor")
+  private val FailedAuth = Left(
+    AuthenticationFailedRejection(
+      AuthenticationFailedRejection.CredentialsRejected, List()
+    )
+  )
+
+  private val MissedAuth = Left(
+    AuthenticationFailedRejection(
+      AuthenticationFailedRejection.CredentialsMissing, List()
+    )
+  )
+
+  lazy val statsActorRef = actorRefFactory.actorSelection("/user/StatsActor")
+  lazy val pluginsActorRef = actorRefFactory.actorSelection("/user/PluginsActor")
 
   val route: Route =
     pathSingleSlash {
@@ -189,7 +217,7 @@ class EventServiceActor(
               val channelId = authData.channelId
               respondWithMediaType(MediaTypes.`application/json`) {
                 complete {
-                  log.debug(s"GET event ${eventId}.")
+                  logger.debug(s"GET event ${eventId}.")
                   val data = eventClient.futureGet(eventId, appId, channelId).map { eventOpt =>
                     eventOpt.map( event =>
                       (StatusCodes.OK, event)
@@ -212,7 +240,7 @@ class EventServiceActor(
               val channelId = authData.channelId
               respondWithMediaType(MediaTypes.`application/json`) {
                 complete {
-                  log.debug(s"DELETE event ${eventId}.")
+                  logger.debug(s"DELETE event ${eventId}.")
                   val data = eventClient.futureDelete(eventId, appId, channelId).map { found =>
                     if (found) {
                       (StatusCodes.OK, Map("message" -> "Found"))
@@ -241,7 +269,6 @@ class EventServiceActor(
               val events = authData.events
               entity(as[Event]) { event =>
                 complete {
-                  log.debug(s"POST events")
                   if (events.isEmpty || authData.events.contains(event.event)) {
                     pluginContext.inputBlockers.values.foreach(
                       _.process(EventInfo(
@@ -292,7 +319,7 @@ class EventServiceActor(
                   limit, reversed) =>
                 respondWithMediaType(MediaTypes.`application/json`) {
                   complete {
-                    log.debug(
+                    logger.debug(
                       s"GET events of appId=${appId} " +
                       s"st=${startTimeStr} ut=${untilTimeStr} " +
                       s"et=${entityType} eid=${entityId} " +
@@ -440,7 +467,6 @@ class EventServiceActor(
       }  // stats.json get
     } ~
     path("webhooks" / jsonPath ) { web =>
-
       import Json4sProtocol._
 
       post {
@@ -458,7 +484,7 @@ class EventServiceActor(
                       web = web,
                       data = jObj,
                       eventClient = eventClient,
-                      log = log,
+                      log = logger,
                       stats = config.stats,
                       statsActorRef = statsActorRef)
                   }
@@ -480,7 +506,7 @@ class EventServiceActor(
                     appId = appId,
                     channelId = channelId,
                     web = web,
-                    log = log)
+                    log = logger)
                 }
               }
             }
@@ -497,7 +523,7 @@ class EventServiceActor(
               val channelId = authData.channelId
               respondWithMediaType(MediaTypes.`application/json`) {
                 entity(as[FormData]){ formData =>
-                  // log.debug(formData.toString)
+                  // logger.debug(formData.toString)
                   complete {
                     // respond with JSON
                     import Json4sProtocol._
@@ -508,7 +534,7 @@ class EventServiceActor(
                       web = web,
                       data = formData,
                       eventClient = eventClient,
-                      log = log,
+                      log = logger,
                       stats = config.stats,
                       statsActorRef = statsActorRef)
                   }
@@ -533,7 +559,7 @@ class EventServiceActor(
                     appId = appId,
                     channelId = channelId,
                     web = web,
-                    log = log)
+                    log = logger)
                 }
               }
             }
@@ -544,7 +570,6 @@ class EventServiceActor(
     }
 
   def receive: Actor.Receive = runRoute(route)
-
 }
 
 
@@ -556,8 +581,7 @@ class EventServerActor(
     val eventClient: LEvents,
     val accessKeysClient: AccessKeys,
     val channelsClient: Channels,
-    val config: EventServerConfig) extends Actor {
-  val log = Logging(context.system, this)
+    val config: EventServerConfig) extends Actor with ActorLogging {
   val child = context.actorOf(
     Props(classOf[EventServiceActor],
       eventClient,
@@ -598,7 +622,8 @@ object EventServer {
         accessKeysClient,
         channelsClient,
         config),
-      "EventServerActor")
+      "EventServerActor"
+    )
     if (config.stats) system.actorOf(Props[StatsActor], "StatsActor")
     system.actorOf(Props[PluginsActor], "PluginsActor")
     serverActor ! StartServer(config.ip, config.port)

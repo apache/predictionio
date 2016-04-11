@@ -26,6 +26,8 @@ import io.prediction.workflow.WorkflowUtils
 import grizzled.slf4j.Logging
 import org.json4s.native.Serialization._
 
+import scala.util.{Failure, Try}
+
 case class FileToEventsArgs(
   env: String = "",
   logFile: String = "",
@@ -83,9 +85,15 @@ object FileToEvents extends Logging {
         mode = "Import",
         batch = "App ID " + args.appId + channelStr,
         executorEnv = Runner.envStringToMap(args.env))
-      val rdd = sc.textFile(args.inputPath)
+      val rdd = sc.textFile(args.inputPath).filter(_.trim.nonEmpty).map { json =>
+        Try(read[Event](json)).recoverWith {
+          case e: Throwable =>
+            error(s"\nmalformed json => $json")
+            Failure(e)
+        }.get
+      }
       val events = Storage.getPEvents()
-      events.write(events = rdd.map(read[Event](_)),
+      events.write(events = rdd,
         appId = args.appId,
         channelId = channelId)(sc)
       info("Events are imported.")
