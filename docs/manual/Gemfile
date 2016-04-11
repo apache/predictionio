@@ -9,7 +9,6 @@ gem 'middleman-s3_sync'
 gem 'middleman-search_engine_sitemap'
 
 gem 'slim'
-gem 'therubyracer'
 gem 'oj'
 gem 'redcarpet', '>= 3.2.3'
 gem 'travis'

@@ -91,7 +91,6 @@ GEM
     kramdown (1.6.0)
     launchy (2.4.3)
       addressable (~> 2.3)
-    libv8 (3.16.14.7)
     listen (2.10.0)
       celluloid (~> 0.16.0)
       rb-fsevent (>= 0.9.3)
@@ -182,7 +181,6 @@ GEM
     rb-inotify (0.9.5)
       ffi (>= 0.5.0)
     redcarpet (3.3.4)
-    ref (1.0.5)
     rouge (1.8.0)
     ruby-progressbar (1.7.5)
     sass (3.4.22)
@@ -200,9 +198,6 @@ GEM
       sprockets (~> 2.0)
       tilt (~> 1.1)
     temple (0.7.6)
-    therubyracer (0.12.2)
-      libv8 (~> 3.16.14.0)
-      ref
     thor (0.19.1)
     thread_safe (0.3.5)
     tilt (1.4.1)
@@ -247,7 +242,6 @@ DEPENDENCIES
   rainbow
   redcarpet (>= 3.2.3)
   slim
-  therubyracer
   travis
   tzinfo-data
   wdm (~> 0.1.0)

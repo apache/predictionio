@@ -20,8 +20,7 @@ show features that are highly sought after by the community.
 
 ## How to Report an Issue
 
-If you wish to report an issue you found,  you can do so on [GitHub Issues](https://github.com/PredictionIO/PredictionIO/issues)
-or [PredictionIO JIRA](https://predictionio.atlassian.net).
+If you wish to report an issue you found,  you can do so on [GitHub Issues](https://github.com/PredictionIO/PredictionIO/issues).
 
 ## How to Help Resolve Existing Issues
 
@@ -36,7 +35,7 @@ bug fixes will follow a different path.
 3. Verify the patch and issue a pull request to the main repository.
 4. Once merged to the main repository, critical bug fixes will be merged to the
    "master" branch and new binary will be built and distributed.
-   
+
 
 ## How to Add / Propose a New Feature
 
@@ -45,12 +44,12 @@ bug fixes will follow a different path.
    (https://groups.google.com/forum/#!forum/predictionio-dev) or email us directly at support@prediction.io.
 2. Discuss with the community and the core development team on what needs to be
    done, and lay down concrete plans on deliverables.
-3. Once solid plans are made, start creating tickets in the [issue tracker]
-   (https://predictionio.atlassian.net/secure/RapidBoard.jspa?rapidView=1).
+3. Once solid plans are made, start creating tickets on [GitHub
+   Issues](https://github.com/PredictionIO/PredictionIO/issues).
 4. Work side by side with other developers using PredictionIO Development Google
    Group as primary mode of communication. You never know if someone else has a
    better idea. ;)
-  
+
 
 ## How to Issue a Pull Request
 
