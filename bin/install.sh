@@ -93,8 +93,9 @@ if [[ "$OS" = "Linux" && $(cat /proc/1/cgroup) == *cpu:/docker/* ]]; then
   # Java Install
   echo -e "\033[1;36mStarting Java install...\033[0m"
 
+  sudo add-apt-repository -y ppa:openjdk-r/ppa
   sudo apt-get update
-  sudo apt-get install openjdk-7-jdk libgfortran3 -y
+  sudo apt-get install openjdk-8-jdk libgfortran3 -y
 
   echo -e "\033[1;32mJava install done!\033[0m"
 
@@ -126,8 +127,9 @@ elif [[ "$1" == "-y" ]]; then
   echo -e "\033[1;36mStarting Java install...\033[0m"
 
   # todo: make java installation platform independent
+  sudo add-apt-repository -y ppa:openjdk-r/ppa
   sudo apt-get update
-  sudo apt-get install openjdk-7-jdk libgfortran3 python-pip -y
+  sudo apt-get install openjdk-8-jdk libgfortran3 python-pip -y
   sudo pip install predictionio
 
   echo -e "\033[1;32mJava install done!\033[0m"
@@ -233,8 +235,9 @@ else
         echo -e "\033[33mThis script requires superuser access!\033[0m"
         echo -e "\033[33mYou will be prompted for your password by sudo:\033[0m"
 
+        sudo add-apt-repository -y ppa:openjdk-r/ppa
         sudo apt-get update
-        sudo apt-get install openjdk-7-jdk libgfortran3 python-pip -y
+        sudo apt-get install openjdk-8-jdk libgfortran3 python-pip -y
         sudo pip install predictionio
 
         echo -e "\033[1;32mJava install done!\033[0m"
