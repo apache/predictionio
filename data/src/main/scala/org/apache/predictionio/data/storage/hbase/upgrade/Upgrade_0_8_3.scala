@@ -13,21 +13,21 @@
   * limitations under the License.
   */
 
-package io.prediction.data.storage.hbase.upgrade
+package org.apache.predictionio.data.storage.hbase.upgrade
 
-import io.prediction.annotation.Experimental
+import org.apache.predictionio.annotation.Experimental
 
 import grizzled.slf4j.Logger
-import io.prediction.data.storage.Storage
-import io.prediction.data.storage.DataMap
-import io.prediction.data.storage.hbase.HBLEvents
-import io.prediction.data.storage.hbase.HBEventsUtil
+import org.apache.predictionio.data.storage.Storage
+import org.apache.predictionio.data.storage.DataMap
+import org.apache.predictionio.data.storage.hbase.HBLEvents
+import org.apache.predictionio.data.storage.hbase.HBEventsUtil
 
 import scala.collection.JavaConversions._
 
 import scala.concurrent._
 import ExecutionContext.Implicits.global
-import io.prediction.data.storage.LEvents
+import org.apache.predictionio.data.storage.LEvents
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import java.lang.Thread

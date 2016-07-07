@@ -13,13 +13,13 @@
   * limitations under the License.
   */
 
-package io.prediction.data.storage.hbase.upgrade
+package org.apache.predictionio.data.storage.hbase.upgrade
 
-import io.prediction.annotation.Experimental
+import org.apache.predictionio.annotation.Experimental
 
-import io.prediction.data.storage.Storage
-import io.prediction.data.storage.hbase.HBLEvents
-import io.prediction.data.storage.hbase.HBEventsUtil
+import org.apache.predictionio.data.storage.Storage
+import org.apache.predictionio.data.storage.hbase.HBLEvents
+import org.apache.predictionio.data.storage.hbase.HBEventsUtil
 
 import scala.collection.JavaConversions._
 

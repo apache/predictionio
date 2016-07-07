@@ -10,5 +10,5 @@ organization := "myorg"
 version := "0.0.1-SNAPSHOT"
 
 libraryDependencies ++= Seq(
-  "io.prediction"    %% "core"          % "@{pioVersion}" % "provided",
+  "org.apache.predictionio"    %% "core"          % "@{pioVersion}" % "provided",
   "org.apache.spark" %% "spark-core"    % "@{sparkVersion}" % "provided")

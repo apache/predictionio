@@ -32,7 +32,7 @@ trait KeyAuthentication {
 
   object ServerKey {
     private val config = ConfigFactory.load("server.conf")
-    val get = config.getString("io.prediction.server.accessKey")
+    val get = config.getString("org.apache.predictionio.server.accessKey")
     val param = "accessKey"
   }
 

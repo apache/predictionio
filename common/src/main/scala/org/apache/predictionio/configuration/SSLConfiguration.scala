@@ -31,9 +31,9 @@ trait SSLConfiguration {
   private val serverConfig = ConfigFactory.load("server.conf")
 
   private val keyStoreResource =
-    serverConfig.getString("io.prediction.server.ssl-keystore-resource")
-  private val password = serverConfig.getString("io.prediction.server.ssl-keystore-pass")
-  private val keyAlias = serverConfig.getString("io.prediction.server.ssl-key-alias")
+    serverConfig.getString("org.apache.predictionio.server.ssl-keystore-resource")
+  private val password = serverConfig.getString("org.apache.predictionio.server.ssl-keystore-pass")
+  private val keyAlias = serverConfig.getString("org.apache.predictionio.server.ssl-key-alias")
 
   private val keyStore = {
 

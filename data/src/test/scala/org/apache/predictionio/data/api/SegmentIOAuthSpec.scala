@@ -1,8 +1,8 @@
-package io.prediction.data.api
+package org.apache.predictionio.data.api
 
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.TestProbe
-import io.prediction.data.storage._
+import org.apache.predictionio.data.storage._
 import org.joda.time.DateTime
 import org.specs2.mutable.Specification
 import spray.http.HttpHeaders.RawHeader
