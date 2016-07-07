@@ -1,7 +1,7 @@
 # [PredictionIO](http://prediction.io)
 
 [![Build
-Status](https://api.travis-ci.org/apache/incubator-predictionio.svg?branch=develop)](https://travis-ci.org/PredictionIO/PredictionIO)
+Status](https://api.travis-ci.org/apache/incubator-predictionio.svg?branch=develop)](https://travis-ci.org/apache/incubator-predictionio)
 
 PredictionIO is an open source machine learning framework for developers and
 data scientists. It supports event collection, deployment of algorithms,
