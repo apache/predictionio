@@ -188,7 +188,7 @@ trait LEvents {
     * @param ec ExecutionContext
     * @return Future[Map[String, PropertyMap]]
     */
-  private[prediction] def futureAggregateProperties(
+  private[predictionio] def futureAggregateProperties(
     appId: Int,
     channelId: Option[Int] = None,
     entityType: String,
@@ -231,7 +231,7 @@ trait LEvents {
     * @return Future[Option[PropertyMap]]
     */
   @Experimental
-  private[prediction] def futureAggregatePropertiesOfEntity(
+  private[predictionio] def futureAggregatePropertiesOfEntity(
     appId: Int,
     channelId: Option[Int] = None,
     entityType: String,
@@ -253,21 +253,21 @@ trait LEvents {
     }
 
   // following is blocking
-  private[prediction] def insert(event: Event, appId: Int,
+  private[predictionio] def insert(event: Event, appId: Int,
     channelId: Option[Int] = None,
     timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
     String = {
     Await.result(futureInsert(event, appId, channelId), timeout)
   }
 
-  private[prediction] def get(eventId: String, appId: Int,
+  private[predictionio] def get(eventId: String, appId: Int,
     channelId: Option[Int] = None,
     timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
     Option[Event] = {
     Await.result(futureGet(eventId, appId, channelId), timeout)
   }
 
-  private[prediction] def delete(eventId: String, appId: Int,
+  private[predictionio] def delete(eventId: String, appId: Int,
     channelId: Option[Int] = None,
     timeout: Duration = defaultTimeout)(implicit ec: ExecutionContext):
     Boolean = {
@@ -299,7 +299,7 @@ trait LEvents {
     * @param ec ExecutionContext
     * @return Iterator[Event]
     */
-  private[prediction] def find(
+  private[predictionio] def find(
     appId: Int,
     channelId: Option[Int] = None,
     startTime: Option[DateTime] = None,
@@ -329,7 +329,7 @@ trait LEvents {
 
   // NOTE: remove in next release
   @deprecated("Use find() instead.", "0.9.2")
-  private[prediction] def findLegacy(
+  private[predictionio] def findLegacy(
     appId: Int,
     channelId: Option[Int] = None,
     startTime: Option[DateTime] = None,
@@ -431,7 +431,7 @@ trait LEvents {
     * @param ec ExecutionContext
     * @return Map[String, PropertyMap]
     */
-  private[prediction] def aggregateProperties(
+  private[predictionio] def aggregateProperties(
     appId: Int,
     channelId: Option[Int] = None,
     entityType: String,
@@ -467,7 +467,7 @@ trait LEvents {
     * @return Future[Option[PropertyMap]]
     */
   @Experimental
-  private[prediction] def aggregatePropertiesOfEntity(
+  private[predictionio] def aggregatePropertiesOfEntity(
     appId: Int,
     channelId: Option[Int] = None,
     entityType: String,

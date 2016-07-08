@@ -31,9 +31,9 @@ import org.apache.spark.rdd.RDD
 
 
 // each JValue data associated with the time it is set
-private[prediction] case class PropTime(val d: JValue, val t: Long) extends Serializable
+private[predictionio] case class PropTime(val d: JValue, val t: Long) extends Serializable
 
-private[prediction] case class SetProp (
+private[predictionio] case class SetProp (
   val fields: Map[String, PropTime],
   // last set time. Note: fields could be empty with valid set time
   val t: Long) extends Serializable {
@@ -62,7 +62,7 @@ private[prediction] case class SetProp (
   }
 }
 
-private[prediction] case class UnsetProp (fields: Map[String, Long]) extends Serializable {
+private[predictionio] case class UnsetProp (fields: Map[String, Long]) extends Serializable {
   def ++ (that: UnsetProp): UnsetProp = {
     val commonKeys = fields.keySet.intersect(that.fields.keySet)
 
@@ -83,13 +83,13 @@ private[prediction] case class UnsetProp (fields: Map[String, Long]) extends Ser
   }
 }
 
-private[prediction] case class DeleteEntity (t: Long) extends Serializable {
+private[predictionio] case class DeleteEntity (t: Long) extends Serializable {
   def ++ (that: DeleteEntity): DeleteEntity = {
     if (this.t > that.t) this else that
   }
 }
 
-private[prediction] case class EventOp (
+private[predictionio] case class EventOp (
   val setProp: Option[SetProp] = None,
   val unsetProp: Option[UnsetProp] = None,
   val deleteEntity: Option[DeleteEntity] = None
@@ -133,7 +133,7 @@ private[prediction] case class EventOp (
 
 }
 
-private[prediction] object EventOp {
+private[predictionio] object EventOp {
   def apply(e: Event): EventOp = {
     val t = e.eventTime.getMillis
     e.event match {

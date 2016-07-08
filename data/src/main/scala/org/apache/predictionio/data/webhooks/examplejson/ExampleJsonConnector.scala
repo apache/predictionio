@@ -57,7 +57,7 @@ import org.json4s.JObject
   *   "timestamp": "2015-01-15T04:20:23.567Z"
   * }
   */
-private[prediction] object ExampleJsonConnector extends JsonConnector {
+private[predictionio] object ExampleJsonConnector extends JsonConnector {
 
   implicit val json4sFormats: Formats = DefaultFormats
 

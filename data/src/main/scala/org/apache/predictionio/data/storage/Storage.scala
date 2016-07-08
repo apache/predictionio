@@ -89,7 +89,7 @@ class StorageClientException(message: String, cause: Throwable)
   extends RuntimeException(message, cause)
 
 @deprecated("Use StorageException", "0.9.2")
-private[prediction] case class StorageError(message: String)
+private[predictionio] case class StorageError(message: String)
 
 /** :: DeveloperApi ::
   * Thrown by data access objects when they run into exceptional conditions
@@ -255,7 +255,7 @@ object Storage extends Logging {
     }
   }
 
-  private[prediction]
+  private[predictionio]
   def getDataObjectFromRepo[T](repo: String, test: Boolean = false)
     (implicit tag: TypeTag[T]): T = {
     val repoDOMeta = repositoriesToDataObjectMeta(repo)
@@ -263,14 +263,14 @@ object Storage extends Logging {
     getDataObject[T](repoDOSourceName, repoDOMeta.namespace, test = test)
   }
 
-  private[prediction]
+  private[predictionio]
   def getPDataObject[T](repo: String)(implicit tag: TypeTag[T]): T = {
     val repoDOMeta = repositoriesToDataObjectMeta(repo)
     val repoDOSourceName = repoDOMeta.sourceName
     getPDataObject[T](repoDOSourceName, repoDOMeta.namespace)
   }
 
-  private[prediction] def getDataObject[T](
+  private[predictionio] def getDataObject[T](
       sourceName: String,
       namespace: String,
       parallel: Boolean = false,
@@ -332,7 +332,7 @@ object Storage extends Logging {
     Seq(client.client, client.config, namespace)
   }
 
-  private[prediction] def verifyAllDataObjects(): Unit = {
+  private[predictionio] def verifyAllDataObjects(): Unit = {
     info("Verifying Meta Data Backend (Source: " +
       s"${repositoriesToDataObjectMeta(MetaDataRepository).sourceName})...")
     getMetaDataEngineManifests()
@@ -357,25 +357,25 @@ object Storage extends Logging {
     eventsDb.close()
   }
 
-  private[prediction] def getMetaDataEngineManifests(): EngineManifests =
+  private[predictionio] def getMetaDataEngineManifests(): EngineManifests =
     getDataObjectFromRepo[EngineManifests](MetaDataRepository)
 
-  private[prediction] def getMetaDataEngineInstances(): EngineInstances =
+  private[predictionio] def getMetaDataEngineInstances(): EngineInstances =
     getDataObjectFromRepo[EngineInstances](MetaDataRepository)
 
-  private[prediction] def getMetaDataEvaluationInstances(): EvaluationInstances =
+  private[predictionio] def getMetaDataEvaluationInstances(): EvaluationInstances =
     getDataObjectFromRepo[EvaluationInstances](MetaDataRepository)
 
-  private[prediction] def getMetaDataApps(): Apps =
+  private[predictionio] def getMetaDataApps(): Apps =
     getDataObjectFromRepo[Apps](MetaDataRepository)
 
-  private[prediction] def getMetaDataAccessKeys(): AccessKeys =
+  private[predictionio] def getMetaDataAccessKeys(): AccessKeys =
     getDataObjectFromRepo[AccessKeys](MetaDataRepository)
 
-  private[prediction] def getMetaDataChannels(): Channels =
+  private[predictionio] def getMetaDataChannels(): Channels =
     getDataObjectFromRepo[Channels](MetaDataRepository)
 
-  private[prediction] def getModelDataModels(): Models =
+  private[predictionio] def getModelDataModels(): Models =
     getDataObjectFromRepo[Models](ModelDataRepository)
 
   /** Obtains a data access object that returns [[Event]] related local data

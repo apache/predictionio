@@ -18,7 +18,7 @@ package org.apache.predictionio.data.webhooks.segmentio
 import org.apache.predictionio.data.webhooks.{ConnectorException, JsonConnector}
 import org.json4s._
 
-private[prediction] object SegmentIOConnector extends JsonConnector {
+private[predictionio] object SegmentIOConnector extends JsonConnector {
 
   // private lazy val supportedAPI = Vector("2", "2.0", "2.0.0")
 
@@ -183,29 +183,29 @@ private[prediction] object SegmentIOConnector extends JsonConnector {
 
 object Events {
 
-  private[prediction] case class Track(
+  private[predictionio] case class Track(
     event: String,
     properties: Option[JObject] = None
   )
 
-  private[prediction] case class Alias(previous_id: String, user_id: String)
+  private[predictionio] case class Alias(previous_id: String, user_id: String)
 
-  private[prediction] case class Group(
+  private[predictionio] case class Group(
     group_id: String,
     traits: Option[JObject] = None
   )
 
-  private[prediction] case class Screen(
+  private[predictionio] case class Screen(
     name: Option[String] = None,
     properties: Option[JObject] = None
   )
 
-  private[prediction] case class Page(
+  private[predictionio] case class Page(
     name: Option[String] = None,
     properties: Option[JObject] = None
   )
 
-  private[prediction] case class Identify(
+  private[predictionio] case class Identify(
     user_id: String,
     traits: Option[JObject]
   )
@@ -214,14 +214,14 @@ object Events {
 
 object Common {
 
-  private[prediction] case class Integrations(
+  private[predictionio] case class Integrations(
     All: Boolean = false,
     Mixpanel: Boolean = false,
     Marketo: Boolean = false,
     Salesforse: Boolean = false
   )
 
-  private[prediction] case class Context(
+  private[predictionio] case class Context(
     ip: String,
     library: Library,
     user_agent: String,
@@ -236,13 +236,13 @@ object Common {
     timezone: Option[String] = None
   )
 
-  private[prediction] case class Screen(width: Int, height: Int, density: Int)
+  private[predictionio] case class Screen(width: Int, height: Int, density: Int)
 
-  private[prediction] case class Referrer(id: String, `type`: String)
+  private[predictionio] case class Referrer(id: String, `type`: String)
 
-  private[prediction] case class OS(name: String, version: String)
+  private[predictionio] case class OS(name: String, version: String)
 
-  private[prediction] case class Location(
+  private[predictionio] case class Location(
     city: Option[String] = None,
     country: Option[String] = None,
     latitude: Option[Double] = None,
@@ -258,16 +258,16 @@ object Common {
     url: String
   )
 
-  private[prediction] case class Network(
+  private[predictionio] case class Network(
     bluetooth: Option[Boolean] = None,
     carrier: Option[String] = None,
     cellular: Option[Boolean] = None,
     wifi: Option[Boolean] = None
   )
 
-  private[prediction] case class Library(name: String, version: String)
+  private[predictionio] case class Library(name: String, version: String)
 
-  private[prediction] case class Device(
+  private[predictionio] case class Device(
     id: Option[String] = None,
     advertising_id: Option[String] = None,
     ad_tracking_enabled: Option[Boolean] = None,
@@ -278,7 +278,7 @@ object Common {
     token: Option[String] = None
   )
 
-  private[prediction] case class Campaign(
+  private[predictionio] case class Campaign(
     name: Option[String] = None,
     source: Option[String] = None,
     medium: Option[String] = None,
@@ -286,7 +286,7 @@ object Common {
     content: Option[String] = None
   )
 
-  private[prediction] case class App(
+  private[predictionio] case class App(
     name: Option[String] = None,
     version: Option[String] = None,
     build: Option[String] = None
@@ -294,7 +294,7 @@ object Common {
 
 }
 
-private[prediction] case class Common(
+private[predictionio] case class Common(
   `type`: String,
   sent_at: String,
   timestamp: String,

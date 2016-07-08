@@ -18,7 +18,7 @@ package org.apache.predictionio.data.store
 import org.apache.predictionio.data.storage.Storage
 import grizzled.slf4j.Logger
 
-private[prediction] object Common {
+private[predictionio] object Common {
 
   @transient lazy val logger = Logger[this.type]
   @transient lazy private val appsDb = Storage.getMetaDataApps()

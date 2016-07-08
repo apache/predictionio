@@ -211,7 +211,7 @@ object WorkflowUtils extends Logging {
     */
   def javaObjectToJValue(params: AnyRef): JValue = parse(gson.toJson(params))
 
-  private[prediction] def checkUpgrade(
+  private[predictionio] def checkUpgrade(
       component: String = "core",
       engine: String = ""): Unit = {
     val runner = new Thread(new UpgradeCheckRunner(component, engine))

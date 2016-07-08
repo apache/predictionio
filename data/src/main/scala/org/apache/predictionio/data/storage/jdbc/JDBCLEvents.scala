@@ -220,7 +220,7 @@ class JDBCLEvents(
     }
   }
 
-  private[prediction] def resultToEvent(rs: WrappedResultSet): Event = {
+  private[predictionio] def resultToEvent(rs: WrappedResultSet): Event = {
     Event(
       eventId = rs.stringOpt("id"),
       event = rs.string("event"),

@@ -39,7 +39,7 @@ import akka.actor.ActorSelection
 import scala.concurrent.{ExecutionContext, Future}
 
 
-private[prediction] object Webhooks {
+private[predictionio] object Webhooks {
 
   def postJson(
     appId: Int,

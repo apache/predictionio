@@ -26,7 +26,7 @@ import org.json4s.JObject
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 
-private[prediction] object MailChimpConnector extends FormConnector {
+private[predictionio] object MailChimpConnector extends FormConnector {
 
   override
   def toEventJson(data: Map[String, String]): JObject = {

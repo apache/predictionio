@@ -20,7 +20,7 @@ package org.apache.predictionio.data.webhooks
   * @param message the detail message
   * @param cause the cause
   */
-private[prediction] class ConnectorException(message: String, cause: Throwable)
+private[predictionio] class ConnectorException(message: String, cause: Throwable)
   extends Exception(message, cause) {
 
   /** Webhooks Connnector Exception with cause being set to null

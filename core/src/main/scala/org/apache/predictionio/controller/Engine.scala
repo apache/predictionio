@@ -85,7 +85,7 @@ class Engine[TD, EI, PD, Q, P, A](
     val servingClassMap: Map[String, Class[_ <: BaseServing[Q, P]]])
   extends BaseEngine[EI, Q, P, A] {
 
-  private[prediction]
+  private[predictionio]
   implicit lazy val formats = Utils.json4sDefaultFormats +
     new NameParamsSerializer
 
@@ -192,7 +192,7 @@ class Engine[TD, EI, PD, Q, P, A](
     * possible that models are not persisted. This method retrains non-persisted
     * models and return a list of models that can be used directly in deploy.
     */
-  private[prediction]
+  private[predictionio]
   def prepareDeploy(
     sc: SparkContext,
     engineParams: EngineParams,
@@ -416,7 +416,7 @@ class Engine[TD, EI, PD, Q, P, A](
       servingParams = servingParams)
   }
 
-  private[prediction] def engineInstanceToEngineParams(
+  private[predictionio] def engineInstanceToEngineParams(
     engineInstance: EngineInstance,
     jsonExtractor: JsonExtractorOption): EngineParams = {
 

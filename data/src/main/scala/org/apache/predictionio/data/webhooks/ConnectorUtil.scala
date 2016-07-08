@@ -25,7 +25,7 @@ import org.json4s.native.Serialization.read
 import org.json4s.native.Serialization.write
 
 
-private[prediction] object ConnectorUtil {
+private[predictionio] object ConnectorUtil {
 
   implicit val eventJson4sFormats: Formats = DefaultFormats +
     new EventJson4sSupport.APISerializer

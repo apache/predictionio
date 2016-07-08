@@ -22,7 +22,7 @@ import org.apache.spark.rdd.RDD
 /** Immutable Bi-directional Map
   *
   */
-class BiMap[K, V] private[prediction] (
+class BiMap[K, V] private[predictionio] (
   private val m: Map[K, V],
   private val i: Option[BiMap[V, K]] = None
   ) extends Serializable {

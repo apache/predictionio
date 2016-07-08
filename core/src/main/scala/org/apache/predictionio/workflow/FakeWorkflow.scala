@@ -27,7 +27,7 @@ import org.apache.spark.rdd.RDD
 
 
 @Experimental
-private[prediction] class FakeEngine
+private[predictionio] class FakeEngine
 extends BaseEngine[EmptyParams, EmptyParams, EmptyParams, EmptyParams] {
   @transient lazy val logger = Logger[this.type]
 
@@ -49,7 +49,7 @@ extends BaseEngine[EmptyParams, EmptyParams, EmptyParams, EmptyParams] {
 }
 
 @Experimental
-private[prediction] class FakeRunner(f: (SparkContext => Unit))
+private[predictionio] class FakeRunner(f: (SparkContext => Unit))
     extends BaseEvaluator[EmptyParams, EmptyParams, EmptyParams, EmptyParams,
       FakeEvalResult] {
   @transient private lazy val logger = Logger[this.type]
@@ -65,7 +65,7 @@ private[prediction] class FakeRunner(f: (SparkContext => Unit))
 }
 
 @Experimental
-private[prediction] case class FakeEvalResult() extends BaseEvaluatorResult {
+private[predictionio] case class FakeEvalResult() extends BaseEvaluatorResult {
   override val noSave: Boolean = true
 }
 

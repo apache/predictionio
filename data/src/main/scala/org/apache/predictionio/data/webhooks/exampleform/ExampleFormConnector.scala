@@ -49,7 +49,7 @@ import org.json4s.JObject
   *   "timestamp"="2015-01-15T04:20:23.567Z"
   *
   */
-private[prediction] object ExampleFormConnector extends FormConnector {
+private[predictionio] object ExampleFormConnector extends FormConnector {
 
   override
   def toEventJson(data: Map[String, String]): JObject = {
