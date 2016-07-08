@@ -54,7 +54,7 @@ extends Serializable {
   def compare(r0: R, r1: R): Int = rOrder.compare(r0, r1)
 }
 
-private [prediction] trait StatsMetricHelper[EI, Q, P, A] {
+private[predictionio] trait StatsMetricHelper[EI, Q, P, A] {
   def calculate(q: Q, p: P, a: A): Double
 
   def calculateStats(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])])
@@ -69,7 +69,7 @@ private [prediction] trait StatsMetricHelper[EI, Q, P, A] {
   }
 }
 
-private [prediction] trait StatsOptionMetricHelper[EI, Q, P, A] {
+private[predictionio] trait StatsOptionMetricHelper[EI, Q, P, A] {
   def calculate(q: Q, p: P, a: A): Option[Double]
 
   def calculateStats(sc: SparkContext, evalDataSet: Seq[(EI, RDD[(Q, P, A)])])

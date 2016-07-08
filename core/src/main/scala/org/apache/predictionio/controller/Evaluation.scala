@@ -32,7 +32,7 @@ trait Evaluation extends Deployment {
   protected [this] var _evaluatorSet: Boolean = false
   protected [this] var _evaluator: BaseEvaluator[_, _, _, _, _ <: BaseEvaluatorResult] = _
 
-  private [prediction]
+  private[predictionio]
   def evaluator: BaseEvaluator[_, _, _, _, _ <: BaseEvaluatorResult] = {
     assert(_evaluatorSet, "Evaluator not set")
     _evaluator
@@ -95,7 +95,7 @@ trait Evaluation extends Deployment {
         outputPath = "best.json"))
   }
 
-  private [prediction]
+  private[predictionio]
   def engineMetrics: (BaseEngine[_, _, _, _], Metric[_, _, _, _, _]) = {
     throw new NotImplementedError("This method is to keep the compiler happy")
   }
