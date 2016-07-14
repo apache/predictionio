@@ -107,7 +107,6 @@ case class StartServer()
 case class BindServer()
 case class StopServer()
 case class ReloadServer()
-case class UpgradeCheck()
 
 
 object CreateServer extends Logging {
@@ -183,14 +182,6 @@ object CreateServer extends Logging {
           engineInstance.engineVersion)
         engineManifests.get(engineId, engineVersion) map { manifest =>
           val engineFactoryName = engineInstance.engineFactory
-          val upgrade = actorSystem.actorOf(Props(
-            classOf[UpgradeActor],
-            engineFactoryName))
-          actorSystem.scheduler.schedule(
-            0.seconds,
-            1.days,
-            upgrade,
-            UpgradeCheck())
           val master = actorSystem.actorOf(Props(
             classOf[MasterActor],
             sc,
@@ -269,15 +260,6 @@ object CreateServer extends Logging {
         models,
         serving,
         engineParams.servingParams._2))
-  }
-}
-
-class UpgradeActor(engineClass: String) extends Actor {
-  val log = Logging(context.system, this)
-  implicit val system = context.system
-  def receive: Actor.Receive = {
-    case x: UpgradeCheck =>
-      WorkflowUtils.checkUpgrade("deployment", engineClass)
   }
 }
 

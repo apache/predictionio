@@ -41,7 +41,6 @@ import org.json4s.MappingException
 import org.json4s._
 import org.json4s.native.JsonMethods._
 
-import scala.io.Source
 import scala.language.existentials
 import scala.reflect.runtime.universe
 
@@ -211,13 +210,6 @@ object WorkflowUtils extends Logging {
     */
   def javaObjectToJValue(params: AnyRef): JValue = parse(gson.toJson(params))
 
-  private[prediction] def checkUpgrade(
-      component: String = "core",
-      engine: String = ""): Unit = {
-    val runner = new Thread(new UpgradeCheckRunner(component, engine))
-    runner.start()
-  }
-
   // Extract debug string by recursively traversing the data.
   def debugString[D](data: D): String = {
     val s: String = data match {
@@ -381,30 +373,6 @@ object SparkWorkflowUtils extends Logging {
           throw e
       }
     }
-  }
-}
-
-class UpgradeCheckRunner(
-    val component: String,
-    val engine: String) extends Runnable with Logging {
-  val version = BuildInfo.version
-  val versionsHost = "https://direct.prediction.io/"
-
-  def run(): Unit = {
-    val url = if (engine == "") {
-      s"$versionsHost$version/$component.json"
-    } else {
-      s"$versionsHost$version/$component/$engine.json"
-    }
-    try {
-      val upgradeData = Source.fromURL(url)
-    } catch {
-      case e: FileNotFoundException =>
-        debug(s"Update metainfo not found. $url")
-      case e: java.net.UnknownHostException =>
-        debug(s"${e.getClass.getName}: {e.getMessage}")
-    }
-    // TODO: Implement upgrade logic
   }
 }
 
