@@ -47,7 +47,6 @@ object CoreWorkflow {
       params: WorkflowParams = WorkflowParams()) {
     logger.debug("Starting SparkContext")
     val mode = "training"
-    WorkflowUtils.checkUpgrade(mode, engineInstance.engineFactory)
 
     val batch = if (params.batch.nonEmpty) {
       s"{engineInstance.engineFactory} (${params.batch}})"
@@ -110,8 +109,6 @@ object CoreWorkflow {
     logger.debug("Start SparkContext")
 
     val mode = "evaluation"
-
-    WorkflowUtils.checkUpgrade(mode, engine.getClass.getName)
 
     val batch = if (params.batch.nonEmpty) {
       s"{evaluation.getClass.getName} (${params.batch}})"

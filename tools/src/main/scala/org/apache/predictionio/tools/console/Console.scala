@@ -942,14 +942,7 @@ object Console extends Logging {
           "pioVersion := \"" + BuildInfo.version + "\""))
     }
     implicit val formats = Utils.json4sDefaultFormats
-    try {
-      val engineFactory =
-        (parse(Source.fromFile("engine.json").mkString) \ "engineFactory").
-          extract[String]
-      WorkflowUtils.checkUpgrade("build", engineFactory)
-    } catch {
-      case e: Throwable => WorkflowUtils.checkUpgrade("build")
-    }
+
     val sbt = detectSbt(ca)
     info(s"Using command '${sbt}' at the current working directory to build.")
     info("If the path above is incorrect, this process will fail.")
