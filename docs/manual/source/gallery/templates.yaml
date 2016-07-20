@@ -1,0 +1,76 @@
+- template:
+    name: E-Commerce Recommendation
+    repo: "https://github.com/PredictionIO/template-java-parallel-ecommercerecommendation"
+    description: |-
+      This engine template provides personalized recommendation for e-commerce applications with the following features by default:
+
+      * Exclude out-of-stock items
+      * Provide recommendation to new users who sign up after the model is trained
+      * Recommend unseen items only (configurable)
+      * Recommend popular items if no information about the user is available
+    tags: [recommender]
+    type: Parallel
+    language: Java
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.3
+
+- template:
+    name: Similar Product
+    repo: "https://github.com/PredictionIO/template-scala-parallel-similarproduct"
+    description: |-
+       This engine template recommends products that are "similar" to the input product(s). Similarity is not defined by user or item attributes but by users' previous actions. By default, it uses 'view' action such that product A and B are considered similar if most users who view A also view B. The template can be customized to support other action types such as buy, rate, like..etc
+    tags: [recommender]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: stable
+    pio_min_version: 0.9.2
+
+- template:
+    name: Classification
+    repo: "https://github.com/PredictionIO/template-scala-parallel-classification"
+    description: |-
+      An engine template is an almost-complete implementation of an engine. PredictionIO's Classification Engine Template has integrated Apache Spark MLlib's Naive Bayes algorithm by default.
+    tags: [classification]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: stable
+    pio_min_version: 0.9.2
+
+- template:
+    name: MLLib-LinearRegression
+    repo: "https://github.com/RAditi/PredictionIO-MLLib-LinReg-Template"
+    description: |-
+      This template uses the linear regression with stochastic gradient descent algorithm from MLLib to make predictions on real-valued data based on features (explanatory variables)
+    tags: [regression]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.1
+
+- template:
+    name: Text Classification
+    repo: "https://github.com/PredictionIO/template-scala-parallel-textclassification"
+    description: |-
+      Use this engine for general text classification purposes. Uses OpenNLP library for text vectorization, includes t.f.-i.d.f.-based feature transformation and reduction, and uses Spark MLLib's Multinomial Naive Bayes implementation for classification.
+    tags: [nlp]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.2
+
+- template:
+    name: MLlibKMeansClustering
+    repo: "https://github.com/sahiliitm/predictionio-MLlibKMeansClusteringTemplate"
+    description: |-
+      This is a template which demonstrates the use of K-Means clustering algorithm which can be deployed on a spark-cluster using prediction.io.
+    tags: [unsupervised]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: '-'

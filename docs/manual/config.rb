@@ -76,6 +76,16 @@ end
 
 # Hacks
 
+# Engine Template Gallery generation
+current_dir = File.dirname(__FILE__)
+gen_cmd = "python3 #{current_dir}/source/gallery/gen_gallery_md.py "\
+          "#{current_dir}/source/gallery/templates.yaml "\
+          "#{current_dir}/source/gallery/template-gallery.html.md"
+system(gen_cmd)
+if $? != 0
+  raise 'Could not build template-gallery.html.md'
+end
+
 # https://github.com/middleman/middleman/issues/612
 Slim::Engine.disable_option_validator!
 
