@@ -2,7 +2,8 @@
 title: Engine Development - Troubleshoot
 ---
 
-PredictionIO provides the following features to help you debug engines during development cycle.
+Apache PredictionIO (incubating) provides the following features to help you
+debug engines during development cycle.
 
 ## Stop Training between Stages
 
@@ -116,8 +117,9 @@ After run `pio deploy`, you can access the engine status page by go to same URL 
 
 ## pio-shell
 
-PredictionIO also provides `pio-shell` in which you can easily access PredictionIO API,
-Spark context and Spark API for quickly testing code or debugging purposes.
+Apache PredictionIO (incubating) also provides `pio-shell` in which you can
+easily access Apache PredictionIO (incubating) API, Spark context and Spark API
+for quickly testing code or debugging purposes.
 
 To bring up the shell, simply run:
 
@@ -125,7 +127,9 @@ To bring up the shell, simply run:
 $ pio-shell --with-spark
 ```
 
-(`pio-shell` is available inside `bin/` directory of installed PredictionIO directory, you should be able to access it if you have added PredictionIO/bin into your environment variable `PATH`)
+(`pio-shell` is available inside `bin/` directory of installed Apache
+PredictionIO (incubating) directory, you should be able to access it if you have
+added PredictionIO/bin into your environment variable `PATH`)
 
 Note that the Spark context is available as variable `sc` inside the shell.
 

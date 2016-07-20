@@ -2,28 +2,29 @@
 title: Collecting Data through REST/SDKs
 ---
 
-**Event Server** is designed to collect data into PredictionIO in an event-based
-style. Once the Event Server is launched, your application can send data to it
-through its **Event API** with HTTP requests or with `EventClient`s of
-PredictionIO's SDKs.
+**Event Server** is designed to collect data into Apache PredictionIO
+(incubating) in an event-based style. Once the Event Server is launched, your
+application can send data to it through its **Event API** with HTTP requests or
+with `EventClient`s of PredictionIO's SDKs.
 
-INFO: All PredictionIO-compliant engines support accessing the Event Store (i.e. the
-data store of Event Server) through [PredictionIO's Storage
+INFO: All Apache PredictionIO (incubating)-compliant engines support accessing
+the Event Store (i.e. the data store of Event Server) through [Apache
+PredictionIO (incubating)'s Storage
 API](http://docs.prediction.io/api/current/index.html#io.prediction.data.storage.package).
 
 ## Launching the Event Server
 
 INFO: Before launching the Event Server, make sure that your event data store
-backend is properly configured and is running. By default, PredictionIO uses
-Apache HBase, and a quick configuration can be found
-[here](/install/install-linux.html#hbase). Please allow a minute
-(usually less than 30 seconds) after HBase is started for its initialization to
-complete before starting the Event Server.
+backend is properly configured and is running. By default, Apache PredictionIO
+(incubating) uses Apache HBase, and a quick configuration can be found
+[here](/install/install-linux.html#hbase). Please allow a minute (usually less
+than 30 seconds) after HBase is started for its initialization to complete
+before starting the Event Server.
 
 
-Everything about PredictionIO can be done through the `pio` command. Please add
-PIO binary command path to to your `PATH` first. Assuming PredictionIO is
-installed at `/home/yourname/PredictionIO/`, you can run
+Everything about Apache PredictionIO (incubating) can be done through the `pio`
+command. Please add PIO binary command path to to your `PATH` first. Assuming
+PredictionIO is installed at `/home/yourname/PredictionIO/`, you can run
 
 ```
 $ PATH=$PATH:/home/yourname/PredictionIO/bin; export PATH
@@ -81,7 +82,7 @@ to use the Event API. You should see something like the following output:
 ### Creating Your First Event
 
 You may connect to the Event Server with HTTP request or by using one of many
-**PredictionIO SDKs**.
+**Apache PredictionIO (incubating) SDKs**.
 
 For example, the following shows how one can create an event involving a single entity.
 Replace the value of `accessKey` by the *Access Key* generated for your App.

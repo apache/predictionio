@@ -28,7 +28,7 @@ set :markdown,
 sprockets.append_path File.join root, 'bower_components'
 
 # Sitemap
-set :url_root, 'https://docs.prediction.io'
+set :url_root, '//predictionio.incubator.apache.org'
 activate :search_engine_sitemap, exclude_attr: 'hidden'
 
 # Development Settings

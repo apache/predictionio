@@ -14,9 +14,14 @@ The purpose of this tutorial is to illustrate how you can go about doing this us
 
 ## Prerequisites
 
-Before getting started, please make sure that you have the latest version of PredictionIO [installed](https://docs.prediction.io/install/). We emphasize here that this is an engine template written in **Scala** and can be more generally thought of as an SBT project containing all the necessary components.
+Before getting started, please make sure that you have the latest version of
+Apache PredictionIO (incubating)
+[installed](http://predictionio.incubator.apache.org/install/). We emphasize
+here that this is an engine template written in **Scala** and can be more
+generally thought of as an SBT project containing all the necessary components.
 
-You should also download the engine template named Text Classification Engine that accompanies this tutorial by cloning the template repository:
+You should also download the engine template named Text Classification Engine
+that accompanies this tutorial by cloning the template repository:
 
 ```
 pio template get PredictionIO/template-scala-parallel-textclassification < Your new engine directory >
@@ -182,7 +187,12 @@ Depending on your needs, in steps (5.x.) above, you can configure your Spark set
 $ pio command command_parameters -- --master url --driver-memory {0}G --executor-memory {1}G --conf spark.akka.framesize={2} --total_executor_cores {3}
 ```
 
-Only the latter commands are listed as these are some of the more commonly modified values. See the [Spark documentation](https://spark.apache.org/docs/latest/spark-standalone.html) and the [PredictionIO FAQ's](https://docs.prediction.io/resources/faq/) for more information.
+Only the latter commands are listed as these are some of the more commonly
+modified values. See the [Spark
+documentation](https://spark.apache.org/docs/latest/spark-standalone.html) and
+the [PredictionIO
+FAQ's](http://predictionio.incubator.apache.org/resources/faq/) for more
+information.
 
 **Note:** We recommend you set your driver memory to `1G` or `2G` as the data size when dealing with text can be very large.
 
@@ -637,7 +647,7 @@ which is what you should see upon inputting the latter command for querying.
 
 ### Gathering More Data and Retraining Your Model
 
-The importing data section that is included in this tutorial uses a sample data set for illustration purposes, and uses the PredictionIO Python SDK to import the data. However, there are a variety of ways that you can [import](https://docs.prediction.io/datacollection/eventapi/) your collected data (via REST or other SDKs).
+The importing data section that is included in this tutorial uses a sample data set for illustration purposes, and uses the PredictionIO Python SDK to import the data. However, there are a variety of ways that you can [import](<%= url_root %>/datacollection/eventapi/) your collected data (via REST or other SDKs).
 
 
 As you continue to collect your data, it is quite easy to retrain your model once you actually import your data into the Event Server. You simply repeat the steps listed in the Quick Start guide. We re-list them here again:

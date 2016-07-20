@@ -1,10 +1,10 @@
 root:
   -
-    body: 'PredictionIO Docs'
+    body: 'Apache PredictionIO (incubating) Documentation'
     url: '/'
     children:
       -
-        body: 'Welcome to PredictionIO'
+        body: 'Welcome to Apache PredictionIO (incubating)'
         url: '/'
   -
     body: 'Getting Started'
@@ -14,7 +14,7 @@ root:
         body: 'A Quick Intro'
         url: '/start/'
       -
-        body: 'Installing PredictionIO'
+        body: 'Installing Apache PredictionIO (incubating)'
         url: '/install/'
       -
         body: 'Downloading an Engine Template'
@@ -153,9 +153,6 @@ root:
       -
         body: 'Architecture Overview'
         url: '/system/'
-      -
-        body: 'Production Deployment with AWS CloudFormation'
-        url: '/system/deploy-cloudformation/'
       -
         body: 'Using Another Data Store'
         url: '/system/anotherdatastore/'
