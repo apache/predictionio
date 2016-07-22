@@ -15,6 +15,7 @@ ACCESS_KEY='ppkprGNCTO_yIejzAdmDqFMOY1XhDiRiX1Da5K6-vbhVrVMoTggzsj2-rrpd4u6U'
 pio app new --access-key $ACCESS_KEY MyApp1
 
 echo "-- Sending some data to eventserver..."
+curl https://raw.githubusercontent.com/apache/spark/master/data/mllib/sample_movielens_data.txt --create-dirs -o data/sample_movielens_data.txt
 python data/import_eventserver.py --access_key $ACCESS_KEY
 
 echo "-- Building an engine..."
