@@ -10,5 +10,5 @@ if [[ $BUILD_TYPE == Unit ]]; then
 
 else
   ./testing/run_docker.sh $METADATA_REP $EVENTDATA_REP $MODELDATA_REP \
-    / '/pio_host/testing/simple_scenario/run_scenario.sh'
+    ./ '/pio_host/testing/simple_scenario/run_scenario.sh'
 fi
