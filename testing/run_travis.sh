@@ -9,6 +9,8 @@ if [[ $BUILD_TYPE == Unit ]]; then
   sbt test
 
 else
+  REPO=`pwd`
+
   ./testing/run_docker.sh $METADATA_REP $EVENTDATA_REP $MODELDATA_REP \
-    ./ '/pio_host/testing/simple_scenario/run_scenario.sh'
+    $REPO '/pio_host/testing/simple_scenario/run_scenario.sh'
 fi
