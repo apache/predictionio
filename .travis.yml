@@ -40,6 +40,7 @@ env:
     - BUILD_TYPE=Integration METADATA_REP=ELASTICSEARCH EVENTDATA_REP=PGSQL MODELDATA_REP=HDFS
 
 before_install:
+  - unset SBT_OPTS JVM_OPTS
   - docker pull ziemin/pio-testing
 
 before_script:
