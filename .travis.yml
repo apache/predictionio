@@ -64,7 +64,7 @@ before_script:
   - ./make-distribution.sh
 
 script:
-  - /testing/run_travis.sh
+  - ./testing/run_travis.sh
 
 after_script:
   - ./bin/travis/pio-stop-travis
