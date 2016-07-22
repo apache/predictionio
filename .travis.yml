@@ -11,6 +11,7 @@ branches:
   only:
     - master
     - develop
+    - testing-infrastructure
 
 language: scala
 
@@ -23,11 +24,23 @@ jdk:
 addons:
     postgresql: "9.3"
 
-sudo: false
+services:
+  - docker
+
+sudo: required
 
 env:
   global:
     - PIO_HOME=`pwd`
+
+  matrix:
+    - BUILD_TYPE=Unit
+    - BUILD_TYPE=Integration METADATA_REP=PGSQL EVENTDATA_REP=PGSQL MODELDATA_REP=PGSQL
+    - BUILD_TYPE=Integration METADATA_REP=ELASTICSEARCH EVENTDATA_REP=HBASE MODELDATA_REP=LOCALFS
+    - BUILD_TYPE=Integration METADATA_REP=ELASTICSEARCH EVENTDATA_REP=PGSQL MODELDATA_REP=HDFS
+
+before_install:
+  - docker pull ziemin/pio-testing
 
 before_script:
 # Download spark, hbase
@@ -46,12 +59,11 @@ before_script:
   - psql -c 'create database predictionio;' -U postgres
   - ./bin/travis/pio-start-travis
 
-script:
-# Run stylecheck
-  - sbt scalastyle
+# Build distribution
+  - ./make-distribution.sh
 
-# Run all unit tests
-  - sbt test
+script:
+  - /testing/run_travis.sh
 
 after_script:
   - ./bin/travis/pio-stop-travis
