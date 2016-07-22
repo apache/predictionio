@@ -11,11 +11,6 @@ if [[ $BUILD_TYPE == Unit ]]; then
   wget http://archive.apache.org/dist/hbase/hbase-1.0.0/hbase-1.0.0-bin.tar.gz
   tar zxfC hbase-1.0.0-bin.tar.gz vendors
 
-  # Prepare pio environment variables
-  set -a
-  source conf/pio-env.sh.travis
-  set +a
-
   # Create postgres database for PredictionIO
   psql -c 'create database predictionio;' -U postgres
   ./bin/travis/pio-start-travis

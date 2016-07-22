@@ -3,6 +3,11 @@
 set -e
 
 if [[ $BUILD_TYPE == Unit ]]; then
+  # Prepare pio environment variables
+  set -a
+  source conf/pio-env.sh.travis
+  set +a
+
   # Run stylecheck
   sbt scalastyle
   # Run all unit tests
