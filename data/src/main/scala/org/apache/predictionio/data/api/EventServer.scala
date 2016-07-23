@@ -110,17 +110,17 @@ class  EventServiceActor(
           }.getOrElse(FailedAuth)
         }.getOrElse {
           // with accessKey in header, return appId if succeed
-          ctx.request.headers.find(_.name == "Authorization").map { authHeader ⇒
+          ctx.request.headers.find(_.name == "Authorization").map { authHeader =>
             authHeader.value.split("Basic ") match {
-              case Array(_, value) ⇒
+              case Array(_, value) =>
                 val appAccessKey =
                   new String(base64Decoder.decodeBuffer(value)).trim.split(":")(0)
                 accessKeysClient.get(appAccessKey) match {
-                  case Some(k) ⇒ Right(AuthData(k.appid, None, k.events))
-                  case None ⇒ FailedAuth
+                  case Some(k) => Right(AuthData(k.appid, None, k.events))
+                  case None => FailedAuth
                 }
 
-              case _ ⇒ FailedAuth
+              case _ => FailedAuth
             }
           }.getOrElse(MissedAuth)
         }
