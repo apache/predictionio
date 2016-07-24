@@ -23,6 +23,7 @@ import org.apache.predictionio.data.store.PEventStore
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.SaveMode
 import org.apache.spark.sql.SQLContext
 import org.joda.time.DateTime
 
@@ -83,7 +84,7 @@ object DataView {
     val baseDir = s"${sys.env("PIO_FS_BASEDIR")}/view"
     val fileName = s"$baseDir/$name-$appName-$hash.parquet"
     try {
-      sqlContext.parquetFile(fileName)
+      sqlContext.read.parquet(fileName)
     } catch {
       case e: java.io.FileNotFoundException =>
         logger.info("Cached copy not found, reading from DB.")
@@ -97,8 +98,8 @@ object DataView {
         import sqlContext.implicits._ // needed for RDD.toDF()
         val resultDF = result.toDF()
 
-        resultDF.saveAsParquetFile(fileName)
-        sqlContext.parquetFile(fileName)
+        resultDF.write.mode(SaveMode.ErrorIfExists).parquet(fileName)
+        sqlContext.read.parquet(fileName)
       case e: java.lang.RuntimeException =>
         if (e.toString.contains("is not a Parquet file")) {
           logger.error(s"$fileName does not contain a valid Parquet file. " +
