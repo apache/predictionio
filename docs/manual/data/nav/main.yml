@@ -209,11 +209,8 @@ root:
         body: 'FAQs'
         url: '/resources/faq/'
       -
-        body: 'Community Support'
+        body: 'Support'
         url: '/support/'
-      -
-        body: 'Enterprise Support'
-        url: '/support/#enterprise-support'
   -
     body: 'Resources'
     url: '#'
