@@ -1,4 +1,5 @@
 require 'lib/custom_renderer'
+require 'lib/gallery_generator'
 
 # General Settings
 set :css_dir,       'stylesheets'
@@ -78,13 +79,9 @@ end
 
 # Engine Template Gallery generation
 current_dir = File.dirname(__FILE__)
-gen_cmd = "python3 #{current_dir}/source/gallery/gen_gallery_md.py "\
-          "#{current_dir}/source/gallery/templates.yaml "\
-          "#{current_dir}/source/gallery/template-gallery.html.md"
-system(gen_cmd)
-if $? != 0
-  raise 'Could not build template-gallery.html.md'
-end
+yaml_file_path = "#{current_dir}/source/gallery/templates.yaml"
+out_file_path = "#{current_dir}/source/gallery/template-gallery.html.md"
+Gallery.generate_md(yaml_file_path, out_file_path)
 
 # https://github.com/middleman/middleman/issues/612
 Slim::Engine.disable_option_validator!
