@@ -19,6 +19,7 @@ class BaseTestCase(unittest.TestCase):
         # start the eventserver
         pass
 
+    @classmethod
     def tearDownClass(cls):
         # stop the eventserver
         pass
