@@ -1,0 +1,7 @@
+[0m[[0mdebug[0m] [0mFramework implementation 'org.scalacheck.ScalaCheckFramework' not present.[0m
+[0m[[0mdebug[0m] [0mFramework implementation 'org.specs2.runner.Specs2Framework' not present.[0m
+[0m[[0mdebug[0m] [0mFramework implementation 'org.specs2.runner.SpecsFramework' not present.[0m
+[0m[[0mdebug[0m] [0mFramework implementation 'org.specs.runner.SpecsFramework' not present.[0m
+[0m[[0mdebug[0m] [0mFramework implementation 'org.scalatest.tools.Framework' not present.[0m
+[0m[[0mdebug[0m] [0mFramework implementation 'org.scalatest.tools.ScalaTestFramework' not present.[0m
+[0m[[0mdebug[0m] [0mFramework implementation 'com.novocode.junit.JUnitFramework' not present.[0m
