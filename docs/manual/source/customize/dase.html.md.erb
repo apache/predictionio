@@ -159,20 +159,22 @@ The two methods of the Algorithm class are train() and predict():
 
 ## train()
 
-train() is responsible for training a predictive model. It is called when you run `pio train`. PredictionIO will store this model.
+train() is responsible for training a predictive model. It is called when you
+run `pio train`. Apache PredictionIO (incubating) will store this model.
 
 ## predict()
 
 predict() is responsible for using this model to make prediction. It is called when you send a JSON query to the engine. Note that predict() is called in real time.
 
-PredictionIO supports two types of algorithms:
+Apache PredictionIO (incubating) supports two types of algorithms:
 
 - **[P2LAlgorithm](https://docs.prediction.io/api/current/#org.apache.predictionio.controller.P2LAlgorithm)**: trains a Model which does not contain RDD
 - **[PAlgorithm](https://docs.prediction.io/api/current/#org.apache.predictionio.controller.PAlgorithm)**: trains a Model which contains RDD
 
 ## P2LAlgorithm
 
-For `P2LAlgorithm`, the Model is automatically serialized and persisted by PredictionIO after training.
+For `P2LAlgorithm`, the Model is automatically serialized and persisted by
+Apache PredictionIO (incubating) after training.
 
 Implementing `IPersistentModel` and `IPersistentModelLoader` is optional for P2LAlgorithm.
 

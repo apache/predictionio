@@ -2,13 +2,13 @@
 title: Community Powered Projects
 ---
 
-We are compiling a list of community-powered projects for PredictionIO 0.8.0 and above.
+Here you will find great projects contributed by the Apache PredictionIO
+(incubating) community. Stay tuned.
 
-Here you will find great projects contributed by the PredictionIO community.
-Stay tuned.
-
-INFO: If you have built a PredictionIO-related project, we would love to showcase it
-to the community! Simply edit [this page](https://github.com/PredictionIO/PredictionIO/blob/livedoc/docs/manual/source/community/projects.html.md) and submit a pull request.
+INFO: If you have built a Apache PredictionIO (incubating)-related project, we
+would love to showcase it to the community! Simply edit [this
+page](https://github.com/apache/incubator-predictionio/blob/livedoc/docs/manual/source/community/projects.html.md)
+and submit a pull request.
 
 ## SDKs
 

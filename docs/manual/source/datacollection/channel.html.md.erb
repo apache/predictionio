@@ -2,17 +2,24 @@
 title: Channel
 ---
 
-Each App has a default channel (without name) which stores all incoming events. This "default" one is used when channel is not specified.
+Each App has a default channel (without name) which stores all incoming events.
+This "default" one is used when channel is not specified.
 
-You may create additional Channels for the App. Creating multiple Channels is advanced usage. You don't need to create any in order to use PredictionIO. The Channel is associated with one App only and must have unique name within the same App.
+You may create additional Channels for the App. Creating multiple Channels is
+advanced usage. You don't need to create any in order to use Apache PredictionIO
+(incubating). The Channel is associated with one App only and must have unique
+name within the same App.
 
-Creating multiple Channels allows you more easily to identify, manage and use specific event data if you may collect events from different multiple sources (eg. mobile, website, or third-party webhooks service) for the your application.
+Creating multiple Channels allows you more easily to identify, manage and use
+specific event data if you may collect events from different multiple sources
+(eg. mobile, website, or third-party webhooks service) for the your application.
 
 (More usage details coming soon...)
 
 ## Create a new Channel
 
-For example, to create a new channel "myChannel" for app "myApp", run following `pio` command:
+For example, to create a new channel "myChannel" for app "myApp", run following
+`pio` command:
 
 ```
 pio app channel-new myApp myChannel

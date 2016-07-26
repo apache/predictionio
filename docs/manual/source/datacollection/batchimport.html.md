@@ -29,7 +29,11 @@ import.
 
 ## Use SDK to Prepare Batch Input File
 
-Some of the PredictionIO SDKs also provides FileExporter client. You may use them to prepare the JSON file as described above. The FileExporter creates event in the same way as EventClient except that the events are written to a JSON file instead of being sent to EventSever. The written JSON file can then be used by batch import.
+Some of the Apache PredictionIO (incubating) SDKs also provides FileExporter
+client. You may use them to prepare the JSON file as described above. The
+FileExporter creates event in the same way as EventClient except that the events
+are written to a JSON file instead of being sent to EventSever. The written JSON
+file can then be used by batch import.
 
 <div class="tabs">
   <div data-tab="PHP SDK" data-lang="php">
