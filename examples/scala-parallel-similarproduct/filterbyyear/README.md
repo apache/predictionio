@@ -6,7 +6,7 @@ For example, recommend movies after year 1990.
 
 ## Documentation
 
-Please refer to http://docs.prediction.io/templates/similarproduct/quickstart/
+Please refer to http://predictionio.incubator.apache.org/templates/similarproduct/quickstart/
 
 ## Development Notes
 

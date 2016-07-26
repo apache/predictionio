@@ -12,9 +12,9 @@ You can find the complete modified source code in `src/` directory.
 
 ## Documentation
 
-Please refer to http://docs.prediction.io/templates/ecommercerecommendation/quickstart/
+Please refer to http://predictionio.incubator.apache.org/templates/ecommercerecommendation/quickstart/
 and
-http://docs.prediction.io/templates/ecommercerecommendation/train-with-rate-event/
+http://predictionio.incubator.apache.org/templates/ecommercerecommendation/train-with-rate-event/
 
 ### import sample data
 

@@ -1,6 +1,6 @@
 ##Release Notes and News
 
-**Note:** For upgrade instructions please refer to [this page](/resources/upgrade/).
+**Note:** For upgrade instructions please refer to [this page](http://predictionio.incubator.apache.org/resources/upgrade/).
 
 ###v0.9.6
 

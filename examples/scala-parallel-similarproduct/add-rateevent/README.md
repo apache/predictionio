@@ -6,7 +6,7 @@ For example, An User would rate an item with a score or rating.The rating is use
 
 ## Documentation
 
-Please refer to http://docs.prediction.io/templates/similarproduct/quickstart/
+Please refer to http://predictionio.incubator.apache.org/templates/similarproduct/quickstart/
 
 
 

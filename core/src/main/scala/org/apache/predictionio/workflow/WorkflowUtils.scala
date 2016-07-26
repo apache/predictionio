@@ -286,7 +286,7 @@ object WorkflowUtils extends Logging {
         "Since 0.8.4, the 'params' field is required in engine.json" +
         " in order to specify parameters for DataSource, Preparator or" +
         " Serving.\n" +
-        "Please go to https://docs.prediction.io/resources/upgrade/" +
+        "Please go to http://predictionio.incubator.apache.org/resources/upgrade/" +
         " for detailed instruction of how to change engine.json.")
       sys.exit(1)
     }
