@@ -10,7 +10,7 @@ values smaller than 0.0 are invalid.
 
 ## Documentation
 
-Please refer to http://docs.prediction.io/templates/ecommercerecommendation/quickstart/
+Please refer to http://predictionio.incubator.apache.org/templates/ecommercerecommendation/quickstart/
 
 ## Development Notes
 

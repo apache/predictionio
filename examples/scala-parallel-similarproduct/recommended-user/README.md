@@ -142,7 +142,7 @@ Likewise, if a black-list is provided, the engine will exclude those users in it
 
 ## Documentation
 
-May refer to http://docs.prediction.io/templates/similarproduct/quickstart/ with difference mentioned above.
+May refer to http://predictionio.incubator.apache.org/templates/similarproduct/quickstart/ with difference mentioned above.
 
 ## Development Notes
 

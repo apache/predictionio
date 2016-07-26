@@ -4,7 +4,7 @@ This example engine is based on Classification Tempplate version v0.1.1 and is m
 
 ## Classification template
 
-Please refer to http://docs.prediction.io/templates/classification/quickstart/
+Please refer to http://predictionio.incubator.apache.org/templates/classification/quickstart/
 
 ## Development Notes
 

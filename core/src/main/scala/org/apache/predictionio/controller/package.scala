@@ -23,7 +23,7 @@ package org.apache.predictionio
   *
   * == The DASE Paradigm ==
   * The building blocks together form the DASE paradigm. Learn more about DASE
-  * [[http://docs.prediction.io/customize/ here]].
+  * [[http://predictionio.incubator.apache.org/customize/ here]].
   *
   * == Types of Building Blocks ==
   * Depending on the problem you are solving, you would need to pick appropriate

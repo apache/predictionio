@@ -159,7 +159,7 @@ pioUnidoc := {
 }
 
 pomExtra in ThisBuild := {
-  <url>https://prediction.io</url>
+  <url>http://predictionio.incubator.apache.org</url>
   <licenses>
     <license>
       <name>Apache 2</name>
@@ -167,15 +167,15 @@ pomExtra in ThisBuild := {
     </license>
   </licenses>
   <scm>
-    <connection>scm:git:github.com/PredictionIO/PredictionIO</connection>
-    <developerConnection>scm:git:git@github.com:PredictionIO/PredictionIO.git</developerConnection>
-    <url>github.com/PredictionIO/PredictionIO</url>
+    <connection>scm:git:github.com/apache/incubator-predictionio</connection>
+    <developerConnection>scm:git:git@github.com:apache/incubator-predictionio.git</developerConnection>
+    <url>github.com/apache/incubator-predictionio</url>
   </scm>
   <developers>
     <developer>
       <id>pio</id>
       <name>The PredictionIO Team</name>
-      <url>https://prediction.io</url>
+      <url>http://predictionio.incubator.apache.org</url>
     </developer>
   </developers>
 }
