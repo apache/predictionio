@@ -25,3 +25,4 @@ quickstartapp/
 .idea/
 .templates-cache
 /vendors
+/docs/manual/source/gallery/template-gallery.html.md

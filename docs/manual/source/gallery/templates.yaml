@@ -1,0 +1,624 @@
+- template:
+    name: Universal Recommender
+    repo: "https://github.com/PredictionIO/template-scala-parallel-universal-recommendation"
+    description: |-
+      Use for:
+
+        * Personalized recommendations
+        * Similar items
+        * Popular Items
+        * Shopping cart recommendation
+        * Hybrid collaborative filtering and content based recommendations.
+
+      The name refers to the use of this template in virtually any case that calls for recommendations - ecom, news, videos, virtually anywhere usage data is known. This recommender can auto-correlate different user actions, profile data, contextual information, and some content types to make better recommendations.
+    tags: [recommender]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.5
+
+- template:
+    name: E-Commerce Recommendation
+    repo: "https://github.com/PredictionIO/template-scala-parallel-ecommercerecommendation"
+    description: |-
+      This engine template provides personalized recommendation for e-commerce applications with the following features by default:
+
+      * Exclude out-of-stock items
+      * Provide recommendation to new users who sign up after the model is trained
+      * Recommend unseen items only (configurable)
+      * Recommend popular items if no information about the user is available (added in template version v0.4.0)
+    tags: [recommender]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.2
+
+- template:
+    name: E-Commerce Recommendation (Java)
+    repo: "https://github.com/PredictionIO/template-java-parallel-ecommercerecommendation"
+    description: |-
+      This engine template provides personalized recommendation for e-commerce applications with the following features by default:
+
+      * Exclude out-of-stock items
+      * Provide recommendation to new users who sign up after the model is trained
+      * Recommend unseen items only (configurable)
+      * Recommend popular items if no information about the user is available
+    tags: [recommender]
+    type: Parallel
+    language: Java
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.3
+
+- template:
+    name: Product Ranking
+    repo: "https://github.com/PredictionIO/template-scala-parallel-productranking"
+    description: |-
+      This engine template sorts a list of products for a user based on his/her preference. This is ideal for personalizing the display order of product page, catalog, or menu items if you have large number of options. It creates engagement and early conversion by placing products that a user prefers on the top.
+    tags: [unsupervised]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: stable
+    pio_min_version: 0.9.2
+
+- template:
+    name: Similar Product
+    repo: "https://github.com/PredictionIO/template-scala-parallel-similarproduct"
+    description: |-
+       This engine template recommends products that are "similar" to the input product(s). Similarity is not defined by user or item attributes but by users' previous actions. By default, it uses 'view' action such that product A and B are considered similar if most users who view A also view B. The template can be customized to support other action types such as buy, rate, like..etc
+    tags: [recommender]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: stable
+    pio_min_version: 0.9.2
+
+- template:
+    name: Complementary Purchase
+    repo: "https://github.com/PredictionIO/template-scala-parallel-complementarypurchase"
+    description: |-
+      This engine template recommends the complementary items which most user frequently buy at the same time with one or more items in the query.
+    tags: [unsupervised]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.2
+
+- template:
+    name: Lead Scoring
+    repo: "https://github.com/PredictionIO/template-scala-parallel-leadscoring"
+    description: |-
+      This engine template predicts the probability of an user will convert (conversion event by user) in the current session.
+    tags: [classification]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.2
+
+- template:
+    name: Recommendation
+    repo: "https://github.com/PredictionIO/template-scala-parallel-recommendation"
+    description: |-
+      An engine template is an almost-complete implementation of an engine. PredictionIO's Recommendation Engine Template has integrated Apache Spark MLlib's Collaborative Filtering algorithm by default. You can customize it easily to fit your specific needs.
+    tags: [unsupervised]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: stable
+    pio_min_version: 0.9.2
+
+- template:
+    name: Classification
+    repo: "https://github.com/PredictionIO/template-scala-parallel-classification"
+    description: |-
+      An engine template is an almost-complete implementation of an engine. PredictionIO's Classification Engine Template has integrated Apache Spark MLlib's Naive Bayes algorithm by default.
+    tags: [classification]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: stable
+    pio_min_version: 0.9.2
+
+- template:
+    name: Content Based SVD Item Similarity Engine
+    repo: "https://github.com/alexice/template-scala-parallel-svd-item-similarity"
+    description: |-
+      Template to calculate similarity between items based on their attributes. Attributes can be either numeric or categorical in the last case it will be encoded using one-hot encoder. Algorithm uses SVD in order to reduce data dimensionality. Cosine similarity is now implemented but can be easily extended to other similarity measures.
+    tags: [unsupervised]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.2
+
+- template:
+    name: Survival Regression
+    repo: "https://github.com/goliasz/pio-template-sr"
+    description: |-
+      Survival regression template is based on brand new Spark 1.6 AFT (accelerated failure time) survival analysis algorithm. There are interesting applications of survival analysis like:
+
+        * Business Planning : Profiling customers who has a higher survival rate and make strategy accordingly.
+        * Lifetime Value Prediction : Engage with customers according to their lifetime value
+        * Active customers : Predict when the customer will be active for the next time and take interventions accordingly.     * Campaign evaluation : Monitor effect of campaign on the survival rate of customers.
+
+      Source: http://www.analyticsvidhya.com/blog/2014/04/survival-analysis-model-you/
+    tags: [regression]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: beta
+    pio_min_version: 0.9.5
+
+- template:
+    name: Churn Prediction - H2O Sparkling Water
+    repo: "https://github.com/andrewwuan/PredictionIO-Churn-Prediction-H2O-Sparkling-Water"
+    description: |-
+      This is an engine template with Sparkling Water integration. The goal is to use Deep Learning algorithm to predict the churn rate for a phone carrier's customers.
+    tags: [classification]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.2
+
+- template:
+    name: Classification Deeplearning4j
+    repo: "https://github.com/detrevid/predictionio-template-classification-dl4j"
+    description: |-
+      A classification engine template that uses Deeplearning4j library.
+    tags: [classification]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.2
+
+- template:
+    name: Sparkling Water-Deep Learning Energy Forecasting
+    repo: "https://github.com/BensonQiu/predictionio-template-recommendation-sparklingwater"
+    description: |-
+      This Engine Template demonstrates an energy forecasting engine. It integrates Deep Learning from the Sparkling Water library to perform energy analysis. We can query the circuit and time, and return predicted energy usage.
+    tags: [regression]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.2
+
+
+- template:
+    name: OpenNLP Sentiment Analysis Template
+    repo: "https://github.com/vshwnth2/OpenNLP-SentimentAnalysis-Template"
+    description: |-
+      Given a sentence, this engine will return a score between 0 and 4. This is the sentiment of the sentence. The lower the number the more negative the sentence is. It uses the OpenNLP library.
+    tags: [nlp]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: "-"
+
+- template:
+    name: Probabilistic Classifier (Logistic Regression w/ LBFGS)
+    repo: "https://github.com/EmergentOrder/template-scala-probabilistic-classifier-batch-lbfgs"
+    description: |-
+      A PredictionIO engine template using logistic regression (trained with limited-memory BFGS ) with raw (probabilistic) outputs.
+    tags: [classification]
+    type: Parallel
+    language: Scala
+    license: "MIT License"
+    status: alpha
+    pio_min_version: 0.9.2
+
+- template:
+    name: Document Classification with OpenNLP
+    repo: "https://github.com/chrischris292/template-classification-opennlp"
+    description: |-
+      Document Classification template with OpenNLP GISModel.
+    tags: [nlp]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.0
+
+- template:
+    name: Circuit End Use Classification
+    repo: "https://github.com/harry5z/template-circuit-classification-sparkling-water"
+    description: |-
+      A classification engine template that uses machine learning models trained with sample circuit energy consumption data and end usage to predict the end use of a circuit by its energy consumption history.
+    tags: [classification]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.1
+
+- template:
+    name: Viewed This Bought That
+    repo: "https://github.com/vngrs/template-scala-parallel-viewedthenbought"
+    description: |-
+      This Engine uses co-occurence algorithm to match viewed items to bought items. Using this engine you may predict which item the user will buy, given the item(s) browsed.
+    tags: [unsupervised]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: stable
+    pio_min_version: 0.9.2
+
+- template:
+    name: Music Recommendations
+    repo: "https://github.com/vaibhavist/template-scala-parallel-recommendation"
+    description: |-
+      This is very similar to music recommendations template. It is integrated with all the events a music application can have such as song played, liked, downloaded, purchased, etc.
+    tags: [unsupervised]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.2
+
+- template:
+    name: template-decision-tree-feature-importance
+    repo: "https://github.com/anthill/template-decision-tree-feature-importance"
+    description: |-
+      This template shows how to use spark' decision tree. It enables : - both categorical and continuous features - feature importance calculation - tree output in json - reading training data from a csv file
+    tags: [unsupervised]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: stable
+    pio_min_version: 0.9.0
+
+- template:
+    name: Electric Load Forecasting
+    repo: "https://github.com/detrevid/predictionio-load-forecasting"
+    description: |-
+      This is a PredictionIO engine for electric load forecasting. The engine is using linear regression with stochastic gradient descent from Spark MLlib.
+    tags: [regression]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: stable
+    pio_min_version: 0.9.2
+
+- template:
+    name: Sentiment analysis
+    repo: "https://github.com/pawel-n/template-scala-cml-sentiment"
+    description: |-
+      This template implements various algorithms for sentiment analysis, most based on recursive neural networks (RNN) and recursive neural tensor networks (RNTN)[1]. It uses an experimental library called Composable Machine Learning (CML) and the Stanford Parser. The example data set is the Stanford Sentiment Treebank.
+    tags: [nlp]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.2
+
+- template:
+    name: GBRT_Classification
+    repo: "https://github.com/ailurus1991/GBRT_Template_PredictionIO"
+    description: |-
+      The Gradient-Boosted Regression Trees(GBRT) for classification.
+    tags: [classification]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.2
+
+- template:
+    name: MLlibKMeansClustering
+    repo: "https://github.com/sahiliitm/predictionio-MLlibKMeansClusteringTemplate"
+    description: |-
+      This is a template which demonstrates the use of K-Means clustering algorithm which can be deployed on a spark-cluster using prediction.io.
+    tags: [unsupervised]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: '-'
+
+- template:
+    name: Word2Vec
+    repo: "https://github.com/pawel-n/template-scala-parallel-word2vec"
+    description: |-
+      This template integrates the Word2Vec implementation from deeplearning4j with PredictionIO. The Word2Vec algorithm takes a corpus of text and computes a vector representation for each word. These representations can be subsequently used in many natural language processing applications.
+    tags: [nlp]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.0
+
+- template:
+    name: MLlib-Decision-Trees-Template
+    repo: "https://github.com/mohanaprasad1994/PredictionIO-MLlib-Decision-Trees-Template"
+    description: |-
+      An engine template is an almost-complete implementation of an engine. This is a classification engine template which has integrated Apache Spark MLlib's Decision tree algorithm by default.
+    tags: [classification]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.0
+
+- template:
+    name: Spark Deeplearning4j Word2Vec
+    repo: "https://github.com/ts335793/template-scala-spark-dl4j-word2vec"
+    description: |-
+      This template shows how to integrate Deeplearnign4j spark api with PredictionIO on example of app which uses Word2Vec algorithm to predict nearest words.
+    tags: [nlp]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: stable
+    pio_min_version: 0.9.2
+
+- template:
+    name: Sentiment Analysis Template
+    repo: "https://github.com/whhone/template-sentiment-analysis"
+    description: |-
+      Given a sentence, return a score between 0 and 4, indicating the sentence's sentiment. 0 being very negative, 4 being very positive, 2 being neutral. The engine uses the stanford CoreNLP library and the Scala binding `gangeli/CoreNLP-Scala` for parsing.
+    tags: [nlp]
+    type: Parallel
+    language: Scala
+    license: None
+    status: stable
+    pio_min_version: 0.9.0
+
+- template:
+    name: Classification with MultiLayerNetwork
+    repo: "https://github.com/jimmyywu/predictionio-template-classification-dl4j-multilayer-network"
+    description: |-
+      This engine template integrates the MultiLayerNetwork implementation from the Deeplearning4j library into PredictionIO. In this template, we use PredictionIO to classify the widely-known IRIS flower dataset by constructing a deep-belief net.
+    tags: [classification]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.0
+
+- template:
+    name: MLLib-LinearRegression
+    repo: "https://github.com/RAditi/PredictionIO-MLLib-LinReg-Template"
+    description: |-
+      This template uses the linear regression with stochastic gradient descent algorithm from MLLib to make predictions on real-valued data based on features (explanatory variables)
+    tags: [regression]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.1
+
+- template:
+    name: Text Classification
+    repo: "https://github.com/PredictionIO/template-scala-parallel-textclassification"
+    description: |-
+      Use this engine for general text classification purposes. Uses OpenNLP library for text vectorization, includes t.f.-i.d.f.-based feature transformation and reduction, and uses Spark MLLib's Multinomial Naive Bayes implementation for classification.
+    tags: [nlp]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.2
+
+- template:
+    name: Deeplearning4j RNTN
+    repo: "https://github.com/ts335793/template-scala-parallel-dl4j-rntn"
+    description: |-
+      Recursive Neural Tensor Network algorithm is supervised learning algorithm used to predict sentiment of sentences. This template is based on deeplearning4j RNTN example: https://github.com/SkymindIO/deeplearning4j-nlp-examples/tree/master/src/main/java/org/deeplearning4j/rottentomatoes/rntn. It's goal is to show how to integrate deeplearning4j library with PredictionIO.
+    tags: [nlp]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.2
+
+- template:
+    name: Recursive Neural Networks (Sentiment Analysis)
+    repo: "https://github.com/ts335793/template-scala-rnn"
+    description: |-
+      Predicting sentiment of phrases with use of Recursive Neural Network algorithm and OpenNLP parser.
+    tags: [nlp]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: stable
+    pio_min_version: 0.9.2
+
+- template:
+    name: CoreNLP Text Classification
+    repo: "https://github.com/Ling-Ling/CoreNLP-Text-Classification"
+    description: |-
+      This engine uses CoreNLP to do text analysis in order to classify the category a strings of text falls under.
+    tags: [nlp]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: "-"
+
+- template:
+    name: Topc Model (LDA)
+    repo: "https://github.com/EmergentOrder/template-scala-topic-model-LDA"
+    description: |-
+      A PredictionIO engine template using Latent Dirichlet Allocation to learn a topic model from raw text
+    tags: [nlp]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.4
+
+- template:
+    name: Cstablo-template-text-similarityelassification
+    repo: "https://github.com/goliasz/pio-template-text-similarity"
+    description: |-
+      Text similarity engine based on Word2Vec algorithm. Builds vectors of full documents in training phase. Finds similar documents in query phase.
+    tags: [nlp]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.5
+
+- template:
+    name: KMeans-Clustering-Template
+    repo: "https://github.com/singsanj/KMeans-parallel-template"
+    description: |-
+      forked from PredictionIO/template-scala-parallel-vanilla. It implements the KMeans Algorithm. Can be extended to mainstream implementation with minor changes.
+    tags: [unsupervised]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.2
+
+- template:
+    name: classifier-kafka-streaming-template
+    repo: "https://github.com/singsanj/classifier-kafka-streaming-template"
+    description: |-
+      The template will provide a simple integration of DASE with kafka using spark streaming capabilites in order to play around with real time notification, messages ..
+    tags: [classification]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: "-"
+
+- template:
+    name: Frequent Pattern Mining
+    repo: "https://github.com/goliasz/pio-template-fpm"
+    description: |-
+      Template uses FP Growth algorithm allowing to mine for frequent patterns. Template returns subsequent items together with confidence score.
+    tags: [unsupervised]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: alpha
+    pio_min_version: 0.9.5
+
+- template:
+    name: Vanilla
+    repo: "https://github.com/PredictionIO/template-scala-parallel-vanilla"
+    description: |-
+      Vanilla template is for developing new engine when you find other engine templates do not fit your needs. This template provides a skeleton to kick start new engine development.
+    tags: [other]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: stable
+    pio_min_version: 0.9.2
+
+- template:
+    name: Similar Product with Rating
+    repo: "https://github.com/ramaboo/template-scala-parallel-similarproduct-with-rating"
+    description: |-
+      Similar product template with rating support! Used for the MovieLens Demo.
+    tags: [unsupervised]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: beta
+    pio_min_version: 0.9.0
+
+- template:
+    name: "Best Time: Push Notification"
+    repo: "https://github.com/PredictionIO/template-best-time-push-notification"
+    description: |-
+      This template predicts the best time to send push notification to a user to optimize conversion.
+    tags: [other]
+    type: "-"
+    language: "-"
+    license: "-"
+    status: requested
+    pio_min_version: "-"
+
+- template:
+    name: "Best Time: E-mail"
+    repo: "https://github.com/PredictionIO/template-best-time-email"
+    description: |-
+      An engine template is an almost-complete implementation of an engine. PredictionIO's Classification Engine Template has integrated Apache Spark MLlib's Naive Bayes algorithm by default.
+    tags: [other]
+    type: "-"
+    language: "-"
+    license: "-"
+    status: requested
+    pio_min_version: "-"
+
+- template:
+    name: Search Results Ranking
+    repo: "https://github.com/PredictionIO/template-search-results-ranking"
+    description: |-
+      This template rank the search results with a given user’s behavioral history so the top results are most relevant.
+    tags: [unsupervised]
+    type: "-"
+    language: "-"
+    license: "-"
+    status: requested
+    pio_min_version: "-"
+
+- template:
+    name: Category identification
+    repo: "https://github.com/PredictionIO/template-category-identification"
+    description: |-
+      Given a product and its description, this template identifies the category this item belongs to.
+    tags: [classification]
+    type: "-"
+    language: "-"
+    license: "-"
+    status: requested
+    pio_min_version: "-"
+
+- template:
+    name: Smart Categories
+    repo: "https://github.com/PredictionIO/template-smart-categories"
+    description: |-
+      This template ranks the categories for a user.
+    tags: [unsupervised]
+    type: "-"
+    language: "-"
+    license: "-"
+    status: requested
+    pio_min_version: "-"
+
+- template:
+    name: Fake Account Detection
+    repo: "https://github.com/PredictionIO/template-fake-account-detection"
+    description: |-
+      This template detects accounts created with abnormal pattern.
+    tags: [classification]
+    type: "-"
+    language: "-"
+    license: "-"
+    status: requested
+    pio_min_version: "-"
+
+- template:
+    name: Product Trend
+    repo: "https://github.com/PredictionIO/template-product-trend"
+    description: |-
+      This template analyze the user behavior on site to predict the best selling products and trends.
+    tags: [classification]
+    type: "-"
+    language: "-"
+    license: "-"
+    status: requested
+    pio_min_version: "-"
+
+- template:
+    name: User Similarity
+    repo: "https://github.com/PredictionIO/template-user-similarity"
+    description: |-
+      This template make recommendation on similar users based on attributes and behavior.
+    tags: [unsupervised]
+    type: "-"
+    language: "-"
+    license: "-"
+    status: requested
+    pio_min_version: "-"

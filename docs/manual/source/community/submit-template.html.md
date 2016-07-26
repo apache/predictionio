@@ -47,4 +47,20 @@ title:  Submitting a Template to Template Gallery
 
 ## How to submit
 
-Go to http://templates.prediction.io/repositories/new and follow instructions.
+- Fork repository
+- Modify *docs/manual/source/gallery/templates.yaml* introducing a new template. The schema of the engine description is following:
+
+```yml
+- template:
+    name: (Name of your template)
+    repo: (Link to your repository)
+    description: |-
+      (Brief description of your template written in markdown syntax)
+    tags: [ (One of [classification, regression, unsupervised, recommender, nlp, other]) ]
+    type: (Parallel or Local)
+    language: (Language)
+    license: (License)
+    status: (e.g. alpha, stable or requested (under development))
+    pio_min_version: (Minimum version of PredictionIO to run your template)
+```
+- Submit your changes via pull-request
