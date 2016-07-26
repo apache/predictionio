@@ -98,4 +98,13 @@ limitations under the License.
     <check level="error"
            class="org.scalastyle.file.WhitespaceEndOfLineChecker"
            enabled="true"/>
+    <check level="error"
+           class="org.scalastyle.file.FileTabChecker"
+           enabled="true"/>
+    <check level="error"
+           class="org.scalastyle.scalariform.NonASCIICharacterChecker"
+           enabled="true"/>
+    <check level="error"
+           class="org.scalastyle.scalariform.SpaceAfterCommentStartChecker"
+           enabled="true"/>
 </scalastyle>
