@@ -2,6 +2,7 @@ import os
 import sys
 import unittest
 import argparse
+import xmlrunner
 from subprocess import Popen
 from pio_tests.integration import TestContext
 from pio_tests.apps_tests.quickstart_test import QuickStartTest
@@ -36,7 +37,7 @@ if __name__ == "__main__":
     event_server_process = Popen('pio eventserver --ip {} --port {}'
             .format(test_context.es_ip, test_context.es_port),
             shell=True)
-    result = unittest.TextTestRunner(verbosity=2).run(get_test_suite(test_context))
+    result = xmlrunner.XMLTestRunner(verbosity=2).run(get_test_suite(test_context))
     event_server_process.kill()
 
     if not result.wasSuccessful():
