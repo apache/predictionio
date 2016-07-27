@@ -1,9 +1,8 @@
 import os
 import unittest
-import subprocess
 import random
 from pio_tests.integration import BaseTestCase, AppContext
-from utils import AppEngine
+from utils import AppEngine, srun, pjoin
 
 def read_events(file_path):
     RATE_ACTIONS_DELIMITER = "::"
@@ -15,18 +14,18 @@ def read_events(file_path):
             if random.randint(0, 1) == 1:
                 events.append( {
                         "event": "rate",
-                        "entity_type": "user",
-                        "entity_id": data[0],
-                        "target_entity_type": "item",
-                        "target_entity_id": data[1],
+                        "entityType": "user",
+                        "entityId": 'u' + data[0],
+                        "targetEntityType": "item",
+                        "targetEntityId": data[1],
                         "properties": { "rating" : float(data[2]) } })
             else:
                 events.append({
                     "event": "buy",
-                    "entity_type": "user",
-                    "entity_id": data[0],
-                    "target_entity_type": "item",
-                    "target_entity_id": data[1] })
+                    "entityType": "user",
+                    "entityId": data[0],
+                    "targetEntityType": "item",
+                    "targetEntityId": data[1] })
 
         return events
 
@@ -34,24 +33,24 @@ def read_events(file_path):
 class QuickStartTest(BaseTestCase):
 
     def setUp(self):
-        template_path = os.path.join(
+        template_path = pjoin(
                 self.test_context.engine_directory, "recommendation-engine")
-        engine_json = os.path.join(
+        engine_json_path = pjoin(
                 self.test_context.data_directory, "quickstart_test/engine.json")
 
-        self.training_data_path = os.path.join(
+        self.training_data_path = pjoin(
                 self.test_context.data_directory,
                 "quickstart_test/training_data.txt")
 
         # downloading training data
-        subprocess.run('curl https://raw.githubusercontent.com/apache/spark/master/' \
-                'data/mllib/sample_movielens_data.txt --create-dirs -o {0}'
-                .format(self.training_data_path), shell=True)
+        srun('curl https://raw.githubusercontent.com/apache/spark/master/' \
+                'data/mllib/sample_movielens_data.txt --create-dirs -o {}'
+                .format(self.training_data_path))
 
         app_context = AppContext(
                 name="MyRecommender",
                 template=template_path,
-                engine_json=engine_json)
+                engine_json_path=engine_json_path)
 
         self.app = AppEngine(self.test_context, app_context)
         self.app_pid = None
@@ -78,24 +77,36 @@ class QuickStartTest(BaseTestCase):
             "targetEntityId" : "i2",
             "eventTime" : "2014-11-10T12:34:56.123-08:00" }
 
-        self.app.send_events([event1, event2])
-        stored_events = self.app.get_events()
-        # TODO compare events
+        self.assertListEqual(
+                [201, 201],
+                [self.app.send_event(e).status_code for e in [event1, event2]])
+
+        r = self.app.get_events()
+        self.assertEquals(200, r.status_code)
+        stored_events = r.json()
+        self.assertEqual(2, len(stored_events))
+
         new_events = read_events(self.training_data_path)
-        self.app.send_events(new_events)
-        stored_events = self.app.get_events()
+        for ev in new_events:
+            r = self.app.send_event(ev)
+            self.assertEqual(201, r.status_code)
+
+        r = self.app.get_events(params={'limit': -1})
+        self.assertEquals(200, r.status_code)
+        stored_events = r.json()
         self.assertEquals(len(new_events) + 2, len(stored_events))
 
         self.app.build()
         self.app.train()
-        self.app.deploy(wait_time=20)
+        self.app.deploy(wait_time=15)
 
         user_query = { "user": 1, "num": 4 }
-        recommendations = self.app.query(user_query)
-        # TODO compare recommendations
-
+        r = self.app.query(user_query)
+        self.assertEqual(200, r.status_code)
+        result = r.json()
+        self.assertEqual(4, len(result['itemScores']))
 
     def tearDown(self):
         self.app.stop()
-        self.app.remove_data()
+        self.app.delete_data()
         self.app.delete()

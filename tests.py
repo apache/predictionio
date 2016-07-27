@@ -4,7 +4,7 @@ import unittest
 from pio_tests.integration import TestContext
 from pio_tests.apps_tests.quickstart_test import QuickStartTest
 
-TESTS_DIRECTORY = os.path.dirname(__file__)
+TESTS_DIRECTORY = os.path.abspath(os.path.dirname(__file__))
 ENGINE_DIRECTORY = os.path.join(TESTS_DIRECTORY, "engines")
 DATA_DIRECTORY = os.path.join(TESTS_DIRECTORY, "data")
 

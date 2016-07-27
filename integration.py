@@ -1,7 +1,7 @@
 import unittest
 
 class TestContext:
-    def __init__(self, engine_directory, data_directory, es_ip=None, es_port=None):
+    def __init__(self, engine_directory, data_directory, es_ip='0.0.0.0', es_port=7070):
         self.engine_directory = engine_directory
         self.data_directory = data_directory
         self.es_ip = es_ip
@@ -25,8 +25,7 @@ class BaseTestCase(unittest.TestCase):
         pass
 
 class AppContext:
-    def __init__(self, name, template, engine_json=None, access_key=None):
+    def __init__(self, name, template, engine_json_path=None):
         self.name = name
         self.template = template
-        self.engine_json = engine_json
-        self.access_key = access_key
+        self.engine_json_path = engine_json_path
