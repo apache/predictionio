@@ -7,22 +7,16 @@ class TestContext:
         self.es_ip = es_ip
         self.es_port = es_port
 
+def for_context(cls, test_context):
+    cls.test_context = test_context
+    return cls
+
 # The base class for all the tests cases requiring eventserver
 class BaseTestCase(unittest.TestCase):
 
     def __init__(self, test_context, methodName='runTest'):
         super(BaseTestCase, self).__init__(methodName)
         self.test_context = test_context
-
-    @classmethod
-    def setUpClass(cls):
-        # start the eventserver
-        pass
-
-    @classmethod
-    def tearDownClass(cls):
-        # stop the eventserver
-        pass
 
 class AppContext:
     def __init__(self, name, template, engine_json_path=None):
