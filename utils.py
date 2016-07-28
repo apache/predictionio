@@ -6,17 +6,42 @@ import json
 from shutil import copyfile
 from subprocess import run, Popen, check_output
 from os.path import join as pjoin
+import pio_tests.globals as globals
 
 def srun(command):
-    return run(command, shell=True)
+    """ Runs a shell command given as a `str` """
+    return run(command, shell=True, stdout=globals.std_out(),
+            stderr=globals.std_err())
 
 def srun_out(command):
-    return check_output(command, shell=True, universal_newlines=True)
+    """ Runs a shell command given as a `str`
+    Returns: string with command's output
+    """
+    return check_output(command, shell=True, universal_newlines=True,
+            stderr=globals.std_err())
+
+def srun_bg(command):
+    """ Runs a shell command given as a `str` in the background
+    Returns: (obj: `subprocess.Popen`) for executed process
+    """
+    return Popen(command, shell=True, stdout=globals.std_out(),
+            stderr=globals.std_err())
 
 def repository_dirname(template):
+    """ Utility function getting repository name from the link
+    Example: for "https://github.com/user/SomeRepo" should return "SomeRepo"
+    """
     return template.split('/')[-1]
 
 def obtain_template(engine_dir, template):
+    """Given a directory with engines and a template downloads an engine
+    if neccessary
+    Args:
+        engine_dir (str): directory where engines are stored
+        template (str): either the name of an engine from the engines directory
+            or a link to repository with the engine
+    Returns: str: with the engine's path
+    """
     if re.match('^https?:\/\/', template):
         dest_dir = pjoin(engine_dir, repository_dirname(template))
         if not os.path.exists(dest_dir):
@@ -32,8 +57,12 @@ def obtain_template(engine_dir, template):
         return dest_dir
 
 def pio_app_list():
+    """Returns: a list of dicts for every application with the following keys:
+        `name`, `id`, `access_key`, `allowed_events`
+    """
     output = srun_out('pio app list').rstrip()
-    return [ {'name': line[2], 'id': int(line[4]), 'access_key': line[6], 'allowed_events': line[8]}
+    return [ { 'name': line[2], 'id': int(line[4]),
+               'access_key': line[6], 'allowed_events': line[8] }
             for line in [x.split() for x in output.split('\n')[1:-1]] ]
 
 def get_app_eventserver_url_json(test_context):
@@ -45,6 +74,13 @@ def get_engine_url_json(engine_ip, engine_port):
             engine_ip, engine_port)
 
 def send_event(event, test_context, access_key):
+    """ Sends an event to the eventserver
+    Args:
+        event: json-like dictionary describing an event
+        test_context (obj: `TestContext`):
+        access_key: applications access key 
+    Returns: `requests.Response`
+    """
     url = get_app_eventserver_url_json(test_context)
     return requests.post(
             url,
@@ -52,6 +88,13 @@ def send_event(event, test_context, access_key):
             json=event)
 
 def send_events_batch(events, test_context, appid, channel=None):
+    """ Imports events in batch with pio import
+    Args:
+        events: a list of json-like dictionaries for events
+        test_context (obj: `TestContext`)
+        appid (int): application's id
+        channel (str):
+    """
     file_path = pjoin(test_context.data_directory, 'events.json.tmp')
     try:
         with open(file_path, 'w') as f:
@@ -65,19 +108,45 @@ def send_events_batch(events, test_context, appid, channel=None):
         os.remove(file_path)
 
 def get_events(test_context, access_key, params={}):
+    """ Gets events for some application
+    Args:
+         test_context (obj: `TestContext`)
+         access_key (str):
+         params (dict): special parameters for eventserver's GET, e.g:
+            'limit', 'reversed', 'event'. See the docs
+    Returns: `requests.Response`
+    """
     url = get_app_eventserver_url_json(test_context)
     return requests.get(url, params=dict({'accessKey': access_key}, **params))
 
 def query_engine(data, engine_ip='localhost', engine_port=8000):
+    """ Send a query to deployed engine
+    Args:
+        data (dict): json-like dictionary being an input to an engine
+        access_key (str):
+        engine_ip (str): ip of deployed engine
+        engine_port (int): port of deployed engine
+    Returns: `requests.Response`
+    """
     url = get_engine_url_json(engine_ip, engine_port)
     return requests.post(url, json=data)
 
 class AppEngine:
+    """ This is a utility class simplifying all app related interactions.
+    Basically it is just a wrapper on other utility functions and shell
+    scripts.
+    """
 
     def __init__(self, test_context, app_context, already_created=False):
+        """ Args:
+            test_context (obj: `TestContext`)
+            app_context (obj: `AppContext`)
+            already_created (bool): True if the given app has been already added
+        """
         self.test_context = test_context
         self.app_context = app_context
-        self.engine_path = obtain_template(self.test_context.engine_directory, app_context.template)
+        self.engine_path = obtain_template(
+                self.test_context.engine_directory, app_context.template)
         self.deployed_process = None
         if already_created:
             self.__init_info()
@@ -99,9 +168,8 @@ class AppEngine:
         self.access_key = info['access_key']
         self.description = info['description']
 
-    # runs pio app new on this app
-    # returns access key
     def new(self, id=None, description=None, access_key=None):
+        """ Creates a new application with given parameters """
         srun('pio app new {} {} {} {}'.format(
             self.app_context.name,
             '--id {}'.format(id) if id else '',
@@ -112,6 +180,10 @@ class AppEngine:
 
 
     def show(self):
+        """ Returns: application info in dictionary with the keys:
+             `name`: str, `id`: int, `description`: str,
+             `access_key`: str, `allowed_events`: str
+        """
         output = srun_out('pio app show {}'.format(self.app_context.name)).rstrip()
         lines = [x.split() for x in output.split('\n')]
         return { 'name': lines[0][3],
@@ -162,15 +234,15 @@ class AppEngine:
                 '--batch {}'.format(bach) if batch else '',
                 '--scratch-uri {}'.format(scratch_uri) if scratch_uri else '')
 
-        self.deployed_process = Popen(command, shell=True)
+        self.deployed_process = srun_bg(command)
         time.sleep(wait_time)
         if self.deployed_process.poll() is not None:
             raise Exception('Application engine terminated')
         self.ip = ip if ip else 'localhost'
         self.port = port if port else 8000
 
-    # kills deployed engine if it is running
     def stop(self):
+        """ Kills deployed engine """
         if self.deployed_process:
             self.deployed_process.kill()
 
@@ -198,4 +270,3 @@ class AppEngine:
 
     def query(self, data):
         return query_engine(data, self.ip, self.port)
-

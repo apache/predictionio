@@ -1,12 +1,12 @@
 import os
 import unittest
 import random
+import logging
 from pio_tests.integration import BaseTestCase, AppContext
 from utils import AppEngine, srun, pjoin
 
 def read_events(file_path):
     RATE_ACTIONS_DELIMITER = "::"
-    SEED = 3
     with open(file_path, 'r') as f:
         events = []
         for line in f:
@@ -33,6 +33,8 @@ def read_events(file_path):
 class QuickStartTest(BaseTestCase):
 
     def setUp(self):
+        self.log.info("Setting up the engine")
+
         template_path = pjoin(
                 self.test_context.engine_directory, "recommendation-engine")
         engine_json_path = pjoin(
@@ -56,6 +58,7 @@ class QuickStartTest(BaseTestCase):
         self.app_pid = None
 
     def runTest(self):
+        self.log.info("Adding a new application")
         self.app.new()
 
         event1 = {
@@ -77,29 +80,37 @@ class QuickStartTest(BaseTestCase):
             "targetEntityId" : "i2",
             "eventTime" : "2014-11-10T12:34:56.123-08:00" }
 
+        self.log.info("Sending two test events")
         self.assertListEqual(
                 [201, 201],
                 [self.app.send_event(e).status_code for e in [event1, event2]])
 
+        self.log.info("Checking the number of events stored on the server")
         r = self.app.get_events()
         self.assertEquals(200, r.status_code)
         stored_events = r.json()
         self.assertEqual(2, len(stored_events))
 
+        self.log.info("Importing many events")
         new_events = read_events(self.training_data_path)
         for ev in new_events:
             r = self.app.send_event(ev)
             self.assertEqual(201, r.status_code)
 
+        self.log.info("Checking the number of events stored on the server after the update")
         r = self.app.get_events(params={'limit': -1})
         self.assertEquals(200, r.status_code)
         stored_events = r.json()
         self.assertEquals(len(new_events) + 2, len(stored_events))
 
+        self.log.info("Building an engine...")
         self.app.build()
+        self.log.info("Training...")
         self.app.train()
+        self.log.info("Deploying and waiting 15s for it to start...")
         self.app.deploy(wait_time=15)
 
+        self.log.info("Sending a single query and checking results")
         user_query = { "user": 1, "num": 4 }
         r = self.app.query(user_query)
         self.assertEqual(200, r.status_code)
@@ -107,6 +118,9 @@ class QuickStartTest(BaseTestCase):
         self.assertEqual(4, len(result['itemScores']))
 
     def tearDown(self):
+        self.log.info("Stopping deployed engine")
         self.app.stop()
+        self.log.info("Deleting all related data")
         self.app.delete_data()
+        self.log.info("Removing an app")
         self.app.delete()
