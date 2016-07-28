@@ -15,7 +15,7 @@ def read_events(file_path):
                 events.append( {
                         "event": "rate",
                         "entityType": "user",
-                        "entityId": 'u' + data[0],
+                        "entityId": data[0],
                         "targetEntityType": "item",
                         "targetEntityId": data[1],
                         "properties": { "rating" : float(data[2]) } })
@@ -55,7 +55,6 @@ class QuickStartTest(BaseTestCase):
                 engine_json_path=engine_json_path)
 
         self.app = AppEngine(self.test_context, app_context)
-        self.app_pid = None
 
     def runTest(self):
         self.log.info("Adding a new application")

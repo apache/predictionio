@@ -9,13 +9,16 @@ from os.path import join as pjoin
 import pio_tests.globals as globals
 
 def srun(command):
-    """ Runs a shell command given as a `str` """
+    """ Runs a shell command given as a `str`
+    Raises: `subprocess.CalledProcessError` when exit code != 0
+    """
     return run(command, shell=True, stdout=globals.std_out(),
-            stderr=globals.std_err())
+            stderr=globals.std_err(), check=True)
 
 def srun_out(command):
     """ Runs a shell command given as a `str`
     Returns: string with command's output
+    Raises: `subprocess.CalledProcessError` when exit code != 0
     """
     return check_output(command, shell=True, universal_newlines=True,
             stderr=globals.std_err())
@@ -171,10 +174,10 @@ class AppEngine:
     def new(self, id=None, description=None, access_key=None):
         """ Creates a new application with given parameters """
         srun('pio app new {} {} {} {}'.format(
-            self.app_context.name,
             '--id {}'.format(id) if id else '',
-            '--description {}'.format(description) if description else '',
-            '--access-key {}'.format(access_key) if access_key else ''))
+            '--description \"{}\"'.format(description) if description else '',
+            '--access-key {}'.format(access_key) if access_key else '',
+            self.app_context.name))
 
         self.__init_info()
 
