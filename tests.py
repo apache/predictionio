@@ -64,7 +64,7 @@ if __name__ == "__main__":
     # Actual tests execution
     event_server_process = srun_bg('pio eventserver --ip {} --port {}'
             .format(test_context.es_ip, test_context.es_port))
-    result = xmlrunner.XMLTestRunner(verbosity=2).run(unittest.TestSuite(tests))
+    result = xmlrunner.XMLTestRunner(verbosity=2, output='test-reports').run(unittest.TestSuite(tests))
     event_server_process.kill()
 
     if not result.wasSuccessful():
