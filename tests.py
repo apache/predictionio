@@ -4,6 +4,7 @@ import unittest
 import argparse
 import xmlrunner
 import logging
+import time
 import pio_tests.globals as globals
 from utils import srun_bg
 from pio_tests.integration import TestContext
@@ -64,6 +65,7 @@ if __name__ == "__main__":
     # Actual tests execution
     event_server_process = srun_bg('pio eventserver --ip {} --port {}'
             .format(test_context.es_ip, test_context.es_port))
+    time.sleep(5)
     result = xmlrunner.XMLTestRunner(verbosity=2, output='test-reports').run(unittest.TestSuite(tests))
     event_server_process.kill()
 
