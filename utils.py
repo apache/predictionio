@@ -108,18 +108,25 @@ def send_events_batch(events, test_context, access_key):
 
 
 def import_events_batch(events, test_context, appid, channel=None):
-    """ Imports events from file in batch with `pio import`
+    """ Imports events in batch from file with `pio import`
     Args:
         events: a list of json-like dictionaries for events
         test_context (obj: `TestContext`)
         appid (int): application's id
         channel (str):
     """
+    # Writing events list to temporary file.
+    # `pio import` requires each line of input file to be a JSON string
+    # representing an event. Also, empty lines are not allowed.
+    contents = ''
+    for ev in events:
+        contents += '{}\n'.format(json.dumps(ev))
+    contents.rstrip('\n')
+
     file_path = pjoin(test_context.data_directory, 'events.json.tmp')
     try:
         with open(file_path, 'w') as f:
-            for ev in events:
-                f.write(json.dumps(ev))
+            f.write(contents)
         srun('pio import --appid {} --input {} {}'.format(
             appid,
             file_path,
