@@ -10,6 +10,7 @@ from utils import srun_bg
 from pio_tests.integration import TestContext
 from pio_tests.scenarios.quickstart_test import QuickStartTest
 from pio_tests.scenarios.basic_app_usecases import BasicAppUsecases
+from pio_tests.scenarios.eventserver_test import EventserverTest
 
 parser = argparse.ArgumentParser(description='Integration tests for PredictionIO')
 parser.add_argument('--eventserver-ip', default='0.0.0.0')
@@ -33,7 +34,8 @@ logging.basicConfig(format=LOGGING_FORMAT)
 def get_tests(test_context):
     # ========= ADD TESTS HERE!!! ================================
     return {'QuickStart': QuickStartTest(test_context),
-            'BasicAppUsecases': BasicAppUsecases(test_context)}
+            'BasicAppUsecases': BasicAppUsecases(test_context),
+            'EventserverTest': EventserverTest(test_context)}
 
 if __name__ == "__main__":
     args = vars(parser.parse_args())
