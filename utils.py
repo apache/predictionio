@@ -84,14 +84,31 @@ def send_event(event, test_context, access_key):
         access_key: applications access key 
     Returns: `requests.Response`
     """
+    # TODO: Add channel param
     url = get_app_eventserver_url_json(test_context)
     return requests.post(
             url,
             params={'accessKey': access_key},
             json=event)
 
-def send_events_batch(events, test_context, appid, channel=None):
-    """ Imports events in batch with pio import
+def send_events_batch(events, test_context, access_key):
+    """ Send events in batch to the eventserver
+    Args:
+        events: a list of json-like dictionaries for events
+        test_context (obj: `TestContext`):
+        access_key: applications access key
+    Returns: `requests.Response`
+    """
+    url = 'http://{}:{}/batch/events.json'.format(
+        test_context.es_ip, test_context.es_port)
+    return requests.post(
+            url,
+            params={'accessKey': access_key},
+            json=events)
+
+
+def import_events_batch(events, test_context, appid, channel=None):
+    """ Imports events from file in batch with `pio import`
     Args:
         events: a list of json-like dictionaries for events
         test_context (obj: `TestContext`)
@@ -259,7 +276,10 @@ class AppEngine:
         return send_event(event, self.test_context, self.access_key)
 
     def send_events_batch(self, events):
-        return send_events_batch(events, self.test_context, self.id)
+        return send_events_batch(events, self.test_context, self.access_key)
+
+    def import_events_batch(self, events):
+        return import_events_batch(events, self.test_context, self.id)
 
     def get_events(self, params={}):
         return get_events(self.test_context, self.access_key, params)
