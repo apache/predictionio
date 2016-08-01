@@ -74,7 +74,7 @@ class EventserverTest(BaseTestCase):
         self.load_events("signup_events_51.json"))
     self.assertEqual(400, r.status_code)
 
-    self.log.info("Importing batch of events")
+    self.log.info("Importing events from file does not have batch size limit")
     self.app.import_events_batch(
         self.load_events("signup_events_51.json"))
 
