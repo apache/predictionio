@@ -76,36 +76,41 @@ def get_engine_url_json(engine_ip, engine_port):
   return 'http://{}:{}/queries.json'.format(
       engine_ip, engine_port)
 
-def send_event(event, test_context, access_key):
+def send_event(event, test_context, access_key, channel=None):
   """ Sends an event to the eventserver
   Args:
     event: json-like dictionary describing an event
     test_context (obj: `TestContext`):
     access_key: application's access key
+    channel (str): custom channel for storing event
   Returns: `requests.Response`
   """
-  # TODO: Add channel param
   url = get_app_eventserver_url_json(test_context)
+  params = { 'accessKey': access_key }
+  if channel: params['channel'] = channel
   return requests.post(
       url,
-      params={'accessKey': access_key},
+      params=params,
       json=event)
 
-def send_events_batch(events, test_context, access_key):
+def send_events_batch(events, test_context, access_key, channel=None):
   """ Send events in batch via REST to the eventserver
   Args:
     events: a list of json-like dictionaries for events
     test_context (obj: `TestContext`):
     access_key: application's access key
+    channel (str): custom channel for storing event
   Returns: `requests.Response`
   Requires: Events length must not exceed length of 50
     http://docs.prediction.io/datacollection/eventmodel/#3.-batch-events-to-the-eventserver
   """
   url = 'http://{}:{}/batch/events.json'.format(
       test_context.es_ip, test_context.es_port)
+  params = { 'accessKey': access_key }
+  if channel: params['channel'] = channel
   return requests.post(
       url,
-      params={'accessKey': access_key},
+      params=params,
       json=events)
 
 
@@ -115,7 +120,7 @@ def import_events_batch(events, test_context, appid, channel=None):
     events: a list of json-like dictionaries for events
     test_context (obj: `TestContext`)
     appid (int): application's id
-    channel (str):
+    channel (str): custom channel for storing event
   """
   # Writing events list to temporary file.
   # `pio import` requires each line of input file to be a JSON string
@@ -224,7 +229,7 @@ class AppEngine:
 
   # deletes this app from pio
   def delete(self):
-      srun('pio app delete {0} --force'.format(self.app_context.name))
+    srun('pio app delete {0} --force'.format(self.app_context.name))
 
   def build(self, sbt_extra=None, clean=False, no_asm=True):
     srun('cd {0}; pio build {1} {2} {3}'.format(
