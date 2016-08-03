@@ -31,5 +31,10 @@ DIR_NAME=${DIR_NAME%.tar.gz}
 mv $DIR_NAME/* $PIO_HOME/
 mv /pio-env.sh $PIO_HOME/conf/pio-env.sh
 
+echo '== Copying tests to a separate directory =='
+mkdir /tests
+cp -r /pio_host/testing/pio_tests /tests/pio_tests
+export PYTHONPATH=/tests:$PYTHONPATH
+
 # after initialization run given command
 eval $@

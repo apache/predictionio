@@ -10,11 +10,13 @@ RUN echo "== Downloading packages =="
 RUN apt-get install -y \
     wget curl \
     python-pip \
+    python3-pip \
     postgresql postgresql-contrib \
     openjdk-8-jdk \
     openssh-client openssh-server
 
 RUN pip install predictionio
+RUN pip3 install xmlrunner
 
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/jre
 
