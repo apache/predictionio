@@ -56,7 +56,6 @@ class BasicAppUsecases(BaseTestCase):
         engine_json_path=engine_json_path)
 
     self.app = AppEngine(self.test_context, app_context)
-    self.app_pid = None
 
   def runTest(self):
     self.app_creation()
