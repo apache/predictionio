@@ -116,10 +116,10 @@ class QuickStartTest(BaseTestCase):
     result = r.json()
     self.assertEqual(4, len(result['itemScores']))
 
-    def tearDown(self):
-      self.log.info("Stopping deployed engine")
-      self.app.stop()
-      self.log.info("Deleting all related data")
-      self.app.delete_data()
-      self.log.info("Removing an app")
-      self.app.delete()
+  def tearDown(self):
+    self.log.info("Stopping deployed engine")
+    self.app.stop()
+    self.log.info("Deleting all related data")
+    self.app.delete_data()
+    self.log.info("Removing an app")
+    self.app.delete()
