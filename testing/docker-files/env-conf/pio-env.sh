@@ -10,8 +10,8 @@
 # SPARK_HOME: Apache Spark is a hard dependency and must be configured.
 SPARK_HOME=$SPARK_HOME
 
-POSTGRES_JDBC_DRIVER=$PIO_HOME/lib/postgresql-9.4-1204.jdbc41.jar
-MYSQL_JDBC_DRIVER=$PIO_HOME/lib/mysql-connector-java-5.1.37.jar
+POSTGRES_JDBC_DRIVER=/drivers/postgresql-9.4-1204.jdbc41.jar
+MYSQL_JDBC_DRIVER=
 
 # ES_CONF_DIR: You must configure this if you have advanced configuration for
 #              your Elasticsearch setup.

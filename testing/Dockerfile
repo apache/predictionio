@@ -28,7 +28,7 @@ ENV SPARK_HOME /vendors/spark-${SPARK_VERSION}-bin-hadoop2.6
 RUN echo "== Installing Elasticsearch =="
 RUN wget https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
 RUN tar zxvfC elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz /vendors
-RUN rm elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz 
+RUN rm elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
 ENV ELASTICSEARCH_HOME /vendors/elasticsearch-${ELASTICSEARCH_VERSION}
 
 RUN echo "== Installing HBase =="
@@ -36,6 +36,10 @@ RUN wget http://archive.apache.org/dist/hbase/hbase-${HBASE_VERSION}/hbase-${HBA
 RUN tar zxvfC hbase-${HBASE_VERSION}-bin.tar.gz /vendors
 RUN rm hbase-${HBASE_VERSION}-bin.tar.gz
 ENV HBASE_HOME /vendors/hbase-${HBASE_VERSION}
+
+RUN echo "== Downloading database drivers =="
+RUN mkdir drivers
+RUN wget https://jdbc.postgresql.org/download/postgresql-9.4-1204.jdbc41.jar -P /drivers
 
 RUN mkdir PredictionIO
 ENV PIO_HOME /PredictionIO
