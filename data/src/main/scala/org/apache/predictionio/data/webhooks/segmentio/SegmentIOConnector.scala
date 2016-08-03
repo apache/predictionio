@@ -1,17 +1,20 @@
-/** Copyright 2015 TappingStone, Inc.
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  *     http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 
 package org.apache.predictionio.data.webhooks.segmentio
 
@@ -35,57 +38,57 @@ private[predictionio] object SegmentIOConnector extends JsonConnector {
         )
       }
 */
-    } catch { case _: Throwable ⇒
+    } catch { case _: Throwable =>
       throw new ConnectorException(s"Failed to get segment.io API version.")
     }
 
     val common = try {
       data.extract[Common]
     } catch {
-      case e: Throwable ⇒ throw new ConnectorException(
+      case e: Throwable => throw new ConnectorException(
         s"Cannot extract Common field from $data. ${e.getMessage}", e
       )
     }
 
     try {
       common.`type` match {
-        case "identify" ⇒
+        case "identify" =>
           toEventJson(
             common = common,
             identify = data.extract[Events.Identify]
           )
 
-        case "track" ⇒
+        case "track" =>
           toEventJson(
             common = common,
             track = data.extract[Events.Track]
           )
 
-        case "alias" ⇒
+        case "alias" =>
           toEventJson(
             common = common,
             alias = data.extract[Events.Alias]
           )
 
-        case "page" ⇒
+        case "page" =>
           toEventJson(
             common = common,
             page = data.extract[Events.Page]
           )
 
-        case "screen" ⇒
+        case "screen" =>
           toEventJson(
             common = common,
             screen = data.extract[Events.Screen]
           )
 
-        case "group" ⇒
+        case "group" =>
           toEventJson(
             common = common,
             group = data.extract[Events.Group]
           )
 
-        case _ ⇒
+        case _ =>
           throw new ConnectorException(
             s"Cannot convert unknown type ${common.`type`} to event JSON."
           )
@@ -101,59 +104,59 @@ private[predictionio] object SegmentIOConnector extends JsonConnector {
 
   def toEventJson(common: Common, identify: Events.Identify ): JObject = {
     import org.json4s.JsonDSL._
-    val eventProperties = "traits" → identify.traits
+    val eventProperties = "traits" -> identify.traits
     toJson(common, eventProperties)
   }
 
   def toEventJson(common: Common, track: Events.Track): JObject = {
     import org.json4s.JsonDSL._
     val eventProperties =
-      ("properties" → track.properties) ~
-      ("event" → track.event)
+      ("properties" -> track.properties) ~
+      ("event" -> track.event)
     toJson(common, eventProperties)
   }
 
   def toEventJson(common: Common, alias: Events.Alias): JObject = {
     import org.json4s.JsonDSL._
-    toJson(common, "previous_id" → alias.previous_id)
+    toJson(common, "previous_id" -> alias.previous_id)
   }
 
   def toEventJson(common: Common, screen: Events.Screen): JObject = {
     import org.json4s.JsonDSL._
     val eventProperties =
-      ("name" → screen.name) ~
-      ("properties" → screen.properties)
+      ("name" -> screen.name) ~
+      ("properties" -> screen.properties)
     toJson(common, eventProperties)
   }
 
   def toEventJson(common: Common, page: Events.Page): JObject = {
     import org.json4s.JsonDSL._
     val eventProperties =
-      ("name" → page.name) ~
-      ("properties" → page.properties)
+      ("name" -> page.name) ~
+      ("properties" -> page.properties)
     toJson(common, eventProperties)
   }
 
   def toEventJson(common: Common, group: Events.Group): JObject = {
     import org.json4s.JsonDSL._
     val eventProperties =
-      ("group_id" → group.group_id) ~
-      ("traits" → group.traits)
+      ("group_id" -> group.group_id) ~
+      ("traits" -> group.traits)
     toJson(common, eventProperties)
   }
 
   private def toJson(common: Common, props: JObject): JsonAST.JObject = {
     val commonFields = commonToJson(common)
-    JObject(("properties" → properties(common, props)) :: commonFields.obj)
+    JObject(("properties" -> properties(common, props)) :: commonFields.obj)
   }
 
   private def properties(common: Common, eventProps: JObject): JObject = {
     import org.json4s.JsonDSL._
-    common.context map { context ⇒
+    common.context map { context =>
       try {
-        ("context" → Extraction.decompose(context)) ~ eventProps
+        ("context" -> Extraction.decompose(context)) ~ eventProps
       } catch {
-        case e: Throwable ⇒
+        case e: Throwable =>
           throw new ConnectorException(
             s"Cannot convert $context to event JSON. ${e.getMessage }", e
           )
@@ -167,13 +170,13 @@ private[predictionio] object SegmentIOConnector extends JsonConnector {
   private def commonToJson(common: Common, typ: String): JObject = {
     import org.json4s.JsonDSL._
       common.user_id.orElse(common.anonymous_id) match {
-        case Some(userId) ⇒
-          ("event" → typ) ~
-            ("entityType" → "user") ~
-            ("entityId" → userId) ~
-            ("eventTime" → common.timestamp)
+        case Some(userId) =>
+          ("event" -> typ) ~
+            ("entityType" -> "user") ~
+            ("entityId" -> userId) ~
+            ("eventTime" -> common.timestamp)
 
-        case None ⇒
+        case None =>
           throw new ConnectorException(
             "there was no `userId` or `anonymousId` in the common fields."
           )

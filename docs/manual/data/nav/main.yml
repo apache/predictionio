@@ -1,10 +1,10 @@
 root:
   -
-    body: 'PredictionIO Docs'
+    body: 'Apache PredictionIO (incubating) Documentation'
     url: '/'
     children:
       -
-        body: 'Welcome to PredictionIO'
+        body: 'Welcome to Apache PredictionIO (incubating)'
         url: '/'
   -
     body: 'Getting Started'
@@ -14,7 +14,7 @@ root:
         body: 'A Quick Intro'
         url: '/start/'
       -
-        body: 'Installing PredictionIO'
+        body: 'Installing Apache PredictionIO (incubating)'
         url: '/install/'
       -
         body: 'Downloading an Engine Template'
@@ -61,6 +61,9 @@ root:
       -
         body: 'Engine Command-line Interface'
         url: '/cli/#engine-commands'
+      -
+        body: 'Monitoring Engine'
+        url: '/deploy/monitoring/'
       -
         body: 'Setting Engine Parameters'
         url: '/deploy/engineparams/'
@@ -154,9 +157,6 @@ root:
         body: 'Architecture Overview'
         url: '/system/'
       -
-        body: 'Production Deployment with AWS CloudFormation'
-        url: '/system/deploy-cloudformation/'
-      -
         body: 'Using Another Data Store'
         url: '/system/anotherdatastore/'
   -
@@ -165,7 +165,7 @@ root:
     children:
       -
         body: 'Browse'
-        url: 'http://templates.prediction.io'
+        url: '/gallery/template-gallery/'
       -
         body: 'Submit your Engine as a Template'
         url: '/community/submit-template/'
@@ -209,11 +209,8 @@ root:
         body: 'FAQs'
         url: '/resources/faq/'
       -
-        body: 'Community Support'
+        body: 'Support'
         url: '/support/'
-      -
-        body: 'Enterprise Support'
-        url: '/support/#enterprise-support'
   -
     body: 'Resources'
     url: '#'

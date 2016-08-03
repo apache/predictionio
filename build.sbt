@@ -1,16 +1,19 @@
-// Copyright 2015 TappingStone, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 import UnidocKeys._
 
@@ -159,7 +162,7 @@ pioUnidoc := {
 }
 
 pomExtra in ThisBuild := {
-  <url>https://prediction.io</url>
+  <url>http://predictionio.incubator.apache.org</url>
   <licenses>
     <license>
       <name>Apache 2</name>
@@ -167,15 +170,15 @@ pomExtra in ThisBuild := {
     </license>
   </licenses>
   <scm>
-    <connection>scm:git:github.com/PredictionIO/PredictionIO</connection>
-    <developerConnection>scm:git:git@github.com:PredictionIO/PredictionIO.git</developerConnection>
-    <url>github.com/PredictionIO/PredictionIO</url>
+    <connection>scm:git:github.com/apache/incubator-predictionio</connection>
+    <developerConnection>scm:git:git@github.com:apache/incubator-predictionio.git</developerConnection>
+    <url>github.com/apache/incubator-predictionio</url>
   </scm>
   <developers>
     <developer>
       <id>pio</id>
       <name>The PredictionIO Team</name>
-      <url>https://prediction.io</url>
+      <url>http://predictionio.incubator.apache.org</url>
     </developer>
   </developers>
 }

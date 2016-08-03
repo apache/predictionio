@@ -4,32 +4,30 @@ title: Contribute Documentation
 
 ## How to Write Documentation
 
-You can help improve the PredictionIO documentation by submitting tutorials,
-writing how-tos, fixing errors, and adding missing information. You can edit any page
-live on [GitHub](https://github.com/PredictionIO/PredictionIO) by clicking the pencil icon on any page or open a
-[Pull Request](https://help.github.com/articles/creating-a-pull-request/).
-
-<a href="https://gemnasium.com/PredictionIO/PredictionIO"><img src="https://gemnasium.com/PredictionIO/PredictionIO.svg" alt="Dependency Status" class="static" /></a>
-
+You can help improve the Apache PredictionIO (incubating) documentation by
+submitting tutorials, writing how-tos, fixing errors, and adding missing
+information. You can edit any page live on
+[GitHub](https://github.com/apache/incubator-predictionio) by clicking the
+pencil icon on any page or open a [Pull
+Request](https://help.github.com/articles/creating-a-pull-request/).
 
 ## Branching
 
 Use the `livedoc` branch if you want to update the current documentation.
 
-<a href="https://travis-ci.org/PredictionIO/PredictionIO"><img src="https://travis-ci.org/PredictionIO/PredictionIO.svg?branch=livedoc" alt="Build Status" class="static" /></a>
-
-Use the `develop` branch if you want to write documentation for the next release.
-
-<a href="https://travis-ci.org/PredictionIO/PredictionIO"><img src="https://travis-ci.org/PredictionIO/PredictionIO.svg?branch=develop" alt="Build Status" class="static" /></a>
+Use the `develop` branch if you want to write documentation for the next
+release.
 
 ## Installing Locally
 
-PredictionIO documentation uses [Middleman](http://middlemanapp.com/) and is hosted on [S3](http://aws.amazon.com/s3/).
+Apache PredictionIO (incubating) documentation uses
+[Middleman](http://middlemanapp.com/) and is hosted on Apache.
 
-[Gems](http://rubygems.org/) are managed with [Bundler](http://bundler.io/). Front end code with [Bower](http://bower.io/).
+[Gems](http://rubygems.org/) are managed with [Bundler](http://bundler.io/).
+Front end code with [Bower](http://bower.io/).
 
-Requires [Ruby](https://www.ruby-lang.org/en/) 2.1 or greater.
-We recommend [RVM](http://rvm.io/) or [rbenv](https://github.com/sstephenson/rbenv).
+Requires [Ruby](https://www.ruby-lang.org/en/) 2.1 or greater. We recommend
+[RVM](http://rvm.io/) or [rbenv](https://github.com/sstephenson/rbenv).
 
 WARNING: **OS X** users you will need to install [Xcode Command Line Tools](https://developer.apple.com/xcode/downloads/)
 with: `$ xcode-select --install` first.
@@ -89,8 +87,9 @@ Internal links:
 * Should end with / (S3 requirement).
 * Should **not** end with .html.
 
-Following these rules helps keep everything consistent and allows our version parser to correctly version links.
-Middleman is configured for directory indexes. Linking to a file in `sources/samples/index.html` should be done with
+Following these rules helps keep everything consistent and allows our version
+parser to correctly version links. Middleman is configured for directory
+indexes. Linking to a file in `sources/samples/index.html` should be done with
 `[Title](/sample/)`.
 
 ```md
@@ -170,9 +169,11 @@ NOTE: Files must end with a `.erb` extension to be processed as ERB.
 
 ## Going Live
 
-Pushing to the `livedoc` branch will update [docs.prediction.io](http://docs.prediction.io/) in about 5 minutes.
+Pushing to the `livedoc` branch will update
+http://predictionio.incubator.apache.org in about 5 minutes.
 
-You can check the progress of each build on [Travis CI](https://travis-ci.org/PredictionIO/PredictionIO).
+You can check the progress of each build on [Apache's
+Jenkins](https://builds.apache.org/).
 
 ```
 $ git push origin livedoc

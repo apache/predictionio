@@ -27,9 +27,9 @@ customize the final returned results.
 An Evaluation Metric quantifies prediction accuracy with a numerical score. It
 can be used for comparing algorithms or algorithm parameter settings.
 
-> PredictionIO helps you modularize these components so you can build, for
-example, several Serving components for an Engine. You will be able to choose
-which one to be deployed when you create an Engine.
+> Apache PredictionIO (incubating) helps you modularize these components so you
+can build, for example, several Serving components for an Engine. You will be
+able to choose which one to be deployed when you create an Engine.
 
 
 ![Engine Overview](/images/engineinstance-overview.png)

@@ -1,10 +1,12 @@
 ---
-title: Demo Tutorials with PredictionIO
+title: Demo Tutorials with Apache PredictionIO (incubating)
 ---
 
-Here is a list of demo tutorials for PredictionIO.
+Here is a list of demo tutorials for Apache PredictionIO (incubating).
 
-INFO: If you want to showcase your demo app here, simply edit [this page](https://github.com/PredictionIO/PredictionIO/blob/livedoc/docs/manual/source/community/showcase.html.md) and submit a pull request.
+INFO: If you want to showcase your demo app here, simply edit [this
+page](https://github.com/apache/incubator-predictionio/blob/livedoc/docs/manual/source/community/showcase.html.md)
+and submit a pull request.
 
 
 ## Tapster iOS Demo
@@ -37,7 +39,7 @@ URL: http://ontappapp.com/
 Writeup: http://victorleungtw.com/prediction-io/
 
 
-## Yelpio 
+## Yelpio
 
 <img src="/images/showcase/yelpio-70x70.png" alt="OnTapp" class="static" />
 

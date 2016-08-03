@@ -1,4 +1,5 @@
 require 'lib/custom_renderer'
+require 'lib/gallery_generator'
 
 # General Settings
 set :css_dir,       'stylesheets'
@@ -28,7 +29,7 @@ set :markdown,
 sprockets.append_path File.join root, 'bower_components'
 
 # Sitemap
-set :url_root, 'https://docs.prediction.io'
+set :url_root, '//predictionio.incubator.apache.org'
 activate :search_engine_sitemap, exclude_attr: 'hidden'
 
 # Development Settings
@@ -75,6 +76,12 @@ activate :s3_sync do |s3_sync|
 end
 
 # Hacks
+
+# Engine Template Gallery generation
+current_dir = File.dirname(__FILE__)
+yaml_file_path = "#{current_dir}/source/gallery/templates.yaml"
+out_file_path = "#{current_dir}/source/gallery/template-gallery.html.md"
+Gallery.generate_md(yaml_file_path, out_file_path)
 
 # https://github.com/middleman/middleman/issues/612
 Slim::Engine.disable_option_validator!

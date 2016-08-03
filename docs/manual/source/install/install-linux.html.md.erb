@@ -1,12 +1,14 @@
 ---
-title: Installing PredictionIO on Linux / Mac OS X
+title: Installing Apache PredictionIO (incubating) on Linux / Mac OS X
 ---
 
 ## Method 1: Quick Install
 
-On Linux / Mac OS X, PredictionIO can now be installed with a single command:
-<br />
-`$ bash -c "$(curl -s https://install.prediction.io/install.sh)"`
+On Linux / Mac OS X, Apache PredictionIO (incubating) can now be installed with a single command:
+
+```
+$ bash -c "$(curl -s https://raw.githubusercontent.com/apache/incubator-predictionio/master/bin/install.sh)"
+```
 
 The above script will complete the installation for you.
 
@@ -15,9 +17,9 @@ The above script will complete the installation for you.
 ## Method 2: Manual Install
 
 If you do not want to use the Quick Install script, you can follow the steps
-below to setup PredictionIO and its dependencies. In these instructions we will
-assume you are in your home directory. Wherever you see `/home/abc`, replace it
-with your own home directory.
+below to setup Apache PredictionIO (incubating) and its dependencies. In these
+instructions we will assume you are in your home directory. Wherever you see
+`/home/abc`, replace it with your own home directory.
 
 
 ### Java
@@ -32,24 +34,26 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.40-b25, mixed mode)
 ```
 
 
-### Download PredictionIO
+### Download Apache PredictionIO (incubating)
 
-Download PredictionIO and extract it.
+Download Apache PredictionIO (incubating) and extract it.
 
 ```
 $ cd
 $ pwd
 /home/abc
-$ wget https://d8k1yxp8elc6b.cloudfront.net/PredictionIO-<%= data.versions.pio %>.tar.gz
+$ wget http://download.prediction.io/PredictionIO-<%= data.versions.pio %>.tar.gz
 $ tar zxvf PredictionIO-<%= data.versions.pio %>.tar.gz
 ```
 
+NOTE: Download instructions above apply to previous non-Apache releases only.
+Once we have made an Apache release, new instructions will be provided.
 
 ### Installing Dependencies
 
-Let us install dependencies inside a subdirectory of the PredictionIO
-installation. By following this convention, you can use PredictionIO's default
-configuration as is.
+Let us install dependencies inside a subdirectory of the Apache PredictionIO
+(incubating) installation. By following this convention, you can use
+PredictionIO's default configuration as is.
 
 ```
 $ mkdir PredictionIO-<%= data.versions.pio %>/vendors

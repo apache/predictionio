@@ -1,17 +1,20 @@
-/** Copyright 2015 TappingStone, Inc.
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  *     http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 
 package org.apache.predictionio.data.view
 
@@ -23,6 +26,7 @@ import org.apache.predictionio.data.store.PEventStore
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.SaveMode
 import org.apache.spark.sql.SQLContext
 import org.joda.time.DateTime
 
@@ -30,9 +34,7 @@ import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 import scala.util.hashing.MurmurHash3
 
-/**
- * :: Experimental ::
- */
+/** :: Experimental :: */
 @Experimental
 object DataView {
   /**
@@ -83,7 +85,7 @@ object DataView {
     val baseDir = s"${sys.env("PIO_FS_BASEDIR")}/view"
     val fileName = s"$baseDir/$name-$appName-$hash.parquet"
     try {
-      sqlContext.parquetFile(fileName)
+      sqlContext.read.parquet(fileName)
     } catch {
       case e: java.io.FileNotFoundException =>
         logger.info("Cached copy not found, reading from DB.")
@@ -97,8 +99,8 @@ object DataView {
         import sqlContext.implicits._ // needed for RDD.toDF()
         val resultDF = result.toDF()
 
-        resultDF.saveAsParquetFile(fileName)
-        sqlContext.parquetFile(fileName)
+        resultDF.write.mode(SaveMode.ErrorIfExists).parquet(fileName)
+        sqlContext.read.parquet(fileName)
       case e: java.lang.RuntimeException =>
         if (e.toString.contains("is not a Parquet file")) {
           logger.error(s"$fileName does not contain a valid Parquet file. " +

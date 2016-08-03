@@ -3,16 +3,16 @@
 ---
 
 This small how-to explains how to add user defined properties to items returned by PredictionIO engine.
-This how-to is based on the [Similar Product Engine Template](http://docs.prediction.io/templates/similarproduct/quickstart/) version v0.1.3
+This how-to is based on the [Similar Product Engine Template](http://predictionio.incubator.apache.org/templates/similarproduct/quickstart/) version v0.1.3
 To use this how-to you need to be familiar with scala programming language.
-In this how-to we also suppose you was able to set up and run `Similar Product Engine` (see their [quick start guide](http://docs.prediction.io/templates/similarproduct/quickstart/)).
+In this how-to we also suppose you was able to set up and run `Similar Product Engine` (see their [quick start guide](http://predictionio.incubator.apache.org/templates/similarproduct/quickstart/)).
 
 A full end-to-end example can be found on
-[GitHub](https://github.com/PredictionIO/PredictionIO/tree/develop/examples/scala-parallel-similarproduct/add-and-return-item-properties).
+[GitHub](https://github.com/apache/incubator-predictionio/tree/develop/examples/scala-parallel-similarproduct/add-and-return-item-properties).
 
 ## THE TASK
 
-Suppose you would like to use [Similar Product Engine](http://docs.prediction.io/templates/similarproduct/quickstart/)
+Suppose you would like to use [Similar Product Engine](http://predictionio.incubator.apache.org/templates/similarproduct/quickstart/)
 for suggesting your users the videos they can also like. The `Similar Product Engine` will answer to you
 with list of IDs for such videos. So, for example `REST` response from the engine right now
 looks like the one below
@@ -53,7 +53,7 @@ for your case should look similar to the posted below
 
 ### The Main Idea
 
-Recall [the DASE Architecture](http://docs.prediction.io/templates/similarproduct/dase/), a PredictionIO engine has
+Recall [the DASE Architecture](http://predictionio.incubator.apache.org/templates/similarproduct/dase/), a PredictionIO engine has
 4 main components: `Data Source`, `Data Preparator`, `Algorithm`, and `Serving`
 components. To achieve your goal, you will need provide the information about video to engine
 (using sdk), and then let this information to pass from `Data Source` through all the engine
@@ -62,7 +62,7 @@ to the `Serving` component where the engine will send required information back 
 ### Implementation
 
 #### Modify The Item
-In file [DataSource.scala#L104](https://github.com/PredictionIO/PredictionIO/blob/develop/examples/scala-parallel-similarproduct/add-and-return-item-properties/src/main/scala/DataSource.scala#L104)
+In file [DataSource.scala#L104](https://github.com/apache/incubator-predictionio/blob/develop/examples/scala-parallel-similarproduct/add-and-return-item-properties/src/main/scala/DataSource.scala#L104)
 you will find class `Item` defined in the next way
 ```scala
 case class Item(categories: Option[List[String]])
@@ -79,7 +79,7 @@ case class Item(
 
 #### Create The Item Properly
 Now, your IDE (or compiler) will say you about all the places where you need make changes to create item
-properly. For example, [DataSource.scala#L52](https://github.com/PredictionIO/PredictionIO/blob/develop/examples/scala-parallel-similarproduct/add-and-return-item-properties/src/main/scala/DataSource.scala#L52)
+properly. For example, [DataSource.scala#L52](https://github.com/apache/incubator-predictionio/blob/develop/examples/scala-parallel-similarproduct/add-and-return-item-properties/src/main/scala/DataSource.scala#L52)
 ```scala
 Item(categories = properties.getOpt[List[String]]("categories"))
 ```
@@ -93,7 +93,7 @@ Item(
 ```
 
 #### Modify The ItemScore
-Now, when you've fixed item creation, take a look on class `ItemScore` from the file [Engine.scala](https://github.com/PredictionIO/PredictionIO/blob/develop/examples/scala-parallel-similarproduct-multi/src/main/scala/Engine.scala)
+Now, when you've fixed item creation, take a look on class `ItemScore` from the file [Engine.scala](https://github.com/apache/incubator-predictionio/blob/develop/examples/scala-parallel-similarproduct/multi/src/main/scala/Engine.scala)
 ```scala
 case class ItemScore(
 	item: String,
@@ -118,7 +118,7 @@ case class ItemScore(
 Again, now you need to go through all the places where `ItemScore` is created and fix compiler errors.
 
 Result is initially created by the `Algorithm` component and then is passed to the `Serving` component.
-Take a look on a place where object of class ItemScore is initially created in file [ALSAlgorithm.scala#L171](https://github.com/PredictionIO/PredictionIO/blob/develop/examples/scala-parallel-similarproduct/add-and-return-item-properties/src/main/scala/ALSAlgorithm.scala#L171).
+Take a look on a place where object of class ItemScore is initially created in file [ALSAlgorithm.scala#L171](https://github.com/apache/incubator-predictionio/blob/develop/examples/scala-parallel-similarproduct/add-and-return-item-properties/src/main/scala/ALSAlgorithm.scala#L171).
 ```scala
 new ItemScore(
 	item = model.itemIntStringMap(i),
@@ -142,7 +142,7 @@ Using `model.itemIntStringMap(i)` you can receive ID of corresponding item.
 
 #### Modify Script That Supplies Data For The Engine
 And this is the final step. You should supply your data to the engine using new format now.
-To get the idea take a look on this piece of code in our [sample python script](https://github.com/PredictionIO/PredictionIO/blob/develop/examples/scala-parallel-similarproduct/add-and-return-item-properties/data/import_eventserver.py#L34)
+To get the idea take a look on this piece of code in our [sample python script](https://github.com/apache/incubator-predictionio/blob/develop/examples/scala-parallel-similarproduct/add-and-return-item-properties/data/import_eventserver.py#L34)
 that creates test.
 
 Creating item before modification.
@@ -185,4 +185,4 @@ curl -H "Content-Type: application/json" -d '{ "items": ["i1", "i3"], "num": 10}
 ```
 
 A full end-to-end example can be found on
-[GitHub](https://github.com/PredictionIO/PredictionIO/tree/develop/examples/scala-parallel-similarproduct/add-and-return-item-properties).
+[GitHub](https://github.com/apache/incubator-predictionio/tree/develop/examples/scala-parallel-similarproduct/add-and-return-item-properties)

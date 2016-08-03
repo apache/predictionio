@@ -1,14 +1,11 @@
-Thank you for contributing to PredictionIO. Please read and sign the
-[Contributor Agreement](http://prediction.io/cla). We cannot merge your PR
-without the agreement.
+Thank you for your interest in contributing to Apache PredictionIO (incubating).
+Our mission is to enable developers to build scalable machine learning applications easily.
+Here is how you can help with the project development. If you have any
+question regarding development at anytime, please free to subscribe and post to
+the Development Mailing List <mailto:dev-subscribe@predictionio.incubator.apache.org>.
 
 For code contribution, please follow guidelines at
-http://docs.prediction.io/community/contribute-code/.
+http://predictionio.incubator.apache.org/community/contribute-code/.
 
 For documentation contribution, please follow guidelines at
-http://docs.prediction.io/community/contribute-documentation/. Notice that since
-the documentation is inside the main code tree, signing the CLA is required
-before we can merge your PR.
-
-If you have questions about these terms please contact us at
-support@prediction.io.
+http://predictionio.incubator.apache.org/community/contribute-documentation/.

@@ -2,9 +2,11 @@
 title: Deploying an Engine
 ---
 
-An engine must be **built** (i.e. `pio build`) and **trained** (i.e. `pio train`)  before it can be deployed as a web service.
+An engine must be **built** (i.e. `pio build`) and **trained** (i.e. `pio
+train`)  before it can be deployed as a web service.
 
-WARNING: The engine server is not protected by authentication, and the instructions below assume deployment in a trusted environment. See the section [Deploying with AWS](/system/deploy-cloudformation/) for a production deployment example.
+WARNING: The engine server is not protected by authentication, and the
+instructions below assume deployment in a trusted environment.
 
 ## Deploying an Engine the First Time
 
@@ -15,7 +17,7 @@ After you have [downloaded an Engine Template](/start/download/),  you can deplo
 2. Run `pio train` to train a predictive model with training data
 3. Run `pio deploy` to deploy the engine as a service
 
-A deployed engine listens to port 8000 by default. Your application can [send query to retrieve prediction](/appintegration/) in real-time through the REST interface. 
+A deployed engine listens to port 8000 by default. Your application can [send query to retrieve prediction](/appintegration/) in real-time through the REST interface.
 
 **Note**: a new engine deployed as above will have no data to start with. Your engine may  come with a `data/` directory with some sample data that you can import, not all have this. Check the quickstart instructions for your template.
 
@@ -55,7 +57,8 @@ pio deploy --port 8123 --ip 1.2.3.4
 
 ## Retrain and Deploy Script
 
-A retrain and deploy script is available [in the *examples/redeploy-script* directory](https://github.com/PredictionIO/PredictionIO/tree/develop/examples/redeploy-script).
+A retrain and deploy script is available [in the *examples/redeploy-script*
+directory](https://github.com/apache/incubator-predictionio/tree/develop/examples/redeploy-script).
 
 To use the script, copy *local.sh.template* as *local.sh*, *redeploy.sh* as (say) *MyEngine_Redeploy_(production).sh* (Name of the script will appear as title of email) and put both files under the *scripts/* directory of your engine.
 Then, modify the settings inside both file, filling in details like `PIO_HOME`, `LOG_DIR`, `TARGET_EMAIL`, `ENGINE_JSON` and others.

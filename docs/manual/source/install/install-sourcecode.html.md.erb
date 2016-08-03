@@ -1,5 +1,5 @@
 ---
-title: Installing PredictionIO from Source Code
+title: Installing Apache PredictionIO (incubating) from Source Code
 ---
 
 INFO: Assuming you are following the directory structure in the followoing,
@@ -7,11 +7,12 @@ replace `/home/abc` with your own home directory wherever you see it.
 
 ## Building
 
-Run the following to download and build PredictionIO from its source code.
+Run the following to download and build Apache PredictionIO (incubating) from
+its source code.
 
 ```
-$ git clone https://github.com/PredictionIO/PredictionIO.git
-$ cd PredictionIO
+$ git clone https://github.com/apache/incubator-predictionio.git
+$ cd incubator-predictionio
 $ git checkout master
 $ ./make-distribution.sh
 ```
@@ -36,9 +37,9 @@ $ tar zxvf PredictionIO-<%= data.versions.pio %>.tar.gz
 
 ## Installing Dependencies
 
-Let us install dependencies inside a subdirectory of the PredictionIO
-installation. By following this convention, you can use PredictionIO's default
-configuration as is.
+Let us install dependencies inside a subdirectory of the Apache PredictionIO
+(incubating) installation. By following this convention, you can use
+Apache PredictionIO (incubating)'s default configuration as is.
 
 ```
 $ mkdir PredictionIO-<%= data.versions.pio %>/vendors
@@ -52,7 +53,7 @@ $ mkdir PredictionIO-<%= data.versions.pio %>/vendors
 
 ### Storage Setup
 
-#### PostgreSQL Setup 
+#### PostgreSQL Setup
 
 <%=partial 'shared/install/postgres' %>
 

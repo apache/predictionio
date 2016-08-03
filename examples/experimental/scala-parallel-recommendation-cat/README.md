@@ -3,7 +3,7 @@
 ## Documentation
 
 The data requirement is similar to "Similar Product Template". Please see.
-http://docs.prediction.io/templates/similarproduct/quickstart/
+http://predictionio.incubator.apache.org/templates/similarproduct/quickstart/
 
 By default, view events and MLlib ALS trainImplicit is used.
 

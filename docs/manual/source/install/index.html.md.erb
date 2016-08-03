@@ -1,33 +1,28 @@
 ---
-title: Installing PredictionIO
+title: Installing Apache PredictionIO (incubating)
 ---
 
-## Method 1: Launch an AWS Instance
+## Method 1: Quick Install
 
-You can [launch PredictionIO on Amazon Web Services](launch-aws.html).
-This is a hassle-free way to get a well-configured PredictionIO server quickly.
+On Linux / Mac OS X, Apache PredictionIO (incubating) can now be installed with a single command:
 
-There is also a [AWS Cloudformation version for PredictionIO](/system/deploy-cloudformation/).
-
-## Method 2: Quick Install
-
-On Linux / Mac OS X, PredictionIO can now be installed with a single command:
-<br />
-`$ bash -c "$(curl -s https://install.prediction.io/install.sh)"`
+```
+$ bash -c "$(curl -s https://raw.githubusercontent.com/apache/incubator-predictionio/master/bin/install.sh)"
+```
 
 The above script will complete the installation for you.
 
 <%= partial 'shared/install/proceed_template' %>
 
-## Method 3: Manual Install
+## Method 2: Manual Install
 
 ### Prerequisites
 
 It is **very important** to meet the minimum version of the following
-technologies that power PredictionIO.
+technologies that power Apache PredictionIO (incubating).
 
 * Apache Hadoop 2.4.0 (optional, required only if YARN and HDFS are needed)
-* Apache Spark 1.3.0 for Hadoop 2.4
+* Apache Spark 1.4.0 for Hadoop 2.4
 * Java SE Development Kit 7
 
 and one of the following sets:
@@ -50,25 +45,25 @@ operation mode without further configuration, may not work. In that case,
 configure your Apache Spark to run in [standalone cluster
 mode](http://spark.apache.org/docs/latest/spark-standalone.html).
 
-### Installing PredictionIO
+### Installing Apache PredictionIO (incubating)
 
-PredictionIO runs on a Java virtual machine, so it runs on most platforms.
-Choose your platform below:
+Apache PredictionIO (incubating) runs on a Java virtual machine, so it runs on
+most platforms. Choose your platform below:
 
-* [Installing PredictionIO on Linux / Mac OS X](install-linux.html)
-* [Installing PredictionIO from Source Code](install-sourcecode.html)
-* [Installing PredictionIO with Vagrant (VirtualBox)](install-vagrant.html)
-* [Installing PredictionIO with Terminal.com Snap](https://www.terminal.com/snapshot/f444bfb7538dfc596485374f56167ec6f79cbc16f793f013ad120067070eb81a)
+* [Installing Apache PredictionIO (incubating) on Linux / Mac OS X](install-linux.html)
+* [Installing Apache PredictionIO (incubating) from Source Code](install-sourcecode.html)
+* [Installing Apache PredictionIO (incubating) with Vagrant (VirtualBox)](install-vagrant.html)
+* [Installing Apache PredictionIO (incubating) with Terminal.com Snap](https://www.terminal.com/snapshot/f444bfb7538dfc596485374f56167ec6f79cbc16f793f013ad120067070eb81a)
 
 
 You may also use one of the community-contributed packages to install
-PredictionIO:
+Apache PredictionIO (incubating):
 
-* [Installing PredictionIO with
+* [Installing Apache PredictionIO (incubating) with
   Docker](/community/projects.html#docker-installation-for-predictionio)
 
 
-[//]: # (* *(coming soon)* Installing PredictionIO with Homebrew)
+[//]: # (* *(coming soon)* Installing Apache PredictionIO (incubating) with Homebrew)
 
 
 
@@ -82,10 +77,10 @@ Elasticsearch. See more [here](/resources/upgrade/).**
 [//]: # (For production environment setup, please refer to [Production)
 [//]: # (Deployment](/production/deploy.html) guide.)
 
-## Method 4: Terminal.com
+## Method 3: Terminal.com
 
 Public snaps are available on our Terminal.com
 [page](https://www.terminal.com/user/predictionio).
 
-Instance type **must be** set to *medium* or higher for PredictionIO to function
-correctly.
+Instance type **must be** set to *medium* or higher for Apache PredictionIO
+(incubating) to function correctly.
