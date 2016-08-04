@@ -23,6 +23,9 @@ jdk:
 
 addons:
     postgresql: "9.3"
+    apt:
+      packages:
+        - haveged
 
 services:
   - docker
@@ -50,6 +53,7 @@ env:
 before_install:
   - unset SBT_OPTS JVM_OPTS
   - docker pull ziemin/pio-testing
+  - service haveged start
 
 before_script:
   - ./testing/before_script.travis.sh
