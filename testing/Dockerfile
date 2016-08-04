@@ -16,7 +16,10 @@ RUN apt-get install -y \
     openssh-client openssh-server
 
 RUN pip install predictionio
+RUN pip3 install --upgrade pip
 RUN pip3 install xmlrunner
+RUN pip3 install --upgrade requests
+RUN pip3 install --upgrade urllib3
 
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/jre
 
