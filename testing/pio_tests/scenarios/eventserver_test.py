@@ -34,7 +34,7 @@ class EventserverTest(BaseTestCase):
     self.app = AppEngine(self.test_context, app_context)
 
   def runTest(self):
-    self.log.info("Eventserver is alive and running")
+    self.log.info("Check if Eventserver is alive and running")
     r = requests.get(self.eventserver_url())
     self.assertDictEqual(r.json(), {"status": "alive"})
 

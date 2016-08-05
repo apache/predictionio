@@ -66,9 +66,12 @@ if __name__ == "__main__":
     tests = tests_dict.values()
 
   # Actual tests execution
+  es_wait_time = 25
+  logger.info("Starting eventserver and waiting {}s for it to initialize".format(
+      es_wait_time))
   event_server_process = srun_bg('pio eventserver --ip {} --port {}'
       .format(test_context.es_ip, test_context.es_port))
-  time.sleep(10)
+  time.sleep(es_wait_time)
   result = XMLTestRunner(verbosity=2, output='test-reports').run(
                 unittest.TestSuite(tests))
   event_server_process.kill()
