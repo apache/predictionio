@@ -24,7 +24,7 @@ $ ./run_docker.sh ELASTICSEARCH HBASE LOCALFS \
 ```
 
 Directory structure inside the image:
-* ***/PredictionIO*** - extracted snapshot
+* ***/PredictionIO*** - extracted snapshot (***/PredictionIO/bin*** is also already added to PATH)
 * ***/pio_host*** - mounted path to repository
 * ***/tests/pio_tests*** - copy of integration tests
 * ***/vendors*** - directory with installed services
