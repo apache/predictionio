@@ -33,7 +33,7 @@ mv /pio-env.sh $PIO_HOME/conf/pio-env.sh
 
 echo '== Copying tests to a separate directory =='
 mkdir /tests
-cp -r /pio_host/testing/pio_tests /tests/pio_tests
+cp -r /pio_host/tests/pio_tests /tests/pio_tests
 export PYTHONPATH=/tests:$PYTHONPATH
 
 # after initialization run given command

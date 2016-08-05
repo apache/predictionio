@@ -56,10 +56,10 @@ before_install:
   - service haveged start
 
 before_script:
-  - ./testing/before_script.travis.sh
+  - ./tests/before_script.travis.sh
 
 script:
-  - ./testing/script.travis.sh
+  - ./tests/script.travis.sh
 
 after_script:
-  - ./testing/after_script.travis.sh
+  - ./tests/after_script.travis.sh
