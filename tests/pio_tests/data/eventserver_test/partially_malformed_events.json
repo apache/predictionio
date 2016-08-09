@@ -1,0 +1,10 @@
+[
+  { 
+    "event" : "test",
+    "entityType" : "test",
+    "entityId" : "t2"
+  },
+  {
+    "event" : "malformed-event" 
+  }
+]

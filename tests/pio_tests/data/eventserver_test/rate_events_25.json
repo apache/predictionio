@@ -1,0 +1,278 @@
+[
+  {
+    "event" : "rate",
+    "entityType" : "user",
+    "entityId" : "1",
+    "targetEntityType" : "item",
+    "targetEntityId" : "1",
+    "properties" : {
+      "rating" : 5
+    },
+    "eventTime" : "2014-11-01T09:39:45.618-08:00" 
+  },
+  { 
+    "event" : "rate",
+    "entityType" : "user",
+    "entityId" : "1",
+    "targetEntityType" : "item",
+    "targetEntityId" : "2",
+    "properties" : {
+      "rating" : 3
+    },
+    "eventTime" : "2014-11-02T09:39:45.618-08:00" 
+  },
+  { 
+    "event" : "rate",
+    "entityType" : "user",
+    "entityId" : "1",
+    "targetEntityType" : "item",
+    "targetEntityId" : "3",
+    "properties" : {
+      "rating" : 1
+    },
+    "eventTime" : "2014-11-03T09:39:45.618-08:00" 
+  },
+  { 
+    "event" : "rate",
+    "entityType" : "user",
+    "entityId" : "1",
+    "targetEntityType" : "item",
+    "targetEntityId" : "4",
+    "properties" : {
+      "rating" : 5
+    },
+    "eventTime" : "2014-11-04T09:39:45.618-08:00" 
+  },
+  { 
+    "event" : "rate",
+    "entityType" : "user",
+    "entityId" : "1",
+    "targetEntityType" : "item",
+    "targetEntityId" : "5",
+    "properties" : {
+      "rating" : 3
+    },
+    "eventTime" : "2014-11-05T09:39:45.618-08:00" 
+  },
+  { 
+    "event" : "rate",
+    "entityType" : "user",
+    "entityId" : "2",
+    "targetEntityType" : "item",
+    "targetEntityId" : "1",
+    "properties" : {
+      "rating" : 1
+    },
+    "eventTime" : "2014-11-01T09:39:45.618-08:00" 
+  },
+  { 
+    "event" : "rate",
+    "entityType" : "user",
+    "entityId" : "2",
+    "targetEntityType" : "item",
+    "targetEntityId" : "2",
+    "properties" : {
+      "rating" : 5
+    },
+    "eventTime" : "2014-11-02T09:39:45.618-08:00" 
+  },
+  { 
+    "event" : "rate",
+    "entityType" : "user",
+    "entityId" : "2",
+    "targetEntityType" : "item",
+    "targetEntityId" : "3",
+    "properties" : {
+      "rating" : 3
+    },
+    "eventTime" : "2014-11-03T09:39:45.618-08:00" 
+  },
+  { 
+    "event" : "rate",
+    "entityType" : "user",
+    "entityId" : "2",
+    "targetEntityType" : "item",
+    "targetEntityId" : "4",
+    "properties" : {
+      "rating" : 3
+    },
+    "eventTime" : "2014-11-04T09:39:45.618-08:00" 
+  },
+  { 
+    "event" : "rate",
+    "entityType" : "user",
+    "entityId" : "2",
+    "targetEntityType" : "item",
+    "targetEntityId" : "5",
+    "properties" : {
+      "rating" : 4
+    },
+    "eventTime" : "2014-11-05T09:39:45.618-08:00" 
+  },
+  {
+    "event" : "rate",
+    "entityType" : "user",
+    "entityId" : "3",
+    "targetEntityType" : "item",
+    "targetEntityId" : "1",
+    "properties" : {
+      "rating" : 5
+    },
+    "eventTime" : "2014-11-01T09:39:45.618-08:00" 
+  },
+  { 
+    "event" : "rate",
+    "entityType" : "user",
+    "entityId" : "3",
+    "targetEntityType" : "item",
+    "targetEntityId" : "2",
+    "properties" : {
+      "rating" : 2
+    },
+    "eventTime" : "2014-11-02T09:39:45.618-08:00" 
+  },
+  { 
+    "event" : "rate",
+    "entityType" : "user",
+    "entityId" : "3",
+    "targetEntityType" : "item",
+    "targetEntityId" : "3",
+    "properties" : {
+      "rating" : 1
+    },
+    "eventTime" : "2014-11-03T09:39:45.618-08:00" 
+  },
+  { 
+    "event" : "rate",
+    "entityType" : "user",
+    "entityId" : "3",
+    "targetEntityType" : "item",
+    "targetEntityId" : "4",
+    "properties" : {
+      "rating" : 5
+    },
+    "eventTime" : "2014-11-04T09:39:45.618-08:00" 
+  },
+  { 
+    "event" : "rate",
+    "entityType" : "user",
+    "entityId" : "3",
+    "targetEntityType" : "item",
+    "targetEntityId" : "5",
+    "properties" : {
+      "rating" : 3
+    },
+    "eventTime" : "2014-11-05T09:39:45.618-08:00" 
+  },
+  { 
+    "event" : "rate",
+    "entityType" : "user",
+    "entityId" : "4",
+    "targetEntityType" : "item",
+    "targetEntityId" : "1",
+    "properties" : {
+      "rating" : 3
+    },
+    "eventTime" : "2014-11-01T09:39:45.618-08:00" 
+  },
+  { 
+    "event" : "rate",
+    "entityType" : "user",
+    "entityId" : "4",
+    "targetEntityType" : "item",
+    "targetEntityId" : "2",
+    "properties" : {
+      "rating" : 5
+    },
+    "eventTime" : "2014-11-02T09:39:45.618-08:00" 
+  },
+  { 
+    "event" : "rate",
+    "entityType" : "user",
+    "entityId" : "4",
+    "targetEntityType" : "item",
+    "targetEntityId" : "3",
+    "properties" : {
+      "rating" : 4
+    },
+    "eventTime" : "2014-11-03T09:39:45.618-08:00" 
+  },
+  { 
+    "event" : "rate",
+    "entityType" : "user",
+    "entityId" : "4",
+    "targetEntityType" : "item",
+    "targetEntityId" : "4",
+    "properties" : {
+      "rating" : 2
+    },
+    "eventTime" : "2014-11-04T09:39:45.618-08:00" 
+  },
+  { 
+    "event" : "rate",
+    "entityType" : "user",
+    "entityId" : "4",
+    "targetEntityType" : "item",
+    "targetEntityId" : "5",
+    "properties" : {
+      "rating" : 4
+    },
+    "eventTime" : "2014-11-05T09:39:45.618-08:00" 
+  },
+  { 
+    "event" : "rate",
+    "entityType" : "user",
+    "entityId" : "5",
+    "targetEntityType" : "item",
+    "targetEntityId" : "1",
+    "properties" : {
+      "rating" : 2
+    },
+    "eventTime" : "2014-11-01T09:39:45.618-08:00" 
+  },
+  { 
+    "event" : "rate",
+    "entityType" : "user",
+    "entityId" : "5",
+    "targetEntityType" : "item",
+    "targetEntityId" : "2",
+    "properties" : {
+      "rating" : 5
+    },
+    "eventTime" : "2014-11-02T09:39:45.618-08:00" 
+  },
+  { 
+    "event" : "rate",
+    "entityType" : "user",
+    "entityId" : "5",
+    "targetEntityType" : "item",
+    "targetEntityId" : "3",
+    "properties" : {
+      "rating" : 3
+    },
+    "eventTime" : "2014-11-03T09:39:45.618-08:00" 
+  },
+  { 
+    "event" : "rate",
+    "entityType" : "user",
+    "entityId" : "5",
+    "targetEntityType" : "item",
+    "targetEntityId" : "4",
+    "properties" : {
+      "rating" : 5
+    },
+    "eventTime" : "2014-11-04T09:39:45.618-08:00" 
+  },
+  { 
+    "event" : "rate",
+    "entityType" : "user",
+    "entityId" : "5",
+    "targetEntityType" : "item",
+    "targetEntityId" : "5",
+    "properties" : {
+      "rating" : 4
+    },
+    "eventTime" : "2014-11-05T09:39:45.618-08:00" 
+  }
+]
+
