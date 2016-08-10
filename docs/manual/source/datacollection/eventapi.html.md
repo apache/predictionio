@@ -94,7 +94,7 @@ $ curl -i -X POST http://localhost:7070/events.json?accessKey=WPgcXKd42FPQpZHVbV
 -H "Content-Type: application/json" \
 -d '{
   "event" : "my_event",
-  "entityType" : "user"
+  "entityType" : "user",
   "entityId" : "uid",
   "properties" : {
     "prop1" : 1,

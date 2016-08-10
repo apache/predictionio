@@ -495,7 +495,7 @@ MyECommerceRecommendation/***engine.json***:
 The parameters `appName`, `unseenOnly`, `seenEvents` and `similarEvents` are used during `predict()`, which will be explained later.
 
 PredictionIO will automatically loads these values into the constructor `ap`,
-which has a corresponding case case `ECommAlgorithmParams`.
+which has a corresponding case class `ECommAlgorithmParams`.
 
 The `seed` parameter is an optional parameter, which is used by MLlib ALS algorithm internally to generate random values. If the `seed` is not specified, current system time would be used and hence each train may produce different reuslts. Specify a fixed value for the `seed` if you want to have deterministic result (For example, when you are testing).
 

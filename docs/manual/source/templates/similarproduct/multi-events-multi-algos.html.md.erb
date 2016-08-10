@@ -267,7 +267,7 @@ class LikeAlgorithm(ap: ALSAlgorithmParams) extends ALSAlgorithm(ap) {
 
 ### Step 4. Modify Serving to combine multiple algorithms' outputs
 
-When the engine is deployed, the Query is sent to all algorithms of the engine. The PredictedResults returned by all algoritms are passed to Serving component for further processing, as you could see that the argument `predictedResults` of the `serve()` function is type of `Seq[PredictedResult]`.
+When the engine is deployed, the Query is sent to all algorithms of the engine. The PredictedResults returned by all algorithms are passed to Serving component for further processing, as you could see that the argument `predictedResults` of the `serve()` function is type of `Seq[PredictedResult]`.
 
 In this example, the `serve()` function at first standardizes the PredictedResults of each algorithm so that we can combine the scores of multiple algorithms by adding the scores of the same item. Then we can take the top N items as defined in `query`.
 

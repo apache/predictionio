@@ -10,7 +10,7 @@ These series of tutorials will walk through each components of **PredictionIO**.
 We will demonstrate how to develop your machine learning algorithms and
 prediction engines, deploy them and serve real time prediction queries, develop
 your metrics to run offline evaluations, and improve prediction engine by using
-multiple algoritms.
+multiple algorithms.
 
 > You need to build PredictionIO from source in order to build your own engine.
 Please follow instructions to build from source
