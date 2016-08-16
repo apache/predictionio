@@ -46,7 +46,7 @@ class DataSource(val dsp: DataSourceParams)
 
   override
   def readTraining(sc: SparkContext): TrainingData = {
-    val events = cleanPersistedPEvents(sc)
+    cleanPersistedPEvents(sc)
 
     val eventsDb = Storage.getPEvents()
 
