@@ -464,7 +464,7 @@ echo -e "\033[1;32mInstallation done!\033[0m"
 
 echo "--------------------------------------------------------------------------------"
 echo -e "\033[1;32mInstallation of PredictionIO $PIO_VERSION complete!\033[0m"
-echo -e "\033[1;32mPlease follow documentation at http://docs.prediction.io/start/download/ to download the engine template based on your needs\033[0m"
+echo -e "\033[1;32mPlease follow documentation at http://predictionio.incubator.apache.org/start/download/ to download the engine template based on your needs\033[0m"
 echo -e
 echo -e "\033[1;33mCommand Line Usage Notes:\033[0m"
 if [[ ${source_setup} = $ES_HB ]]; then
