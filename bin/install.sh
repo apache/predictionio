@@ -137,7 +137,7 @@ elif [[ "$1" == "-y" ]]; then
 
   # todo: make java installation platform independent
   sudo apt-get update
-  sudo apt-get install openjdk-7-jdk libgfortran3 python-pip -y
+  sudo apt-get install openjdk-8-jdk libgfortran3 python-pip -y
   sudo pip install predictionio
 
   echo -e "\033[1;32mJava install done!\033[0m"
@@ -172,24 +172,6 @@ else
           ;;
       esac
     done
-
-    if confirm "Receive updates?"; then
-      guess_email=''
-      if hash git 2>/dev/null; then
-        # Git installed!
-        guess_email=$(git config --global user.email)
-      fi
-
-      if [ -n "${guess_email}" ]; then
-        read -e -p "Email (${guess_email}): " email
-      else
-        read -e -p "Enter email: " email
-      fi
-      email=${email:-$guess_email}
-
-      url="https://direct.prediction.io/$PIO_VERSION/install.json/install/install/$email/"
-      curl --silent ${url} > /dev/null
-    fi
 
     spark_dir=${vendors_dir}/spark-${SPARK_VERSION}
     elasticsearch_dir=${vendors_dir}/elasticsearch-${ELASTICSEARCH_VERSION}
@@ -252,7 +234,7 @@ else
         echo -e "\033[33mYou will be prompted for your password by sudo:\033[0m"
 
         sudo apt-get update
-        sudo apt-get install openjdk-7-jdk libgfortran3 python-pip -y
+        sudo apt-get install openjdk-8-jdk libgfortran3 python-pip -y
         sudo pip install predictionio
 
         echo -e "\033[1;32mJava install done!\033[0m"
@@ -356,8 +338,6 @@ installPGSQL () {
     curl -O https://jdbc.postgresql.org/download/postgresql-${POSTGRES_VERSION}.jar
     mv postgresql-${POSTGRES_VERSION}.jar ${PIO_DIR}/lib/
 
-    echo "Updating: $pio_dir/conf/pio-env.sh"
-    ${SED_CMD} "s|PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=PGSQL|PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=ELASTICSEARCH|" ${pio_dir}/conf/pio-env.sh
     echo -e "\033[1;32mPGSQL setup done!\033[0m"
 }
 
@@ -383,6 +363,14 @@ installES() {
 case $source_setup in
   "$PGSQL")
     installPGSQL
+    ;;
+  "$ES_PGSQL")
+    installES
+    installPGSQL
+    echo "Updating: $pio_dir/conf/pio-env.sh"
+    ${SED_CMD} "s|PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=PGSQL|PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=ELASTICSEARCH|" ${pio_dir}/conf/pio-env.sh
+    ${SED_CMD} "s|# PIO_STORAGE_SOURCES_ELASTICSEARCH_TYPE|PIO_STORAGE_SOURCES_ELASTICSEARCH_TYPE|" ${pio_dir}/conf/pio-env.sh
+    ${SED_CMD} "s|# PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME=.*|PIO_STORAGE_SOURCES_ELASTICSEARCH_HOME=$elasticsearch_dir|" ${pio_dir}/conf/pio-env.sh
     ;;
   "$MYSQL")
     if [[ ${distribution} = "$DISTRO_DEBIAN" ]]; then
