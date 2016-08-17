@@ -298,7 +298,7 @@ cd ${TEMP_DIR}
 
 if [[ ! -e ${PIO_FILE} ]]; then
   echo "Downloading PredictionIO..."
-  curl -OL https://codeload.github.com/apache/incubator-predictionio/tar.gz/develop
+  curl -L https://codeload.github.com/apache/incubator-predictionio/tar.gz/develop > incubator-predictionio-develop.tar.gz 
 
   tar zxf incubator-predictionio-develop.tar.gz 
 
