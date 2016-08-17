@@ -52,7 +52,7 @@ October 14th, 2015
 
 July 16th, 2015
 
-[Release Notes](https://predictionio.atlassian.net/jira/secure/ReleaseNote.jspa?projectId=10000&version=13700)
+Release Notes
 
 - Support event permissions with different access keys at the Event Server interface
 - Support detection of 3rd party Apache Spark distributions
@@ -64,7 +64,7 @@ July 16th, 2015
 May 20th, 2015
 
 
-[Release Notes](https://predictionio.atlassian.net/jira/secure/ReleaseNote.jspa?projectId=10000&version=13600)
+Release Notes
 
 - Add support of developing prediction engines in Java
 - Add support of PostgreSQL and MySQL
@@ -76,11 +76,11 @@ May 20th, 2015
 
 April 14th, 2015
 
-[Release Notes](https://predictionio.atlassian.net/jira/secure/ReleaseNote.jspa?projectId=10000&version=13500)
+Release Notes
 
 - Channels in the Event Server
 - Spark 1.3+ support (upgrade to Spark 1.3+ required)
-- [Webhook Connector](http://docs.prediction.io/community/contribute-webhook/) support
+- [Webhook Connector](http://predictionio.incubator.apache.org/community/contribute-webhook/) support
 - Engine and Event Servers now by default bind to 0.0.0.0
 - Many documentation improvements
 
@@ -88,7 +88,7 @@ April 14th, 2015
 
 March 17th, 2015
 
-[Releaes Notes](https://predictionio.atlassian.net/jira/secure/ReleaseNote.jspa?projectId=10000&version=13401)
+Release Notes
 
 - Improved `pio-start-all`
 - Fixed a bug where `pio build` failed to set PredictionIO dependency version for engine templates
@@ -97,7 +97,7 @@ March 17th, 2015
 
 March 4th, 2015
 
-[Release Notes](https://predictionio.atlassian.net/jira/secure/ReleaseNote.jspa?projectId=10000&version=13400)
+Release Notes
 
 - [E-Commerce Recommendation Template](http://templates.prediction.io/PredictionIO/template-scala-parallel-ecommercerecommendation) which includes 1) out-of-stock items support 2) new user recommendation 3) unseen items only
 - [Complementary Purchase Template](http://templates.prediction.io/PredictionIO/template-scala-parallel-complementarypurchase) for shopping cart recommendation
@@ -108,7 +108,7 @@ March 4th, 2015
 
 Feb 10th, 2015
 
-[Release Notes](https://predictionio.atlassian.net/jira/secure/ReleaseNote.jspa?projectId=10000&version=13300)
+Release Notes
 
 - New engine template - [Product Ranking](/templates/productranking/quickstart/) for personalized product listing
 - [CloudFormation deployment](/system/deploy-cloudformation/) available
