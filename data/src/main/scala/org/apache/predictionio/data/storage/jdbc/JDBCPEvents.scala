@@ -169,8 +169,9 @@ class JDBCPEvents(client: String, config: StorageClientConfig, namespace: String
       iter.foreach { eventId =>
         DB localTx { implicit session =>
         val tableName = JDBCUtils.eventTableName(namespace, appId, channelId)
+        val table = SQLSyntax.createUnsafely(tableName)
         sql"""
-        delete from $tableName where id = $eventId
+        delete from $table where id = $eventId
         """.update().apply()
         true
         }
