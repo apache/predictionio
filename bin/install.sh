@@ -333,10 +333,9 @@ installPGSQL () {
     else
       echo -e "\033[1;31mYour distribution not yet supported for automatic install :(\033[0m"
       echo -e "\033[1;31mPlease install PostgreSQL manually!\033[0m"
-      exit 3
     fi
     curl -O https://jdbc.postgresql.org/download/postgresql-${POSTGRES_VERSION}.jar
-    mv postgresql-${POSTGRES_VERSION}.jar ${PIO_DIR}/lib/
+    mv postgresql-${POSTGRES_VERSION}.jar ${pio_dir}/lib/
 
     echo -e "\033[1;32mPGSQL setup done!\033[0m"
 }
@@ -390,7 +389,7 @@ case $source_setup in
       exit 4
     fi
     curl -O http://central.maven.org/maven2/mysql/mysql-connector-java/5.1.37/mysql-connector-java-${MYSQL_VERSION}.jar
-    mv mysql-connector-java-${MYSQL_VERSION}.jar ${PIO_DIR}/lib/
+    mv mysql-connector-java-${MYSQL_VERSION}.jar ${pio_dir}/lib/
     ;;
   "$ES_HB")
     # Elasticsearch
@@ -478,5 +477,6 @@ if [[ ${source_setup} = $ES_HB ]]; then
   echo -e "To stop PredictionIO and dependencies, run: '\033[1mpio-stop-all\033[0m'"
 fi
 echo -e ""
-echo -e "Please report any problems to: \033[1;34msupport@prediction.io\033[0m"
+echo -e "Please report any problems to the user mailing list."
+echo -e "User mailing list instructions: \033[1;34mhttp://predictionio.incubator.apache.org/support/\033[0m"
 echo "--------------------------------------------------------------------------------"
