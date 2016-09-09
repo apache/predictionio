@@ -4,7 +4,7 @@
 Status](https://api.travis-ci.org/apache/incubator-predictionio.svg?branch=develop)](https://travis-ci.org/apache/incubator-predictionio)
 
 PredictionIO is an open source machine learning framework for developers,
-data scientists, and end users. It supports event collection, deployment of algorithms, evaluation, querying predictive results via REST APIs. It is based on scalable open source services like Hadoop, Hbase (and other DBs), Elasticsearch, Spark and implements what is called a Lambda Architecture.
+data scientists, and end users. It supports event collection, deployment of algorithms, evaluation, querying predictive results via REST APIs. It is based on scalable open source services like Hadoop, HBase (and other DBs), Elasticsearch, Spark and implements what is called a Lambda Architecture.
 
 To get started, check out http://predictionio.incubator.apache.org!
 
