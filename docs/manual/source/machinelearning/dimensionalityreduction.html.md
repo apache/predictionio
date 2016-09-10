@@ -2,7 +2,7 @@
 title: Dimensionality Reduction With PredictionIO
 ---
 
-The purpose of this guide is to teach developers how to incorporate "dimensionality reduction" into a PredictionIO engine [Principal Component Analysis](https://en.wikipedia.org/wiki/Principal_component_analysis) (PCA) on the [MNIST digit recognition dataset](https://www.kaggle.com/c/digit-recognizer). To do this, you will be modifying the PredictionIO [classification engine template](http://templates.prediction.io/PredictionIO/template-scala-parallel-classification). This guide will demonstrate how to import the specific data set in batch, and also how to change the engine components in order to incorporate the new sample data and implement PCA.
+The purpose of this guide is to teach developers how to incorporate "dimensionality reduction" into a PredictionIO engine [Principal Component Analysis](https://en.wikipedia.org/wiki/Principal_component_analysis) (PCA) on the [MNIST digit recognition dataset](https://www.kaggle.com/c/digit-recognizer). To do this, you will be modifying the PredictionIO [classification engine template](/gallery/template-gallery/#classification). This guide will demonstrate how to import the specific data set in batch, and also how to change the engine components in order to incorporate the new sample data and implement PCA.
 
 In machine learning, specifically in [supervised learning](http://en.wikipedia.org/wiki/Supervised_learning), the general problem at hand is to predict a numeric outcome \\(y\\) from a numeric vector \\(\bf{x}\\). The different components of \\(\bf{x}\\) are called **features**, and usually represent observed values such as a hospital patient's age, weight, height, sex, etc. There are subtle issues that begin to arise as the number of features contained in each feature vector increases. We briefly list some of the issues that arise as the number of features grows in size:
 
@@ -27,7 +27,7 @@ This guide will also help to solidify the concept of taking an engine template a
 
 As a guiding example, a base data set, the [MNIST digit recognition dataset](https://www.kaggle.com/c/digit-recognizer/data), is used. This is a perfect data set for dimensionality reduction, for, in this data set, the features that will be used for learning are pixel entries in a \\(28 \times 28\\) pixel image. There is really no direct interpretation of any one feature, so that you do not lose anything in applying a transformation that will treat the features as [linear combinations](https://en.wikipedia.org/wiki/Linear_combination) of some set "convenient" vectors. 
 
-Now, we first pull the [classification engine template](http://templates.prediction.io/PredictionIO/template-scala-parallel-classification) via the following bash line
+Now, we first pull the [classification engine template](/gallery/template-gallery/#classification) via the following bash line
 
 ```
 pio template get PredictionIO/template-scala-parallel-classification <Your new engine directory>
@@ -357,7 +357,7 @@ The default algorithm used in the classification template is Naive Bayes. Now, t
 
 The implementation details are not discussed in this guide, as the point of this guide is to show how to incorporate **dimensionality reduction** techniques by incorporating PCA. The latter paragraph is mentioned in order to emphasize the fact that applying the PCA transformation (or possibly other dimensionality reduction techniques) will largely remove the interpretability of features, so that model assumptions relying on such interpretations may no longer be satisfied. This is just something to keep in mind.
 
-The following code is taken from the [text classification engine template](http://templates.prediction.io/PredictionIO/template-scala-parallel-textclassification) and adapted to match the project definitions.  Copy and paste into the new scala script, `LRAlgorithm.scala`: 
+The following code is taken from the [text classification engine template](/gallery/template-gallery/#classification) and adapted to match the project definitions.  Copy and paste into the new scala script, `LRAlgorithm.scala`: 
 
 ```scala
 package FeatureReduction

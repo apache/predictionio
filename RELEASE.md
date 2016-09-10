@@ -99,9 +99,9 @@ March 4th, 2015
 
 Release Notes
 
-- [E-Commerce Recommendation Template](http://templates.prediction.io/PredictionIO/template-scala-parallel-ecommercerecommendation) which includes 1) out-of-stock items support 2) new user recommendation 3) unseen items only
-- [Complementary Purchase Template](http://templates.prediction.io/PredictionIO/template-scala-parallel-complementarypurchase) for shopping cart recommendation
-- [Lead Scoring Template](http://templates.prediction.io/PredictionIO/template-scala-parallel-leadscoring) predicts the probability of an user will convert in the current session
+- [E-Commerce Recommendation Template](http://predictionio.incubator.apache.org/gallery/template-gallery#recommender-systems) which includes 1) out-of-stock items support 2) new user recommendation 3) unseen items only
+- [Complementary Purchase Template](http://predictionio.incubator.apache.org/gallery/template-gallery#unsupervised-learning) for shopping cart recommendation
+- [Lead Scoring Template](http://predictionio.incubator.apache.org/gallery/template-gallery#classification) predicts the probability of an user will convert in the current session
 - `pio-start-all`, `pio-stop-all` commands to start and stop all PredictionIO related services
 
 ###v0.8.6

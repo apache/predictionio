@@ -40,7 +40,7 @@ Engine is responsible for making prediction.
 It contains one or more machine learning algorithms. An engine reads training data and build predictive model(s).
 It is then deployed as a web service. A deployed engine responds to prediction queries from your application through REST API in real-time.
 
-PredictionIO's [template gallery](http://templates.prediction.io/) offers Engine Templates for all kinds of machine learning tasks.
+PredictionIO's [template gallery](/gallery/template-gallery) offers Engine Templates for all kinds of machine learning tasks.
 You can easily create one or more engines from these templates .
 
 The components of a template, namely **Data Source**, **Data Preparator**, **Algorithm(s)**, and **Serving**, are all [customizable](/start/customize/) for your specific needs.
