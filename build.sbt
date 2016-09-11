@@ -19,7 +19,7 @@ import UnidocKeys._
 
 name := "pio"
 
-version in ThisBuild := "0.10.0-SNAPSHOT"
+version in ThisBuild := "0.10.0-incubating-rc1"
 
 organization in ThisBuild := "org.apache.predictionio"
 
