@@ -1,6 +1,10 @@
 ---
 title: Frequently Asked Questions
 ---
+
+If you have questions that are not resolved below, you can subscribe and post to
+the user mailing list. You can follow the instructions [here](/support).
+
 ## Using PredictionIO
 
 ### Q: How do I check to see if various dependencies, such as ElasticSearch and HBase, are running?
@@ -212,7 +216,3 @@ there could be a chance that reverse DNS does not function properly. You can
 install a DNS server on your own computer. Some users have reported that using
 [Google Public DNS](https://developers.google.com/speed/public-dns/) would also
 solve the problem.
-
-If you have other questions, you can search or post on the [user
-group](https://groups.google.com/forum/#!forum/predictionio-user) or [email the
-core team](mailto:support@prediction.io) directly.
