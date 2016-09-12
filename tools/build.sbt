@@ -17,7 +17,7 @@
 
 import sbtassembly.AssemblyPlugin.autoImport._
 
-name := "tools"
+name := "predictionio-tools"
 
 libraryDependencies ++= Seq(
   "com.github.scopt"       %% "scopt"          % "3.2.0",
@@ -65,3 +65,5 @@ outputPath in assembly := baseDirectory.value.getAbsoluteFile.getParentFile /
   "assembly" / ("pio-assembly-" + version.value + ".jar")
 
 cleanFiles <+= baseDirectory { base => base.getParentFile / "assembly" }
+
+pomExtra := childrenPomExtra.value

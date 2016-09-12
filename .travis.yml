@@ -24,10 +24,8 @@
 #
 
 branches:
-  only:
-    - master
-    - develop
-    - testing-infrastructure
+  except:
+    - livedoc
 
 language: scala
 

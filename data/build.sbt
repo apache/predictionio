@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-name := "data"
+name := "predictionio-data"
 
 libraryDependencies ++= Seq(
   "com.github.nscala-time" %% "nscala-time"    % "2.6.0",
@@ -54,3 +54,5 @@ libraryDependencies ++= Seq(
   "org.specs2"             %% "specs2"         % "2.3.13" % "test")
 
 parallelExecution in Test := false
+
+pomExtra := childrenPomExtra.value
