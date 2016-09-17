@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-name := "predictionio-data"
+name := "apache-predictionio-data"
 
 libraryDependencies ++= Seq(
   "com.github.nscala-time" %% "nscala-time"    % "2.6.0",

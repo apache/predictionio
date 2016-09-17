@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-name := "predictionio-core"
+name := "apache-predictionio-core"
 
 libraryDependencies ++= Seq(
   "com.github.scopt"       %% "scopt"            % "3.3.0",

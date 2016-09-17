@@ -17,7 +17,7 @@
 
 import sbtassembly.AssemblyPlugin.autoImport._
 
-name := "predictionio-tools"
+name := "apache-predictionio-tools"
 
 libraryDependencies ++= Seq(
   "com.github.scopt"       %% "scopt"          % "3.2.0",

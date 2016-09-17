@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-name := "predictionio-e2"
+name := "apache-predictionio-e2"
 
 parallelExecution in Test := false
 

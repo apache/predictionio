@@ -17,9 +17,9 @@
 
 import UnidocKeys._
 
-name := "predictionio-parent"
+name := "apache-predictionio-parent"
 
-version in ThisBuild := "0.10.0-incubating-rc1"
+version in ThisBuild := "0.10.0-incubating-rc2"
 
 organization in ThisBuild := "org.apache.predictionio"
 

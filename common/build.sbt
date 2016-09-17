@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-name := "predictionio-common"
+name := "apache-predictionio-common"
 
 libraryDependencies ++= Seq(
   "io.spray"               %% "spray-can"        % "1.3.2",
