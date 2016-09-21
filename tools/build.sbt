@@ -39,6 +39,13 @@ libraryDependencies ++= Seq(
 
 dependencyOverrides +=   "org.slf4j" % "slf4j-log4j12" % "1.7.18"
 
+assemblyMergeStrategy in assembly := {
+  case PathList("META-INF", "LICENSE.txt") => MergeStrategy.concat
+  case PathList("META-INF", "NOTICE.txt")  => MergeStrategy.concat
+  case x =>
+    val oldStrategy = (assemblyMergeStrategy in assembly).value
+    oldStrategy(x)
+}
 
 excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
   cp filter { _.data.getName match {
