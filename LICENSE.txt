@@ -290,12 +290,3 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON A
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-================================================================================
-For documentation in docs/manual/:
-================================================================================
-
-This work is licensed under a Creative Commons
-Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-
-http://creativecommons.org/licenses/by-nc-sa/3.0/
