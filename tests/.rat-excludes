@@ -27,6 +27,7 @@ dist/*
 vendors/*
 .logs/*
 sbt/*
+bin/semver.sh
 
 .*md
 .*md.erb

@@ -23,7 +23,7 @@ libraryDependencies ++= Seq(
   "io.spray"               %% "spray-can"      % "1.3.3",
   "io.spray"               %% "spray-routing"  % "1.3.3",
   "io.spray"               %% "spray-testkit"  % "1.3.3" % "test",
-  "mysql"                   % "mysql-connector-java" % "5.1.37",
+  "mysql"                   % "mysql-connector-java" % "5.1.37" % "provided",
   "org.apache.hadoop"       % "hadoop-common"  % "2.6.2"
     exclude("javax.servlet", "servlet-api"),
   "org.apache.hbase"        % "hbase-common"   % "0.98.5-hadoop2",
