@@ -17,6 +17,7 @@ unidoc.sbt
 spark-defaults.conf
 Gemfile.lock
 templates.yaml
+semver.sh
 
 PredictionIO-.*/*
 bower_components/*
@@ -27,7 +28,6 @@ dist/*
 vendors/*
 .logs/*
 sbt/*
-bin/semver.sh
 
 .*md
 .*md.erb
