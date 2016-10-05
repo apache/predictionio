@@ -634,3 +634,15 @@
     license: "Apache Licence 2.0"
     status: stable
     pio_min_version: 0.9.7
+    
+- template:
+    name: Topic labelling with Wikipedia
+    repo: "https://github.com/peoplehum/template-Labelling-LDA-Topics-with-wikipedia"
+    description: |-
+      This template will label topics(eg. topic generated through LDA topic modeling) with relevant category by referring wikipedia as knowledge base.
+    tags: [nlp]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: stable
+    pio_min_version: 0.9.7
