@@ -97,7 +97,7 @@ We are going to copy the Similar Product Template into the PIO directory.
 
 ```
 $ cd PredictionIO
-$ pio template get PredictionIO/template-scala-parallel-similarproduct tapster-episode-similar
+$ pio template get apache/incubator-predictionio-template-similar-product tapster-episode-similar
 ```
 
 Next we are going to update the App ID in the ‘engine.json’ file to match the App ID we just created.
