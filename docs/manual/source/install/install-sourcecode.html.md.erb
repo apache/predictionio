@@ -5,15 +5,21 @@ title: Installing Apache PredictionIO (incubating) from Source Code
 INFO: Assuming you are following the directory structure in the followoing,
 replace `/home/abc` with your own home directory wherever you see it.
 
+## Downloading Source Code
+
+Download Apache PredictionIO (incubating) <%= data.versions.pio %> from an
+Apache
+[mirror](https://www.apache.org/dyn/closer.cgi/incubator/predictionio/0.10.0-incubating/apache-predictionio-<%=
+data.versions.pio %>.tar.gz).
+
 ## Building
 
-Run the following to download and build Apache PredictionIO (incubating) from
-its source code.
+Run the following at the directory where you downloaded the source code to build
+Apache PredictionIO (incubating).
 
 ```
-$ git clone https://github.com/apache/incubator-predictionio.git
-$ cd incubator-predictionio
-$ git checkout master
+$ tar zxvf apache-predictionio-<%= data.versions.pio %>.tar.gz
+$ cd apache-predictionio-<%= data.versions.pio %>
 $ ./make-distribution.sh
 ```
 
