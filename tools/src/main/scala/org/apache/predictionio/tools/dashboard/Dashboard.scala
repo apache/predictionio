@@ -55,12 +55,13 @@ object Dashboard extends Logging with SSLConfiguration {
     }
 
     parser.parse(args, DashboardConfig()) map { dc =>
-      createDashboard(dc)
+      createDashboard(dc).awaitTermination
     }
   }
 
-  def createDashboard(dc: DashboardConfig): Unit = {
-    implicit val system = ActorSystem("pio-dashboard")
+  def createDashboard(dc: DashboardConfig): ActorSystem = {
+    val systemName = "pio-dashboard"
+    implicit val system = ActorSystem(systemName)
     val service =
       system.actorOf(Props(classOf[DashboardActor], dc), "dashboard")
     implicit val timeout = Timeout(5.seconds)
@@ -72,7 +73,7 @@ object Dashboard extends Logging with SSLConfiguration {
       interface = dc.ip,
       port = dc.port,
       settings = Some(settings.copy(sslEncryption = sslEnforced)))
-    system.awaitTermination
+    system
   }
 }
 

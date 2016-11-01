@@ -24,6 +24,7 @@ import grizzled.slf4j.Logging
 import org.apache.predictionio.data.storage.EngineManifest
 import org.apache.predictionio.data.storage.EngineManifestSerializer
 import org.apache.predictionio.data.storage.Storage
+import org.apache.predictionio.tools.ReturnTypes._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
@@ -32,35 +33,34 @@ import org.json4s.native.Serialization.read
 
 import scala.io.Source
 
-object RegisterEngine extends Logging {
+object RegisterEngine extends EitherLogging {
   val engineManifests = Storage.getMetaDataEngineManifests
   implicit val formats = DefaultFormats + new EngineManifestSerializer
 
   def registerEngine(
       jsonManifest: File,
       engineFiles: Seq[File],
-      copyLocal: Boolean = false): Unit = {
+      copyLocal: Boolean = false): MaybeError = {
     val jsonString = try {
       Source.fromFile(jsonManifest).mkString
     } catch {
       case e: java.io.FileNotFoundException =>
-        error(s"Engine manifest file not found: ${e.getMessage}. Aborting.")
-        sys.exit(1)
+        return logAndFail(s"Engine manifest file not found: ${e.getMessage}. Aborting.")
     }
     val engineManifest = read[EngineManifest](jsonString)
 
     info(s"Registering engine ${engineManifest.id} ${engineManifest.version}")
     engineManifests.update(
       engineManifest.copy(files = engineFiles.map(_.toURI.toString)), true)
+    Success
   }
 
-  def unregisterEngine(jsonManifest: File): Unit = {
+  def unregisterEngine(jsonManifest: File): MaybeError = {
     val jsonString = try {
       Source.fromFile(jsonManifest).mkString
     } catch {
       case e: java.io.FileNotFoundException =>
-        error(s"Engine manifest file not found: ${e.getMessage}. Aborting.")
-        sys.exit(1)
+        return logAndFail(s"Engine manifest file not found: ${e.getMessage}. Aborting.")
     }
     val fileEngineManifest = read[EngineManifest](jsonString)
     val engineManifest = engineManifests.get(
@@ -78,9 +78,9 @@ object RegisterEngine extends Logging {
       }
 
       engineManifests.delete(em.id, em.version)
-      info(s"Unregistered engine ${em.id} ${em.version}")
+      logAndSucceed(s"Unregistered engine ${em.id} ${em.version}")
     } getOrElse {
-      error(s"${fileEngineManifest.id} ${fileEngineManifest.version} is not " +
+      logAndFail(s"${fileEngineManifest.id} ${fileEngineManifest.version} is not " +
         "registered.")
     }
   }

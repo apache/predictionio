@@ -611,7 +611,7 @@ case class EventServerConfig(
   stats: Boolean = false)
 
 object EventServer {
-  def createEventServer(config: EventServerConfig): Unit = {
+  def createEventServer(config: EventServerConfig): ActorSystem = {
     implicit val system = ActorSystem("EventServerSystem")
 
     val eventClient = Storage.getLEvents()
@@ -630,7 +630,7 @@ object EventServer {
     if (config.stats) system.actorOf(Props[StatsActor], "StatsActor")
     system.actorOf(Props[PluginsActor], "PluginsActor")
     serverActor ! StartServer(config.ip, config.port)
-    system.awaitTermination()
+    system
   }
 }
 
@@ -639,5 +639,6 @@ object Run {
     EventServer.createEventServer(EventServerConfig(
       ip = "0.0.0.0",
       port = 7070))
+    .awaitTermination
   }
 }

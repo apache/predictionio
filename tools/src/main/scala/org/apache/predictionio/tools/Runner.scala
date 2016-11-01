@@ -21,16 +21,22 @@ package org.apache.predictionio.tools
 import java.io.File
 import java.net.URI
 
-import grizzled.slf4j.Logging
 import org.apache.predictionio.tools.console.ConsoleArgs
 import org.apache.predictionio.workflow.WorkflowUtils
+import org.apache.predictionio.tools.ReturnTypes._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 
 import scala.sys.process._
 
-object Runner extends Logging {
+case class SparkArgs(
+  sparkHome: Option[String] = None,
+  sparkPassThrough: Seq[String] = Seq(),
+  sparkKryo: Boolean = false,
+  scratchUri: Option[URI] = None)
+
+object Runner extends EitherLogging {
   def envStringToMap(env: String): Map[String, String] =
     env.split(',').flatMap(p =>
       p.split('=') match {
@@ -95,26 +101,27 @@ object Runner extends Logging {
   def runOnSpark(
       className: String,
       classArgs: Seq[String],
-      ca: ConsoleArgs,
-      extraJars: Seq[URI]): Int = {
+      sa: SparkArgs,
+      extraJars: Seq[URI],
+      pioHome: String,
+      verbose: Boolean = false): Expected[(Process, () => Unit)] = {
     // Return error for unsupported cases
     val deployMode =
-      argumentValue(ca.common.sparkPassThrough, "--deploy-mode").getOrElse("client")
+      argumentValue(sa.sparkPassThrough, "--deploy-mode").getOrElse("client")
     val master =
-      argumentValue(ca.common.sparkPassThrough, "--master").getOrElse("local")
+      argumentValue(sa.sparkPassThrough, "--master").getOrElse("local")
 
-    (ca.common.scratchUri, deployMode, master) match {
+    (sa.scratchUri, deployMode, master) match {
       case (Some(u), "client", m) if m != "yarn-cluster" =>
-        error("--scratch-uri cannot be set when deploy mode is client")
-        return 1
+        return logAndFail("--scratch-uri cannot be set when deploy mode is client")
       case (_, "cluster", m) if m.startsWith("spark://") =>
-        error("Using cluster deploy mode with Spark standalone cluster is not supported")
-        return 1
+        return logAndFail(
+          "Using cluster deploy mode with Spark standalone cluster is not supported")
       case _ => Unit
     }
 
     // Initialize HDFS API for scratch URI
-    val fs = ca.common.scratchUri map { uri =>
+    val fs = sa.scratchUri map { uri =>
       FileSystem.get(uri, new Configuration())
     }
 
@@ -124,18 +131,18 @@ object Runner extends Logging {
     ).mkString(",")
 
     // Location of Spark
-    val sparkHome = ca.common.sparkHome.getOrElse(
+    val sparkHome = sa.sparkHome.getOrElse(
       sys.env.getOrElse("SPARK_HOME", "."))
 
     // Local path to PredictionIO assembly JAR
-    val mainJar = handleScratchFile(
-      fs,
-      ca.common.scratchUri,
-      console.Console.coreAssembly(ca.common.pioHome.get))
+    val mainJar = Common.coreAssembly(pioHome) fold(
+        errStr => return Left(errStr),
+        assembly => handleScratchFile(fs, sa.scratchUri, assembly)
+      )
 
     // Extra JARs that are needed by the driver
     val driverClassPathPrefix =
-      argumentValue(ca.common.sparkPassThrough, "--driver-class-path") map { v =>
+      argumentValue(sa.sparkPassThrough, "--driver-class-path") map { v =>
         Seq(v)
       } getOrElse {
         Nil
@@ -146,11 +153,11 @@ object Runner extends Logging {
 
     // Extra files that are needed to be passed to --files
     val extraFiles = WorkflowUtils.thirdPartyConfFiles map { f =>
-      handleScratchFile(fs, ca.common.scratchUri, new File(f))
+      handleScratchFile(fs, sa.scratchUri, new File(f))
     }
 
     val deployedJars = extraJars map { j =>
-      handleScratchFile(fs, ca.common.scratchUri, new File(j))
+      handleScratchFile(fs, sa.scratchUri, new File(j))
     }
 
     val sparkSubmitCommand =
@@ -174,7 +181,7 @@ object Runner extends Logging {
       Nil
     }
 
-    val sparkSubmitKryo = if (ca.common.sparkKryo) {
+    val sparkSubmitKryo = if (sa.sparkKryo) {
       Seq(
         "--conf",
         "spark.serializer=org.apache.spark.serializer.KryoSerializer")
@@ -182,33 +189,26 @@ object Runner extends Logging {
       Nil
     }
 
-    val verbose = if (ca.common.verbose) Seq("--verbose") else Nil
+    val verboseArg = if (verbose) Seq("--verbose") else Nil
 
     val sparkSubmit = Seq(
       sparkSubmitCommand,
-      ca.common.sparkPassThrough,
+      sa.sparkPassThrough,
       Seq("--class", className),
       sparkSubmitJars,
       sparkSubmitFiles,
       sparkSubmitExtraClasspaths,
       sparkSubmitKryo,
       Seq(mainJar),
-      detectFilePaths(fs, ca.common.scratchUri, classArgs),
+      detectFilePaths(fs, sa.scratchUri, classArgs),
       Seq("--env", pioEnvVars),
-      verbose).flatten.filter(_ != "")
+      verboseArg).flatten.filter(_ != "")
     info(s"Submission command: ${sparkSubmit.mkString(" ")}")
     val proc = Process(
       sparkSubmit,
       None,
       "CLASSPATH" -> "",
       "SPARK_YARN_USER_ENV" -> pioEnvVars).run()
-    Runtime.getRuntime.addShutdownHook(new Thread(new Runnable {
-      def run(): Unit = {
-        cleanup(fs, ca.common.scratchUri)
-        proc.destroy()
-      }
-    }))
-    cleanup(fs, ca.common.scratchUri)
-    proc.exitValue()
+    Right((proc, () => cleanup(fs, sa.scratchUri)))
   }
 }

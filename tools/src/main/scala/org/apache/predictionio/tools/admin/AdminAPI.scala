@@ -133,7 +133,7 @@ case class AdminServerConfig(
 )
 
 object AdminServer {
-  def createAdminServer(config: AdminServerConfig): Unit = {
+  def createAdminServer(config: AdminServerConfig): ActorSystem = {
     implicit val system = ActorSystem("AdminServerSystem")
 
     val commandClient = new CommandClient(
@@ -146,7 +146,7 @@ object AdminServer {
       Props(classOf[AdminServerActor], commandClient),
       "AdminServerActor")
     serverActor ! StartServer(config.ip, config.port)
-    system.awaitTermination
+    system
   }
 }
 
@@ -155,5 +155,6 @@ object AdminRun {
     AdminServer.createAdminServer(AdminServerConfig(
       ip = "localhost",
       port = 7071))
+    .awaitTermination
   }
 }

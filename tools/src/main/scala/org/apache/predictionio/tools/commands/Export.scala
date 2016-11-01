@@ -16,27 +16,39 @@
  */
 
 
-package org.apache.predictionio.tools.console
+package org.apache.predictionio.tools.commands
 
 import org.apache.predictionio.tools.Runner
+import org.apache.predictionio.tools.SparkArgs
+import org.apache.predictionio.tools.ReturnTypes._
 
-case class ImportArgs(
+import scala.sys.process._
+
+case class ExportArgs(
   appId: Int = 0,
   channel: Option[String] = None,
-  inputPath: String = "")
+  outputPath: String = "",
+  format: String = "json")
 
-object Import {
-  def fileToEvents(ca: ConsoleArgs): Int = {
-    val channelArg = ca.imprt.channel
+object Export {
+  def eventsToFile(
+    ea: ExportArgs,
+    sa: SparkArgs,
+    pioHome: String): Expected[(Process, () => Unit)] = {
+
+    val channelArg = ea.channel
       .map(ch => Seq("--channel", ch)).getOrElse(Nil)
     Runner.runOnSpark(
-      "org.apache.predictionio.tools.imprt.FileToEvents",
+      "org.apache.predictionio.tools.export.EventsToFile",
       Seq(
         "--appid",
-        ca.imprt.appId.toString,
-        "--input",
-        ca.imprt.inputPath) ++ channelArg,
-      ca,
-      Nil)
+        ea.appId.toString,
+        "--output",
+        ea.outputPath,
+        "--format",
+        ea.format) ++ channelArg,
+      sa,
+      Nil,
+      pioHome)
   }
 }
