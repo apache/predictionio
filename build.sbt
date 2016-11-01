@@ -186,8 +186,8 @@ pomExtra := {
 
 childrenPomExtra in ThisBuild := {
   <parent>
-    <groupId>org.apache.predictionio</groupId>
-    <artifactId>predictionio-parent_{scalaBinaryVersion.value}</artifactId>
+    <groupId>{organization.value}</groupId>
+    <artifactId>{name.value}_{scalaBinaryVersion.value}</artifactId>
     <version>{version.value}</version>
   </parent>
 }
