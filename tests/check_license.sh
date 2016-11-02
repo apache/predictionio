@@ -40,7 +40,7 @@ fi
 # Run RAT testing
 TEST_DIR="${FWDIR}/tests"
 REPORT_DIR="${FWDIR}/test-reports"
-mkdir ${REPORT_DIR}
+mkdir -p ${REPORT_DIR}
 java -jar ${RAT_JAR} -E ${TEST_DIR}/.rat-excludes -d ${FWDIR} > ${REPORT_DIR}/rat-results.txt
 if [ $? -ne 0 ]; then
  echo "RAT exited abnormally"

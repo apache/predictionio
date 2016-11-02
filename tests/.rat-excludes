@@ -19,18 +19,16 @@ Gemfile.lock
 templates.yaml
 semver.sh
 
+obsolete/*
 PredictionIO-.*/*
-bower_components/*
 target/*
-source/*
+/source
 test-reports/*
 dist/*
 vendors/*
 .logs/*
 sbt/*
 
-.*md
-.*md.erb
 .*slim
 .*eps
 .*txt
