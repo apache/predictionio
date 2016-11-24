@@ -80,6 +80,7 @@ class SelfCleaningDataSourceTest extends FunSuite with Inside with SharedSparkCo
     distinctEventsAfterCount should equal (eventsAfterCount)
     eventsBeforeCount should be > (eventsAfterCount) 
     itemEventsBeforeCount should be > (itemEventsAfterCount)
+    itemEventsAfterCount should be > 0l
   }
 }
 

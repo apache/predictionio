@@ -180,7 +180,7 @@ trait SelfCleaningDataSource {
     sc: SparkContext
   ): Unit = {
     val (appId, channelId) = Common.appNameToId(appName, None)
-    pEventsDb.write(newEvents.map(x => recreateEvent(x, None, x.eventTime)), appId)(sc)
+    pEventsDb.write(newEvents, appId)(sc)
 
     removePEvents(eventsToRemove, appId, sc)
   }
