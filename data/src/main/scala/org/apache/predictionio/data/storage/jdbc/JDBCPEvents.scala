@@ -138,8 +138,8 @@ class JDBCPEvents(client: String, config: StorageClientConfig, namespace: String
       , "prId"
       , "creationTime"
       , "creationTimeZone")
- 
-    val eventDF = events.map(x => 
+
+    val eventDF = events.map(x =>
                               Event(eventId = None, event = x.event, entityType = x.entityType,
                               entityId = x.entityId, targetEntityType = x.targetEntityType,
                               targetEntityId = x.targetEntityId, properties = x.properties,
