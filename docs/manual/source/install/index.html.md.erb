@@ -19,11 +19,6 @@ limitations under the License.
 title: Installing Apache PredictionIO (incubating)
 ---
 
-INFO: New installation methods will be provided once Apache PredictionIO
-(incubating) (version 0.10.0 and beyond) is released on the Apache
-infrastructure. Methods below are for installing pre-Apache releases (version
-0.9.x).
-
 [//]: # (## Method 1: Quick Install)
 
 [//]: # (On Linux / Mac OS X, Apache PredictionIO (incubating) can now be installed with a single command:)
@@ -36,9 +31,7 @@ infrastructure. Methods below are for installing pre-Apache releases (version
 
 [//]: # (<%= partial 'shared/install/proceed_template' %>)
 
-## Method 1: Manual Install
-
-### Prerequisites
+## Prerequisites
 
 It is **very important** to meet the minimum version of the following
 technologies that power Apache PredictionIO (incubating).
@@ -67,15 +60,15 @@ operation mode without further configuration, may not work. In that case,
 configure your Apache Spark to run in [standalone cluster
 mode](http://spark.apache.org/docs/latest/spark-standalone.html).
 
-### Installing Apache PredictionIO (incubating)
+## Installing Apache PredictionIO (incubating)
 
 Apache PredictionIO (incubating) runs on a Java virtual machine, so it runs on
 most platforms. Choose your platform below:
 
-* [Installing Apache PredictionIO (incubating) on Linux / Mac OS X](install-linux.html)
+[//]: # (* [Installing Apache PredictionIO (incubating) on Linux / Mac OS X](install-linux.html))
 * [Installing Apache PredictionIO (incubating) from Source Code](install-sourcecode.html)
-* [Installing Apache PredictionIO (incubating) with Vagrant (VirtualBox)](install-vagrant.html)
-* [Installing Apache PredictionIO (incubating) with Terminal.com Snap](https://www.terminal.com/snapshot/f444bfb7538dfc596485374f56167ec6f79cbc16f793f013ad120067070eb81a)
+[//]: # (* [Installing Apache PredictionIO (incubating) with Vagrant (VirtualBox)](install-vagrant.html))
+[//]: # (* [Installing Apache PredictionIO (incubating) with Terminal.com Snap](https://www.terminal.com/snapshot/f444bfb7538dfc596485374f56167ec6f79cbc16f793f013ad120067070eb81a))
 
 
 You may also use one of the community-contributed packages to install
@@ -98,11 +91,3 @@ Elasticsearch. See more [here](/resources/upgrade/).**
 
 [//]: # (For production environment setup, please refer to [Production)
 [//]: # (Deployment](/production/deploy.html) guide.)
-
-## Method 2: Terminal.com
-
-Public snaps are available on our Terminal.com
-[page](https://www.terminal.com/user/predictionio).
-
-Instance type **must be** set to *medium* or higher for Apache PredictionIO
-(incubating) to function correctly.

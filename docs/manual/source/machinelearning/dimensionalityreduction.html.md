@@ -36,33 +36,33 @@ In machine learning, specifically in [supervised learning](http://en.wikipedia.o
 | ![Square Samples](/images/machinelearning/featureselection/square100.png) | ![Cube Samples](/images/machinelearning/featureselection/cube100.png) |
 |                                                          |                                                      |
 
-Dimensionality reduction is the process of applying a transformation to your feature vectors in order to produce a vector with the same or less number of features. Principal component Analysis (PCA) is a technique for dimensionality reduction. This can be treated as a data processing technique, and so with respect to the [DASE](/customize/) framework, it will fall into the Data Preparator engine component. 
+Dimensionality reduction is the process of applying a transformation to your feature vectors in order to produce a vector with the same or less number of features. Principal component Analysis (PCA) is a technique for dimensionality reduction. This can be treated as a data processing technique, and so with respect to the [DASE](/customize/) framework, it will fall into the Data Preparator engine component.
 
 This guide will also help to solidify the concept of taking an engine template and customizing it for a particular use case: hand-written numeric digit recognition.
 
 ## Data Example
 
-As a guiding example, a base data set, the [MNIST digit recognition dataset](https://www.kaggle.com/c/digit-recognizer/data), is used. This is a perfect data set for dimensionality reduction, for, in this data set, the features that will be used for learning are pixel entries in a \\(28 \times 28\\) pixel image. There is really no direct interpretation of any one feature, so that you do not lose anything in applying a transformation that will treat the features as [linear combinations](https://en.wikipedia.org/wiki/Linear_combination) of some set "convenient" vectors. 
+As a guiding example, a base data set, the [MNIST digit recognition dataset](https://www.kaggle.com/c/digit-recognizer/data), is used. This is a perfect data set for dimensionality reduction, for, in this data set, the features that will be used for learning are pixel entries in a \\(28 \times 28\\) pixel image. There is really no direct interpretation of any one feature, so that you do not lose anything in applying a transformation that will treat the features as [linear combinations](https://en.wikipedia.org/wiki/Linear_combination) of some set "convenient" vectors.
 
 Now, we first pull the [classification engine template](/gallery/template-gallery/#classification) via the following bash line
 
 ```
-pio template get PredictionIO/template-scala-parallel-classification <Your new engine directory>
+pio template get apache/incubator-predictionio-template-attribute-based-classifier <Your new engine directory>
 ```
 
 You should immediately be prompted with the following message:
 
 ```
-Please enter the template's Scala package name (e.g. com.mycompany): 
+Please enter the template's Scala package name (e.g. com.mycompany):
 ```
 
-Go ahead and input `FeatureReduction`, and feel free to just press enter for the remaining message prompts. For the remainder of this guide, you will be working in your new engine directory, so go ahead and `cd` into your new engine directory. At this point, go ahead and run the command 
+Go ahead and input `FeatureReduction`, and feel free to just press enter for the remaining message prompts. For the remainder of this guide, you will be working in your new engine directory, so go ahead and `cd` into your new engine directory. At this point, go ahead and run the command
 
 ```
 pio build
-``` 
+```
 
-This will make sure that the PredictionIO dependency version for your project matches the version installed on your computer. Now, download the MNIST `train.csv` data set from the link above, and put this file in the `data` directory contained in the new engine directory. 
+This will make sure that the PredictionIO dependency version for your project matches the version installed on your computer. Now, download the MNIST `train.csv` data set from the link above, and put this file in the `data` directory contained in the new engine directory.
 
 ### **Optional**: Visualizing Observations
 
@@ -182,7 +182,7 @@ PCA begins with the data matrix \\(\bf X\\) whose rows are feature vectors corre
 
 **Input:** \\(N \times p\\) data matrix \\(\bf X\\); \\(k \leq p\\), the number of desired features.
 
-**1.** For each column in the data matrix: compute the average of all the entries contained in the column, and then subtract this average from each of the column entries. 
+**1.** For each column in the data matrix: compute the average of all the entries contained in the column, and then subtract this average from each of the column entries.
 
 **2.** Compute the \\(k\\) eigenvectors corresponding to the \\(k\\) largest eigenvalues of the matrix obtained in the first step.
 
@@ -288,7 +288,7 @@ The motivation for defining the `Observation` class is to make it easy to mainta
 
 ### Preparator Modifications
 
-Remember that the Data Preparator is the engine component that takes care of the necessary data processing prior to the fitting of a predictive model in the Algorithm component. Hence this stage is where you will implement PCA. 
+Remember that the Data Preparator is the engine component that takes care of the necessary data processing prior to the fitting of a predictive model in the Algorithm component. Hence this stage is where you will implement PCA.
 
 To make sure there is no confusion, replace the import statements in the `Preparator.scala` script with the following:
 
@@ -310,7 +310,7 @@ numFeatures : Int
 ) extends Params
 ```
 
-The next step is to implement the algorithm discussed in the above digression. This will all be done in the `PreparedData` class. 
+The next step is to implement the algorithm discussed in the above digression. This will all be done in the `PreparedData` class.
 
 Remember that the classes `Observation` and `Query` store the pixel features as a string separated by `", "`. Hence, for data processing, you first need a function, `string2Vector`, that will transform the feature strings to vectors. Now, you will need a function, `scaler`, that centers your observations (step 1 in PCA algorithm). Luckily, the `StandardScaler` and `StandardScalerModel` classes implemented in Spark MLLib can easily take care of this for you. The last part will be to actually compute the SVD of the data matrix which can also be easily done in MLLib. All this will be implemented in the `PreparedData` class which you will redefine as follows:
 
@@ -370,11 +370,11 @@ The Data Preparator engine component is now complete, and we can move on to the 
 
 ### Algorithm Modifications
 
-The default algorithm used in the classification template is Naive Bayes. Now, this is a [probabilistic classifier](https://en.wikipedia.org/wiki/Probabilistic_classification) that makes certain assumptions about the data that do not really match the format of the PCA-transformed data. In particular, it assumes that the vectors consist of counts. In particular, this means it assumes non-negative feature values. However, upon applying PCA on the data, you have no guarantees that you will have purely non-negative features. Given this, you will delete the script `NaiveBayesAlgorithm.scala`, and create one called `LRAlgorithm.scala` (in the `src/main/scala/` directory) which implements [Multinomial Logistic Regression](https://en.wikipedia.org/wiki/Multinomial_logistic_regression). 
+The default algorithm used in the classification template is Naive Bayes. Now, this is a [probabilistic classifier](https://en.wikipedia.org/wiki/Probabilistic_classification) that makes certain assumptions about the data that do not really match the format of the PCA-transformed data. In particular, it assumes that the vectors consist of counts. In particular, this means it assumes non-negative feature values. However, upon applying PCA on the data, you have no guarantees that you will have purely non-negative features. Given this, you will delete the script `NaiveBayesAlgorithm.scala`, and create one called `LRAlgorithm.scala` (in the `src/main/scala/` directory) which implements [Multinomial Logistic Regression](https://en.wikipedia.org/wiki/Multinomial_logistic_regression).
 
 The implementation details are not discussed in this guide, as the point of this guide is to show how to incorporate **dimensionality reduction** techniques by incorporating PCA. The latter paragraph is mentioned in order to emphasize the fact that applying the PCA transformation (or possibly other dimensionality reduction techniques) will largely remove the interpretability of features, so that model assumptions relying on such interpretations may no longer be satisfied. This is just something to keep in mind.
 
-The following code is taken from the [text classification engine template](/gallery/template-gallery/#classification) and adapted to match the project definitions.  Copy and paste into the new scala script, `LRAlgorithm.scala`: 
+The following code is taken from the [text classification engine template](/gallery/template-gallery/#classification) and adapted to match the project definitions.  Copy and paste into the new scala script, `LRAlgorithm.scala`:
 
 ```scala
 package FeatureReduction

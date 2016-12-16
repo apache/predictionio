@@ -20,7 +20,7 @@
 
 - template:
     name: E-Commerce Recommendation
-    repo: "https://github.com/PredictionIO/template-scala-parallel-ecommercerecommendation"
+    repo: "https://github.com/apache/incubator-predictionio-template-ecom-recommender"
     description: |-
       This engine template provides personalized recommendation for e-commerce applications with the following features by default:
 
@@ -37,7 +37,7 @@
 
 - template:
     name: E-Commerce Recommendation (Java)
-    repo: "https://github.com/PredictionIO/template-java-parallel-ecommercerecommendation"
+    repo: "https://github.com/apache/incubator-predictionio-template-java-ecom-recommender"
     description: |-
       This engine template provides personalized recommendation for e-commerce applications with the following features by default:
 
@@ -66,7 +66,7 @@
 
 - template:
     name: Similar Product
-    repo: "https://github.com/PredictionIO/template-scala-parallel-similarproduct"
+    repo: "https://github.com/apache/incubator-predictionio-template-similar-product"
     description: |-
        This engine template recommends products that are "similar" to the input product(s). Similarity is not defined by user or item attributes but by users' previous actions. By default, it uses 'view' action such that product A and B are considered similar if most users who view A also view B. The template can be customized to support other action types such as buy, rate, like..etc
     tags: [recommender]
@@ -102,7 +102,7 @@
 
 - template:
     name: Recommendation
-    repo: "https://github.com/PredictionIO/template-scala-parallel-recommendation"
+    repo: "https://github.com/apache/incubator-predictionio-template-recommender"
     description: |-
       An engine template is an almost-complete implementation of an engine. PredictionIO's Recommendation Engine Template has integrated Apache Spark MLlib's Collaborative Filtering algorithm by default. You can customize it easily to fit your specific needs.
     tags: [unsupervised]
@@ -114,7 +114,7 @@
 
 - template:
     name: Classification
-    repo: "https://github.com/PredictionIO/template-scala-parallel-classification"
+    repo: "https://github.com/apache/incubator-predictionio-template-attribute-based-classifier"
     description: |-
       An engine template is an almost-complete implementation of an engine. PredictionIO's Classification Engine Template has integrated Apache Spark MLlib's Naive Bayes algorithm by default.
     tags: [classification]
@@ -397,7 +397,7 @@
 
 - template:
     name: Text Classification
-    repo: "https://github.com/PredictionIO/template-scala-parallel-textclassification"
+    repo: "https://github.com/apache/incubator-predictionio-template-text-classifier"
     description: |-
       Use this engine for general text classification purposes. Uses OpenNLP library for text vectorization, includes t.f.-i.d.f.-based feature transformation and reduction, and uses Spark MLLib's Multinomial Naive Bayes implementation for classification.
     tags: [nlp]
@@ -504,10 +504,10 @@
     pio_min_version: 0.9.5
 
 - template:
-    name: Vanilla
-    repo: "https://github.com/PredictionIO/template-scala-parallel-vanilla"
+    name: Skeleton
+    repo: "https://github.com/apache/incubator-predictionio-template-skeleton"
     description: |-
-      Vanilla template is for developing new engine when you find other engine templates do not fit your needs. This template provides a skeleton to kick start new engine development.
+      Skeleton template is for developing new engine when you find other engine templates do not fit your needs. This template provides a skeleton to kick start new engine development.
     tags: [other]
     type: Parallel
     language: Scala
@@ -526,3 +526,27 @@
     license: "Apache Licence 2.0"
     status: beta
     pio_min_version: 0.9.0
+
+- template:
+    name: Sentiment Analysis - Bag of Words Model
+    repo: "https://github.com/peoplehum/BagOfWords_SentimentAnalysis_Template"
+    description: |-
+      This sentiment analysis template uses a bag of words model. Given text, the engine will return sentiment as 1.0 (positive) or 0.0 (negative) along with scores indicating how +ve or -ve it is.
+    tags: [nlp]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: stable
+    pio_min_version: 0.10.0-incubating
+
+- template:
+    name: Topic Labelling with Wikipedia
+    repo: "https://github.com/peoplehum/template-Labelling-LDA-Topics-with-wikipedia"
+    description: |-
+      This template will label topics (e.g. topic generated through LDA topic modeling) with relevant category by referring to Wikipedia as a knowledge base.
+    tags: [nlp]
+    type: Parallel
+    language: Scala
+    license: "Apache Licence 2.0"
+    status: stable
+    pio_min_version: 0.10.0-incubating
