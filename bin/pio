@@ -32,7 +32,26 @@ search() {
   echo ${i}
 }
 
-export PIO_HOME="$(cd $(dirname $(readlink -f $0))/..; pwd)"
+PIO_FILE=$(readlink -f $0 2>/dev/null)
+if [ $? = 0 ] ; then 
+  export PIO_HOME="$(cd $(dirname $PIO_FILE)/..; pwd)"
+else
+  CURRENT_DIR=`pwd`
+  TARGET_FILE="$0"
+  cd "$(dirname "$TARGET_FILE")"
+  TARGET_FILE=$(basename "$TARGET_FILE")
+
+  while [ -L "$TARGET_FILE" ]
+  do
+    TARGET_FILE=$(readlink "$TARGET_FILE")
+    cd "$(dirname "$TARGET_FILE")"
+    TARGET_FILE=$(basename "$TARGET_FILE")
+  done
+
+  export PIO_HOME="$(cd $(dirname "$TARGET_FILE")/..; pwd -P)"
+  cd "$CURRENT_DIR"
+fi
+
 
 export PIO_CONF_DIR="${PIO_HOME}/conf"
 
