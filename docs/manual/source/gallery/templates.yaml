@@ -1,22 +1,22 @@
 - template:
-    name: Universal Recommender
-    repo: "https://github.com/PredictionIO/template-scala-parallel-universal-recommendation"
+    name: The Universal Recommender
+    repo: "https://github.com/actionml/universal-recommender"
     description: |-
       Use for:
 
-        * Personalized recommendations
-        * Similar items
-        * Popular Items
-        * Shopping cart recommendation
-        * Hybrid collaborative filtering and content based recommendations.
+        * Personalized recommendations&mdash;user-based
+        * Similar items&mdash;item-based
+        * Popular Items, User-defined ranking
+        * Complimentarty Purchases / Shopping Cart&mdash;item-set-based
+        * Hybrid collaborative filtering and content based recommendations for applying business rules
 
-      The name refers to the use of this template in virtually any case that calls for recommendations - ecom, news, videos, virtually anywhere usage data is known. This recommender can auto-correlate different user actions, profile data, contextual information, and some content types to make better recommendations.
+      The name refers to the use of this template in virtually any case that calls for recommendations - ecom, news, videos, virtually anywhere usage data is known. This recommender can auto-correlate different user actions (clickstream data), profile data, contextual information (location, device), and some content types to make better recommendations that follow business rules.
     tags: [recommender]
     type: Parallel
     language: Scala
     license: "Apache Licence 2.0"
-    status: alpha
-    pio_min_version: 0.9.5
+    status: stable
+    pio_min_version: 0.10.0-incubating
 
 - template:
     name: E-Commerce Recommendation
