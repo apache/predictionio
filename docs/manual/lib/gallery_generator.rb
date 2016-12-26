@@ -22,48 +22,51 @@ module Gallery
 
   private
 
-  INTRO =
-'---
+  INTRO = '---
 title: Engine Template Gallery
 ---
-'
 
-  UNSUPERVISED = '## Unsupervised Learning '
-
-  CLASSIFICATION = '## Classification'
-
-  REGRESSION = '## Regression'
-
-  RECOMMENDER_SYSTEMS = '## Recommender Systems'
-
-  NLP = '## Natural Language Processing'
-
-  OTHER = '## Other'
-
-  TEMPLATE_INTRO = '
-***[%{name}](%{repo})***  '
-
-  STAR_BUTTON =
-'
-<iframe src="https://ghbtns.com/github-btn.html?user=%{user}&repo=%{repo}&type=star&count=true"
-frameborder="0" align="middle" scrolling="0" width="170px" height="20px"></iframe>
+Pick a tab for the type of template you are looking for. Some still need to be ported (a simple process) to Apache PIO and these are marked. Also see each Template description for special support instructions.
 
 '
+
+  BEGIN_TABS = '<div class="tabs">'
+
+  RECOMMENDER_SYSTEMS = '<div data-tab="Recommenders">'
+
+  CLASSIFICATION = '<div data-tab="Classification">'
+
+  REGRESSION = '<div data-tab="Regression">'
+
+  CLUSTERING = '<div data-tab="Clustering">'
+
+  NLP = '<div data-tab="NLP">'
+
+  SIMILARITY = '<div data-tab="Similarity">'
+
+  OTHER = '<div data-tab="Other">'
+
+  TEMPLATE_INTRO = '<h3><a href="%{repo}">%{name}</a></h3>'
+
+  STAR_BUTTON ='<iframe src="https://ghbtns.com/github-btn.html?user=%{user}&repo=%{repo}&type=star&count=true" frameborder="0" align="middle" scrolling="0" width="170px" height="20px"></iframe>'
 
   TEMPLATE_DETAILS =
 '
+<p>
 %{description}
-
-Type | Language | License | Status | PIO min version
-:----: | :-----:| :-----: | :----: | :-------------:
-%{type} | %{language} | %{license} | %{status} | %{pio_min_version}
+</p>
+<p>Support: %{support}</p>
+<br/>
+<table>
+<tr><th>Type</th><th>Language</th><th>License</th><th>Status</th><th>PIO min version</th><th>Apache PIO Convesion Required</th</tr>
+<tr><td>%{type}</td><td>%{language}</td><td>%{license}</td><td>%{status}</td><td>%{pio_min_version}</td><td>%{apache_pio_convesion_required}</td></tr>
+</table>
 <br/>
 '
 
-  SECTION_SEPARATOR =
-'
-<br/>
-'
+  SECTION_SEPARATOR ='</div>'
+
+  END_TABS ='</div>'
 
   class Template
     public
@@ -113,7 +116,9 @@ Type | Language | License | Status | PIO min version
       language: template.language,
       license: template.license,
       status: template.status,
+      support: template.support_link,
       pio_min_version: template.pio_min_version,
+      apache_pio_convesion_required: template.apache_pio_convesion_required
     })
   end
 
@@ -124,14 +129,22 @@ Type | Language | License | Status | PIO min version
   end
 
   def self.write_markdown(mdfile, templates)
+    recommenders   = templates.select{ |engine| engine.tags.include? 'recommender' }
     classification = templates.select{ |engine| engine.tags.include? 'classification' }
     regression     = templates.select{ |engine| engine.tags.include? 'regression' }
-    unsupervised   = templates.select{ |engine| engine.tags.include? 'unsupervised' }
-    recommenders   = templates.select{ |engine| engine.tags.include? 'recommender' }
+    similarity     = templates.select{ |engine| engine.tags.include? 'similarity' }
     nlps           = templates.select{ |engine| engine.tags.include? 'nlp' }
+    clustering   = templates.select{ |engine| engine.tags.include? 'clustering' }
     others         = templates.select{ |engine| engine.tags.include? 'other' }
 
     mdfile.write(INTRO)
+
+    mdfile.write(BEGIN_TABS)
+
+    mdfile.write(RECOMMENDER_SYSTEMS)
+    write_templates(mdfile, recommenders)
+
+    mdfile.write(SECTION_SEPARATOR)
 
     mdfile.write(CLASSIFICATION)
     write_templates(mdfile, classification)
@@ -143,22 +156,29 @@ Type | Language | License | Status | PIO min version
 
     mdfile.write(SECTION_SEPARATOR)
 
-    mdfile.write(UNSUPERVISED)
-    write_templates(mdfile, unsupervised)
-
-    mdfile.write(SECTION_SEPARATOR)
-
-    mdfile.write(RECOMMENDER_SYSTEMS)
-    write_templates(mdfile, recommenders)
-
-    mdfile.write(SECTION_SEPARATOR)
-
     mdfile.write(NLP)
     write_templates(mdfile, nlps)
 
+    mdfile.write(SECTION_SEPARATOR)
+
+    mdfile.write(CLUSTERING)
+    write_templates(mdfile, clustering)
+
+    mdfile.write(SECTION_SEPARATOR)
+
+    mdfile.write(SIMILARITY)
+    write_templates(mdfile, similarity)
+
+    mdfile.write(SECTION_SEPARATOR)
+
     mdfile.write(OTHER)
     write_templates(mdfile, others)
-  end
+
+    mdfile.write(SECTION_SEPARATOR)
+
+    mdfile.write(END_TABS)
+
+ end
 
 
   public
