@@ -30,7 +30,8 @@ RUN apt-get install -y \
     python3-pip \
     postgresql postgresql-contrib \
     openjdk-8-jdk \
-    openssh-client openssh-server
+    openssh-client openssh-server \
+    git
 
 RUN pip install predictionio
 RUN pip3 install --upgrade pip
