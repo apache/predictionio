@@ -15,13 +15,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-# [PredictionIO](http://predictionio.incubator.apache.org)
+# [Apache PredictionIO (incubating)](http://predictionio.incubator.apache.org)
 
 [![Build
 Status](https://api.travis-ci.org/apache/incubator-predictionio.svg?branch=develop)](https://travis-ci.org/apache/incubator-predictionio)
 
-PredictionIO is an open source machine learning framework for developers,
-data scientists, and end users. It supports event collection, deployment of algorithms, evaluation, querying predictive results via REST APIs. It is based on scalable open source services like Hadoop, HBase (and other DBs), Elasticsearch, Spark and implements what is called a Lambda Architecture.
+Apache PredictionIO (incubating) is an open source machine learning framework
+for developers, data scientists, and end users. It supports event collection,
+deployment of algorithms, evaluation, querying predictive results via REST APIs.
+It is based on scalable open source services like Hadoop, HBase (and other DBs),
+Elasticsearch, Spark and implements what is called a Lambda Architecture.
 
 To get started, check out http://predictionio.incubator.apache.org!
 
@@ -37,21 +40,13 @@ To get started, check out http://predictionio.incubator.apache.org!
 
 ## Installation
 
-Five installation options available.
+A few installation options available.
 
-*   [Installing PredictionIO on Linux / Mac OS
-    X](http://predictionio.incubator.apache.org/install/install-linux/)
-*   [Installing PredictionIO from Source
+*   [Installing Apache PredictionIO (incubating) from Source
     Code](http://predictionio.incubator.apache.org/install/install-sourcecode/)
-    If you are installing from source code, it's recommended that you clone the
-    master branch.
-*   [Launching PredictionIO on
-    AWS](http://predictionio.incubator.apache.org/install/launch-aws/)
-*   [Installing PredictionIO with
-    Docker](https://github.com/mingfang/docker-predictionio) (Community
+*   [Installing Apache PredictionIO (incubating) with
+    Docker](https://github.com/mingfang/docker-predictionio) (community
     contributed)
-*   [Installing PredictionIO with
-    Vagrant](http://predictionio.incubator.apache.org/install/install-vagrant/)
 
 
 ## Quick Start
@@ -73,15 +68,12 @@ Use [Apache JIRA](https://issues.apache.org/jira/browse/PIO) to report bugs or r
 
 ## Documentation
 
-PredictionIO's documentation, included in this repo in the `docs/manual`
-directory, is built with [Middleman](http://middlemanapp.com/) and publicly
-hosted at [predictionio.incubator.apache.org](http://predictionio.incubator.apache.org/).
+Documentation, included in this repo in the `docs/manual` directory, is built
+with [Middleman](http://middlemanapp.com/) and publicly hosted at
+[predictionio.incubator.apache.org](http://predictionio.incubator.apache.org/).
 
 Interested in helping with our documentation? Read [Contributing
 Documentation](http://predictionio.incubator.apache.org/community/contribute-documentation/).
-
-[![Dependency
-Status](https://gemnasium.com/PredictionIO/PredictionIO.svg)](https://gemnasium.com/PredictionIO/PredictionIO)
 
 
 ## Community
@@ -103,5 +95,5 @@ page](http://predictionio.incubator.apache.org//community/projects/).
 
 ## License
 
-PredictionIO is under [Apache 2
+Apache PredictionIO (incubating) is under [Apache 2
 license](http://www.apache.org/licenses/LICENSE-2.0.html).
