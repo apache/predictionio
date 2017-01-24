@@ -40,7 +40,7 @@ json4sVersion in ThisBuild := "3.2.10"
 
 sparkVersion in ThisBuild := "1.4.0"
 
-lazy val pioBuildInfoSettings = buildInfoSettings ++ Seq(
+val pioBuildInfoSettings = buildInfoSettings ++ Seq(
   sourceGenerators in Compile <+= buildInfo,
   buildInfoKeys := Seq[BuildInfoKey](
     name,
@@ -50,104 +50,108 @@ lazy val pioBuildInfoSettings = buildInfoSettings ++ Seq(
     sparkVersion),
   buildInfoPackage := "org.apache.predictionio.core")
 
-lazy val conf = file(".") / "conf"
+val conf = file(".") / "conf"
 
-lazy val root = project in file(".") aggregate(
-  common,
-  core,
-  data,
-  tools,
-  e2)
+val commonSettings = Seq(
+  autoAPIMappings := true)
 
-lazy val common = (project in file("common")).
+val common = (project in file("common")).
+  settings(commonSettings: _*).
+  settings(genjavadocSettings: _*).
   settings(unmanagedClasspath in Test += conf)
 
-lazy val core = (project in file("core")).
+val data = (project in file("data")).
+  dependsOn(common).
+  settings(commonSettings: _*).
+  settings(genjavadocSettings: _*).
+  settings(unmanagedClasspath in Test += conf)
+
+val core = (project in file("core")).
   dependsOn(data).
+  settings(commonSettings: _*).
   settings(genjavadocSettings: _*).
   settings(pioBuildInfoSettings: _*).
   enablePlugins(SbtTwirl).
   settings(unmanagedClasspath in Test += conf)
 
-lazy val data = (project in file("data")).
-  dependsOn(common).
-  settings(genjavadocSettings: _*).
-  settings(unmanagedClasspath in Test += conf)
-
-lazy val tools = (project in file("tools")).
+val tools = (project in file("tools")).
   dependsOn(core).
   dependsOn(data).
+  settings(commonSettings: _*).
+  settings(genjavadocSettings: _*).
   enablePlugins(SbtTwirl).
   settings(unmanagedClasspath in Test += conf)
 
-lazy val e2 = (project in file("e2")).
+val e2 = (project in file("e2")).
+  settings(commonSettings: _*).
   settings(genjavadocSettings: _*).
   settings(unmanagedClasspath in Test += conf)
 
-scalaJavaUnidocSettings
+val root = (project in file(".")).
+  settings(commonSettings: _*).
+  // settings(scalaJavaUnidocSettings: _*).
+  settings(unidocSettings: _*).
+  settings(
+    scalacOptions in (ScalaUnidoc, unidoc) ++= Seq(
+      "-groups",
+      "-skip-packages",
+      Seq(
+        "akka",
+        "org.apache.predictionio.annotation",
+        "org.apache.predictionio.authentication",
+        "org.apache.predictionio.configuration",
+        "org.apache.predictionio.controller.html",
+        "org.apache.predictionio.controller.java",
+        "org.apache.predictionio.data.api",
+        "org.apache.predictionio.data.view",
+        "org.apache.predictionio.tools",
+        "scalikejdbc").mkString(":"),
+      "-doc-title",
+      "PredictionIO Scala API",
+      "-doc-version",
+      version.value,
+      "-doc-root-content",
+      "docs/scaladoc/rootdoc.txt")).
+  settings(
+    javacOptions in (JavaUnidoc, unidoc) := Seq(
+      "-subpackages",
+      "org.apache.predictionio",
+      "-exclude",
+      Seq(
+        "org.apache.predictionio.controller.html",
+        "org.apache.predictionio.data.api",
+        "org.apache.predictionio.data.view",
+        "org.apache.predictionio.data.webhooks.*",
+        "org.apache.predictionio.workflow",
+        "org.apache.predictionio.tools",
+        "org.apache.hadoop").mkString(":"),
+      "-windowtitle",
+      "PredictionIO Javadoc " + version.value,
+      "-group",
+      "Java Controllers",
+      Seq(
+        "org.apache.predictionio.controller.java",
+        "org.apache.predictionio.data.store.java").mkString(":"),
+      "-group",
+      "Scala Base Classes",
+      Seq(
+        "org.apache.predictionio.controller",
+        "org.apache.predictionio.core",
+        "org.apache.predictionio.data.storage",
+        "org.apache.predictionio.data.storage.*",
+        "org.apache.predictionio.data.store").mkString(":"),
+      "-overview",
+      "docs/javadoc/javadoc-overview.html",
+      "-noqualifier",
+      "java.lang")).
+  aggregate(
+    common,
+    core,
+    data,
+    tools,
+    e2)
 
-// scalaUnidocSettings
-
-unidocAllSources in (JavaUnidoc, unidoc) := {
-  (unidocAllSources in (JavaUnidoc, unidoc)).value
-    .map(_.filterNot(_.getName.contains("$")))
-}
-
-scalacOptions in (ScalaUnidoc, unidoc) ++= Seq(
-  "-groups",
-  "-skip-packages",
-  Seq(
-    "akka",
-    "breeze",
-    "html",
-    "org.apache.predictionio.annotation",
-    "org.apache.predictionio.controller.html",
-    "org.apache.predictionio.data.api",
-    "org.apache.predictionio.data.view",
-    "org.apache.predictionio.workflow",
-    "org.apache.predictionio.tools",
-    "org",
-    "scalikejdbc").mkString(":"),
-  "-doc-title",
-  "PredictionIO Scala API",
-  "-doc-version",
-  version.value,
-  "-doc-root-content",
-  "docs/scaladoc/rootdoc.txt")
-
-javacOptions in (JavaUnidoc, unidoc) := Seq(
-  "-subpackages",
-  "org.apache.predictionio",
-  "-exclude",
-  Seq(
-    "org.apache.predictionio.controller.html",
-    "org.apache.predictionio.data.api",
-    "org.apache.predictionio.data.view",
-    "org.apache.predictionio.data.webhooks.*",
-    "org.apache.predictionio.workflow",
-    "org.apache.predictionio.tools",
-    "org.apache.hadoop").mkString(":"),
-  "-windowtitle",
-  "PredictionIO Javadoc " + version.value,
-  "-group",
-  "Java Controllers",
-  Seq(
-    "org.apache.predictionio.controller.java",
-    "org.apache.predictionio.data.store.java").mkString(":"),
-  "-group",
-  "Scala Base Classes",
-  Seq(
-    "org.apache.predictionio.controller",
-    "org.apache.predictionio.core",
-    "org.apache.predictionio.data.storage",
-    "org.apache.predictionio.data.storage.*",
-    "org.apache.predictionio.data.store").mkString(":"),
-  "-overview",
-  "docs/javadoc/javadoc-overview.html",
-  "-noqualifier",
-  "java.lang")
-
-lazy val pioUnidoc = taskKey[Unit]("Builds PredictionIO ScalaDoc and Javadoc")
+val pioUnidoc = taskKey[Unit]("Builds PredictionIO ScalaDoc")
 
 pioUnidoc := {
   (unidoc in Compile).value

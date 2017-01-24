@@ -19,29 +19,27 @@ limitations under the License.
 title: System Architecture and Dependencies
 ---
 
-During the [installation](/install), you have installed the following
-software:
+During the [installation](/install), you have installed the latest stable versions of the following software:
 
-* Apache Hadoop 2.4.0 (required only if YARN and HDFS are needed)
-* Apache HBase 0.98.6
-* Apache Spark 1.2.0 for Hadoop 2.4
-* Elasticsearch 1.4.0
+* Apache Hadoop up to 2.7.2 (required only if YARN and HDFS are needed)
+* Apache HBase up to 1.2.4
+* Apache Spark up to 1.6.3 for Hadoop 2.6 (not Spark 2.x version)
+* Elasticsearch up to 1.7.5 (not the Elasticsearch 2.x version)
 
-This section explains how they are used in PredictionIO.
+This section explains general rules-of-thumb for how they are used in PredictionIO. The actual implementation of the Template will define how much of this applies. PredictionIO is flexible about much of this configuration but its Templates generally fit the Lambda model for integrating real-time serving with background periodic model updates. 
 
-![PredictionIO Systems](/images/0.8-engine-data-pipeline.png)
+![PredictionIO Systems](/images/pio-architecture.svg)
 
-**HBase**: Event Server uses Apache HBase as the data store. It stores imported
+**HBase**: Event Server uses Apache HBase (or JDBC DB for small data) as the data store. It stores imported
 events. If you are not using the PredictionIO Event Server, you do not need to
 install HBase.
 
-**Apache Spark**: Spark is a large-scale data processing engine that powers the
-algorithm, training, and serving processing.
+**Apache Spark**: Spark is a large-scale data processing engine that powers the data preparation and input to the algorithm, training, and sometimes the serving processing. PredictionIO allows for different engines to be used in training but many algorithms come from Spark's MLlib. 
 
-A spark algorithm is different from conventional single machine algorithm in a way that spark algorithms use the [RDD](http://spark.apache.org/docs/1.0.1/programming-guide.html#resilient-distributed-datasets-rdds) abstraction as its primary data type. PredictionIO framework natively support both RDD-based algorithms and traditional single-machine algorithms.
+**HDFS**: is a distributed filesystem from Hadoop. It allows storage to be shared among clustered machines. It is used to stage data for batch import into PIO, for export of Event Server datasets, and for storage of some models (see your template for details).
 
 
-**HDFS**: The output of training has two parts: a model and its meta-data. The
-model is then stored in HDFS or a local file system.
+The output of training has two parts: a model and its meta-data. The
+model is then stored in HDFS, a local file system, or Elasticsearch. See the details of your algorithm.
 
-**Elasticsearch**: It stores metadata such as model versions, engine versions, access key and app id mappings, evaluation results, etc.
+**Elasticsearch**: stores metadata such as model versions, engine versions, access key and app id mappings, evaluation results, etc. For some templates it may store the model.

@@ -38,4 +38,15 @@
       }
     }
   }
+  ul.tab-list {
+    list-style-type: disc; 
+    list-style-position: inside; 
+    margin-top: 0px; 
+    margin-bottom: 15px;
+  }
+  li.tab-list-element {
+    display: list-item; 
+    float: none;
+    width: 100%
+  }
 }
