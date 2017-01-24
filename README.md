@@ -45,8 +45,8 @@ A few installation options available.
 *   [Installing Apache PredictionIO (incubating) from Source
     Code](http://predictionio.incubator.apache.org/install/install-sourcecode/)
 *   [Installing Apache PredictionIO (incubating) with
-    Docker](https://github.com/mingfang/docker-predictionio) (community
-    contributed)
+    Docker](http://predictionio.incubator.apache.org/community/projects/#docker-installation-for-predictionio)
+    (community contributed)
 
 
 ## Quick Start
