@@ -1,3 +1,7 @@
+---
+title: Monitoring an Engine
+---
+
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with
@@ -14,10 +18,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-
----
-title: Monitoring an Engine
----
 
 If you're using PredictionIO in a production setting, you'll want some way to make sure it is always up. [Monit](https://mmonit.com/monit/) is a tool which will monitor important processes and programs. This guide will show how to set up monit on your PredictionIO server to keep an engine always up and running.
 
@@ -36,10 +36,10 @@ First, choose the interval on which you want monit to check the status of your s
 set daemon 60 #checks at 1-minute intervals
 ```
 
-The `check system` block should also already be present, under the services block. 
+The `check system` block should also already be present, under the services block.
 
 ```
-  check system 127.0.0.1 
+  check system 127.0.0.1
     if memory usage > 75% then alert
     if swap usage > 25% then alert
     if loadavg (1min) > 4 then alert
@@ -57,10 +57,10 @@ set httpd port 2812
 ```
 More examples on configuring the web server are included in the default config file.
 
-Configuration blocks for common services like apache, nginx, or PostgreSQL can be found [here](http://www.stuartellis.eu/articles/monit/) 
+Configuration blocks for common services like apache, nginx, or PostgreSQL can be found [here](http://www.stuartellis.eu/articles/monit/)
 
 ##Configure for PredictionIO
-###Event Server 
+###Event Server
 Now the interesting stuff, lets add monitoring for the event server.
 
 ```     
@@ -70,7 +70,7 @@ check process eventserver
         stop program = "/etc/monit/modebug /home/ubuntu/event_scripts.sh stop"
         if cpu usage > 95% for 10 cycles then restart
 ```
-This block references a script, event_scripts.sh. This script tell monit how to restart the engine and event server if they go down. 
+This block references a script, event_scripts.sh. This script tell monit how to restart the engine and event server if they go down.
 
 The script might differ slightly depending on your environment but it should look something like what is shown below. Assume SimilarProduct is the your pio app directory.
 
@@ -81,18 +81,18 @@ The script might differ slightly depending on your environment but it should loo
        cd /home/ubuntu/SimilarProduct/
        nohup /opt/PredictionIO/bin/pio eventserver > /home/ubuntu/events.log &
        ;;
-     stop) 
+     stop)
        event_pid=`pgrep -f "Console eventserver"`
        kill "$event_pid"
        ;;
-     *) 
+     *)
  esac
  exit 0
-``` 
+```
 Note that this is dumping output to an events log at `/home/ubuntu/events.log`. Also, be sure that this file is executable with `sudo chmod +x event_scripts.sh`
 
 ###Engine
-The first step here is similar to checking the engine process. 
+The first step here is similar to checking the engine process.
 
 ```
 check process pioengine
@@ -110,18 +110,18 @@ Be sure to adjust your deploy command to your environment (driver-memry, postgre
        cd /home/ubuntu/SimilarProduct/
        nohup /opt/PredictionIO/bin/pio deploy -- --driver-class-path /home/ubuntu/postgresql-9.4.1208.jre6.jar --driver-memory 16G > /home/ubuntu/deploy.log &
        ;;
-     stop) 
+     stop)
        deploy_pid=`pgrep -f "Console deploy"`
        kill "$deploy_pid"
        ;;
-     *) 
+     *)
  esac
  exit 0
 ```
 
-There can be  cases when the process is running but the engine is down however. If the spray REST API used by PredictionIO crashes, the engine process continues but the engine to fail when queried. 
+There can be  cases when the process is running but the engine is down however. If the spray REST API used by PredictionIO crashes, the engine process continues but the engine to fail when queried.
 
-This sort of crash can be taken care of by using monits `check program` capability. 
+This sort of crash can be taken care of by using monits `check program` capability.
 
 ```
 check program pioengine-http with path "/etc/monit/bin/check_engine.sh"
@@ -130,7 +130,7 @@ check program pioengine-http with path "/etc/monit/bin/check_engine.sh"
 	if status != 1
 	then restart
 ```
-This block executes the script at /etc/monit/bin/check_engine.sh and reads the exit status. Depending on the exit status, the block can run a restart script. The restart script can be the same as what is used in the process monitor, but we need a check_engine script. 
+This block executes the script at /etc/monit/bin/check_engine.sh and reads the exit status. Depending on the exit status, the block can run a restart script. The restart script can be the same as what is used in the process monitor, but we need a check_engine script.
 
 ```bash
 #!/bin/bash
@@ -146,7 +146,7 @@ else
   exit 0
 fi
 ```
-This script does a curl request and checks the response. In this example, a user known to  exist is used and then check  make sure the json returned has "itemScores". This can vary between use cases but the idea should be similar. 
+This script does a curl request and checks the response. In this example, a user known to  exist is used and then check  make sure the json returned has "itemScores". This can vary between use cases but the idea should be similar.
 
 Again, make sure this file is executable.
 

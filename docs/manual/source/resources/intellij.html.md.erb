@@ -1,3 +1,7 @@
+---
+title: Developing Engines with IntelliJ IDEA
+---
+
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with
@@ -14,11 +18,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-
----
-title: Developing Engines with IntelliJ IDEA
----
-
 
 ## Prerequisites
 
@@ -90,8 +89,8 @@ automatically or prompt you to refresh.
 
 ### Dependencies
 
-IntelliJ has the annoying tendency to drop some dependencies when you refresh your build.sbt after any changes. 
-To avoid this we put any jars that must be available at runtime into a separate empty module in the project then 
+IntelliJ has the annoying tendency to drop some dependencies when you refresh your build.sbt after any changes.
+To avoid this we put any jars that must be available at runtime into a separate empty module in the project then
 we make the main engine project depend on this dummy module for runtime classes.
 
 Right click on the project and click *Open Module Settings*. In the second modules column hit **+** and create a
@@ -110,7 +109,7 @@ change the scope of the jars to **runtime**:
 
 ![Create empty module and add dependencies](/images/intellij/pio-runtime-jar-deps.png)
 
-Now make your engine module dependent on the pio-runtime-jars module for scope = runtime.  
+Now make your engine module dependent on the pio-runtime-jars module for scope = runtime.
 
 ![Create empty module and add dependencies](/images/intellij/pio-runtime-jars.png)
 

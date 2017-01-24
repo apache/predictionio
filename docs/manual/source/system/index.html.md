@@ -1,3 +1,7 @@
+---
+title: System Architecture and Dependencies
+---
+
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with
@@ -15,10 +19,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
----
-title: System Architecture and Dependencies
----
-
 During the [installation](/install), you have installed the latest stable versions of the following software:
 
 * Apache Hadoop up to 2.7.2 (required only if YARN and HDFS are needed)
@@ -26,7 +26,7 @@ During the [installation](/install), you have installed the latest stable versio
 * Apache Spark up to 1.6.3 for Hadoop 2.6 (not Spark 2.x version)
 * Elasticsearch up to 1.7.5 (not the Elasticsearch 2.x version)
 
-This section explains general rules-of-thumb for how they are used in PredictionIO. The actual implementation of the Template will define how much of this applies. PredictionIO is flexible about much of this configuration but its Templates generally fit the Lambda model for integrating real-time serving with background periodic model updates. 
+This section explains general rules-of-thumb for how they are used in PredictionIO. The actual implementation of the Template will define how much of this applies. PredictionIO is flexible about much of this configuration but its Templates generally fit the Lambda model for integrating real-time serving with background periodic model updates.
 
 ![PredictionIO Systems](/images/pio-architecture.svg)
 
@@ -34,7 +34,7 @@ This section explains general rules-of-thumb for how they are used in Prediction
 events. If you are not using the PredictionIO Event Server, you do not need to
 install HBase.
 
-**Apache Spark**: Spark is a large-scale data processing engine that powers the data preparation and input to the algorithm, training, and sometimes the serving processing. PredictionIO allows for different engines to be used in training but many algorithms come from Spark's MLlib. 
+**Apache Spark**: Spark is a large-scale data processing engine that powers the data preparation and input to the algorithm, training, and sometimes the serving processing. PredictionIO allows for different engines to be used in training but many algorithms come from Spark's MLlib.
 
 **HDFS**: is a distributed filesystem from Hadoop. It allows storage to be shared among clustered machines. It is used to stage data for batch import into PIO, for export of Event Server datasets, and for storage of some models (see your template for details).
 

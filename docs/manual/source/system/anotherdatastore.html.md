@@ -1,3 +1,7 @@
+---
+title: Using Another Data Store
+---
+
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with
@@ -14,10 +18,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-
----
-title: Using Another Data Store
----
 
 PredictionIO has a thin storage layer to abstract meta data, event data, and
 model data access. The layer defines a set of standard interfaces to support
@@ -217,7 +217,7 @@ When `TYPE` is set to `jdbc`, the following configuration keys are supported.
 -   INDEX (optional since v0.9.6, default to disabled)
 
     This value is used by creating indexes on entityId and entityType columns to
-    improve performance when findByEntity function is called. Note that these columns 
+    improve performance when findByEntity function is called. Note that these columns
     of entityId and entityType will be created as varchar(255), e.g.
     `PIO_STORAGE_SOURCES_PGSQL_INDEX=enabled`
 

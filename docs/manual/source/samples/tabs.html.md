@@ -1,3 +1,8 @@
+---
+title: Tabs
+hidden: true
+---
+
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with
@@ -14,11 +19,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-
----
-title: Tabs
-hidden: true
----
 
 This page is used to test the tabs plugin based on [Tabslet](https://github.com/vdw/Tabslet).
 
@@ -100,8 +100,8 @@ $ cd path/to/your/file
 ```
   </div>
   <div data-tab="HTML" data-lang="html">
-  
+
   This includes **bold** with Markdown.
-  
+
   </div>
 </div>

@@ -1,3 +1,7 @@
+---
+title: Customizing Data Preparator (Recommendation)
+---
+
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with
@@ -14,11 +18,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-
----
-title: Customizing Data Preparator (Recommendation)
----
-
 
 Data Preparator is where pre-processing actions occurs. For example, one may
 want to remove some very popular items from the training data because she thinks

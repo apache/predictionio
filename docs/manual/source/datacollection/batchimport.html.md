@@ -1,3 +1,7 @@
+---
+title: Importing Data in Batch
+---
+
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with
@@ -14,10 +18,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-
----
-title: Importing Data in Batch
----
 
 If you have a large amount of data to start with, performing batch import will
 be much faster than sending every event over an HTTP connection.

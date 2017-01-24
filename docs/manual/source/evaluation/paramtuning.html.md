@@ -1,3 +1,7 @@
+---
+title: Hyperparameter Tuning
+---
+
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with
@@ -15,10 +19,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
----
-title: Hyperparameter Tuning
----
-
 A PredictionIO engine is instantiated by a set of parameters. These parameters
 define which algorithm is to be used, as well supply the parameters for the algorithm itself. This naturally raises the question of how to choose the best set of parameters.
 The evaluation module streamlines the process of *tuning* the engine to the best
@@ -34,7 +34,7 @@ to find the best parameter values, and then deploy it.
 
 ### Edit the AppId
 
-Edit MyClassification/src/main/scala/***Evaluation.scala*** to specify the 
+Edit MyClassification/src/main/scala/***Evaluation.scala*** to specify the
 *appId* you used to import the data.
 
 ```scala
@@ -48,19 +48,19 @@ object EngineParamsList extends EngineParamsGenerator {
 
 ### Build and run the evaluation
 To run an evaluation, the command `pio eval` is used. It takes two
-mandatory parameter, 
+mandatory parameter,
 1. the `Evaluation` object, which tells PredictionIO the engine and metric we use
-   for the evaluation; and 
+   for the evaluation; and
 2. the `EngineParamsGenerator`, which contains a list of engine params to test
-   against. 
-The following command kickstarts the evaluation 
+   against.
+The following command kickstarts the evaluation
 workflow for the classification template.
 
 ```
 $ pio build
 ...
 $ pio eval org.template.classification.AccuracyEvaluation \
-    org.template.classification.EngineParamsList 
+    org.template.classification.EngineParamsList
 ```
 
 You will see the following output:
@@ -91,7 +91,7 @@ Optimal Engine Params:
   },
   "preparatorParams":{
     "":{
-      
+
     }
   },
   "algorithmParamsList":[
@@ -103,7 +103,7 @@ Optimal Engine Params:
   ],
   "servingParams":{
     "":{
-      
+
     }
   }
 }
@@ -115,13 +115,13 @@ The best variant params can be found in best.json
 
 The console prints out the evaluation metric score of each engine params, and
 finally pretty print the optimal engine params.
-Amongst the 3 engine params we evaluate, *lambda = 10.0* yields the highest 
+Amongst the 3 engine params we evaluate, *lambda = 10.0* yields the highest
 accuracy score of ~0.9281.
 
 ### Deploy the best engine parameter
 
 The evaluation module also writes out the best engine parameter to disk at
-`best.json`. We can train and deploy this specify engine variant using the 
+`best.json`. We can train and deploy this specify engine variant using the
 extra parameter `-v`. For example:
 
 ```bash
@@ -163,12 +163,12 @@ The PredictionIO evaluation module tests for the best engine params for an
 engine.
 
 Given a set of engine params, we instantiate an engine and evaluate it with existing data.
-The data is split into two sets, a training set and a validation set. 
-The training set is used to train the engine, which is deployed using the same steps described in earlier sections. 
-We query the engine with the test set data, and compare the predicted values in the response 
+The data is split into two sets, a training set and a validation set.
+The training set is used to train the engine, which is deployed using the same steps described in earlier sections.
+We query the engine with the test set data, and compare the predicted values in the response
 with the actual data contained in the validation set.
 We define a ***metric*** to compare ***predicted result*** returned from
-the engine with the ***actual result*** which we obtained from the test data. 
+the engine with the ***actual result*** which we obtained from the test data.
 The goal is to maximize the metric score.
 
 This process is repeated many times with a series of engine params.
@@ -179,8 +179,8 @@ We demonstrate the evaluation with [the classification template]
 
 ## Evaluation Data Generation
 
-In evaluation data generation, the goal is to generate a sequence of (training, 
-validation) data tuple. A common way is to use a *k-fold* generation process. 
+In evaluation data generation, the goal is to generate a sequence of (training,
+validation) data tuple. A common way is to use a *k-fold* generation process.
 The data set is split into *k folds*. We generate k tuples of training and
 validation sets, for each tuple, the training set takes *k - 1* of the folds and
 the validation set takes the remaining fold.
@@ -205,13 +205,13 @@ This class is used to store the actual label of the data (contrast to
 ### Implement Data Generation Method in DataSource
 
 In MyClassification/src/main/scala/***DataSource.scala***, the method
-`readEval` reads and selects data from datastore and returns a 
+`readEval` reads and selects data from datastore and returns a
 sequence of (training, validation) data.
 
 ```scala
 class DataSource(val dsp: DataSourceParams)
   extends PDataSource[TrainingData, EmptyEvaluationInfo, Query, ActualResult] {
-  
+
   ...
 
   override
@@ -255,15 +255,15 @@ class DataSource(val dsp: DataSourceParams)
     val evalK = dsp.evalK.get
     val indexedPoints: RDD[(LabeledPoint, Long)] = labeledPoints.zipWithIndex
 
-    (0 until evalK).map { idx => 
+    (0 until evalK).map { idx =>
       val trainingPoints = indexedPoints.filter(_._2 % evalK != idx).map(_._1)
       val testingPoints = indexedPoints.filter(_._2 % evalK == idx).map(_._1)
 
       (
         new TrainingData(trainingPoints),
         new EmptyEvaluationInfo(),
-        testingPoints.map { 
-          p => (new Query(p.features.toArray), new ActualResult(p.label)) 
+        testingPoints.map {
+          p => (new Query(p.features.toArray), new ActualResult(p.label))
         }
       )
     }
@@ -272,9 +272,9 @@ class DataSource(val dsp: DataSourceParams)
 ```
 
 The `readEval` method returns a sequence of (`TrainingData`, `EvaluationInfo`,
-`RDD[(Query, ActualResult)]`. 
+`RDD[(Query, ActualResult)]`.
 `TrainingData` is the same class we use for deploy,
-`RDD[(Query, ActualResult)]` is the 
+`RDD[(Query, ActualResult)]` is the
 validation set, `EvaluationInfo` can be used to hold some global evaluation data
 ; it is not used in the current example.
 
@@ -292,12 +292,12 @@ For each point in the validation set, we construct the `Query` and
 ## Evaluation Metrics
 
 We define a `Metric` which gives a *score* to engine params. The higher the
-score, the better the engine params are. 
+score, the better the engine params are.
 In this template, we use accuray score which measures
 the portion of correct prediction among all data points.
 
 In MyClassification/src/main/scala/**Evaluation.scala**, the class
-`Accuracy` implements the *accuracy* score. 
+`Accuracy` implements the *accuracy* score.
 It extends a base helper class `AverageMetric` which calculates the average
 score overall *(Query, PredictionResult, ActualResult)* tuple.
 
@@ -309,7 +309,7 @@ case class Accuracy
 }
 ```
 
-Then, implement a `Evaluation` object to define the engine and metric 
+Then, implement a `Evaluation` object to define the engine and metric
 used in this evaluation.
 
 ```scala
@@ -321,7 +321,7 @@ object AccuracyEvaluation extends Evaluation {
 ## Parameters Generation
 The last component is to specify the list of engine params we want to evaluate.
 In this guide, we discuss the simplest method. We specify an explicit list of
-engine params to be evaluated. 
+engine params to be evaluated.
 
 In MyClassification/src/main/scala/**Evaluation.scala**, the object
 `EngineParamsList` specifies the engine params list to be used.
@@ -347,8 +347,8 @@ object EngineParamsList extends EngineParamsGenerator {
 ```
 
 A good practise is to first define a base engine params, it contains the common
-parameters used in all evaluations (lines 7 to 8). With the base params, we 
-construct the list of engine params we want to evaluation by 
+parameters used in all evaluations (lines 7 to 8). With the base params, we
+construct the list of engine params we want to evaluation by
 adding or replacing the controller parameter. Lines 13 to 16 generate 3 engine
 parameters, each has a different smoothing parameters.
 
@@ -364,7 +364,7 @@ from the console.
 $ pio build
 ...
 $ pio eval org.template.classification.AccuracyEvaluation \
-    org.template.classification.EngineParamsList 
+    org.template.classification.EngineParamsList
 ```
 
 You will see the following output:
@@ -395,7 +395,7 @@ Optimal Engine Params:
   },
   "preparatorParams":{
     "":{
-      
+
     }
   },
   "algorithmParamsList":[
@@ -407,7 +407,7 @@ Optimal Engine Params:
   ],
   "servingParams":{
     "":{
-      
+
     }
   }
 }

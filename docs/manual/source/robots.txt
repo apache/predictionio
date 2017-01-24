@@ -1,4 +1,4 @@
 User-agent: *
 Disallow:
 
-Sitemap: http://docs.prediction.io/sitemap.xml
+Sitemap: http://predictionio.incubator.apache.org/sitemap.xml

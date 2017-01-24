@@ -1,3 +1,7 @@
+---
+title: Built-in Algorithm Libraries
+---
+
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with
@@ -14,10 +18,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-
----
-title: Built-in Algorithm Libraries
----
 
 An engine can virtually call any algorithm in the Algorithm class. Apache
 PredictionIO (incubating) currently offers native support to [Spark

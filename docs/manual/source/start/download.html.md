@@ -1,3 +1,7 @@
+---
+title: Downloading an Engine Template
+---
+
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with
@@ -14,10 +18,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-
----
-title: Downloading an Engine Template
----
 
 The first step to create a new engine is to browse [PredictionIO template
 gallery](/gallery/template-gallery) where you could find Engine Templates for

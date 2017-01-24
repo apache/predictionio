@@ -1,3 +1,7 @@
+---
+title: Evaluation Dashboard
+---
+
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with
@@ -14,10 +18,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-
----
-title: Evaluation Dashboard
----
 
 WARNING: This is an experimental development tool, which exposes environment variables and other sensitive information about the PredictionIO application (e.g. storage configs, credentials etc.). It is not recommended to be run in production.
 

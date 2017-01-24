@@ -1,3 +1,7 @@
+---
+title: How-To  (Similar Product)
+---
+
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with
@@ -15,10 +19,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
----
-title: How-To  (Similar Product)
----
-      
-Here are the pages that show you how you can customize the Similar Product engine template. 
- 
+Here are the pages that show you how you can customize the Similar Product engine template.
+
 - [Multiple Events and Multiple Algorithms](/templates/similarproduct/multi-events-multi-algos)

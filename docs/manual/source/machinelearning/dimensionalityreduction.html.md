@@ -1,3 +1,7 @@
+---
+title: Dimensionality Reduction With PredictionIO
+---
+
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with
@@ -14,10 +18,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-
----
-title: Dimensionality Reduction With PredictionIO
----
 
 The purpose of this guide is to teach developers how to incorporate "dimensionality reduction" into a PredictionIO engine [Principal Component Analysis](https://en.wikipedia.org/wiki/Principal_component_analysis) (PCA) on the [MNIST digit recognition dataset](https://www.kaggle.com/c/digit-recognizer). To do this, you will be modifying the PredictionIO [classification engine template](/gallery/template-gallery/#classification). This guide will demonstrate how to import the specific data set in batch, and also how to change the engine components in order to incorporate the new sample data and implement PCA.
 

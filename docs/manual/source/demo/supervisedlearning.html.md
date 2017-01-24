@@ -1,3 +1,7 @@
+---
+title: Machine Learning With PredictionIO
+---
+
 <!--
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with
@@ -15,11 +19,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
----
-title: Machine Learning With PredictionIO 
----
-
-This guide is designed to give developers a brief introduction to fundamental concepts in machine learning, as well as an explanation of how these concept tie into PredictionIO's engine development platform. This particular guide will largely deal with giving some 
+This guide is designed to give developers a brief introduction to fundamental concepts in machine learning, as well as an explanation of how these concept tie into PredictionIO's engine development platform. This particular guide will largely deal with giving some
 
 ## Introduction to Supervised Learning
 
@@ -33,9 +33,9 @@ The first question we must ask is: what is machine learning? **Machine learning*
 
 ### Thinking About Data
 
-In the latter examples, we are trying to predict an outcome \\(Y\\), or **response**, based on some recorded or observed variables \\(X\\), or **features**. For example: in the third problem each observation is a patient, the response variable \\(Y\\) is equal to 1 if this patient has breast cancer and 0 otherwise, and \\(X\\) represents the mammogram results. 
+In the latter examples, we are trying to predict an outcome \\(Y\\), or **response**, based on some recorded or observed variables \\(X\\), or **features**. For example: in the third problem each observation is a patient, the response variable \\(Y\\) is equal to 1 if this patient has breast cancer and 0 otherwise, and \\(X\\) represents the mammogram results.
 
-When we say we want to predict \\(Y\\) using \\(X\\), we are trying to answer the question: how does a response \\(Y\\) depend on a set of features \\(X\\) affect the response \\(Y\\)? To do this we need a set of observations, which we call our **training data**, consisting of observations for which we have observed both \\(Y\\) and \\(X\\), in order to make inference about this relationship. 
+When we say we want to predict \\(Y\\) using \\(X\\), we are trying to answer the question: how does a response \\(Y\\) depend on a set of features \\(X\\) affect the response \\(Y\\)? To do this we need a set of observations, which we call our **training data**, consisting of observations for which we have observed both \\(Y\\) and \\(X\\), in order to make inference about this relationship.
 
 ### Different Types of Supervised Learning Problems
 
@@ -47,7 +47,7 @@ A predictive model should be thought of as a function \\(f\\) that takes as inpu
 
 ## PredictionIO and Supervised Learning
 
-Machine learning methods generally assume that our observation responses and features are numeric vectors. We will say that observations in this format are in **standard form**. However, when you are working with real-life data this will often not be the case. The data will often be formatted in a manner that is specific to the application's needs. As an example, let's suppose our application is [StackOverFlow](http://stackoverflow.com). The data we want to analyze are questions, and we want to predict based on a question's content whether or not it is related to Scala. 
+Machine learning methods generally assume that our observation responses and features are numeric vectors. We will say that observations in this format are in **standard form**. However, when you are working with real-life data this will often not be the case. The data will often be formatted in a manner that is specific to the application's needs. As an example, let's suppose our application is [StackOverFlow](http://stackoverflow.com). The data we want to analyze are questions, and we want to predict based on a question's content whether or not it is related to Scala.
 
 
 **Self-check:**   Is this a classification or regression problem?
