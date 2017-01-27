@@ -18,7 +18,7 @@
 #
 
 OS=`uname`
-PIO_VERSION=0.11.0-SNAPSHOT
+PIO_VERSION=0.11.0
 SPARK_VERSION=1.6.2
 # Looks like support for Elasticsearch 2.0 will require 2.0 so deferring
 ELASTICSEARCH_VERSION=1.7.5
@@ -283,11 +283,11 @@ cd ${TEMP_DIR}
 
 if [[ ! -e ${PIO_FILE} ]]; then
   echo "Downloading PredictionIO..."
-  curl -L https://codeload.github.com/apache/incubator-predictionio/tar.gz/develop > incubator-predictionio-develop.tar.gz 
+  curl -L https://codeload.github.com/apache/incubator-predictionio/tar.gz/master > incubator-predictionio-master.tar.gz 
 
-  tar zxf incubator-predictionio-develop.tar.gz 
+  tar zxf incubator-predictionio-master.tar.gz 
 
-  mv incubator-predictionio-develop PredictionIO-${PIO_VERSION}
+  mv incubator-predictionio-master PredictionIO-${PIO_VERSION}
 
   sh PredictionIO-${PIO_VERSION}/make-distribution.sh
   cp PredictionIO-${PIO_VERSION}/${PIO_FILE} ${TEMP_DIR}
