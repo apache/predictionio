@@ -76,7 +76,11 @@ class SelfCleaningDataSourceTest extends FunSuite with Inside with SharedSparkCo
     val itemEventsAfterCount = source.itemEvents(sc).count   
     val distinctEventsAfterCount = eventsAfter.map(x => 
       CleanedDataSourceTest.stripIdAndCreationTimeFromEvents(x)).distinct.count
-   
+
+    val nexusSet = eventsAfter.filter(x => x.event == "$set" && x.entityId == "Nexus").take(1)(0) 
+
+    nexusSet.properties.get[String]("available") should equal ("2016-03-18T13:31:49.016770+00:00")
+ 
     distinctEventsAfterCount should equal (eventsAfterCount)
     eventsBeforeCount should be > (eventsAfterCount) 
     itemEventsBeforeCount should be > (itemEventsAfterCount)

@@ -229,7 +229,7 @@ trait SelfCleaningDataSource {
     */
   @DeveloperApi
   def cleanPEvents(sc: SparkContext): RDD[Event] = {
-    val pEvents = PEventStore.find(appName)(sc).sortBy(_.eventTime)
+    val pEvents = PEventStore.find(appName)(sc).sortBy(_.eventTime, false)
 
     val rdd = eventWindow match {
       case Some(ew) =>
@@ -274,7 +274,7 @@ trait SelfCleaningDataSource {
     */
   @DeveloperApi
   def cleanLEvents(): Iterable[Event] = {
-    val lEvents = LEventStore.find(appName).toList.sortBy(_.eventTime)
+    val lEvents = LEventStore.find(appName).toList.sortBy(_.eventTime).reverse
 
     val events = eventWindow match {
       case Some(ew) =>
@@ -305,13 +305,14 @@ trait SelfCleaningDataSource {
               e1.properties.fields
                 .filterKeys(f => !e2.properties.fields.contains(f))
           }
-          e1.copy(properties = DataMap(props))
+          e1.copy(properties = DataMap(props), eventTime = e2.eventTime)
         }
 
       case None =>
         events.reduce { (e1, e2) =>
           e1.copy(properties =
-            DataMap(e1.properties.fields ++ e2.properties.fields)
+            DataMap(e1.properties.fields ++ e2.properties.fields),
+            eventTime = e2.eventTime
           )
         }
     }
