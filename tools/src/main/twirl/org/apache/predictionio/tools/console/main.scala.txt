@@ -2,7 +2,7 @@ Usage: pio <command> [options] <args>...
 
 Options common to all commands:
   [--pio-home <value>] [--spark-home <value>] [--sbt <value>]
-  [-ei <value>] [-ev <value>] [-v <value>] [-m <value>]
+  [-ei <value>] [-ev <value>] [-ed <value>] [-v <value>]
   [-sk | --spark-kryo] [--verbose]
   [<args>] [-- [<args passed to Spark>] [-- [<args passed to runner]]]
 
@@ -12,10 +12,10 @@ Options common to all commands:
       Specify an engine ID. Usually used by distributed deployment.
   -ev <value> | --engine-version <value>
       Specify an engine version. Usually used by distributed deployment.
+  -ed <value> | --engine-dir <value>
+      Specify path of engine directory to run build/train/deploy commands.
   -v <value> | --variant <value>
       Path to an engine variant JSON file. Default: engine.json
-  -m <value> | --manifest <value>
-      Path to an engine manifest JSON file. Default: manifest.json
   -sk | --spark-kryo
       Shorthand for setting the spark.serializer property to
       org.apache.spark.serializer.KryoSerializer.

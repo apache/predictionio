@@ -338,7 +338,6 @@ object Storage extends Logging {
   private[predictionio] def verifyAllDataObjects(): Unit = {
     info("Verifying Meta Data Backend (Source: " +
       s"${repositoriesToDataObjectMeta(MetaDataRepository).sourceName})...")
-    getMetaDataEngineManifests()
     getMetaDataEngineInstances()
     getMetaDataEvaluationInstances()
     getMetaDataApps()
@@ -359,9 +358,6 @@ object Storage extends Logging {
     eventsDb.remove(0)
     eventsDb.close()
   }
-
-  private[predictionio] def getMetaDataEngineManifests(): EngineManifests =
-    getDataObjectFromRepo[EngineManifests](MetaDataRepository)
 
   private[predictionio] def getMetaDataEngineInstances(): EngineInstances =
     getDataObjectFromRepo[EngineInstances](MetaDataRepository)

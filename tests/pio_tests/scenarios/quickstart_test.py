@@ -73,6 +73,36 @@ class QuickStartTest(BaseTestCase):
 
     self.app = AppEngine(self.test_context, app_context)
 
+  def engine_dir_test(self):
+    self.log.info("Stopping deployed engine")
+    self.app.stop()
+
+    self.log.info("Creating dummy directory")
+    engine_path = self.app.engine_path
+    dummy_path = "{}/dummy".format(engine_path)
+    srun("mkdir -p {}".format(dummy_path))
+
+    self.log.info("Testing pio commands in dummy directory with " +
+      "--engine-dir argument")
+    self.app.engine_path = dummy_path
+    self.log.info("Building an engine...")
+    self.app.build(engine_dir=engine_path)
+    self.log.info("Training...")
+    self.app.train(engine_dir=engine_path)
+    self.log.info("Deploying and waiting 15s for it to start...")
+    self.app.deploy(wait_time=15, engine_dir=engine_path)
+
+    self.log.info("Sending a single query and checking results")
+    user_query = { "user": 1, "num": 4 }
+    r = self.app.query(user_query)
+    self.assertEqual(200, r.status_code)
+    result = r.json()
+    self.assertEqual(4, len(result['itemScores']))
+
+    self.log.info("Deleting dummy directory")
+    srun("rm -rf {}".format(dummy_path))
+    self.app.engine_path = engine_path
+
   def runTest(self):
     self.log.info("Adding a new application")
     self.app.new()
@@ -113,7 +143,7 @@ class QuickStartTest(BaseTestCase):
       r = self.app.send_event(ev)
       self.assertEqual(201, r.status_code)
 
-    self.log.info("Checking the number of events stored on the server after the update")
+    self.log.info("Checking the number of events stored on eventserver")
     r = self.app.get_events(params={'limit': -1})
     self.assertEquals(200, r.status_code)
     stored_events = r.json()
@@ -125,6 +155,9 @@ class QuickStartTest(BaseTestCase):
     self.app.train()
     self.log.info("Deploying and waiting 15s for it to start...")
     self.app.deploy(wait_time=15)
+
+    self.log.info("Testing pio commands outside of engine directory")
+    self.engine_dir_test()
 
     self.log.info("Sending a single query and checking results")
     user_query = { "user": 1, "num": 4 }

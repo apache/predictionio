@@ -18,16 +18,15 @@
 
 package org.apache.predictionio.tools
 
-import java.io.File
-import java.net.URI
-
-import grizzled.slf4j.Logging
-import org.apache.predictionio.data.storage.EngineManifest
+import org.apache.predictionio.tools.Common._
 import org.apache.predictionio.tools.ReturnTypes._
-import org.apache.predictionio.tools.console.ConsoleArgs
 import org.apache.predictionio.workflow.WorkflowUtils
 import org.apache.predictionio.workflow.JsonExtractorOption
 import org.apache.predictionio.workflow.JsonExtractorOption.JsonExtractorOption
+
+import java.io.File
+import java.net.URI
+import grizzled.slf4j.Logging
 
 import scala.sys.process._
 
@@ -58,18 +57,18 @@ object RunServer extends Logging {
     engineInstanceId: String,
     serverArgs: ServerArgs,
     sparkArgs: SparkArgs,
-    em: EngineManifest,
     pioHome: String,
+    engineDirPath: String,
     verbose: Boolean = false): Expected[(Process, () => Unit)] = {
 
-    val jarFiles = em.files.map(new URI(_)) ++
+    val jarFiles = jarFilesForScala(engineDirPath).map(_.toURI) ++
       Option(new File(pioHome, "plugins").listFiles())
         .getOrElse(Array.empty[File]).map(_.toURI)
     val args = Seq(
       "--engineInstanceId",
       engineInstanceId,
       "--engine-variant",
-      serverArgs.variantJson.toURI.toString,
+      engineDirPath + File.separator + serverArgs.variantJson.getName,
       "--ip",
       serverArgs.deploy.ip,
       "--port",

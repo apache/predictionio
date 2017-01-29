@@ -22,42 +22,30 @@ import java.io.File
 import java.net.URI
 
 import grizzled.slf4j.Logging
+import org.apache.commons.io.FileUtils
 import org.apache.predictionio.controller.Utils
 import org.apache.predictionio.core.BuildInfo
-import org.apache.predictionio.data.api.EventServer
-import org.apache.predictionio.data.api.EventServerConfig
+import org.apache.predictionio.data.api.{EventServer, EventServerConfig}
 import org.apache.predictionio.data.storage
-import org.apache.predictionio.data.storage.EngineManifest
-import org.apache.predictionio.data.storage.EngineManifestSerializer
-import org.apache.predictionio.tools.RegisterEngine
-import org.apache.predictionio.tools.RunServer
-import org.apache.predictionio.tools.RunWorkflow
-import org.apache.predictionio.tools.Common
+import org.apache.predictionio.tools.{RunServer, RunWorkflow, Common}
 import org.apache.predictionio.tools.commands.{
   DashboardArgs, AdminServerArgs, ImportArgs, ExportArgs,
   BuildArgs, EngineArgs}
 import org.apache.predictionio.tools.{
   EventServerArgs, SparkArgs, WorkflowArgs, ServerArgs, DeployArgs}
 import org.apache.predictionio.tools.EventServerArgs
-import org.apache.predictionio.tools.admin.AdminServer
-import org.apache.predictionio.tools.admin.AdminServerConfig
-import org.apache.predictionio.tools.dashboard.Dashboard
-import org.apache.predictionio.tools.dashboard.DashboardConfig
-import org.apache.predictionio.workflow.JsonExtractorOption
-import org.apache.predictionio.workflow.JsonExtractorOption.JsonExtractorOption
-import org.apache.predictionio.workflow.WorkflowUtils
+import org.apache.predictionio.tools.admin.{AdminServer, AdminServerConfig}
+import org.apache.predictionio.tools.dashboard.{Dashboard, DashboardConfig}
 import org.apache.predictionio.tools.commands
-import org.apache.commons.io.FileUtils
+import org.apache.predictionio.workflow.{JsonExtractorOption, WorkflowUtils}
+import org.apache.predictionio.workflow.JsonExtractorOption.JsonExtractorOption
 import org.json4s._
 import org.json4s.native.JsonMethods._
-import org.json4s.native.Serialization.read
-import org.json4s.native.Serialization.write
 import semverfi._
 
 import scala.collection.JavaConversions._
 import scala.io.Source
 import scala.sys.process._
-import scala.util.Random
 import scalaj.http.Http
 
 case class ConsoleArgs(
@@ -95,6 +83,11 @@ case class AccessKeyArgs(
   accessKey: String = "",
   events: Seq[String] = Seq())
 
+case class EngineInfo(
+  engineId: String,
+  engineVersion: String,
+  variantId: String)
+
 object Console extends Logging {
   def main(args: Array[String]): Unit = {
     val parser = new scopt.OptionParser[ConsoleArgs]("pio") {
@@ -125,11 +118,12 @@ object Console extends Logging {
         c.copy(engine = c.engine.copy(engineVersion = Some(x)))
       } text("Specify an engine version. Usually used by distributed " +
         "deployment.")
+      opt[String]("engine-dir") abbr("ed") action { (x, c) =>
+        c.copy(engine = c.engine.copy(engineDir = Some(x)))
+      } text("Specify absolute path for engine directory, default to " +
+        "current directory.")
       opt[File]("variant") abbr("v") action { (x, c) =>
         c.copy(workflow = c.workflow.copy(variantJson = x))
-      }
-      opt[File]("manifest") abbr("m") action { (x, c) =>
-        c.copy(engine = c.engine.copy(manifestJson = x))
       }
       opt[File]("sbt") action { (x, c) =>
         c.copy(build = c.build.copy(sbt = Some(x)))
@@ -166,7 +160,8 @@ object Console extends Logging {
         )
       note("")
       cmd("build").
-        text("Build an engine at the current directory.").
+        text("Build an engine at the specific directory, or current " +
+          "directory by default.").
         action { (_, c) =>
           c.copy(commands = c.commands :+ "build")
         } children(
@@ -188,7 +183,8 @@ object Console extends Logging {
         )
       note("")
       cmd("unregister").
-        text("Unregister an engine at the current directory.").
+        text("Unregister an engine at the specific directory, or current " +
+          "directory by default.").
         action { (_, c) =>
           c.copy(commands = c.commands :+ "unregister")
         }
@@ -640,9 +636,7 @@ object Console extends Logging {
           Pio.version()
         case Seq("build") =>
           Pio.build(
-            ca.build, ca.pioHome.get, ca.engine.manifestJson, ca.verbose)
-        case Seq("unregister") =>
-          Pio.unregister(ca.engine.manifestJson)
+            ca.engine, ca.build, ca.pioHome.get, ca.verbose)
         case Seq("train") =>
           Pio.train(
             ca.engine, ca.workflow, ca.spark, ca.pioHome.get, ca.verbose)
@@ -673,9 +667,9 @@ object Console extends Logging {
           Pio.adminserver(ca.adminServer)
         case Seq("run") =>
           Pio.run(
+            ca.engine,
             ca.mainClass.get,
             ca.driverPassThrough,
-            ca.engine.manifestJson,
             ca.build,
             ca.spark,
             ca.pioHome.get,
@@ -738,6 +732,33 @@ object Console extends Logging {
           mkString("-")
       helpText.getOrElse(stripped, s"Help is unavailable for ${stripped}.")
     }
+  }
+
+  def getEngineInfo(jsonFile: File): EngineInfo = {
+    // Use engineFactory as engineId
+    val variantJson = parse(Source.fromFile(jsonFile).mkString)
+    val engineId = variantJson \ "engineFactory" match {
+      case JString(s) => s
+      case _ =>
+        error("unable to read engine factory from " +
+          s"${jsonFile.getCanonicalPath}. Aborting.")
+        sys.exit(1)
+    }
+
+    val variantId = variantJson \ "id" match {
+      case JString(s) => s
+      case _ =>
+        error("Unable to read engine variant ID from " +
+          s"${jsonFile.getCanonicalPath}. Aborting.")
+        sys.exit(1)
+    }
+
+    // Use hash of engine directory as engineVersion
+    val engineDir = sys.props("user.dir")
+    val engineVersion = java.security.MessageDigest.getInstance("SHA-1").
+      digest(engineDir.getBytes).map("%02x".format(_)).mkString
+
+    EngineInfo(engineId, engineVersion, variantId)
   }
 
   val mainHelp = txt.main().toString

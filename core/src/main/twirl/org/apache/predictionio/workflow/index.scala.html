@@ -1,10 +1,8 @@
 @import org.apache.predictionio.data.storage.EngineInstance
-@import org.apache.predictionio.data.storage.EngineManifest
 @import org.apache.predictionio.workflow.ServerConfig
 @import org.joda.time.DateTime
 @import org.joda.time.format.DateTimeFormat
 @(args: ServerConfig,
-  manifest: EngineManifest,
   engineInstance: EngineInstance,
   algorithms: Seq[String],
   algorithmsParams: Seq[String],
@@ -65,13 +63,6 @@
         <tr><th>Average Serving Time</th><td>@{f"${avgServingSec}%.4f"} seconds</td></tr>
         <tr><th>Last Serving Time</th><td>@{f"${lastServingSec}%.4f"} seconds</td></tr>
         <tr><th>Engine Factory Class (Scala/Java)</th><td>@{engineInstance.engineFactory}</td></tr>
-        <tr>
-          <th rowspan="@(manifest.files.size)">Library Files</th>
-          <td>@{manifest.files.head}</td>
-        </tr>
-        @for(f <- manifest.files.drop(1)) {
-        <tr><td>@f</td></tr>
-        }
       </table>
       <h2>Data Source</h2>
       <table class="table table-bordered table-striped">

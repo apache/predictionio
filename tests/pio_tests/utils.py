@@ -248,18 +248,19 @@ class AppEngine:
   def delete(self):
     srun('pio app delete {0} --force'.format(self.app_context.name))
 
-  def build(self, sbt_extra=None, clean=False, no_asm=True):
-    srun('cd {0}; pio build {1} {2} {3}'.format(
+  def build(self, sbt_extra=None, clean=False, no_asm=True, engine_dir=None):
+    srun('cd {0}; pio build {1} {2} {3} {4}'.format(
         self.engine_path,
         '--sbt-extra {}'.format(sbt_extra) if sbt_extra else '',
         '--clean' if clean else '',
-        '--no-asm' if no_asm else ''))
+        '--no-asm' if no_asm else '',
+        '--engine-dir {}'.format(engine_dir) if engine_dir else ''))
 
   def train(self, batch=None, skip_sanity_check=False, stop_after_read=False,
           stop_after_prepare=False, engine_factory=None,
-          engine_params_key=None, scratch_uri=None):
+          engine_params_key=None, scratch_uri=None, engine_dir=None):
 
-    srun('cd {}; pio train {} {} {} {} {} {} {}'.format(
+    srun('cd {0}; pio train {1} {2} {3} {4} {5} {6} {7} {8}'.format(
         self.engine_path,
         '--batch {}'.format(batch) if batch else '',
         '--skip-sanity-check' if skip_sanity_check else '',
@@ -267,13 +268,14 @@ class AppEngine:
         '--stop-after-prepare' if stop_after_prepare else '',
         '--engine_factory {}'.format(engine_factory) if engine_factory else '',
         '--engine-params-key {}'.format(engine_params_key) if engine_params_key else '',
-        '--scratch-uri {}'.format(scratch_uri) if scratch_uri else ''))
+        '--scratch-uri {}'.format(scratch_uri) if scratch_uri else '',
+        '--engine-dir {}'.format(engine_dir) if engine_dir else ''))
 
   def deploy(self, wait_time=0, ip=None, port=None, engine_instance_id=None,
           feedback=False, accesskey=None, event_server_ip=None, event_server_port=None,
-          batch=None, scratch_uri=None):
+          batch=None, scratch_uri=None, engine_dir=None):
 
-    command = 'cd {}; pio deploy {} {} {} {} {} {} {} {} {}'.format(
+    command = 'cd {0}; pio deploy {1} {2} {3} {4} {5} {6} {7} {8} {9} {10}'.format(
             self.engine_path,
             '--ip {}'.format(ip) if ip else '',
             '--port {}'.format(port) if port else '',
@@ -283,7 +285,8 @@ class AppEngine:
             '--event-server-ip {}'.format(event_server_ip) if event_server_ip else '',
             '--event-server-port {}'.format(event_server_port) if event_server_port else '',
             '--batch {}'.format(bach) if batch else '',
-            '--scratch-uri {}'.format(scratch_uri) if scratch_uri else '')
+            '--scratch-uri {}'.format(scratch_uri) if scratch_uri else '',
+            '--engine-dir {}'.format(engine_dir) if engine_dir else '')
 
     self.deployed_process = srun_bg(command)
     time.sleep(wait_time)

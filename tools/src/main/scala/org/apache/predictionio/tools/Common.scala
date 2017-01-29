@@ -73,7 +73,11 @@ object Common extends EitherLogging {
     versionNoPatch.getOrElse(fullVersion)
   }
 
-  def jarFilesForScala: Array[File] = {
+  def getEngineDirPath(directory: Option[String]): String = {
+    new File(directory.getOrElse(".")).getCanonicalPath
+  }
+
+  def jarFilesForScala(directory: String): Array[File] = {
     def recursiveListFiles(f: File): Array[File] = {
       Option(f.listFiles) map { these =>
         these ++ these.filter(_.isDirectory).flatMap(recursiveListFiles)
@@ -87,10 +91,13 @@ object Common extends EitherLogging {
     def jarFilesAt(path: File): Array[File] = recursiveListFiles(path) filter {
       _.getName.toLowerCase.endsWith(".jar")
     }
-    val libFiles = jarFilesForScalaFilter(jarFilesAt(new File("lib")))
+
+    val engineDir = getEngineDirPath(Some(directory))
+    val libFiles = jarFilesForScalaFilter(
+      jarFilesAt(new File(engineDir, "lib")))
     val scalaVersionNoPatch = Common.versionNoPatch(BuildInfo.scalaVersion)
-    val targetFiles = jarFilesForScalaFilter(jarFilesAt(new File("target" +
-      File.separator + s"scala-${scalaVersionNoPatch}")))
+    val targetFiles = jarFilesForScalaFilter(jarFilesAt(new File(engineDir,
+      "target" + File.separator + s"scala-${scalaVersionNoPatch}")))
     // Use libFiles is target is empty.
     if (targetFiles.size > 0) targetFiles else libFiles
   }

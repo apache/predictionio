@@ -75,18 +75,16 @@ object Pio extends Logging {
   }
 
   def build(
+    ea: EngineArgs,
     buildArgs: BuildArgs,
     pioHome: String,
-    manifestJson: File,
     verbose: Boolean = false): Int = {
 
-    doOnSuccess(Engine.build(buildArgs, pioHome, manifestJson, verbose)) {
+    doOnSuccess(Engine.build(ea, buildArgs, pioHome, verbose)) {
       _ => info("Your engine is ready for training.")
       0
     }
   }
-
-  def unregister(manifestJson: File): Int = Engine.unregister(manifestJson)
 
   def train(
     ea: EngineArgs,
@@ -132,16 +130,16 @@ object Pio extends Logging {
   }
 
   def run(
+    ea: EngineArgs,
     mainClass: String,
     driverArguments: Seq[String],
-    manifestJson: File,
     buildArgs: BuildArgs,
     sparkArgs: SparkArgs,
     pioHome: String,
     verbose: Boolean = false): Int =
       doOnSuccess(Engine.run(
-        mainClass, driverArguments, manifestJson,
-        buildArgs, sparkArgs, pioHome, verbose)) { proc =>
+        ea, mainClass, driverArguments, buildArgs,
+        sparkArgs, pioHome, verbose)) { proc =>
 
           val r = proc.exitValue()
           if (r != 0) {

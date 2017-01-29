@@ -20,14 +20,12 @@ package org.apache.predictionio.tools.commands
 import org.apache.predictionio.core.BuildInfo
 import org.apache.predictionio.controller.Utils
 import org.apache.predictionio.data.storage
-import org.apache.predictionio.data.storage.EngineManifest
-import org.apache.predictionio.data.storage.EngineManifestSerializer
-import org.apache.predictionio.tools.RegisterEngine
 import org.apache.predictionio.tools.EitherLogging
 import org.apache.predictionio.tools.{RunWorkflow, RunServer}
 import org.apache.predictionio.tools.{DeployArgs, WorkflowArgs, SparkArgs, ServerArgs}
-import org.apache.predictionio.tools.ReturnTypes._
+import org.apache.predictionio.tools.console.Console
 import org.apache.predictionio.tools.Common._
+import org.apache.predictionio.tools.ReturnTypes._
 import org.apache.predictionio.workflow.WorkflowUtils
 
 import org.apache.commons.io.FileUtils
@@ -52,95 +50,11 @@ case class BuildArgs(
   forceGeneratePIOSbt: Boolean = false)
 
 case class EngineArgs(
-  manifestJson: File = new File("manifest.json"),
   engineId: Option[String] = None,
-  engineVersion: Option[String] = None)
+  engineVersion: Option[String] = None,
+  engineDir: Option[String] = None)
 
 object Engine extends EitherLogging {
-
-  private val manifestAutogenTag = "pio-autogen-manifest"
-
-  private def readManifestJson(json: File): Expected[EngineManifest] = {
-    implicit val formats = Utils.json4sDefaultFormats +
-      new EngineManifestSerializer
-    try {
-      Right(read[EngineManifest](Source.fromFile(json).mkString))
-    } catch {
-      case e: java.io.FileNotFoundException =>
-        logAndFail(s"${json.getCanonicalPath} does not exist. Aborting.")
-      case e: MappingException =>
-        logAndFail(s"${json.getCanonicalPath} has invalid content: " +
-          e.getMessage)
-    }
-  }
-
-  private def withRegisteredManifest[T](ea: EngineArgs)(
-      op: EngineManifest => Expected[T]): Expected[T] = {
-    val res: Expected[Expected[T]] = for {
-      ej <- readManifestJson(ea.manifestJson).right
-      id <- Right(ea.engineId getOrElse ej.id).right
-      version <- Right(ea.engineVersion getOrElse ej.version).right
-      manifest <- storage.Storage.getMetaDataEngineManifests.get(id, version)
-        .toRight {
-          val errStr =
-            s"""Engine ${id} ${version} cannot be found in the system.")
-                |Possible reasons:
-                |- the engine is not yet built by the 'build' command;
-                |- the meta data store is offline."""
-          error(errStr)
-          errStr
-        }.right
-    } yield {
-      op(manifest)
-    }
-    res.joinRight
-  }
-
-  private def generateManifestJson(json: File): MaybeError = {
-    val cwd = sys.props("user.dir")
-    implicit val formats = Utils.json4sDefaultFormats +
-      new EngineManifestSerializer
-    val rand = Random.alphanumeric.take(32).mkString
-    val ha = java.security.MessageDigest.getInstance("SHA-1").
-      digest(cwd.getBytes).map("%02x".format(_)).mkString
-    val em = EngineManifest(
-      id = rand,
-      version = ha,
-      name = new File(cwd).getName,
-      description = Some(manifestAutogenTag),
-      files = Seq(),
-      engineFactory = "")
-    try {
-      FileUtils.writeStringToFile(json, write(em), "ISO-8859-1")
-      Success
-    } catch {
-      case e: java.io.IOException =>
-        logAndFail(s"Cannot generate ${json} automatically (${e.getMessage}). " +
-          "Aborting.")
-    }
-  }
-
-  private def regenerateManifestJson(json: File): MaybeError = {
-    val cwd = sys.props("user.dir")
-    val ha = java.security.MessageDigest.getInstance("SHA-1").
-      digest(cwd.getBytes).map("%02x".format(_)).mkString
-    if (json.exists) {
-      readManifestJson(json).right.flatMap { em =>
-        if (em.description == Some(manifestAutogenTag) && ha != em.version) {
-          warn("This engine project directory contains an auto-generated " +
-            "manifest that has been copied/moved from another location. ")
-          warn("Regenerating the manifest to reflect the updated location. " +
-            "This will dissociate with all previous engine instances.")
-          generateManifestJson(json)
-        } else {
-          logAndSucceed(s"Using existing engine manifest JSON at " +
-            "${json.getCanonicalPath}")
-        }
-      }
-    } else {
-      generateManifestJson(json)
-    }
-  }
 
   private def detectSbt(sbt: Option[File], pioHome: String): String = {
     sbt map {
@@ -156,11 +70,16 @@ object Engine extends EitherLogging {
   }
 
   private def compile(
-    buildArgs: BuildArgs, pioHome: String, verbose: Boolean): MaybeError = {
-    // only add pioVersion to sbt if project/pio.sbt exists
-    if (new File("project", "pio-build.sbt").exists || buildArgs.forceGeneratePIOSbt) {
+    buildArgs: BuildArgs,
+    pioHome: String,
+    engineDirPath: String,
+    verbose: Boolean): MaybeError = {
+
+    val f = new File(
+      Seq(engineDirPath, "project", "pio-build.sbt").mkString(File.separator))
+    if (f.exists || buildArgs.forceGeneratePIOSbt) {
       FileUtils.writeLines(
-        new File("pio.sbt"),
+        new File(engineDirPath, "pio.sbt"),
         Seq(
           "// Generated automatically by pio build.",
           "// Changes in this file will be overridden.",
@@ -170,7 +89,7 @@ object Engine extends EitherLogging {
     implicit val formats = Utils.json4sDefaultFormats
 
     val sbt = detectSbt(buildArgs.sbt, pioHome)
-    info(s"Using command '${sbt}' at the current working directory to build.")
+    info(s"Using command '${sbt}' at ${engineDirPath} to build.")
     info("If the path above is incorrect, this process will fail.")
     val asm =
       if (buildArgs.sbtAssemblyPackageDependency) {
@@ -181,10 +100,10 @@ object Engine extends EitherLogging {
     val clean = if (buildArgs.sbtClean) " clean" else ""
     val buildCmd = s"${sbt} ${buildArgs.sbtExtra.getOrElse("")}${clean} " +
       (if (buildArgs.uberJar) "assembly" else s"package${asm}")
-    val core = new File(s"pio-assembly-${BuildInfo.version}.jar")
+    val core = new File(engineDirPath, s"pio-assembly-${BuildInfo.version}.jar")
     if (buildArgs.uberJar) {
       info(s"Uber JAR enabled. Putting ${core.getName} in lib.")
-      val dst = new File("lib")
+      val dst = new File(engineDirPath, "lib")
       dst.mkdir()
       coreAssembly(pioHome) match {
         case Right(coreFile) =>
@@ -195,7 +114,7 @@ object Engine extends EitherLogging {
         case Left(errStr) => return Left(errStr)
       }
     } else {
-      if (new File("engine.json").exists()) {
+      if (new File(engineDirPath, "engine.json").exists()) {
         info(s"Uber JAR disabled. Making sure lib/${core.getName} is absent.")
         new File("lib", core.getName).delete()
       } else {
@@ -203,13 +122,14 @@ object Engine extends EitherLogging {
           s"like an engine project directory. Please delete lib/${core.getName} manually.")
       }
     }
-    info(s"Going to run: ${buildCmd}")
+    info(s"Going to run: ${buildCmd} in ${engineDirPath}")
     try {
+      val p = Process(s"${buildCmd}", new File(engineDirPath))
       val r =
         if (verbose) {
-          buildCmd.!(ProcessLogger(line => info(line), line => error(line)))
+          p.!(ProcessLogger(line => info(line), line => error(line)))
         } else {
-          buildCmd.!(ProcessLogger(
+          p.!(ProcessLogger(
             line => outputSbtError(line),
             line => outputSbtError(line)))
         }
@@ -225,31 +145,26 @@ object Engine extends EitherLogging {
   }
 
   def build(
+    ea: EngineArgs,
     buildArgs: BuildArgs,
     pioHome: String,
-    manifestJson: File,
     verbose: Boolean): MaybeError = {
 
-    regenerateManifestJson(manifestJson) match {
-      case Left(err) => return Left(err)
-      case _ => Unit
-    }
+    val engineDirPath = getEngineDirPath(ea.engineDir)
+    Template.verifyTemplateMinVersion(
+      new File(engineDirPath, "template.json")) match {
 
-    Template.verifyTemplateMinVersion(new File("template.json")) match {
       case Left(err) => return Left(err)
       case Right(_) =>
-        compile(buildArgs, pioHome, verbose)
+        compile(buildArgs, pioHome, engineDirPath, verbose)
         info("Looking for an engine...")
-        val jarFiles = jarFilesForScala
+        val jarFiles = jarFilesForScala(engineDirPath)
         if (jarFiles.isEmpty) {
           return logAndFail("No engine found. Your build might have failed. Aborting.")
         }
         jarFiles foreach { f => info(s"Found ${f.getName}")}
-        RegisterEngine.registerEngine(
-          manifestJson,
-          jarFiles,
-          false)
     }
+    logAndSucceed("Build finished successfully.")
   }
 
   /** Training an engine.
@@ -272,17 +187,10 @@ object Engine extends EitherLogging {
     pioHome: String,
     verbose: Boolean = false): Expected[(Process, () => Unit)] = {
 
-    regenerateManifestJson(ea.manifestJson) match {
-      case Left(err) => return Left(err)
-      case _ => Unit
-    }
-
-    Template.verifyTemplateMinVersion(new File("template.json")).right.flatMap {
-      _ =>
-        withRegisteredManifest(ea) { em =>
-            RunWorkflow.runWorkflow(wa, sa, em, pioHome, verbose)
-          }
-    }
+    val engineDirPath = getEngineDirPath(ea.engineDir)
+    Template.verifyTemplateMinVersion(
+      new File(engineDirPath, "template.json"))
+    RunWorkflow.runWorkflow(wa, sa, pioHome, engineDirPath, verbose)
   }
 
   /** Deploying an engine.
@@ -307,33 +215,30 @@ object Engine extends EitherLogging {
     pioHome: String,
     verbose: Boolean = false): Expected[(Process, () => Unit)] = {
 
-    val verifyResult = Template.verifyTemplateMinVersion(new File("template.json"))
+    val engineDirPath = getEngineDirPath(ea.engineDir)
+    val verifyResult = Template.verifyTemplateMinVersion(
+      new File(engineDirPath, "template.json"))
     if (verifyResult.isLeft) {
       return Left(verifyResult.left.get)
     }
-    withRegisteredManifest(ea) { em =>
-      val variantJson = parse(Source.fromFile(serverArgs.variantJson).mkString)
-      val variantId = variantJson \ "id" match {
-        case JString(s) => s
-        case _ =>
-          return logAndFail("Unable to read engine variant ID from " +
-            s"${serverArgs.variantJson.getCanonicalPath}. Aborting.")
-      }
-      val engineInstances = storage.Storage.getMetaDataEngineInstances
-      val engineInstance = engineInstanceId map { eid =>
-        engineInstances.get(eid)
+    val ei = Console.getEngineInfo(
+      new File(engineDirPath, serverArgs.variantJson.getName))
+    val engineInstances = storage.Storage.getMetaDataEngineInstances
+    val engineInstance = engineInstanceId map { eid =>
+      engineInstances.get(eid)
+    } getOrElse {
+      engineInstances.getLatestCompleted(
+        ei.engineId, ei.engineVersion, ei.variantId)
+    }
+    engineInstance map { r =>
+      RunServer.runServer(
+        r.id, serverArgs, sparkArgs, pioHome, engineDirPath, verbose)
+    } getOrElse {
+      engineInstanceId map { eid =>
+        logAndFail(s"Invalid engine instance ID ${eid}. Aborting.")
       } getOrElse {
-        engineInstances.getLatestCompleted(em.id, em.version, variantId)
-      }
-      engineInstance map { r =>
-        RunServer.runServer(r.id, serverArgs, sparkArgs, em, pioHome, verbose)
-      } getOrElse {
-        engineInstanceId map { eid =>
-          logAndFail(s"Invalid engine instance ID ${eid}. Aborting.")
-        } getOrElse {
-          logAndFail(s"No valid engine instance found for engine ${em.id} " +
-            s"${em.version}.\nTry running 'train' before 'deploy'. Aborting.")
-        }
+        logAndFail(s"No valid engine instance found for engine ${ei.engineId} " +
+          s"${ei.engineVersion}.\nTry running 'train' before 'deploy'. Aborting.")
       }
     }
   }
@@ -368,7 +273,6 @@ object Engine extends EitherLogging {
     *
     * @param mainClass A [[String]] with the class containing a main functionto run
     * @param driverArguments Arguments to be passed to the main function
-    * @param manifestJson An instance of [[File]] for running a single training.
     * @param buildArgs An instance of [[BuildArgs]]
     * @param sparkArgs an instance of [[SparkArgs]]
     * @param pioHome [[String]] with a path to PIO installation
@@ -378,26 +282,23 @@ object Engine extends EitherLogging {
     *         of a running driver
     */
   def run(
+    ea: EngineArgs,
     mainClass: String,
     driverArguments: Seq[String],
-    manifestJson: File,
     buildArgs: BuildArgs,
     sparkArgs: SparkArgs,
     pioHome: String,
     verbose: Boolean): Expected[Process] = {
 
-    generateManifestJson(manifestJson) match {
-      case Left(err) => return Left(err)
-      case _ => Unit
-    }
+    val engineDirPath = getEngineDirPath(ea.engineDir)
 
-    compile(buildArgs, pioHome, verbose)
+    compile(buildArgs, pioHome, engineDirPath, verbose)
 
     val extraFiles = WorkflowUtils.thirdPartyConfFiles
-
-    val jarFiles = jarFilesForScala
+    val jarFiles = jarFilesForScala(engineDirPath)
     jarFiles foreach { f => info(s"Found JAR: ${f.getName}") }
     val allJarFiles = jarFiles.map(_.getCanonicalPath)
+
     val cmd = s"${getSparkHome(sparkArgs.sparkHome)}/bin/spark-submit --jars " +
       s"${allJarFiles.mkString(",")} " +
       (if (extraFiles.size > 0) {
@@ -416,9 +317,4 @@ object Engine extends EitherLogging {
       "SPARK_YARN_USER_ENV" -> sys.env.filter(kv => kv._1.startsWith("PIO_")).
         map(kv => s"${kv._1}=${kv._2}").mkString(",")).run())
   }
-
-  def unregister(jsonManifest: File): MaybeError = {
-    RegisterEngine.unregisterEngine(jsonManifest)
-  }
-
 }
