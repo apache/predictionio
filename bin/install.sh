@@ -280,7 +280,9 @@ echo -e "\033[1;36mStarting PredictionIO setup in:\033[0m $pio_dir"
 
 cd ${TEMP_DIR}
 
-if [[ ! -e ${PIO_FILE} ]]; then
+files=$(ls PredictionIO*.tar.gz 2> /dev/null | wc -l)
+
+if [[ $files == 0 ]]; then
   echo "Downloading PredictionIO..."
   curl -L https://codeload.github.com/apache/incubator-predictionio/tar.gz/master > incubator-predictionio-master.tar.gz 
 
