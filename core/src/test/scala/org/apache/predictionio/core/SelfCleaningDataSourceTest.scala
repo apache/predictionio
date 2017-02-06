@@ -33,6 +33,9 @@ import org.apache.predictionio.data.store._
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 
+import org.json4s._
+import org.json4s.DefaultFormats
+
 import org.apache.spark.rdd.RDD
 import org.scalatest.Inspectors._
 import org.scalatest.Matchers._
@@ -79,7 +82,16 @@ class SelfCleaningDataSourceTest extends FunSuite with Inside with SharedSparkCo
 
     val nexusSet = eventsAfter.filter(x => x.event == "$set" && x.entityId == "Nexus").take(1)(0) 
 
+    implicit val formats = DefaultFormats
+
     nexusSet.properties.get[String]("available") should equal ("2016-03-18T13:31:49.016770+00:00")
+
+    nexusSet.properties.get[JArray]("categories").values should equal (
+                   JArray(
+                     List(JString("Tablets"),
+                          JString("Electronics"),
+                          JString("Google"),
+                          JString("Google2"))).values)
  
     distinctEventsAfterCount should equal (eventsAfterCount)
     eventsBeforeCount should be > (eventsAfterCount) 
