@@ -1,0 +1,31 @@
+version: "3"
+services:
+  elasticsearch:
+    image: elasticsearch:1-alpine
+    ports:
+      - 9200:9200
+      - 9300:9300
+  hbase:
+    image: harisekhon/hbase:1.0
+    ports:
+      - 16000:16000
+      - 16010:16010
+      - 16020:16020
+      - 16030:16030
+  postgres:
+    image: postgres:9
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: pio
+      POSTGRES_PASSWORD: pio
+      POSTGRES_INITDB_ARGS: --encoding=UTF8
+  pio-testing:
+    image: predictionio/pio-testing:latest
+    depends_on:
+      - elasticsearch
+      - hbase
+      - postgres
+    volumes:
+      - ./pio_tests:/tests/pio_tests
+      - ~/.ivy2:/root/.ivy2

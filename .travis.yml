@@ -68,7 +68,6 @@ env:
 
 before_install:
   - unset SBT_OPTS JVM_OPTS
-  - docker pull predictionio/pio-testing
   - service haveged start
 
 before_script:

@@ -36,5 +36,5 @@ else
   REPO=`pwd`
 
   ./tests/run_docker.sh $METADATA_REP $EVENTDATA_REP $MODELDATA_REP \
-    $REPO 'python3 /tests/pio_tests/tests.py'
+    'python3 /tests/pio_tests/tests.py'
 fi

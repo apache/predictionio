@@ -37,4 +37,5 @@ if [[ $BUILD_TYPE == Unit ]]; then
 
 else # Integration Tests
   ./make-distribution.sh
+  tests/build-docker.sh
 fi
