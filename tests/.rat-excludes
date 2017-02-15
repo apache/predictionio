@@ -18,6 +18,7 @@ spark-defaults.conf
 Gemfile.lock
 templates.yaml
 semver.sh
+pgpass
 
 PredictionIO-.*/*
 target/*
