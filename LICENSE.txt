@@ -243,7 +243,7 @@ either expressed or implied, of the FreeBSD Project.
 
 
 ================================================================================
-For sbt and sbt-launch-lib.bash in sbt/:
+For sbt in sbt/:
 ================================================================================
 
 // Generated from http://www.opensource.org/licenses/bsd-license.php

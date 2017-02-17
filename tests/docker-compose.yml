@@ -42,5 +42,5 @@ services:
       - hbase
       - postgres
     volumes:
-      - ./pio_tests:/tests/pio_tests
       - ~/.ivy2:/root/.ivy2
+      - ~/.sbt:/root/.sbt

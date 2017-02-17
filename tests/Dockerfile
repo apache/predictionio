@@ -15,46 +15,18 @@
 # limitations under the License.
 #
 
-FROM ubuntu:xenial
+FROM predictionio/pio
 
 ENV SPARK_VERSION 1.4.0
 ENV ELASTICSEARCH_VERSION 1.4.4
 ENV HBASE_VERSION 1.0.0
 
-RUN apt-get update && apt-get install -y \
-    wget curl \
-    python-pip \
-    python3-pip \
-    postgresql-client \
-    openjdk-8-jdk \
-    openssh-client openssh-server \
-    git
-
-RUN pip install predictionio
-RUN pip3 install --upgrade \
-    pip \
-    xmlrunner \
-    requests \
-    urllib3
-
-ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/jre
-
 ADD docker-files/spark-${SPARK_VERSION}-bin-hadoop2.6.tgz /vendors
 ENV SPARK_HOME /vendors/spark-${SPARK_VERSION}-bin-hadoop2.6
 
-ENV ELASTICSEARCH_HOME /vendors/elasticsearch-${ELASTICSEARCH_VERSION}
-
-ENV HBASE_HOME /vendors/hbase-${HBASE_VERSION}
-
 COPY docker-files/postgresql-9.4-1204.jdbc41.jar /drivers
-
-ENV PIO_HOME /PredictionIO
-ENV PATH ${PIO_HOME}/bin/:${PATH}
-COPY dist ${PIO_HOME}
-
 COPY docker-files/init.sh init.sh
-COPY docker-files/env-conf/spark-env.sh ${SPARK_HOME}/conf/spark-env.sh
-COPY docker-files/env-conf/hbase-site.xml ${HBASE_HOME}/conf/hbase-site.xml
+COPY docker-files/env-conf/hbase-site.xml ${PIO_HOME}/conf/hbase-site.xml
 COPY docker-files/env-conf/pio-env.sh /pio-env.sh
 COPY docker-files/wait-for-postgres.sh /wait-for-postgres.sh
 COPY docker-files/pgpass /root/.pgpass

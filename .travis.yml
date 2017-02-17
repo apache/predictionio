@@ -27,48 +27,19 @@ branches:
   except:
     - livedoc
 
-language: scala
-
-scala:
-  - 2.10.5
-
-jdk:
-  - oraclejdk8
-
-addons:
-    postgresql: "9.3"
-    apt:
-      packages:
-        - haveged
-
 services:
   - docker
 
-sudo: required
-
-# cache:
-#   directories:
-#     - $HOME/.ivy2/cache
-#     - $HOME/.sbt/boot
-# before_cache:
-#   - find $HOME/.ivy2 -name "ivydata-*.properties" -delete
-#   - find $HOME/.sbt -name "*.lock" -delete
+sudo: false
 
 cache: false
 
 env:
-  global:
-    - PIO_HOME=`pwd`
-
   matrix:
     - BUILD_TYPE=Unit
     - BUILD_TYPE=Integration METADATA_REP=PGSQL EVENTDATA_REP=PGSQL MODELDATA_REP=PGSQL
     - BUILD_TYPE=Integration METADATA_REP=ELASTICSEARCH EVENTDATA_REP=HBASE MODELDATA_REP=LOCALFS
     - BUILD_TYPE=Integration METADATA_REP=ELASTICSEARCH EVENTDATA_REP=PGSQL MODELDATA_REP=HDFS
-
-before_install:
-  - unset SBT_OPTS JVM_OPTS
-  - service haveged start
 
 before_script:
   - ./tests/before_script.travis.sh

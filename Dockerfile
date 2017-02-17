@@ -1,4 +1,3 @@
-#!/bin/bash
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -16,10 +15,14 @@
 # limitations under the License.
 #
 
-if [[ $BUILD_TYPE == Unit ]]; then
-  ./tests/run_docker.sh $METADATA_REP $EVENTDATA_REP $MODELDATA_REP \
-    '/PredictionIO/tests/unit.sh'
-else
-  ./tests/run_docker.sh $METADATA_REP $EVENTDATA_REP $MODELDATA_REP \
-    'python3 /PredictionIO/tests/pio_tests/tests.py'
-fi
+# WARNING: THIS DOCKERFILE IS NOT INTENDED FOR PRODUCTION USE OR DEPLOYMENT. AT
+#          THIS POINT, THIS IS ONLY INTENDED FOR USE IN AUTOMATED TESTS. IF YOU
+#          ARE LOOKING TO DEPLOY PREDICTIONIO WITH DOCKER, PLEASE REFER TO
+#          http://predictionio.incubator.apache.org/community/projects/#docker-installation-for-predictionio
+
+FROM predictionio/pio-testing-base
+
+# Include the entire code tree
+ENV PIO_HOME /PredictionIO
+ENV PATH ${PIO_HOME}/bin/:${PATH}
+ADD . ${PIO_HOME}

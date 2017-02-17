@@ -14,12 +14,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-if [[ $BUILD_TYPE == Unit ]]; then
-  ./tests/run_docker.sh $METADATA_REP $EVENTDATA_REP $MODELDATA_REP \
-    '/PredictionIO/tests/unit.sh'
-else
-  ./tests/run_docker.sh $METADATA_REP $EVENTDATA_REP $MODELDATA_REP \
-    'python3 /PredictionIO/tests/pio_tests/tests.py'
-fi
+# Run license check
+pushd /PredictionIO
+
+./tests/check_license.sh
+
+# Prepare pio environment variables
+set -a
+source conf/pio-env.sh
+set +a
+
+# Run stylecheck
+sbt/sbt scalastyle
+# Run all unit tests
+sbt/sbt test
+
+popd

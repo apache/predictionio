@@ -54,7 +54,6 @@ touch ${DISTDIR}/RELEASE
 TARNAME="PredictionIO-$VERSION.tar.gz"
 TARDIR="PredictionIO-$VERSION"
 cp -r ${DISTDIR} ${TARDIR}
-cp -r ${DISTDIR} tests/
 
 tar zcvf ${TARNAME} ${TARDIR}
 rm -rf ${TARDIR}

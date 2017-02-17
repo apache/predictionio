@@ -50,42 +50,38 @@ val pioBuildInfoSettings = buildInfoSettings ++ Seq(
     sparkVersion),
   buildInfoPackage := "org.apache.predictionio.core")
 
-val conf = file(".") / "conf"
+val conf = file("conf")
 
 val commonSettings = Seq(
-  autoAPIMappings := true)
+  autoAPIMappings := true,
+  unmanagedClasspath in Test += conf)
 
 val common = (project in file("common")).
   settings(commonSettings: _*).
-  settings(genjavadocSettings: _*).
-  settings(unmanagedClasspath in Test += conf)
+  settings(genjavadocSettings: _*)
 
 val data = (project in file("data")).
   dependsOn(common).
   settings(commonSettings: _*).
-  settings(genjavadocSettings: _*).
-  settings(unmanagedClasspath in Test += conf)
+  settings(genjavadocSettings: _*)
 
 val core = (project in file("core")).
   dependsOn(data).
   settings(commonSettings: _*).
   settings(genjavadocSettings: _*).
   settings(pioBuildInfoSettings: _*).
-  enablePlugins(SbtTwirl).
-  settings(unmanagedClasspath in Test += conf)
+  enablePlugins(SbtTwirl)
 
 val tools = (project in file("tools")).
   dependsOn(core).
   dependsOn(data).
   settings(commonSettings: _*).
   settings(genjavadocSettings: _*).
-  enablePlugins(SbtTwirl).
-  settings(unmanagedClasspath in Test += conf)
+  enablePlugins(SbtTwirl)
 
 val e2 = (project in file("e2")).
   settings(commonSettings: _*).
-  settings(genjavadocSettings: _*).
-  settings(unmanagedClasspath in Test += conf)
+  settings(genjavadocSettings: _*)
 
 val root = (project in file(".")).
   settings(commonSettings: _*).

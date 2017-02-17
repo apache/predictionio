@@ -27,4 +27,13 @@ if [ ! -f $DIR/docker-files/postgresql-9.4-1204.jdbc41.jar ]; then
   mv postgresql-9.4-1204.jdbc41.jar $DIR/docker-files/
 fi
 
+docker pull predictionio/pio-testing-base
+docker build -t predictionio/pio-testing-base -f Dockerfile.base .
+pushd $DIR/..
+./make-distribution.sh
+sbt/sbt clean
+mkdir assembly
+cp dist/lib/*.jar assembly/
+docker build -t predictionio/pio .
+popd
 docker build -t predictionio/pio-testing $DIR
