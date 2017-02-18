@@ -16,5 +16,4 @@
 # limitations under the License.
 #
 
-./make-distribution.sh
 tests/build-docker.sh

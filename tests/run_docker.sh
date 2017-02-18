@@ -27,21 +27,27 @@ if ! [[ "$1" =~ ^(PGSQL|ELASTICSEARCH)$ ]]; then
   echo "$USAGE"
   exit 1
 fi
+META="$1"
+shift
 
-if ! [[ "$2" =~ ^(PGSQL|HBASE)$ ]]; then
+if ! [[ "$1" =~ ^(PGSQL|HBASE)$ ]]; then
   echo "$USAGE"
   exit 1
 fi
+EVENT="$1"
+shift
 
-if ! [[ "$3" =~ ^(PGSQL|LOCALFS|HDFS)$ ]]; then
+if ! [[ "$1" =~ ^(PGSQL|LOCALFS|HDFS)$ ]]; then
   echo "$USAGE"
   exit 1
 fi
+MODEL="$1"
+shift
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 docker-compose -f $DIR/docker-compose.yml run \
-  -e PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=$1 \
-  -e PIO_STORAGE_REPOSITORIES_EVENTDATA_SOURCE=$2 \
-  -e PIO_STORAGE_REPOSITORIES_MODELDATA_SOURCE=$3 \
-  pio-testing $4
+  -e PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=$META \
+  -e PIO_STORAGE_REPOSITORIES_EVENTDATA_SOURCE=$EVENT \
+  -e PIO_STORAGE_REPOSITORIES_MODELDATA_SOURCE=$MODEL \
+  pio-testing $@
