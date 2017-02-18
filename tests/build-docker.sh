@@ -28,7 +28,6 @@ if [ ! -f $DIR/docker-files/postgresql-9.4-1204.jdbc41.jar ]; then
 fi
 
 docker pull predictionio/pio-testing-base
-docker build -t predictionio/pio-testing-base -f Dockerfile.base .
 pushd $DIR/..
 ./make-distribution.sh
 sbt/sbt clean

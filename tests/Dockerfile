@@ -30,6 +30,7 @@ COPY docker-files/env-conf/hbase-site.xml ${PIO_HOME}/conf/hbase-site.xml
 COPY docker-files/env-conf/pio-env.sh /pio-env.sh
 COPY docker-files/wait-for-postgres.sh /wait-for-postgres.sh
 COPY docker-files/pgpass /root/.pgpass
+RUN chmod 600 /root/.pgpass
 
 # Default repositories setup
 ENV PIO_STORAGE_REPOSITORIES_METADATA_SOURCE PGSQL
