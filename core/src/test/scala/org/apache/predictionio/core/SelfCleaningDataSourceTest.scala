@@ -90,8 +90,7 @@ class SelfCleaningDataSourceTest extends FunSuite with Inside with SharedSparkCo
                    JArray(
                      List(JString("Tablets"),
                           JString("Electronics"),
-                          JString("Google"),
-                          JString("Google2"))).values)
+                          JString("Google"))).values)
  
     distinctEventsAfterCount should equal (eventsAfterCount)
     eventsBeforeCount should be > (eventsAfterCount) 

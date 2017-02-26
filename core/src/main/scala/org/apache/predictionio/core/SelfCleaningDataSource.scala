@@ -127,7 +127,7 @@ trait SelfCleaningDataSource {
 
   def removePDuplicates(sc: SparkContext, rdd: RDD[Event]): RDD[Event] = {
     val now = DateTime.now()
-    rdd.map(x =>
+    rdd.sortBy(_.eventTime, true).map(x =>
       (recreateEvent(x, None, now), (x.eventId, x.eventTime)))
       .groupByKey
       .map{case (x, y) => recreateEvent(x, y.head._1, y.head._2)}
@@ -144,7 +144,7 @@ trait SelfCleaningDataSource {
 
   def removeLDuplicates(ls: Iterable[Event]): Iterable[Event] = {
     val now = DateTime.now()
-    ls.toList.map(x =>
+    ls.toList.reverse.map(x =>
       (recreateEvent(x, None, now), (x.eventId, x.eventTime)))
       .groupBy(_._1).mapValues( _.map( _._2 ) )
       .map(x => recreateEvent(x._1, x._2.head._1, x._2.head._2))
@@ -229,7 +229,7 @@ trait SelfCleaningDataSource {
     */
   @DeveloperApi
   def cleanPEvents(sc: SparkContext): RDD[Event] = {
-    val pEvents = PEventStore.find(appName)(sc).sortBy(_.eventTime, false)
+    val pEvents = getCleanedPEvents(PEventStore.find(appName)(sc).sortBy(_.eventTime, false))
 
     val rdd = eventWindow match {
       case Some(ew) =>
@@ -241,7 +241,7 @@ trait SelfCleaningDataSource {
       case None =>
         pEvents
     }
-    getCleanedPEvents(rdd)
+    rdd
   }
 
   /** :: DeveloperApi ::
@@ -274,7 +274,7 @@ trait SelfCleaningDataSource {
     */
   @DeveloperApi
   def cleanLEvents(): Iterable[Event] = {
-    val lEvents = LEventStore.find(appName).toList.sortBy(_.eventTime).reverse
+    val lEvents = getCleanedLEvents(LEventStore.find(appName).toList.sortBy(_.eventTime).reverse)
 
     val events = eventWindow match {
       case Some(ew) =>
@@ -285,7 +285,7 @@ trait SelfCleaningDataSource {
       case None =>
         lEvents
     }
-    getCleanedLEvents(events)
+    events
   }
 
 
@@ -300,7 +300,7 @@ trait SelfCleaningDataSource {
         events.reduce { (e1, e2) =>
           val props = e2.event match {
             case "$set" =>
-              e1.properties.fields ++ e2.properties.fields.map(concatJArrays(_,e1))
+              e1.properties.fields ++ e2.properties.fields
             case "$unset" =>
               e1.properties.fields
                 .filterKeys(f => !e2.properties.fields.contains(f))
@@ -317,18 +317,6 @@ trait SelfCleaningDataSource {
         }
     }
   }
-
-  private def concatJArrays(propAndEvent: (String, JValue), e1: Event): (String,JValue) =
-    propAndEvent match {
-      case (k,v) => k -> (v match {
-        case jArr: JArray =>
-          (JArray((jArr.arr ++ (e1.properties.fields.getOrElse(k,JNothing) match {
-            case jArr2: JArray => jArr2.arr
-            case _ => List()
-          })).distinct))
-        case _ => v
-      })
-    }
 }
 
 case class EventWindow(
