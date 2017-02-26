@@ -24,7 +24,7 @@ ENV HBASE_VERSION 1.0.0
 ADD docker-files/spark-${SPARK_VERSION}-bin-hadoop2.6.tgz /vendors
 ENV SPARK_HOME /vendors/spark-${SPARK_VERSION}-bin-hadoop2.6
 
-COPY docker-files/postgresql-9.4-1204.jdbc41.jar /drivers
+COPY docker-files/postgresql-9.4-1204.jdbc41.jar /drivers/postgresql-9.4-1204.jdbc41.jar
 COPY docker-files/init.sh init.sh
 COPY docker-files/env-conf/hbase-site.xml ${PIO_HOME}/conf/hbase-site.xml
 COPY docker-files/env-conf/pio-env.sh ${PIO_HOME}/conf/pio-env.sh
@@ -45,6 +45,8 @@ ENV JVM_OPTS '-Dfile.encoding=UTF8 -Xms2048M -Xmx2048M -Xss8M -XX:MaxPermSize=51
 EXPOSE 8000
 # eventserver
 EXPOSE 7070
+
+ENV SLEEP_TIME 30
 
 ENTRYPOINT ["/init.sh"]
 CMD 'bash'

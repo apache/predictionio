@@ -19,28 +19,17 @@
 package org.apache.predictionio.workflow
 
 import java.io.File
-import java.io.FileNotFoundException
+import java.net.URI
 
-import org.apache.predictionio.controller.EmptyParams
-import org.apache.predictionio.controller.EngineFactory
-import org.apache.predictionio.controller.EngineParamsGenerator
-import org.apache.predictionio.controller.Evaluation
-import org.apache.predictionio.controller.Params
-import org.apache.predictionio.controller.PersistentModelLoader
-import org.apache.predictionio.controller.Utils
-import org.apache.predictionio.core.BuildInfo
-
-import com.google.gson.Gson
-import com.google.gson.JsonSyntaxException
+import com.google.gson.{Gson, JsonSyntaxException}
 import grizzled.slf4j.Logging
+import org.apache.log4j.{Level, LogManager}
+import org.apache.predictionio.controller._
 import org.apache.predictionio.workflow.JsonExtractorOption.JsonExtractorOption
-import org.apache.log4j.Level
-import org.apache.log4j.LogManager
 import org.apache.spark.SparkContext
 import org.apache.spark.api.java.JavaRDDLike
 import org.apache.spark.rdd.RDD
 import org.json4s.JsonAST.JValue
-import org.json4s.MappingException
 import org.json4s._
 import org.json4s.native.JsonMethods._
 
@@ -244,12 +233,12 @@ object WorkflowUtils extends Logging {
       "HADOOP_CONF_DIR" -> "core-site.xml",
       "HBASE_CONF_DIR" -> "hbase-site.xml")
 
-    thirdPartyFiles.keys.toSeq.map { k: String =>
+    thirdPartyFiles.keys.toSeq.flatMap { k: String =>
       sys.env.get(k) map { x =>
         val p = Seq(x, thirdPartyFiles(k)).mkString(File.separator)
         if (new File(p).exists) Seq(p) else Seq[String]()
       } getOrElse Seq[String]()
-    }.flatten
+    }
   }
 
   def thirdPartyClasspaths: Seq[String] = {
@@ -260,9 +249,26 @@ object WorkflowUtils extends Logging {
       "MYSQL_JDBC_DRIVER",
       "HADOOP_CONF_DIR",
       "HBASE_CONF_DIR")
-    thirdPartyPaths.map(p =>
+    thirdPartyPaths.flatMap(p =>
       sys.env.get(p).map(Seq(_)).getOrElse(Seq[String]())
-    ).flatten
+    )
+  }
+
+  def thirdPartyJars: Seq[URI] = {
+    val thirdPartyPaths = Seq(
+      "POSTGRES_JDBC_DRIVER",
+      "MYSQL_JDBC_DRIVER")
+    thirdPartyPaths.flatMap(p =>
+      sys.env.get(p) map { f =>
+        val file = new File(f)
+        if (file.exists()) {
+          Seq(file.toURI)
+        } else {
+          warn(s"Environment variable $p is pointing to a nonexistent file $f. Ignoring.")
+          Seq.empty[URI]
+        }
+      } getOrElse Seq.empty[URI]
+    )
   }
 
   def modifyLogging(verbose: Boolean): Unit = {

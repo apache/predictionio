@@ -51,8 +51,13 @@ env:
 
 before_install:
   - unset SBT_OPTS JVM_OPTS
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/1.11.1/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
 
 before_script:
+  - docker-compose -v
   - ./tests/before_script.travis.sh
 
 script:
