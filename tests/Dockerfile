@@ -28,7 +28,6 @@ COPY docker-files/postgresql-9.4-1204.jdbc41.jar /drivers/postgresql-9.4-1204.jd
 COPY docker-files/init.sh init.sh
 COPY docker-files/env-conf/hbase-site.xml ${PIO_HOME}/conf/hbase-site.xml
 COPY docker-files/env-conf/pio-env.sh ${PIO_HOME}/conf/pio-env.sh
-COPY docker-files/wait-for-postgres.sh /wait-for-postgres.sh
 COPY docker-files/pgpass /root/.pgpass
 RUN chmod 600 /root/.pgpass
 
