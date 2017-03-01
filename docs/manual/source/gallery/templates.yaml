@@ -546,17 +546,17 @@
 
 - template:
     name: OpenNLP Sentiment Analysis Template
-    repo: "https://github.com/vshwnth2/OpenNLP-SentimentAnalysis-Template"
+    repo: "https://github.com/infoquestsolutions/OpenNLP-SentimentAnalysis-Template"
     description: |-
       Given a sentence, this engine will return a score between 0 and 4. This is the sentiment of the sentence. The lower the number the more negative the sentence is. It uses the OpenNLP library.
     tags: [nlp]
     type: Parallel
     language: Scala
     license: "Apache Licence 2.0"
-    status: alpha
-    pio_min_version: "-"
-    apache_pio_convesion_required: "requires conversion"
-    support_link: '<a href="https://github.com/vshwnth2/OpenNLP-SentimentAnalysis-Template/issues">Github issues</a>'
+    status: beta
+    pio_min_version: "0.10.0-incubating"
+    apache_pio_convesion_required: "already compatible"
+    support_link: '<a href="https://github.com/infoquestsolutions/OpenNLP-SentimentAnalysis-Template/issues">Github issues</a>'
 
 - template:
     name: Sentiment analysis
