@@ -74,7 +74,7 @@
 
 - template:
     name: Topic Labelling with Wikipedia
-    repo: "https://github.com/peoplehum/template-Labelling-LDA-Topics-with-wikipedia"
+    repo: "https://github.com/peoplehum/template-Labelling-Topics-with-wikipedia"
     description: |-
       This template will label topics (e.g. topic generated through LDA topic modeling) with relevant category by referring to Wikipedia as a knowledge base.
     tags: [clustering, nlp]
@@ -84,7 +84,7 @@
     status: stable
     pio_min_version: 0.10.0-incubating
     apache_pio_convesion_required: "already compatible"
-    support_link: '<a href="https://github.com/peoplehum/template-Labelling-LDA-Topics-with-wikipedia/issues">Github issues</a>'
+    support_link: '<a href="https://github.com/peoplehum/template-Labelling-Topics-with-wikipedia/issues">Github issues</a>'
 
 # Recommenders
 
@@ -241,7 +241,7 @@
     name: Frequent Pattern Mining
     repo: "https://github.com/goliasz/pio-template-fpm"
     description: |-
-      Template uses FP Growth algorithm allowing to mine for frequent patterns. Template returns subsequent items together with confidence score. Sometimes used as a shopping cart recommender but has other uses. 
+      Template uses FP Growth algorithm allowing to mine for frequent patterns. Template returns subsequent items together with confidence score. Sometimes used as a shopping cart recommender but has other uses.
     tags: [recommender]
     type: Parallel
     language: Scala
@@ -642,7 +642,7 @@
     apache_pio_convesion_required: "requires conversion"
     support_link: '<a href="https://github.com/Ling-Ling/CoreNLP-Text-Classification/issues">Github issues</a>'
 
-# other 
+# other
 
 - template:
     name: template-decision-tree-feature-importance
@@ -671,4 +671,3 @@
     pio_min_version: 0.9.2
     apache_pio_convesion_required: "already compatible"
     support_link: '<a href="http://predictionio.incubator.apache.org/support/">Apache PredictionIO mailing lists</a>'
-
