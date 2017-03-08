@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/usr/bin/env bash -ex
 
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -29,7 +29,11 @@ fi
 
 docker pull predictionio/pio-testing-base
 pushd $DIR/..
-./make-distribution.sh
+if [ -z "$ES_VERSION" ]; then
+    ./make-distribution.sh
+else
+    ./make-distribution.sh --with-es=$ES_VERSION
+fi
 sbt/sbt clean
 mkdir assembly
 cp dist/lib/*.jar assembly/
