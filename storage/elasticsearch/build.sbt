@@ -53,4 +53,4 @@ assemblyShadeRules in assembly := Seq(
 // skip test in assembly
 test in assembly := {}
 
-assemblyOutputPath := baseDirectory.value.getAbsoluteFile.getParentFile.getParentFile / "assembly" / "spark" / ("pio-data-elasticsearch-assembly-" + version.value + ".jar")
+assemblyOutputPath in assembly := baseDirectory.value.getAbsoluteFile.getParentFile.getParentFile / "assembly" / "spark" / ("pio-data-elasticsearch-assembly-" + version.value + ".jar")

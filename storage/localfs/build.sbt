@@ -40,5 +40,4 @@ assemblyMergeStrategy in assembly := {
 // skip test in assembly
 test in assembly := {}
 
-assemblyOutputPath := baseDirectory.value.getAbsoluteFile.getParentFile.getParentFile / "assembly" / "spark" / ("pio-data-localfs-assembly-" + version.value + ".jar")
-
+assemblyOutputPath in assembly := baseDirectory.value.getAbsoluteFile.getParentFile.getParentFile / "assembly" / "spark" / ("pio-data-localfs-assembly-" + version.value + ".jar")
