@@ -16,4 +16,6 @@
 # limitations under the License.
 #
 
-tests/build-docker.sh
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+$DIR/build-docker.sh

@@ -1,5 +1,3 @@
-#!/bin/bash
-#
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -14,16 +12,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-# Print a summary of containers used
-docker ps -a
-
-# Clean up used containers
-if [ "$ES_VERSION" = "1" ]; then
-    docker-compose -f $DIR/docker-compose-es1.yml down
-else
-    docker-compose -f $DIR/docker-compose.yml down
-fi
+version: "2"
+services:
+  elasticsearch:
+    image: elasticsearch:1
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  hbase:
+    image: harisekhon/hbase:1.0
+  postgres:
+    image: postgres:9
+    environment:
+      POSTGRES_USER: pio
+      POSTGRES_PASSWORD: pio
+      POSTGRES_INITDB_ARGS: --encoding=UTF8
+  pio-testing:
+    image: predictionio/pio-testing-es1:latest
+    depends_on:
+      - elasticsearch
+      - hbase
+      - postgres
+    volumes:
+      - ~/.ivy2:/root/.ivy2
+      - ~/.sbt:/root/.sbt
