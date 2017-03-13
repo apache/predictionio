@@ -38,7 +38,7 @@ jdk:
 services:
   - docker
 
-sudo: false
+sudo: required
 
 cache: false
 
@@ -57,6 +57,7 @@ before_install:
   - sudo mv docker-compose /usr/local/bin
 
 before_script:
+  - sudo sysctl -w vm.max_map_count=262144
   - docker-compose -v
   - ./tests/before_script.travis.sh
 
