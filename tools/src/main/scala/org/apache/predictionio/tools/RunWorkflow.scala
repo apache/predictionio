@@ -36,7 +36,7 @@ import scala.sys.process._
 
 case class WorkflowArgs(
   batch: String = "",
-  variantJson: File = new File("engine.json"),
+  variantJson: Option[File] = None,
   verbosity: Int = 0,
   engineParamsKey: Option[String] = None,
   engineFactory: Option[String] = None,
@@ -56,15 +56,17 @@ object RunWorkflow extends Logging {
     verbose: Boolean = false): Expected[(Process, () => Unit)] = {
 
     val jarFiles = jarFilesForScala(engineDirPath).map(_.toURI)
-    val variantJson = engineDirPath + File.separator + wa.variantJson.getName
-    val ei = Console.getEngineInfo(new File(variantJson))
+    val variantJson = wa.variantJson.getOrElse(new File(engineDirPath, "engine.json"))
+    val ei = Console.getEngineInfo(
+      variantJson,
+      engineDirPath)
     val args = Seq(
       "--engine-id",
       ei.engineId,
       "--engine-version",
       ei.engineVersion,
       "--engine-variant",
-      variantJson,
+      variantJson.toURI.toString,
       "--verbosity",
       wa.verbosity.toString) ++
       wa.engineFactory.map(

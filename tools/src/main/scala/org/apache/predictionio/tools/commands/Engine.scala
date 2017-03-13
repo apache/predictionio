@@ -222,7 +222,8 @@ object Engine extends EitherLogging {
       return Left(verifyResult.left.get)
     }
     val ei = Console.getEngineInfo(
-      new File(engineDirPath, serverArgs.variantJson.getName))
+      serverArgs.variantJson.getOrElse(new File(engineDirPath, "engine.json")),
+      engineDirPath)
     val engineInstances = storage.Storage.getMetaDataEngineInstances
     val engineInstance = engineInstanceId map { eid =>
       engineInstances.get(eid)

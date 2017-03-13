@@ -120,10 +120,9 @@ object Console extends Logging {
         "deployment.")
       opt[String]("engine-dir") abbr("ed") action { (x, c) =>
         c.copy(engine = c.engine.copy(engineDir = Some(x)))
-      } text("Specify absolute path for engine directory, default to " +
-        "current directory.")
+      } text("Specify path for engine directory, default to current directory.")
       opt[File]("variant") abbr("v") action { (x, c) =>
-        c.copy(workflow = c.workflow.copy(variantJson = x))
+        c.copy(workflow = c.workflow.copy(variantJson = Some(x)))
       }
       opt[File]("sbt") action { (x, c) =>
         c.copy(build = c.build.copy(sbt = Some(x)))
@@ -734,7 +733,7 @@ object Console extends Logging {
     }
   }
 
-  def getEngineInfo(jsonFile: File): EngineInfo = {
+  def getEngineInfo(jsonFile: File, engineDir: String): EngineInfo = {
     // Use engineFactory as engineId
     val variantJson = parse(Source.fromFile(jsonFile).mkString)
     val engineId = variantJson \ "engineFactory" match {
@@ -754,7 +753,6 @@ object Console extends Logging {
     }
 
     // Use hash of engine directory as engineVersion
-    val engineDir = sys.props("user.dir")
     val engineVersion = java.security.MessageDigest.getInstance("SHA-1").
       digest(engineDir.getBytes).map("%02x".format(_)).mkString
 

@@ -47,7 +47,7 @@ case class ServerArgs(
   eventServer: EventServerArgs = EventServerArgs(),
   batch: String = "",
   accessKey: String = "",
-  variantJson: File = new File("engine.json"),
+  variantJson: Option[File] = None,
   jsonExtractor: JsonExtractorOption = JsonExtractorOption.Both)
 
 
@@ -68,7 +68,8 @@ object RunServer extends Logging {
       "--engineInstanceId",
       engineInstanceId,
       "--engine-variant",
-      engineDirPath + File.separator + serverArgs.variantJson.getName,
+      serverArgs.variantJson.getOrElse(
+        new File(engineDirPath, "engine.json")).getCanonicalPath,
       "--ip",
       serverArgs.deploy.ip,
       "--port",
