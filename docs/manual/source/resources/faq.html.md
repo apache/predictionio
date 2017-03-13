@@ -217,34 +217,39 @@ install a DNS server on your own computer. Some users have reported that using
 [Google Public DNS](https://developers.google.com/speed/public-dns/) would also
 solve the problem.
 
-### Q: How to fix Hbase issues after disk recovered from full state?
+### Q: How to fix HBase issues after cleaning up a disk that was full?
 
-You may receive error messages like `write error: No space left on device` 
-when disk is full, and also receive error from `pio status` even after 
-restarting pio services (due to 
+You may receive error messages like `write error: No space left on device`
+when disk is full, and also receive error from `pio status` even after
+restarting PredictionIO services (due to
 [an issue](https://issues.apache.org/jira/browse/ZOOKEEPER-1621) in ZooKeeper).
 
-The workaround is to delete newest `snapshot.xxxxx` and `log.xxxoo` under 
-zookeeper data directory (ex: `$(HbaseRoot)/zookeeper/zookeeper_0/version-2`). Then 
-restart all service with `pio-start-all`, and `pio status` will give you good answer.
+One quick fix is to delete the newest `snapshot.xxxxx` and `log.xxxoo` in the
+ZooKeeper data directory (e.g. `$HBASE_HOME/zookeeper/zookeeper_0/version-2`).
+Restart all services with `pio-start-all`, and use `pio status` to check whether
+your setup is good to go again.
 
-But If you still have problems connecting to event server, go checkout Hbase 
-dashboard to see if there are `regions under transition`, then follow the steps: 
+If you still have problems connecting to the event server, take a look at the
+HBase dashboard to see if there are `regions under transition`. If so, try the
+following:
 
-1. Try `hbase hbck -repair` and `hbase hbck -repairHoles`. If it solves the 
-problem then you are all set, otherwise continue on.
-2. Find out the failing regions by `hbase hbck`.
+1.  Try `hbase hbck -repair` and `hbase hbck -repairHoles`. If it solves the
+    problem, you are all set. Otherwise, continue on.
 
-	```
-	  ...
-	Summary:
-	Table pio_event:events_1 is inconsistent.
-	    Number of regions: 2
-	    Deployed on:  prediction.io,54829,1489213832255
-	  ...
-	  2 inconsistencies detected.
-	```
-3. Shutdown Hbase process and delete `recovered.edits` folders under hbase data 
-directory (ex: `$(HbaseRoot)/hbase/data/pio_event/events_1` in this example) 
-for failing regions.
-4. Run `hbase hbck -repairHoles` and restart all pio services.
+2.  Find out failing regions by `hbase hbck`.
+
+    ```
+    ...
+    Summary:
+    Table pio_event:events_1 is inconsistent.
+      Number of regions: 2
+      Deployed on:  prediction.io,54829,1489213832255
+    ...
+    2 inconsistencies detected.
+    ```
+
+3.  Shutdown HBase process and delete `recovered.edits` folders in the HBase
+    data directory (e.g. `$HBASE_HOME/hbase/data/pio_event/events_1` in this
+    example) for failing regions.
+
+4.  Run `hbase hbck -repairHoles` and restart all PredictionIO services.
