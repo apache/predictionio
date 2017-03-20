@@ -1,3 +1,5 @@
+#!/bin/bash -
+#
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -12,27 +14,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 
-version: "2"
-services:
-  elasticsearch:
-    image: elasticsearch:1
-    environment:
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-  hbase:
-    image: harisekhon/hbase:1.0
-  postgres:
-    image: postgres:9
-    environment:
-      POSTGRES_USER: pio
-      POSTGRES_PASSWORD: pio
-      POSTGRES_INITDB_ARGS: --encoding=UTF8
-  pio-testing:
-    image: predictionio/pio-testing-es1:latest
-    depends_on:
-      - elasticsearch
-      - hbase
-      - postgres
-    volumes:
-      - ~/.ivy2:/root/.ivy2
-      - ~/.sbt:/root/.sbt
+# Sets version of profile dependencies from sbt configuration.
+# eg. Run `source ./set_build_profile.sh scala-2.11`
+
+set -e
+
+if [[ "$#" -ne 1 ]]; then
+  echo "Usage: set-build-profile.sh <build-profile>"
+  exit 1
+fi
+
+set -a
+eval `$PIO_HOME/sbt/sbt --error 'set showSuccess := false' -Dbuild.profile=$1 printProfile | grep '.*_VERSION=.*'`
+set +a

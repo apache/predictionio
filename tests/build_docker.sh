@@ -14,37 +14,44 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-if [ ! -f $DIR/docker-files/spark-1.6.3-bin-hadoop2.6.tgz ]; then
-  wget http://d3kbcqa49mib13.cloudfront.net/spark-1.6.3-bin-hadoop2.6.tgz
-  mv spark-1.6.3-bin-hadoop2.6.tgz $DIR/docker-files/
-fi
-
-if [ ! -f $DIR/docker-files/postgresql-9.4-1204.jdbc41.jar ]; then
-  wget https://jdbc.postgresql.org/download/postgresql-9.4-1204.jdbc41.jar
-  mv postgresql-9.4-1204.jdbc41.jar $DIR/docker-files/
-fi
-
 docker pull predictionio/pio-testing-base
+
 pushd $DIR/..
-if [ -z "$ES_VERSION" ]; then
-    ./make-distribution.sh
-else
-    ./make-distribution.sh --with-es=$ES_VERSION
+
+source conf/pio-vendors.sh
+if [ ! -f $DIR/docker-files/${PGSQL_JAR} ]; then
+  wget $PGSQL_DOWNLOAD
+  mv ${PGSQL_JAR} $DIR/docker-files/
 fi
-sbt/sbt clean
+if [ ! -f $DIR/docker-files/${SPARK_ARCHIVE} ]; then
+  wget $SPARK_DOWNLOAD
+  mv $SPARK_ARCHIVE $DIR/docker-files/
+fi
+
+./make-distribution.sh \
+    -Dscala.version=$PIO_SCALA_VERSION \
+    -Dspark.version=$PIO_SPARK_VERSION \
+    -Dhadoop.version=$PIO_HADOOP_VERSION \
+    -Delasticsearch.version=$PIO_ELASTICSEARCH_VERSION
+sbt/sbt clean storage/clean
+rm -rf assembly
 mkdir assembly
 cp dist/lib/*.jar assembly/
+rm -rf lib/spark
 mkdir -p lib/spark
 cp dist/lib/spark/*.jar lib/spark
 rm *.tar.gz
 docker build -t predictionio/pio .
 popd
 
-if [ "$ES_VERSION" = "1" ]; then
-    docker build -t predictionio/pio-testing-es1 -f $DIR/Dockerfile-es1 $DIR
-else
-    docker build -t predictionio/pio-testing $DIR
-fi
+docker build -t predictionio/pio-testing $DIR \
+  --build-arg SPARK_ARCHIVE=$SPARK_ARCHIVE \
+  --build-arg SPARK_DIR=$SPARK_DIR \
+  --build-arg PGSQL_JAR=$PGSQL_JAR \
+  --build-arg PIO_SCALA_VERSION=$PIO_SCALA_VERSION \
+  --build-arg PIO_SPARK_VERSION=$PIO_SPARK_VERSION \
+  --build-arg PIO_ELASTICSEARCH_VERSION=$PIO_ELASTICSEARCH_VERSION

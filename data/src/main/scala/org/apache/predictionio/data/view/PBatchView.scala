@@ -18,19 +18,11 @@
 
 package org.apache.predictionio.data.view
 
-import org.apache.predictionio.data.storage.hbase.HBPEvents
-import org.apache.predictionio.data.storage.Event
-import org.apache.predictionio.data.storage.EventValidation
-import org.apache.predictionio.data.storage.DataMap
-import org.apache.predictionio.data.storage.Storage
-
-import org.joda.time.DateTime
-
-import org.json4s.JValue
-
+import org.apache.predictionio.data.storage.{DataMap, Event, EventValidation, Storage}
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
+import org.joda.time.DateTime
+import org.json4s.JValue
 
 
 // each JValue data associated with the time it is set

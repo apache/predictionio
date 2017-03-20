@@ -18,12 +18,10 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+source $DIR/../conf/pio-vendors.sh
+
 # Print a summary of containers used
 docker ps -a
 
 # Clean up used containers
-if [ "$ES_VERSION" = "1" ]; then
-    docker-compose -f $DIR/docker-compose-es1.yml down
-else
-    docker-compose -f $DIR/docker-compose.yml down
-fi
+docker-compose -f $DIR/docker-compose.yml down

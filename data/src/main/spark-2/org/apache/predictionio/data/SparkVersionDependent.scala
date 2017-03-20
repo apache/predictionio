@@ -15,14 +15,16 @@
  * limitations under the License.
  */
 
-import PIOBuild._
 
-name := "apache-predictionio-e2"
+package org.apache.predictionio.data
 
-parallelExecution in Test := false
+import org.apache.spark.SparkContext
+import org.apache.spark.sql.SparkSession
 
-libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-mllib" % sparkVersion.value % "provided",
-  "org.scalatest" %% "scalatest" % "2.2.5" % "test")
+object SparkVersionDependent {
 
-pomExtra := childrenPomExtra.value
+  def sqlSession(sc: SparkContext): SparkSession = {
+    SparkSession.builder().getOrCreate()
+  }
+
+}

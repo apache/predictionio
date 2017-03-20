@@ -46,17 +46,10 @@ shift
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-if [ "$ES_VERSION" = "1" ]; then
-    docker-compose -f $DIR/docker-compose-es1.yml run \
-      -e PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=$META \
-      -e PIO_STORAGE_REPOSITORIES_EVENTDATA_SOURCE=$EVENT \
-      -e PIO_STORAGE_REPOSITORIES_MODELDATA_SOURCE=$MODEL \
-      pio-testing $@
-else
-    docker-compose -f $DIR/docker-compose.yml run \
-      -e PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=$META \
-      -e PIO_STORAGE_REPOSITORIES_EVENTDATA_SOURCE=$EVENT \
-      -e PIO_STORAGE_REPOSITORIES_MODELDATA_SOURCE=$MODEL \
-      pio-testing $@
-fi
+source $DIR/../conf/pio-vendors.sh
 
+docker-compose -f $DIR/docker-compose.yml run \
+  -e PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=$META \
+  -e PIO_STORAGE_REPOSITORIES_EVENTDATA_SOURCE=$EVENT \
+  -e PIO_STORAGE_REPOSITORIES_MODELDATA_SOURCE=$MODEL \
+  pio-testing $@

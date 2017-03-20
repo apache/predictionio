@@ -14,20 +14,31 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 
-# Run license check
 pushd /PredictionIO
 
+# Run license check
 ./tests/check_license.sh
 
 # Prepare pio environment variables
 set -a
-source conf/pio-env.sh
+source ./conf/pio-env.sh
 set +a
+source ./conf/pio-vendors.sh
 
 # Run stylecheck
-sbt/sbt scalastyle
+sbt/sbt scalastyle \
+    -Dscala.version=$PIO_SCALA_VERSION \
+    -Dspark.version=$PIO_SPARK_VERSION \
+    -Dhadoop.version=$PIO_HADOOP_VERSION \
+    -Delasticsearch.version=$PIO_ELASTICSEARCH_VERSION
+
 # Run all unit tests
-sbt/sbt test
+sbt/sbt dataJdbc/compile test storage/test \
+    -Dscala.version=$PIO_SCALA_VERSION \
+    -Dspark.version=$PIO_SPARK_VERSION \
+    -Dhadoop.version=$PIO_HADOOP_VERSION \
+    -Delasticsearch.version=$PIO_ELASTICSEARCH_VERSION
 
 popd

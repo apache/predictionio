@@ -15,36 +15,26 @@
  * limitations under the License.
  */
 
+import PIOBuild._
+
 name := "apache-predictionio-data-elasticsearch"
 
-elasticsearchVersion := "5.2.1"
+elasticsearchSparkArtifact := (if (majorVersion(sparkVersion.value) == 2) "elasticsearch-spark-20" else "elasticsearch-spark-13")
 
 libraryDependencies ++= Seq(
   "org.apache.predictionio" %% "apache-predictionio-core" % version.value % "provided",
-  "org.apache.predictionio" %% "apache-predictionio-data" % version.value % "provided",
-  "org.apache.spark"        %% "spark-core"     % sparkVersion.value % "provided",
-  "org.apache.spark"        %% "spark-sql"      % sparkVersion.value % "provided",
-  "org.elasticsearch.client" % "rest"           % elasticsearchVersion.value,
-  "org.elasticsearch"       %% "elasticsearch-spark-13" % elasticsearchVersion.value
-    exclude("org.apache.spark", "spark-sql_2.10")
-    exclude("org.apache.spark", "spark-streaming_2.10"),
-  "org.elasticsearch"        % "elasticsearch-hadoop-mr" % elasticsearchVersion.value,
-  "org.scalatest"           %% "scalatest"      % "2.1.7" % "test",
-  "org.specs2"              %% "specs2"         % "2.3.13" % "test")
+  "org.apache.spark"        %% "spark-core"               % sparkVersion.value % "provided",
+  "org.elasticsearch.client" % "rest"                     % elasticsearchVersion.value,
+  "org.elasticsearch"       %% elasticsearchSparkArtifact.value % elasticsearchVersion.value
+    exclude("org.apache.spark", "*"),
+  "org.elasticsearch"        % "elasticsearch-hadoop-mr"  % elasticsearchVersion.value,
+  "org.scalatest"           %% "scalatest"                % "2.1.7" % "test")
 
 parallelExecution in Test := false
 
 pomExtra := childrenPomExtra.value
 
-assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false, includeDependency = true)
-
-assemblyMergeStrategy in assembly := {
-  case PathList("META-INF", "LICENSE.txt") => MergeStrategy.concat
-  case PathList("META-INF", "NOTICE.txt")  => MergeStrategy.concat
-  case x =>
-    val oldStrategy = (assemblyMergeStrategy in assembly).value
-    oldStrategy(x)
-}
+assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false)
 
 assemblyShadeRules in assembly := Seq(
   ShadeRule.rename("org.apache.http.**" -> "shadeio.data.http.@1").inAll
