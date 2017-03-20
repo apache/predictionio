@@ -16,7 +16,6 @@
  */
 
 import PIOBuild._
-import UnidocKeys._
 
 lazy val scalaSparkDepsVersion = Map(
   "2.10" -> Map(
@@ -56,6 +55,8 @@ scalaVersion in ThisBuild := sys.props.getOrElse("scala.version", "2.10.6")
 
 crossScalaVersions in ThisBuild := Seq("2.10.6", "2.11.8")
 
+crossScalaVersions in ThisBuild := Seq(scalaVersion.value, "2.11.8")
+
 scalacOptions in ThisBuild ++= Seq("-deprecation", "-unchecked", "-feature")
 
 scalacOptions in (ThisBuild, Test) ++= Seq("-Yrangepos")
@@ -89,15 +90,11 @@ val pioBuildInfoSettings = buildInfoSettings ++ Seq(
     name,
     version,
     scalaVersion,
+    scalaBinaryVersion,
     sbtVersion,
     sparkVersion,
     hadoopVersion),
   buildInfoPackage := "org.apache.predictionio.core")
-
-// Used temporarily to modify genjavadoc version to "0.10" until unidoc updates it
-val genjavadocSettings: Seq[sbt.Def.Setting[_]] = Seq(
-  libraryDependencies += compilerPlugin("com.typesafe.genjavadoc" %% "genjavadoc-plugin" % "0.10" cross CrossVersion.full),
-    scalacOptions <+= target map (t => "-P:genjavadoc:out=" + (t / "java")))
 
 val conf = file("conf")
 
@@ -113,44 +110,43 @@ val commonTestSettings = Seq(
 
 val dataElasticsearch1 = (project in file("storage/elasticsearch1")).
   settings(commonSettings: _*).
-  settings(genjavadocSettings: _*).
+  enablePlugins(GenJavadocPlugin).
   settings(publishArtifact := false)
 
 val dataElasticsearch = (project in file("storage/elasticsearch")).
   settings(commonSettings: _*).
-  settings(genjavadocSettings: _*).
   settings(publishArtifact := false)
 
 val dataHbase = (project in file("storage/hbase")).
   settings(commonSettings: _*).
-  settings(genjavadocSettings: _*).
+  enablePlugins(GenJavadocPlugin).
   settings(publishArtifact := false)
 
 val dataHdfs = (project in file("storage/hdfs")).
   settings(commonSettings: _*).
-  settings(genjavadocSettings: _*).
+  enablePlugins(GenJavadocPlugin).
   settings(publishArtifact := false)
 
 val dataJdbc = (project in file("storage/jdbc")).
   settings(commonSettings: _*).
-  settings(genjavadocSettings: _*).
+  enablePlugins(GenJavadocPlugin).
   settings(publishArtifact := false)
 
 val dataLocalfs = (project in file("storage/localfs")).
   settings(commonSettings: _*).
-  settings(genjavadocSettings: _*).
+  enablePlugins(GenJavadocPlugin).
   settings(publishArtifact := false)
 
 val common = (project in file("common")).
   settings(commonSettings: _*).
-  settings(genjavadocSettings: _*).
+  enablePlugins(GenJavadocPlugin).
   disablePlugins(sbtassembly.AssemblyPlugin)
 
 val data = (project in file("data")).
   dependsOn(common).
   settings(commonSettings: _*).
   settings(commonTestSettings: _*).
-  settings(genjavadocSettings: _*).
+  enablePlugins(GenJavadocPlugin).
   settings(unmanagedSourceDirectories in Compile +=
     sourceDirectory.value / s"main/spark-${majorVersion(sparkVersion.value)}").
   disablePlugins(sbtassembly.AssemblyPlugin)
@@ -159,7 +155,7 @@ val core = (project in file("core")).
   dependsOn(data).
   settings(commonSettings: _*).
   settings(commonTestSettings: _*).
-  settings(genjavadocSettings: _*).
+  enablePlugins(GenJavadocPlugin).
   settings(pioBuildInfoSettings: _*).
   enablePlugins(SbtTwirl).
   disablePlugins(sbtassembly.AssemblyPlugin)
@@ -169,13 +165,13 @@ val tools = (project in file("tools")).
   dependsOn(data).
   settings(commonSettings: _*).
   settings(commonTestSettings: _*).
-  settings(genjavadocSettings: _*).
+  enablePlugins(GenJavadocPlugin).
   enablePlugins(SbtTwirl).
   settings(publishArtifact := false)
 
 val e2 = (project in file("e2")).
   settings(commonSettings: _*).
-  settings(genjavadocSettings: _*).
+  enablePlugins(GenJavadocPlugin).
   disablePlugins(sbtassembly.AssemblyPlugin)
 
 val dataEs = if (majorVersion(es) == 1) dataElasticsearch1 else dataElasticsearch
@@ -193,9 +189,10 @@ val storage = (project in file("storage"))
 
 val root = (project in file(".")).
   settings(commonSettings: _*).
-  // settings(scalaJavaUnidocSettings: _*).
-  settings(unidocSettings: _*).
+  enablePlugins(ScalaUnidocPlugin).
   settings(
+    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(dataElasticsearch),
+    unidocProjectFilter in (JavaUnidoc, unidoc) := inAnyProject -- inProjects(dataElasticsearch),
     scalacOptions in (ScalaUnidoc, unidoc) ++= Seq(
       "-groups",
       "-skip-packages",

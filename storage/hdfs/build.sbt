@@ -38,4 +38,5 @@ assemblyOption in assembly := (assemblyOption in assembly).value.copy(
 // skip test in assembly
 test in assembly := {}
 
-assemblyOutputPath in assembly := baseDirectory.value.getAbsoluteFile.getParentFile.getParentFile / "assembly" / "spark" / ("pio-data-hdfs-assembly-" + version.value + ".jar")
+assemblyOutputPath in assembly := baseDirectory.value.getAbsoluteFile.getParentFile.getParentFile /
+  "assembly" / "spark" / ("pio-data-hdfs-assembly-" + version.value + ".jar")

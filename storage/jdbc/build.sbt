@@ -35,4 +35,5 @@ assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeSca
 // skip test in assembly
 test in assembly := {}
 
-assemblyOutputPath in assembly := baseDirectory.value.getAbsoluteFile.getParentFile.getParentFile / "assembly" / "spark" / ("pio-data-jdbc-assembly-" + version.value + ".jar")
+assemblyOutputPath in assembly := baseDirectory.value.getAbsoluteFile.getParentFile.getParentFile /
+  "assembly" / "spark" / s"pio-data-jdbc-assembly-${version.value}.jar"

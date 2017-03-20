@@ -55,19 +55,18 @@ object IdentityPreparator {
   * @tparam TD Training data class.
   * @group Preparator
   */
-@deprecated("Use IdentityPreparator instead.", "0.9.2")
 class PIdentityPreparator[TD] extends IdentityPreparator[TD]
 
 /** DEPRECATED. Use [[IdentityPreparator]] instead.
   *
   * @group Preparator
   */
-@deprecated("Use IdentityPreparator instead.", "0.9.2")
 object PIdentityPreparator {
   /** Produces an instance of the class of [[IdentityPreparator]].
     *
     * @param ds Instance of the class of the data source for this preparator.
     */
+  @deprecated("Use IdentityPreparator instead.", "0.9.2")
   def apply[TD](ds: Class[_ <: BaseDataSource[TD, _, _, _]]): Class[IdentityPreparator[TD]] =
     classOf[IdentityPreparator[TD]]
 }
@@ -77,19 +76,18 @@ object PIdentityPreparator {
   * @tparam TD Training data class.
   * @group Preparator
   */
-@deprecated("Use IdentityPreparator instead.", "0.9.2")
 class LIdentityPreparator[TD] extends IdentityPreparator[TD]
 
 /** DEPRECATED. Use [[IdentityPreparator]] instead.
   *
   * @group Preparator
   */
-@deprecated("Use IdentityPreparator instead.", "0.9.2")
 object LIdentityPreparator {
   /** Produces an instance of the class of [[IdentityPreparator]].
     *
     * @param ds Instance of the class of the data source for this preparator.
     */
+  @deprecated("Use IdentityPreparator instead.", "0.9.2")
   def apply[TD](ds: Class[_ <: BaseDataSource[TD, _, _, _]]): Class[IdentityPreparator[TD]] =
     classOf[IdentityPreparator[TD]]
 }

@@ -27,7 +27,7 @@ libraryDependencies ++= Seq(
   "io.spray"               %% "spray-testkit"  % "1.3.3" % "test",
   "org.specs2"             %% "specs2"         % "2.3.13" % "test")
 
-dependencyOverrides +=   "org.slf4j" % "slf4j-log4j12" % "1.7.18"
+dependencyOverrides += "org.slf4j" % "slf4j-log4j12" % "1.7.18"
 
 assemblyMergeStrategy in assembly := {
   case PathList("META-INF", "LICENSE.txt") => MergeStrategy.concat
@@ -37,7 +37,7 @@ assemblyMergeStrategy in assembly := {
     oldStrategy(x)
 }
 
-excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
+assemblyExcludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
   cp filter { _.data.getName match {
     case "reflectasm-1.10.1.jar" => true
     case "kryo-3.0.3.jar" => true
@@ -54,8 +54,8 @@ assemblyShadeRules in assembly := Seq(
 // skip test in assembly
 test in assembly := {}
 
-outputPath in assembly := baseDirectory.value.getAbsoluteFile.getParentFile /
-  "assembly" / ("pio-assembly-" + version.value + ".jar")
+assemblyOutputPath in assembly := baseDirectory.value.getAbsoluteFile.getParentFile /
+  "assembly" / s"pio-assembly-${version.value}.jar"
 
 cleanFiles <+= baseDirectory { base => base.getParentFile / "assembly" }
 

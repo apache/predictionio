@@ -91,7 +91,10 @@ case class StorageClientConfig(
 class StorageClientException(message: String, cause: Throwable)
   extends RuntimeException(message, cause)
 
-@deprecated("Use StorageException", "0.9.2")
+/** DEPRECATED. Use [[StorageException]].
+  *
+  * @deprecated Use [[StorageException]]
+  */
 private[predictionio] case class StorageError(message: String)
 
 /** :: DeveloperApi ::

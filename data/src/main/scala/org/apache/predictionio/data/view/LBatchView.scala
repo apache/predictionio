@@ -28,47 +28,54 @@ import scala.language.implicitConversions
 
 import scala.concurrent.ExecutionContext.Implicits.global // TODO
 
-@deprecated("Use LEvents or LEventStore instead.", "0.9.2")
 object ViewPredicates {
+  @deprecated("Use LEvents or LEventStore instead.", "0.9.2")
   def getStartTimePredicate(startTimeOpt: Option[DateTime])
   : (Event => Boolean) = {
     startTimeOpt.map(getStartTimePredicate).getOrElse(_ => true)
   }
 
+  @deprecated("Use LEvents or LEventStore instead.", "0.9.2")
   def getStartTimePredicate(startTime: DateTime): (Event => Boolean) = {
     e => (!(e.eventTime.isBefore(startTime) || e.eventTime.isEqual(startTime)))
   }
 
+  @deprecated("Use LEvents or LEventStore instead.", "0.9.2")
   def getUntilTimePredicate(untilTimeOpt: Option[DateTime])
   : (Event => Boolean) = {
     untilTimeOpt.map(getUntilTimePredicate).getOrElse(_ => true)
   }
 
+  @deprecated("Use LEvents or LEventStore instead.", "0.9.2")
   def getUntilTimePredicate(untilTime: DateTime): (Event => Boolean) = {
     _.eventTime.isBefore(untilTime)
   }
 
+  @deprecated("Use LEvents or LEventStore instead.", "0.9.2")
   def getEntityTypePredicate(entityTypeOpt: Option[String]): (Event => Boolean)
   = {
     entityTypeOpt.map(getEntityTypePredicate).getOrElse(_ => true)
   }
 
+  @deprecated("Use LEvents or LEventStore instead.", "0.9.2")
   def getEntityTypePredicate(entityType: String): (Event => Boolean) = {
     (_.entityType == entityType)
   }
 
+  @deprecated("Use LEvents or LEventStore instead.", "0.9.2")
   def getEventPredicate(eventOpt: Option[String]): (Event => Boolean)
   = {
     eventOpt.map(getEventPredicate).getOrElse(_ => true)
   }
 
+  @deprecated("Use LEvents or LEventStore instead.", "0.9.2")
   def getEventPredicate(event: String): (Event => Boolean) = {
     (_.event == event)
   }
 }
 
-@deprecated("Use LEvents instead.", "0.9.2")
 object ViewAggregators {
+  @deprecated("Use LEvents instead.", "0.9.2")
   def getDataMapAggregator(): ((Option[DataMap], Event) => Option[DataMap]) = {
     (p, e) => {
       e.event match {
@@ -93,19 +100,20 @@ object ViewAggregators {
   }
 }
 
-@deprecated("Use LEvents instead.", "0.9.2")
 object EventSeq {
   // Need to
   // >>> import scala.language.implicitConversions
   // to enable implicit conversion. Only import in the code where this is
   // necessary to avoid confusion.
+  @deprecated("Use LEvents instead.", "0.9.2")
   implicit def eventSeqToList(es: EventSeq): List[Event] = es.events
+  @deprecated("Use LEvents instead.", "0.9.2")
   implicit def listToEventSeq(l: List[Event]): EventSeq = new EventSeq(l)
 }
 
 
-@deprecated("Use LEvents instead.", "0.9.2")
 class EventSeq(val events: List[Event]) {
+  @deprecated("Use LEvents instead.", "0.9.2")
   def filter(
     eventOpt: Option[String] = None,
     entityTypeOpt: Option[String] = None,
@@ -119,8 +127,10 @@ class EventSeq(val events: List[Event]) {
     .filter(ViewPredicates.getEntityTypePredicate(entityTypeOpt))
   }
 
+  @deprecated("Use LEvents instead.", "0.9.2")
   def filter(p: (Event => Boolean)): EventSeq = events.filter(p)
 
+  @deprecated("Use LEvents instead.", "0.9.2")
   def aggregateByEntityOrdered[T](init: T, op: (T, Event) => T)
   : Map[String, T] = {
     events
@@ -133,7 +143,6 @@ class EventSeq(val events: List[Event]) {
 }
 
 
-@deprecated("Use LEventStore instead.", "0.9.2")
 class LBatchView(
   val appId: Int,
   val startTime: Option[DateTime],
@@ -156,6 +165,7 @@ class LBatchView(
    * @param untilTimeOpt if specified, only aggregate event until (exclusive)
    * endTimeOpt
    */
+  @deprecated("Use LEventStore instead.", "0.9.2")
   def aggregateProperties(
       entityType: String,
       startTimeOpt: Option[DateTime] = None,
@@ -172,32 +182,4 @@ class LBatchView(
     .mapValues(_.get)
 
   }
-
-  /*
-  def aggregateByEntityOrdered[T](
-    predicate: Event => Boolean,
-    init: T,
-    op: (T, Event) => T): Map[String, T] = {
-
-    _events
-      .filter( predicate(_) )
-      .groupBy( _.entityId )
-      .mapValues( _.sortBy(_.eventTime.getMillis).foldLeft[T](init)(op))
-      .toMap
-
-  }
-  */
-
-  /*
-  def groupByEntityOrdered[T](
-    predicate: Event => Boolean,
-    map: Event => T): Map[String, Seq[T]] = {
-
-    _events
-      .filter( predicate(_) )
-      .groupBy( _.entityId )
-      .mapValues( _.sortBy(_.eventTime.getMillis).map(map(_)) )
-      .toMap
-  }
-  */
 }
