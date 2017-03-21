@@ -54,4 +54,5 @@ docker build -t predictionio/pio-testing $DIR \
   --build-arg PGSQL_JAR=$PGSQL_JAR \
   --build-arg PIO_SCALA_VERSION=$PIO_SCALA_VERSION \
   --build-arg PIO_SPARK_VERSION=$PIO_SPARK_VERSION \
+  --build-arg PIO_HADOOP_VERSION=$PIO_HADOOP_VERSION \
   --build-arg PIO_ELASTICSEARCH_VERSION=$PIO_ELASTICSEARCH_VERSION
