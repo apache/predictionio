@@ -61,7 +61,7 @@ end
 # Build Settings
 configure :build do
   set :scheme, 'https'
-  set :host, 'docs.prediction.io'
+  set :host, 'predictionio.incubator.apache.org'
   set :port, 80
   Slim::Engine.set_options pretty: false, sort_attrs: false
   activate :asset_hash
@@ -88,7 +88,7 @@ end
 
 # S3 Sync
 activate :s3_sync do |s3_sync|
-  s3_sync.bucket = 'docs.prediction.io'
+  s3_sync.bucket = 'predictionio.incubator.apache.org'
   s3_sync.prefer_gzip = false
 end
 

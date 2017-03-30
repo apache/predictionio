@@ -27,8 +27,8 @@
 # SPARK_HOME=$PIO_HOME/vendors/spark-2.0.2-bin-hadoop2.7
 SPARK_HOME=$PIO_HOME/vendors/spark-1.6.3-bin-hadoop2.6
 
-POSTGRES_JDBC_DRIVER=$PIO_HOME/lib/postgresql-9.4-1204.jdbc41.jar
-MYSQL_JDBC_DRIVER=$PIO_HOME/lib/mysql-connector-java-5.1.37.jar
+POSTGRES_JDBC_DRIVER=$PIO_HOME/lib/postgresql-42.0.0.jar
+MYSQL_JDBC_DRIVER=$PIO_HOME/lib/mysql-connector-java-5.1.41.jar
 
 # ES_CONF_DIR: You must configure this if you have advanced configuration for
 #              your Elasticsearch setup.

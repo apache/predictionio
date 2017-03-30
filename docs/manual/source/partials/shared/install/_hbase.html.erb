@@ -15,11 +15,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-[HBase](http://hbase.apache.org) is the default event data store for
-PredictionIO. Download and extract it.
+[HBase](http://hbase.apache.org) can be used as the backend of the event data
+repository.
+
+Download HBase from a [mirror](http://www.apache.org/dyn/closer.cgi/hbase/<%=
+data.versions.hbase_version %>/<%= data.versions.hbase_basename %>-<%=
+data.versions.hbase_variant %>.tar.gz). Extract HBase by following the example
+below.
 
 ```
-$ wget http://archive.apache.org/dist/hbase/<%= data.versions.hbase_basename %>/<%= data.versions.hbase_basename %>-<%= data.versions.hbase_variant %>.tar.gz
 $ tar zxvfC <%= data.versions.hbase_basename %>-<%= data.versions.hbase_variant %>.tar.gz PredictionIO-<%= data.versions.pio %>/vendors
 ```
 

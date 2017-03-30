@@ -21,17 +21,28 @@ limitations under the License.
 
 This page highlights major changes in each version and upgrade tools.
 
-# How to upgrade
+# How to Upgrade
 
 To upgrade and use new version of PredictionIO, do the following:
 
-- Download and unzip the new PredictionIO binary (the download path can be found in the [Download PredictionIO section](/install/install-linux/#method-2:-manual-install))
-- Retain the setting from current PredictionIO/conf/pio-env.sh to the new PredictionIO/conf/pio-env.sh.
-- If you have added PredictionIO/bin to your `PATH` environment variable before, change it to the new PredictionIO/bin as well.
+- Download and build the new PredictionIO binary
+  [(instructions)](/install/install-sourcecode/).
+- Retain the setting from current `PredictionIO/conf/pio-env.sh` to the new
+  `PredictionIO/conf/pio-env.sh`.
+- If you have added `PredictionIO/bin` to your `PATH` environment variable before,
+  change it to the new `PredictionIO/bin` as well.
 
 # Additional Notes for Specific Versions Upgrade
 
 In addition, please take notes of the following for specific version upgrade.
+
+## Upgrade to 0.11.0
+
+Starting from 0.11.0, PredictionIO no longer bundles any JDBC drivers in the
+binary assembly. If your setup is using a JDBC backend and you run into storage
+connection errors after an upgrade, please manually install the JDBC driver. If
+you use PostgreSQL, you can find instructions
+[here](/install/install-sourcecode#pgsql).
 
 ## Upgrade to 0.9.2
 

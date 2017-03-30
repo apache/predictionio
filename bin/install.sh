@@ -22,8 +22,8 @@ SPARK_VERSION=1.6.3
 # Looks like support for Elasticsearch 2.0 will require 2.0 so deferring
 ELASTICSEARCH_VERSION=1.7.5
 HBASE_VERSION=1.2.2
-POSTGRES_VERSION=9.4-1204.jdbc41
-MYSQL_VERSION=5.1.37
+POSTGRES_VERSION=42.0.0
+MYSQL_VERSION=5.1.41
 PIO_DIR=$HOME/PredictionIO
 USER_PROFILE=$HOME/.profile
 PIO_FILE=PredictionIO-*.tar.gz
@@ -284,9 +284,9 @@ files=$(ls PredictionIO*.tar.gz 2> /dev/null | wc -l)
 
 if [[ $files == 0 ]]; then
   echo "Downloading PredictionIO..."
-  curl -L https://codeload.github.com/apache/incubator-predictionio/tar.gz/master > incubator-predictionio-master.tar.gz 
+  curl -L https://codeload.github.com/apache/incubator-predictionio/tar.gz/master > incubator-predictionio-master.tar.gz
 
-  tar zxf incubator-predictionio-master.tar.gz 
+  tar zxf incubator-predictionio-master.tar.gz
 
   mv incubator-predictionio-master PredictionIO
 

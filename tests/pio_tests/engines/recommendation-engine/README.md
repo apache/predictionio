@@ -19,7 +19,7 @@ limitations under the License.
 
 ## Documentation
 
-Please refer to http://docs.prediction.io/templates/recommendation/quickstart/
+Please refer to http://predictionio.incubator.apache.org/templates/recommendation/quickstart/
 
 ## Versions
 

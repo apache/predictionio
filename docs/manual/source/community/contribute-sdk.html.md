@@ -26,7 +26,7 @@ corresponding clients: `Event Client` and `Engine Client`.
 
 The following guideline bases on the REST API provided by Apache PredictionIO
 (incubating)'s  Event Client which details can be found
-[here](http://docs.prediction.io/datacollection/eventapi/).
+[here](http://predictionio.incubator.apache.org/datacollection/eventapi/).
 
 ## Event Client
 Because the Event Server has only 1 connection point, the `Event Client`
@@ -37,7 +37,7 @@ following rules.
 (e.g. http://localhost:7070/events.json?accessKey=1234567890)
 
 - **Request**: `POST` + JSON data. Please refer to the [Event Creation API]
-(http://docs.prediction.io/datacollection/eventapi/) for the details
+(http://predictionio.incubator.apache.org/datacollection/eventapi/) for the details
 on the fields of the JSON data object.
 
 - **Response**:
@@ -134,7 +134,7 @@ support the following 7 shorthand operations:
         ```
 
 Again, please refer to the [API documentation]
-(http://docs.prediction.io/datacollection/eventapi/) for explanations
+(http://predictionio.incubator.apache.org/datacollection/eventapi/) for explanations
 on the reversed events like `$set`, `$unset` or `$delete`.
 
 INFO: The `eventTime` is optional but it is recommended that the client

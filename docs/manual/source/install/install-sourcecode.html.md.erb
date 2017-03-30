@@ -32,7 +32,12 @@ data.versions.pio %>.tar.gz).
 ## Building
 
 Run the following at the directory where you downloaded the source code to build
-Apache PredictionIO (incubating).
+Apache PredictionIO (incubating). By default, the build will be against
+
+* Scala 2.10.6
+* Spark 1.6.3
+* Hadoop 2.6.5
+* Elasticsearch 1.7.6
 
 ```
 $ tar zxvf apache-predictionio-<%= data.versions.pio %>.tar.gz
@@ -57,6 +62,23 @@ Extract the binary distribution you have just built.
 $ tar zxvf PredictionIO-<%= data.versions.pio %>.tar.gz
 ```
 
+### Building against Different Versions of Dependencies
+
+Starting from version 0.11.0, PredictionIO can be built against different
+versions of dependencies. As of writing, one could build PredictionIO against
+these different dependencies:
+
+* Scala 2.10.x, 2.11.x
+* Spark 1.6.x, 2.x
+* Hadoop 2.4.x to 2.7.x
+* Elasticsearch 1.x, 5.x
+
+As an example, if you want to build PredictionIO to support Scala 2.11.8,
+Spark 2.1.0, and Elasticsearch 5.3.0, you can do
+
+```
+$ ./make-distribution.sh -Dscala.version=2.11.8 -Dspark.version=2.1.0 -Delasticsearch.version=5.3.0
+```
 
 ## Installing Dependencies
 
@@ -76,7 +98,9 @@ $ mkdir PredictionIO-<%= data.versions.pio %>/vendors
 
 ### Storage Setup
 
-#### PostgreSQL Setup
+#### <a name="pgsql"></a>PostgreSQL Setup
+
+WARNING: You may skip this section if you are not using PostgreSQL.
 
 <%=partial 'shared/install/postgres' %>
 
@@ -84,14 +108,14 @@ $ mkdir PredictionIO-<%= data.versions.pio %>/vendors
 
 ##### Elasticsearch Setup
 
-WARNING: You may skip this section if you are using PostgreSQL or MySQL.
+WARNING: You may skip this section if you are not using Elasticsearch.
 
 <%= partial 'shared/install/elasticsearch' %>
 
 
 ##### <a name="hbase"></a>HBase Setup
 
-WARNING: You may skip this section if you are using PostgreSQL or MySQL.
+WARNING: You may skip this section if you are not using HBase.
 
 <%= partial 'shared/install/hbase' %>
 

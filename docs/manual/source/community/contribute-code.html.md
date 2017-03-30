@@ -124,7 +124,7 @@ After the previous section, you should have a copy of Apache PredictionIO
 
 Apache PredictionIO (incubating) relies on 3rd party software to perform its
 tasks. To set them up, simply follow this [documentation](
-http://docs.prediction.io/install/install-sourcecode/#installing-dependencies).
+http://predictionio.incubator.apache.org/install/install-sourcecode/#installing-dependencies).
 
 ### Start Hacking
 

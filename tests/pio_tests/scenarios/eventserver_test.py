@@ -28,8 +28,8 @@ from pio_tests.integration import BaseTestCase, AppContext
 class EventserverTest(BaseTestCase):
   """ Integration test for PredictionIO Eventserver API
   Refer to below for further information:
-    http://docs.prediction.io/datacollection/eventmodel/
-    http://docs.prediction.io/datacollection/eventapi/
+    http://predictionio.incubator.apache.org/datacollection/eventmodel/
+    http://predictionio.incubator.apache.org/datacollection/eventapi/
   """
   # Helper methods
   def eventserver_url(self, path=None):

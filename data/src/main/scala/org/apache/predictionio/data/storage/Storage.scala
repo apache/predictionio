@@ -362,22 +362,52 @@ object Storage extends Logging {
     eventsDb.close()
   }
 
-  private[predictionio] def getMetaDataEngineInstances(): EngineInstances =
+  /** :: DeveloperApi ::
+    * Get a data access object for [[EngineInstances]]
+    *
+    * @return An implementation of [[EngineInstances]], depending on the runtime configuration
+    */
+  def getMetaDataEngineInstances(): EngineInstances =
     getDataObjectFromRepo[EngineInstances](MetaDataRepository)
 
-  private[predictionio] def getMetaDataEvaluationInstances(): EvaluationInstances =
+  /** :: DeveloperApi ::
+    * Get a data access object for [[EvaluationInstances]]
+    *
+    * @return An implementation of [[EvaluationInstances]], depending on the runtime configuration
+    */
+  def getMetaDataEvaluationInstances(): EvaluationInstances =
     getDataObjectFromRepo[EvaluationInstances](MetaDataRepository)
 
-  private[predictionio] def getMetaDataApps(): Apps =
+  /** :: DeveloperApi ::
+    * Get a data access object for [[Apps]]
+    *
+    * @return An implementation of [[Apps]], depending on the runtime configuration
+    */
+  def getMetaDataApps(): Apps =
     getDataObjectFromRepo[Apps](MetaDataRepository)
 
-  private[predictionio] def getMetaDataAccessKeys(): AccessKeys =
+  /** :: DeveloperApi ::
+    * Get a data access object for [[AccessKeys]]
+    *
+    * @return An implementation of [[AccessKeys]], depending on the runtime configuration
+    */
+  def getMetaDataAccessKeys(): AccessKeys =
     getDataObjectFromRepo[AccessKeys](MetaDataRepository)
 
-  private[predictionio] def getMetaDataChannels(): Channels =
+  /** :: DeveloperApi ::
+    * Get a data access object for [[Channels]]
+    *
+    * @return An implementation of [[Channels]], depending on the runtime configuration
+    */
+  def getMetaDataChannels(): Channels =
     getDataObjectFromRepo[Channels](MetaDataRepository)
 
-  private[predictionio] def getModelDataModels(): Models =
+  /** :: DeveloperApi ::
+    * Get a data access object for [[Models]]
+    *
+    * @return An implementation of [[Models]], depending on the runtime configuration
+    */
+  def getModelDataModels(): Models =
     getDataObjectFromRepo[Models](ModelDataRepository)
 
   /** Obtains a data access object that returns [[Event]] related local data

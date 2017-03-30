@@ -158,10 +158,13 @@ object Management extends EitherLogging {
       case e: Throwable =>
         val errStr = s"""Unable to connect to all storage backends successfully.
             |The following shows the error message from the storage backend.
-            |${e.getMessage} (${e.getClass.getName})", e)
+            |
+            |${e.getMessage} (${e.getClass.getName})
+            |
             |Dumping configuration of initialized storage backend sources.
-            |"Please make sure they are correct.
-            |"""
+            |Please make sure they are correct.
+            |
+            |""".stripMargin
         val sources = storage.Storage.config.get("sources") map { src =>
           src map { case (s, p) =>
             s"Source Name: $s; Type: ${p.getOrElse("type", "(error)")}; " +

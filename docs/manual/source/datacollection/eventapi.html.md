@@ -27,14 +27,14 @@ with `EventClient`s of PredictionIO's SDKs.
 INFO: All Apache PredictionIO (incubating)-compliant engines support accessing
 the Event Store (i.e. the data store of Event Server) through [Apache
 PredictionIO (incubating)'s Storage
-API](http://docs.prediction.io/api/current/index.html#io.prediction.data.storage.package).
+API](http://predictionio.incubator.apache.org/api/current/index.html#org.apache.predictionio.data.storage.package).
 
 ## Launching the Event Server
 
 INFO: Before launching the Event Server, make sure that your event data store
 backend is properly configured and is running. By default, Apache PredictionIO
 (incubating) uses Apache HBase, and a quick configuration can be found
-[here](/install/install-linux.html#hbase). Please allow a minute (usually less
+[here](/install/install-sourcecode/#hbase). Please allow a minute (usually less
 than 30 seconds) after HBase is started for its initialization to complete
 before starting the Event Server.
 

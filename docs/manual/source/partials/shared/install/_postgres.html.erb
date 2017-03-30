@@ -15,25 +15,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-Setting up [PostgreSQL](http://www.postgresql.org/) to work with PredictionIO.
+[PostgreSQL](https://www.postgresql.org/) can be used by PredictionIO as a
+storage backend for all 3 repositories (event data, meta data, and model data).
+This is perhaps the easiest route if you are trying PredictionIO for the first
+time.
 
-Make sure you have PostgreSQL installed. For Mac Users, [Homebrew](brew.sh) is recommended and can be used as
+Make sure you have PostgreSQL installed. For Mac Users,
+[Homebrew](https://brew.sh/) is recommended and can be used as
 
 ```
 $ brew install postgresql
 ```
 or on Ubuntu:
+
 ```
-apt-get install postgresql-9.4 
+$ apt-get install postgresql
 ```
 
 Now that PostgreSQL is installed use the following comands
 
 ```
 $ createdb pio
-``` 
+```
 
-If you get an error of the form `could not connect to server: No such file or directory`, then you must first start the server manually,:
+If you get an error of the form `could not connect to server: No such file or
+directory`, then you must first start the server manually,:
 
 ```
 $ pg_ctl -D /usr/local/var/postgres -l /usr/local/var/postgres/server.log start
@@ -45,4 +51,9 @@ Finally use the command:
 $ psql -c "create user pio with password 'pio'"
 ```
 
-Your configuration  in `pio-env.sh` is now compatible to run with PostgreSQL.
+Starting from 0.11.0, PredictionIO no longer bundles JDBC drivers. Download the
+PostgreSQL JDBC driver from the [official web
+site](https://jdbc.postgresql.org/), and put the JAR file in the `lib`
+subdirectory. By default, `conf/pio-env.sh` assumes version 42.0.0 JDBC 4.2. If
+you use a different version, modify `POSTGRES_JDBC_DRIVER` to point to the
+correct JAR.
