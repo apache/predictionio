@@ -61,8 +61,8 @@ Apr ?, 2017
 The following contributors have spent a great deal of effort to bring to you
 this release:
 
-Ahmet DAL, Alexander Merritt, Bansari Shah, Chan Lee, Chris Woodford, Daniel
-Gabrieli, Dennis Jung, Donald Szeto, Emily Rose, Hari Charan Ayada,
+Ahmet DAL, Alexander Merritt, Amy Lin, Bansari Shah, Chan Lee, Chris Woodford,
+Daniel Gabrieli, Dennis Jung, Donald Szeto, Emily Rose, Hari Charan Ayada,
 infoquestsolutions, Jonny Daenen, Kenneth Chan, Laertis Pappas, Marcin
 Ziemiński, Naoki Takezoe, Rajdeep Dua, Shinsuke Sugaya, Pat Ferrel, scorpiovn,
 Suneel Marthi, Steven Yan, Takahiro Hagino, Takako Shimamoto
