@@ -108,32 +108,26 @@ val commonTestSettings = Seq(
 
 val dataElasticsearch1 = (project in file("storage/elasticsearch1")).
   settings(commonSettings: _*).
-  enablePlugins(GenJavadocPlugin).
-  settings(publishArtifact := false)
+  enablePlugins(GenJavadocPlugin)
 
 val dataElasticsearch = (project in file("storage/elasticsearch")).
-  settings(commonSettings: _*).
-  settings(publishArtifact := false)
+  settings(commonSettings: _*)
 
 val dataHbase = (project in file("storage/hbase")).
   settings(commonSettings: _*).
-  enablePlugins(GenJavadocPlugin).
-  settings(publishArtifact := false)
+  enablePlugins(GenJavadocPlugin)
 
 val dataHdfs = (project in file("storage/hdfs")).
   settings(commonSettings: _*).
-  enablePlugins(GenJavadocPlugin).
-  settings(publishArtifact := false)
+  enablePlugins(GenJavadocPlugin)
 
 val dataJdbc = (project in file("storage/jdbc")).
   settings(commonSettings: _*).
-  enablePlugins(GenJavadocPlugin).
-  settings(publishArtifact := false)
+  enablePlugins(GenJavadocPlugin)
 
 val dataLocalfs = (project in file("storage/localfs")).
   settings(commonSettings: _*).
-  enablePlugins(GenJavadocPlugin).
-  settings(publishArtifact := false)
+  enablePlugins(GenJavadocPlugin)
 
 val common = (project in file("common")).
   settings(commonSettings: _*).
@@ -184,6 +178,7 @@ val storageSubprojects = Seq(
 val storage = (project in file("storage"))
   .aggregate(storageSubprojects map Project.projectToRef: _*)
   .disablePlugins(sbtassembly.AssemblyPlugin)
+  .settings(publishArtifact := false)
 
 val assembly = (project in file("assembly")).
   settings(commonSettings: _*)

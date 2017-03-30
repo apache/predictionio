@@ -44,7 +44,10 @@ Apr ?, 2017
   parameter if you want to run `pio build`, `pio train`, or `pio deploy` outside
   of an engine directory. This is an interim solution before an engine registry
   feature becomes available in the future.
-- PIO-54: Generated access keys will no longer start with a `-` character.
+- PIO-49: PostgreSQL JDBC driver is no longer bundled with the core assembly. If
+  you are using PostgreSQL, you must download the JDBC driver and update your
+  configuration to point to the correct JDBC driver file.
+- PIO-54: New generated access keys will no longer start with a `-` character.
 
 #### Other Changes
 

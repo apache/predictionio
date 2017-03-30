@@ -69,7 +69,7 @@ cd ${FWDIR}
 set -x
 sbt/sbt "${JAVA_PROPS[@]}" clean
 sbt/sbt "${JAVA_PROPS[@]}" printBuildInfo
-sbt/sbt "${JAVA_PROPS[@]}" publishLocal assembly storage/assembly
+sbt/sbt "${JAVA_PROPS[@]}" publishLocal assembly storage/publishLocal storage/assembly
 sbt/sbt "${JAVA_PROPS[@]}" assembly/clean assembly/universal:packageBin assembly/universal:packageZipTarball
 if [ x$RPM_BUILD = "xtrue" ] ; then
     sbt/sbt "${JAVA_PROPS[@]}" assembly/rpm:packageBin
