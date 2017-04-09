@@ -10,6 +10,7 @@ signing key.
   1. `git checkout -b release/0.11.0`
   2. Replace all `0.11.0-SNAPSHOT` in the code tree to `0.11.0-incubating`.
   3. `git commit -am "Prepare 0.11.0-incubating-rc1"`
+  4. `git tag -am "Apache PredictionIO (incubating) 0.11.0-rc1" v0.11.0-incubating-rc1`
 4. If you have not done so, use SVN to checkout
 https://dist.apache.org/repos/dist/dev/incubator/predictionio. This is the area
 for staging release candidates for voting.
