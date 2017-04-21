@@ -44,7 +44,9 @@ class ESChannels(client: ESClient, config: StorageClientConfig, index: String)
 
   val restClient = client.open()
   try {
-    ESUtils.createIndex(restClient, index)
+    ESUtils.createIndex(restClient, index,
+      ESUtils.getNumberOfShards(config, index.toUpperCase),
+      ESUtils.getNumberOfReplicas(config, index.toUpperCase))
     val mappingJson =
       (estype ->
         ("_all" -> ("enabled" -> 0)) ~

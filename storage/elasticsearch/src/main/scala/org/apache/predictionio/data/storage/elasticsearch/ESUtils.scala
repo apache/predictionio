@@ -166,16 +166,23 @@ object ESUtils {
 
   def createIndex(
     client: RestClient,
-    index: String): Unit = {
+    index: String,
+    numberOfShards: Option[Int],
+    numberOfReplicas: Option[Int]): Unit = {
     client.performRequest(
       "HEAD",
       s"/$index",
       Map.empty[String, String].asJava).getStatusLine.getStatusCode match {
         case 404 =>
+          val json = ("settings" ->
+            ("number_of_shards" -> numberOfShards) ~
+            ("number_of_replicas" -> numberOfReplicas))
+          val entity = new NStringEntity(compact(render(json)), ContentType.APPLICATION_JSON)
           client.performRequest(
             "PUT",
             s"/$index",
-            Map.empty[String, String].asJava)
+            Map.empty[String, String].asJava,
+            entity)
         case 200 =>
         case _ =>
           throw new IllegalStateException(s"/$index is invalid.")
@@ -261,5 +268,13 @@ object ESUtils {
     val schemes = config.properties.get("SCHEMES").
       map(_.split(",").toSeq).getOrElse(Seq("http"))
     (hosts, ports, schemes).zipped.map((h, p, s) => new HttpHost(h, p, s))
+  }
+
+  def getNumberOfShards(config: StorageClientConfig, index: String): Option[Int] = {
+    config.properties.get(s"${index}_NUM_OF_SHARDS").map(_.toInt)
+  }
+
+  def getNumberOfReplicas(config: StorageClientConfig, index: String): Option[Int] = {
+    config.properties.get(s"${index}_NUM_OF_REPLICAS").map(_.toInt)
   }
 }
