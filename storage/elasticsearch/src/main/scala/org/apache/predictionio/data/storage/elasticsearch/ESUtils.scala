@@ -277,4 +277,8 @@ object ESUtils {
   def getNumberOfReplicas(config: StorageClientConfig, index: String): Option[Int] = {
     config.properties.get(s"${index}_NUM_OF_REPLICAS").map(_.toInt)
   }
+
+  def getEventDataRefresh(config: StorageClientConfig): String = {
+    config.properties.getOrElse("EVENTDATA_REFRESH", "true")
+  }
 }
