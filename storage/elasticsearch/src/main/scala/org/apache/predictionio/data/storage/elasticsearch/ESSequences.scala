@@ -46,7 +46,9 @@ class ESSequences(client: ESClient, config: StorageClientConfig, index: String) 
       ESUtils.getNumberOfReplicas(config, index.toUpperCase))
     val mappingJson =
       (estype ->
-        ("_all" -> ("enabled" -> 0)))
+        ("_all" -> ("enabled" -> 0)) ~
+        ("properties" ->
+          ("n" -> ("enabled" -> 0))))
     ESUtils.createMapping(restClient, index, estype, compact(render(mappingJson)))
   } finally {
     restClient.close()
@@ -59,7 +61,7 @@ class ESSequences(client: ESClient, config: StorageClientConfig, index: String) 
       val response = restClient.performRequest(
         "POST",
         s"/$index/$estype/$name",
-        Map("refresh" -> "true").asJava,
+        Map("refresh" -> "false").asJava,
         entity)
       val jsonResponse = parse(EntityUtils.toString(response.getEntity))
       val result = (jsonResponse \ "result").extract[String]
