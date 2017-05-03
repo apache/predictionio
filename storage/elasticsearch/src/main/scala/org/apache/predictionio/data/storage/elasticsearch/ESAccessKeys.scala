@@ -49,7 +49,7 @@ class ESAccessKeys(client: ESClient, config: StorageClientConfig, index: String)
       ESUtils.getNumberOfReplicas(config, index.toUpperCase))
     val mappingJson =
       (estype ->
-        ("_all" -> ("enabled" -> 0)) ~
+        ("_all" -> ("enabled" -> false)) ~
         ("properties" ->
           ("key" -> ("type" -> "keyword")) ~
           ("events" -> ("type" -> "keyword"))))

@@ -100,11 +100,12 @@ object ESUtils {
     query: String,
     size: Int)(
       implicit formats: Formats): Seq[JValue] = {
+    val entity = new NStringEntity(query, ContentType.APPLICATION_JSON)
     val response = client.performRequest(
       "POST",
       s"/$index/$estype/_search",
       Map("size" -> s"${size}"),
-      new StringEntity(query))
+      entity)
     val responseJValue = parse(EntityUtils.toString(response.getEntity))
     val hits = (responseJValue \ "hits" \ "hits").extract[Seq[JValue]]
     hits.map(h => (h \ "_source"))
@@ -140,7 +141,7 @@ object ESUtils {
       if (hits.isEmpty) results
       else {
         val json = ("scroll" -> scrollLife) ~ ("scroll_id" -> scrollId)
-        val scrollBody = new StringEntity(compact(render(json)))
+        val scrollBody = new NStringEntity(compact(render(json)), ContentType.APPLICATION_JSON)
         val response = client.performRequest(
           "POST",
           "/_search/scroll",
@@ -153,11 +154,12 @@ object ESUtils {
       }
     }
 
+    val entity = new NStringEntity(query, ContentType.APPLICATION_JSON)
     val response = client.performRequest(
       "POST",
       s"/$index/$estype/_search",
       Map("scroll" -> scrollLife),
-      new StringEntity(query))
+      entity)
     val responseJValue = parse(EntityUtils.toString(response.getEntity))
     scroll((responseJValue \ "_scroll_id").extract[String],
       (responseJValue \ "hits" \ "hits").extract[Seq[JValue]],

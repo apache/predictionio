@@ -49,7 +49,7 @@ class ESEngineInstances(client: ESClient, config: StorageClientConfig, index: St
       ESUtils.getNumberOfReplicas(config, index.toUpperCase))
     val mappingJson =
       (estype ->
-        ("_all" -> ("enabled" -> 0)) ~
+        ("_all" -> ("enabled" -> false)) ~
         ("properties" ->
           ("status" -> ("type" -> "keyword")) ~
           ("startTime" -> ("type" -> "date")) ~

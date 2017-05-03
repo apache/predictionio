@@ -46,15 +46,15 @@ class ESSequences(client: ESClient, config: StorageClientConfig, index: String) 
       ESUtils.getNumberOfReplicas(config, index.toUpperCase))
     val mappingJson =
       (estype ->
-        ("_all" -> ("enabled" -> 0)) ~
+        ("_all" -> ("enabled" -> false)) ~
         ("properties" ->
-          ("n" -> ("enabled" -> 0))))
+          ("n" -> ("enabled" -> false))))
     ESUtils.createMapping(restClient, index, estype, compact(render(mappingJson)))
   } finally {
     restClient.close()
   }
 
-  def genNext(name: String): Int = {
+  def genNext(name: String): Long = {
     val restClient = client.open()
     try {
       val entity = new NStringEntity(write("n" -> name), ContentType.APPLICATION_JSON)
@@ -67,9 +67,9 @@ class ESSequences(client: ESClient, config: StorageClientConfig, index: String) 
       val result = (jsonResponse \ "result").extract[String]
       result match {
         case "created" =>
-          (jsonResponse \ "_version").extract[Int]
+          (jsonResponse \ "_version").extract[Long]
         case "updated" =>
-          (jsonResponse \ "_version").extract[Int]
+          (jsonResponse \ "_version").extract[Long]
         case _ =>
           throw new IllegalStateException(s"[$result] Failed to update $index/$estype/$name")
       }

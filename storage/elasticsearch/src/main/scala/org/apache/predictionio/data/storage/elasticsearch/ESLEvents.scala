@@ -45,8 +45,7 @@ import org.apache.http.entity.StringEntity
 class ESLEvents(val client: ESClient, config: StorageClientConfig, val index: String)
     extends LEvents with Logging {
   implicit val formats = DefaultFormats.lossless ++ JodaTimeSerializers.all
-  private val seq = new ESSequences(client, config, index)
-  private val seqName = "events"
+  val restClient = client.open()
 
   def getEsType(appId: Int, channelId: Option[Int] = None): String = {
     channelId.map { ch =>
@@ -58,37 +57,31 @@ class ESLEvents(val client: ESClient, config: StorageClientConfig, val index: St
 
   override def init(appId: Int, channelId: Option[Int] = None): Boolean = {
     val estype = getEsType(appId, channelId)
-    val restClient = client.open()
-    try {
-      ESUtils.createIndex(restClient, index,
-        ESUtils.getNumberOfShards(config, index.toUpperCase),
-        ESUtils.getNumberOfReplicas(config, index.toUpperCase))
-      val json =
-        (estype ->
-          ("_all" -> ("enabled" -> 0)) ~
-          ("properties" ->
-            ("name" -> ("type" -> "keyword")) ~
-            ("eventId" -> ("type" -> "keyword")) ~
-            ("event" -> ("type" -> "keyword")) ~
-            ("entityType" -> ("type" -> "keyword")) ~
-            ("entityId" -> ("type" -> "keyword")) ~
-            ("targetEntityType" -> ("type" -> "keyword")) ~
-            ("targetEntityId" -> ("type" -> "keyword")) ~
-            ("properties" -> ("enabled" -> 0)) ~
-            ("eventTime" -> ("type" -> "date")) ~
-            ("tags" -> ("type" -> "keyword")) ~
-            ("prId" -> ("type" -> "keyword")) ~
-            ("creationTime" -> ("type" -> "date"))))
-      ESUtils.createMapping(restClient, index, estype, compact(render(json)))
-    } finally {
-      restClient.close()
-    }
+    ESUtils.createIndex(restClient, index,
+      ESUtils.getNumberOfShards(config, index.toUpperCase),
+      ESUtils.getNumberOfReplicas(config, index.toUpperCase))
+    val json =
+      (estype ->
+        ("_all" -> ("enabled" -> false)) ~
+        ("properties" ->
+          ("name" -> ("type" -> "keyword")) ~
+          ("eventId" -> ("type" -> "keyword")) ~
+          ("event" -> ("type" -> "keyword")) ~
+          ("entityType" -> ("type" -> "keyword")) ~
+          ("entityId" -> ("type" -> "keyword")) ~
+          ("targetEntityType" -> ("type" -> "keyword")) ~
+          ("targetEntityId" -> ("type" -> "keyword")) ~
+          ("properties" -> ("enabled" -> false)) ~
+          ("eventTime" -> ("type" -> "date")) ~
+          ("tags" -> ("type" -> "keyword")) ~
+          ("prId" -> ("type" -> "keyword")) ~
+          ("creationTime" -> ("type" -> "date"))))
+    ESUtils.createMapping(restClient, index, estype, compact(render(json)))
     true
   }
 
   override def remove(appId: Int, channelId: Option[Int] = None): Boolean = {
     val estype = getEsType(appId, channelId)
-    val restClient = client.open()
     try {
       val json =
         ("query" ->
@@ -108,13 +101,11 @@ class ESLEvents(val client: ESClient, config: StorageClientConfig, val index: St
       case e: Exception =>
         error(s"Failed to remove $index/$estype", e)
         false
-    } finally {
-      restClient.close()
     }
   }
 
   override def close(): Unit = {
-    // nothing
+    restClient.close()
   }
 
   override def futureInsert(
@@ -123,12 +114,9 @@ class ESLEvents(val client: ESClient, config: StorageClientConfig, val index: St
     channelId: Option[Int])(implicit ec: ExecutionContext): Future[String] = {
     Future {
       val estype = getEsType(appId, channelId)
-      val restClient = client.open()
       try {
         val id = event.eventId.getOrElse {
-          var roll = seq.genNext(seqName)
-          while (exists(restClient, estype, roll)) roll = seq.genNext(seqName)
-          roll.toString
+          ESEventsUtil.getBase64UUID
         }
         val json =
           ("eventId" -> id) ~
@@ -161,8 +149,6 @@ class ESLEvents(val client: ESClient, config: StorageClientConfig, val index: St
         case e: IOException =>
           error(s"Failed to update $index/$estype/<id>", e)
           ""
-      } finally {
-        restClient.close()
       }
     }
   }
@@ -196,7 +182,6 @@ class ESLEvents(val client: ESClient, config: StorageClientConfig, val index: St
     channelId: Option[Int])(implicit ec: ExecutionContext): Future[Option[Event]] = {
     Future {
       val estype = getEsType(appId, channelId)
-      val restClient = client.open()
       try {
         val json =
           ("query" ->
@@ -220,8 +205,6 @@ class ESLEvents(val client: ESClient, config: StorageClientConfig, val index: St
         case e: IOException =>
           error("Failed to access to /$index/$estype/_search", e)
           None
-      } finally {
-        restClient.close()
       }
     }
   }
@@ -232,7 +215,6 @@ class ESLEvents(val client: ESClient, config: StorageClientConfig, val index: St
     channelId: Option[Int])(implicit ec: ExecutionContext): Future[Boolean] = {
     Future {
       val estype = getEsType(appId, channelId)
-      val restClient = client.open()
       try {
         val json =
           ("query" ->
@@ -255,8 +237,6 @@ class ESLEvents(val client: ESClient, config: StorageClientConfig, val index: St
         case e: IOException =>
           error(s"Failed to update $index/$estype:$eventId", e)
           false
-      } finally {
-        restClient.close()
       }
     }
   }
@@ -276,7 +256,6 @@ class ESLEvents(val client: ESClient, config: StorageClientConfig, val index: St
     (implicit ec: ExecutionContext): Future[Iterator[Event]] = {
     Future {
       val estype = getEsType(appId, channelId)
-      val restClient = client.open()
       try {
         val query = ESUtils.createEventQuery(
           startTime, untilTime, entityType, entityId,
@@ -289,8 +268,6 @@ class ESLEvents(val client: ESClient, config: StorageClientConfig, val index: St
         case e: IOException =>
           error(e.getMessage)
           Iterator[Event]()
-      } finally {
-        restClient.close()
       }
     }
   }

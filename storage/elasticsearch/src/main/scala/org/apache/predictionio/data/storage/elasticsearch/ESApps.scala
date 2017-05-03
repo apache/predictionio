@@ -50,7 +50,7 @@ class ESApps(client: ESClient, config: StorageClientConfig, index: String)
       ESUtils.getNumberOfReplicas(config, index.toUpperCase))
     val mappingJson =
       (estype ->
-        ("_all" -> ("enabled" -> 0)) ~
+        ("_all" -> ("enabled" -> false)) ~
         ("properties" ->
           ("id" -> ("type" -> "keyword")) ~
           ("name" -> ("type" -> "keyword"))))
@@ -60,12 +60,18 @@ class ESApps(client: ESClient, config: StorageClientConfig, index: String)
   }
 
   def insert(app: App): Option[Int] = {
-    val id =
-      if (app.id == 0) {
-        var roll = seq.genNext(estype)
-        while (!get(roll).isEmpty) roll = seq.genNext(estype)
-        roll
-      } else app.id
+    val id = app.id match {
+      case v if v == 0 =>
+        @scala.annotation.tailrec
+        def generateId: Int = {
+          seq.genNext(estype).toInt match {
+            case x if !get(x).isEmpty => generateId
+            case x => x
+          }
+        }
+        generateId
+      case v => v
+    }
     update(app.copy(id = id))
     Some(id)
   }
