@@ -65,7 +65,7 @@ trait BaseStorageClient {
   *                   variables,
   *                   - PIO_STORAGE_SOURCES_PGSQL_TYPE=jdbc
   *                   - PIO_STORAGE_SOURCES_PGSQL_USERNAME=abc
-  *                   - PIO_STOARGE_SOURCES_PGSQL_PASSWORD=xyz
+  *                   - PIO_STORAGE_SOURCES_PGSQL_PASSWORD=xyz
   *
   *                   this field will be filled as a map of string to string:
   *                   - TYPE -> jdbc
