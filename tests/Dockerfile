@@ -42,11 +42,13 @@ COPY docker-files/init.sh init.sh
 COPY docker-files/env-conf/hbase-site.xml ${PIO_HOME}/conf/hbase-site.xml
 COPY docker-files/env-conf/pio-env.sh ${PIO_HOME}/conf/pio-env.sh
 COPY docker-files/pgpass /root/.pgpass
+COPY docker-files/awscredentials /root/.aws/credentials
 RUN chmod 600 /root/.pgpass
 
 # Python
 RUN pip install python-dateutil
 RUN pip install pytz
+RUN pip install awscli
 
 # Default repositories setup
 ENV PIO_STORAGE_REPOSITORIES_METADATA_SOURCE PGSQL

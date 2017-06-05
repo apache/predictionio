@@ -129,6 +129,10 @@ val dataLocalfs = (project in file("storage/localfs")).
   settings(commonSettings: _*).
   enablePlugins(GenJavadocPlugin)
 
+val dataS3 = (project in file("storage/s3")).
+  settings(commonSettings: _*).
+  enablePlugins(GenJavadocPlugin)
+
 val common = (project in file("common")).
   settings(commonSettings: _*).
   enablePlugins(GenJavadocPlugin).
@@ -173,7 +177,8 @@ val storageSubprojects = Seq(
     dataHbase,
     dataHdfs,
     dataJdbc,
-    dataLocalfs)
+    dataLocalfs,
+    dataS3)
 
 val storage = (project in file("storage"))
   .aggregate(storageSubprojects map Project.projectToRef: _*)

@@ -28,12 +28,18 @@ services:
       POSTGRES_USER: pio
       POSTGRES_PASSWORD: pio
       POSTGRES_INITDB_ARGS: --encoding=UTF8
+  localstack:
+    image: atlassianlabs/localstack
+    environment:
+      - SERVICES=s3
+      - DEBUG=1
   pio-testing:
     image: predictionio/pio-testing:latest
     depends_on:
       - elasticsearch
       - hbase
       - postgres
+      - localstack
     volumes:
       - ~/.ivy2:/root/.ivy2
       - ~/.sbt:/root/.sbt
