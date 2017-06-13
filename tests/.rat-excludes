@@ -3,6 +3,7 @@ KEYS
 spark-env.sh
 .gitignore
 .gitattributes
+.npmignore
 .rat-excludes
 .project
 sbt-launch-lib.bash

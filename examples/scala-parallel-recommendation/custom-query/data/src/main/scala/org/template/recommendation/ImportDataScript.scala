@@ -23,9 +23,6 @@ import scala.collection.JavaConverters._
 
 import scala.io.Source
 
-/**
- * @author Maxim Korolyov.
- */
 object ImportDataScript extends App {
 
   /**
