@@ -1,17 +1,17 @@
 {
   "id": "default",
   "description": "Default settings",
-  "engineFactory": "org.template.classification.ClassificationEngine",
+  "engineFactory": "org.apache.predictionio.examples.classification.ClassificationEngine",
   "datasource": {
     "params": {
-      "appId": 2
+      "appName": "MyApp1"
     }
   },
   "algorithms": [
     {
       "name": "randomforest",
       "params": {
-        "numClasses": 3,
+        "numClasses": 4,
         "numTrees": 5,
         "featureSubsetStrategy": "auto",
         "impurity": "gini",
