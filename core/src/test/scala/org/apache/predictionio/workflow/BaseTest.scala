@@ -15,20 +15,22 @@
  * limitations under the License.
  */
 
-//package org.apache.spark
+// package org.apache.spark
 package org.apache.predictionio.workflow
 
-import _root_.io.netty.util.internal.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
+import _root_.io.netty.util.internal.logging.{InternalLoggerFactory, Slf4JLoggerFactory}
+import org.apache.predictionio.data.storage.{EnvironmentFactory, EnvironmentService}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.Suite
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkConf
+import org.scalamock.scalatest.MockFactory
 
 
 /** Manages a local `sc` {@link SparkContext} variable, correctly stopping it
   * after each test. */
-trait LocalSparkContext 
+trait LocalSparkContext
 extends BeforeAndAfterEach with BeforeAndAfterAll { self: Suite =>
 
   @transient var sc: SparkContext = _
@@ -43,7 +45,7 @@ extends BeforeAndAfterEach with BeforeAndAfterAll { self: Suite =>
     super.afterEach()
   }
 
-  def resetSparkContext() = {
+  def resetSparkContext() : Unit = {
     LocalSparkContext.stop(sc)
     sc = null
   }
@@ -60,7 +62,7 @@ object LocalSparkContext {
   }
 
   /** Runs `f` by passing in `sc` and ensures that `sc` is stopped. */
-  def withSpark[T](sc: SparkContext)(f: SparkContext => T) = {
+  def withSpark[T](sc: SparkContext)(f: SparkContext => T) : Unit = {
     try {
       f(sc)
     } finally {
@@ -87,6 +89,53 @@ trait SharedSparkContext extends BeforeAndAfterAll { self: Suite =>
     LocalSparkContext.stop(_sc)
     _sc = null
     super.afterAll()
+  }
+}
+
+trait SharedStorageContext extends BeforeAndAfterAll { self: Suite =>
+
+  override def beforeAll(): Unit ={
+    ConfigurationMockUtil.createJDBCMockedConfig
+    super.beforeAll()
+  }
+
+  override def afterAll(): Unit = {
+    super.afterAll()
+  }
+
+}
+
+object ConfigurationMockUtil extends MockFactory {
+
+  def createJDBCMockedConfig: Unit = {
+    val mockedEnvService = mock[EnvironmentService]
+    (mockedEnvService.envKeys _)
+      .expects
+      .returning(List("PIO_STORAGE_REPOSITORIES_METADATA_NAME",
+        "PIO_STORAGE_SOURCES_MYSQL_TYPE"))
+      .twice
+
+    (mockedEnvService.getByKey _)
+      .expects("PIO_STORAGE_REPOSITORIES_METADATA_NAME")
+      .returning("test_metadata")
+
+    (mockedEnvService.getByKey _)
+      .expects("PIO_STORAGE_REPOSITORIES_METADATA_SOURCE")
+      .returning("MYSQL")
+
+    (mockedEnvService.getByKey _)
+      .expects("PIO_STORAGE_SOURCES_MYSQL_TYPE")
+      .returning("jdbc")
+
+    (mockedEnvService.filter _)
+      .expects(*)
+      .returning(Map(
+        "URL" -> "jdbc:h2:~/test;MODE=MySQL;AUTO_SERVER=TRUE",
+        "USERNAME" -> "sa",
+        "PASSWORD" -> "")
+      )
+
+    EnvironmentFactory.environmentService = new Some(mockedEnvService)
   }
 }
 

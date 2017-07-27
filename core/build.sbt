@@ -30,7 +30,10 @@ libraryDependencies ++= Seq(
   "org.scalaj"             %% "scalaj-http"      % "1.1.6",
   "org.slf4j"               % "slf4j-log4j12"    % "1.7.18",
   "org.scalatest"          %% "scalatest"        % "2.1.7" % "test",
-  "org.specs2"             %% "specs2"           % "2.3.13" % "test")
+  "org.specs2"             %% "specs2"           % "2.3.13" % "test",
+  "org.scalamock"          %% "scalamock-scalatest-support" % "3.5.0" % "test",
+  "com.h2database"           % "h2"             % "1.4.196" % "test"
+)
 
 parallelExecution in Test := false
 

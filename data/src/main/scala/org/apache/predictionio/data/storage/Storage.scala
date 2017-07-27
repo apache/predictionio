@@ -112,6 +112,33 @@ class StorageException(message: String, cause: Throwable)
   def this(message: String) = this(message, null)
 }
 
+class EnvironmentService{
+
+  def envKeys(): Iterable[String] = {
+    sys.env.keys
+  }
+
+  def getByKey(key: String): String = {
+    sys.env(key)
+  }
+
+  def filter(filterExpression: ((String, String)) => Boolean): Map[String, String] = {
+    sys.env.filter(filterExpression)
+  }
+}
+
+object EnvironmentFactory{
+
+  var environmentService: Option[EnvironmentService] = None
+
+  def create(): EnvironmentService = {
+    if(environmentService.isEmpty){
+      environmentService = new Some[EnvironmentService](new EnvironmentService)
+    }
+    environmentService.get
+  }
+}
+
 /** Backend-agnostic data storage layer with lazy initialization. Use this
   * object when you need to interface with Event Store in your engine.
   *
@@ -123,6 +150,8 @@ object Storage extends Logging {
     client: BaseStorageClient,
     config: StorageClientConfig)
 
+  var environmentService: EnvironmentService = EnvironmentFactory.create
+
   private case class DataObjectMeta(sourceName: String, namespace: String)
 
   private var errors = 0
@@ -131,7 +160,7 @@ object Storage extends Logging {
 
   private val sourceTypesRegex = """PIO_STORAGE_SOURCES_([^_]+)_TYPE""".r
 
-  private val sourceKeys: Seq[String] = sys.env.keys.toSeq.flatMap { k =>
+  private val sourceKeys: Seq[String] = environmentService.envKeys.toSeq.flatMap { k =>
     sourceTypesRegex findFirstIn k match {
       case Some(sourceTypesRegex(sourceType)) => Seq(sourceType)
       case None => Nil
@@ -152,7 +181,7 @@ object Storage extends Logging {
   private val repositoryNamesRegex =
     """PIO_STORAGE_REPOSITORIES_([^_]+)_NAME""".r
 
-  private val repositoryKeys: Seq[String] = sys.env.keys.toSeq.flatMap { k =>
+  private val repositoryKeys: Seq[String] = environmentService.envKeys.toSeq.flatMap { k =>
     repositoryNamesRegex findFirstIn k match {
       case Some(repositoryNamesRegex(repositoryName)) => Seq(repositoryName)
       case None => Nil
@@ -175,8 +204,8 @@ object Storage extends Logging {
     repositoryKeys.map(r =>
       try {
         val keyedPath = repositoriesPrefixPath(r)
-        val name = sys.env(prefixPath(keyedPath, "NAME"))
-        val sourceName = sys.env(prefixPath(keyedPath, "SOURCE"))
+        val name = environmentService.getByKey(prefixPath(keyedPath, "NAME"))
+        val sourceName = environmentService.getByKey(prefixPath(keyedPath, "SOURCE"))
         if (sourceKeys.contains(sourceName)) {
           r -> DataObjectMeta(
             sourceName = sourceName,
@@ -244,8 +273,8 @@ object Storage extends Logging {
   Option[ClientMeta] = {
     try {
       val keyedPath = sourcesPrefixPath(k)
-      val sourceType = sys.env(prefixPath(keyedPath, "TYPE"))
-      val props = sys.env.filter(t => t._1.startsWith(keyedPath)).map(
+      val sourceType = environmentService.getByKey(prefixPath(keyedPath, "TYPE"))
+      val props = environmentService.filter(t => t._1.startsWith(keyedPath)).map(
         t => t._1.replace(s"${keyedPath}_", "") -> t._2)
       val clientConfig = StorageClientConfig(
         properties = props,

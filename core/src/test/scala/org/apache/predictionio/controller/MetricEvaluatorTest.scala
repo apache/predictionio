@@ -18,8 +18,7 @@
 
 package org.apache.predictionio.controller
 
-import org.apache.predictionio.workflow.SharedSparkContext
-import org.apache.predictionio.workflow.WorkflowParams
+import org.apache.predictionio.workflow.{SharedSparkContext, SharedStorageContext, WorkflowParams}
 import org.scalatest.FunSuite
 
 object MetricEvaluatorSuite {
@@ -30,7 +29,8 @@ object MetricEvaluatorSuite {
   object Evaluation0 extends Evaluation {}
 }
 
-class MetricEvaluatorDevSuite extends FunSuite with SharedSparkContext {
+class MetricEvaluatorDevSuite extends FunSuite with SharedSparkContext
+with SharedStorageContext {
   import org.apache.predictionio.controller.MetricEvaluatorSuite._
 
   test("a") {

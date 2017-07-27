@@ -17,17 +17,18 @@
 
 package org.apache.predictionio.data.api
 
-import akka.actor.{ActorSystem, Props}
+import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.TestProbe
 import org.apache.predictionio.data.storage._
 import org.joda.time.DateTime
+import org.scalamock.specs2.MockContext
 import org.specs2.mutable.Specification
 import spray.http.HttpHeaders.RawHeader
 import spray.http.{ContentTypes, HttpEntity, HttpResponse}
 import spray.httpx.RequestBuilding._
 import sun.misc.BASE64Encoder
 
-import scala.concurrent.{Future, ExecutionContext}
+import scala.concurrent.{ExecutionContext, Future}
 
 class SegmentIOAuthSpec extends Specification {
 
@@ -78,23 +79,26 @@ class SegmentIOAuthSpec extends Specification {
       }
   }
 
-  val channelsClient = Storage.getMetaDataChannels()
-  val eventServiceActor = system.actorOf(
-    Props(
-      new EventServiceActor(
-        eventClient,
-        accessKeysClient,
-        channelsClient,
-        EventServerConfig()
+  val base64Encoder = new BASE64Encoder
+
+  def createEventServiceActor(): ActorRef = {
+    val channelsClient = Storage.getMetaDataChannels()
+    system.actorOf(
+      Props(
+        new EventServiceActor(
+          eventClient,
+          accessKeysClient,
+          channelsClient,
+          EventServerConfig()
+        )
       )
     )
-  )
-
-  val base64Encoder = new BASE64Encoder
+  }
 
   "Event Service" should {
 
-    "reject with CredentialsRejected with invalid credentials" in {
+    "reject with CredentialsRejected with invalid credentials" in new StorageMockContext {
+      val eventServiceActor = createEventServiceActor
       val accessKey = "abc123:"
       val probe = TestProbe()(system)
       probe.send(
@@ -119,6 +123,7 @@ class SegmentIOAuthSpec extends Specification {
     }
 
     "reject with CredentialsMissed without credentials" in {
+      val eventServiceActor = createEventServiceActor
       val probe = TestProbe()(system)
       probe.send(
         eventServiceActor,
@@ -137,6 +142,7 @@ class SegmentIOAuthSpec extends Specification {
     }
 
     "process SegmentIO identity request properly" in {
+      val eventServiceActor = createEventServiceActor
       val jsonReq =
         """
           |{
@@ -190,3 +196,5 @@ class SegmentIOAuthSpec extends Specification {
 
   step(system.shutdown())
 }
+
+

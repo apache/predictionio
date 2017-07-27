@@ -17,12 +17,10 @@
 
 package org.apache.predictionio.controller
 
-import org.apache.predictionio.workflow.SharedSparkContext
-
+import org.apache.predictionio.workflow.{SharedSparkContext, SharedStorageContext}
 import org.scalatest.FunSuite
 import org.scalatest.Inside
 import org.scalatest.Matchers._
-
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
@@ -42,7 +40,7 @@ object EvaluationSuite {
 
 
 class EvaluationSuite
-extends FunSuite with Inside with SharedSparkContext {
+extends FunSuite with Inside with SharedSparkContext with SharedStorageContext {
   import org.apache.predictionio.controller.EvaluationSuite._
 
   test("Evaluation makes MetricEvaluator") {

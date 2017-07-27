@@ -18,11 +18,12 @@
 package org.apache.predictionio.workflow
 
 import org.apache.predictionio.controller._
-
+import org.scalamock.scalatest.MockFactory
 import org.scalatest.FunSuite
 import org.scalatest.Matchers._
 
-class EvaluationWorkflowSuite extends FunSuite with SharedSparkContext {
+class EvaluationWorkflowSuite extends FunSuite with SharedStorageContext
+  with SharedSparkContext with MockFactory {
 
   test("Evaluation return best engine params, simple result type: Double") {
     val engine = new Engine1()
