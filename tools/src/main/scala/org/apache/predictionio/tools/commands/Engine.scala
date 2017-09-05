@@ -150,13 +150,16 @@ object Engine extends EitherLogging {
 
       case Left(err) => return Left(err)
       case Right(_) =>
-        compile(buildArgs, pioHome, engineDirPath, verbose)
-        info("Looking for an engine...")
-        val jarFiles = jarFilesForScala(engineDirPath)
-        if (jarFiles.isEmpty) {
-          return logAndFail("No engine found. Your build might have failed. Aborting.")
+        compile(buildArgs, pioHome, engineDirPath, verbose) match {
+          case Left(err) => return Left(err)
+          case Right(_) =>
+            info("Looking for an engine...")
+            val jarFiles = jarFilesForScala(engineDirPath)
+            if (jarFiles.isEmpty) {
+              return logAndFail("No engine found. Your build might have failed. Aborting.")
+            }
+            jarFiles foreach { f => info(s"Found ${f.getName}") }
         }
-        jarFiles foreach { f => info(s"Found ${f.getName}")}
     }
     logAndSucceed("Build finished successfully.")
   }
