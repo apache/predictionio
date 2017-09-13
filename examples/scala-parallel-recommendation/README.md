@@ -15,6 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-This is based on Recommendation Template v0.11.0-incubating.
+This is based on Recommendation Template v0.12.0-incubating.
 
 Please refer to http://predictionio.incubator.apache.org/templates/recommendation/how-to/
