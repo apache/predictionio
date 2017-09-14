@@ -21,9 +21,57 @@ limitations under the License.
 
 ## Version History
 
+### 0.12.0
+
+Sep ?, 2017
+
+#### New Features
+
+- PIO-61: S3 support for model data
+- PIO-69, PIO-91: Binary distribution of PredictionIO
+- PIO-105, PIO-110, PIO-111: Batch predictions
+- PIO-95: Configurable request timeout for REST API
+- PIO-114: Basic HTTP authentication for Elasticsearch 5.x StorageClient
+- PIO-116: PySpark support
+
+#### Behavior Changes
+
+- PIO-59: `pio app new` uses /dev/urandom/ to generate entropy.
+- PIO-72: `pio-shell` properly loads storage dependencies.
+- PIO-83, PIO-119: Default environment changed to Spark 2.1.1, Scala 2.11.8,
+  and Elasticsearch 5.5.2.
+- PIO-99: `pio-build` checks for compilation errors before proceeding
+  to build engine.
+- PIO-100: `pio` commands no longer display SLF4J warning messages.
+
+#### Other Changes
+
+- PIO-56: Core unit tests no longer require meta data setup.
+- PIO-60, PIO-62: Minor fixes in authorship information and license checking.
+- PIO-63: Apache incubator logo and disclaimer is displayed on the website.
+- PIO-65: Integration tests on Travis caches downloaded jars.
+- PIO-66: More detailed documentation regarding release process and adding
+  JIRA tickets.
+- PIO-90: Improved performance for /batch/events.json API call.
+- PIO-94: More detailed stack trace for REST API errors.
+- PIO-97: Update examples in official templates.
+- PIO-102, PIO-106, PIO-117, PIO-118, PIO-120: Bug fixes, refactoring, and
+  improved performance on elasticsearch behavior.
+- PIO-104: Bug fix regarding plugins.
+- PIO-107: Obsolete experimental examples are removed.
+
+#### Credits
+
+The following contributors have spent a great deal of effort to bring to you
+this release:
+
+Aayush Kumar, Chan Lee, Donald Szeto, Hugo Duksis, Juha Syrjälä, Lucas Bonatto,
+Marius Rabenarivo, Mars Hall, Naoki Takezoe, Nilmax Moura, Shinsuke Sugaya,
+Tomasz Stęczniewski, Vaghawan Ojha
+
 ### 0.11.0
 
-Apr ?, 2017
+Apr 25, 2017
 
 #### New Features
 
