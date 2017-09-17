@@ -27,38 +27,42 @@ Sep ?, 2017
 
 #### New Features
 
-- PIO-61: S3 support for model data
-- PIO-69, PIO-91: Binary distribution of PredictionIO
-- PIO-105, PIO-110, PIO-111: Batch predictions
-- PIO-95: Configurable request timeout for REST API
-- PIO-114: Basic HTTP authentication for Elasticsearch 5.x StorageClient
-- PIO-116: PySpark support
+- [PIO-61](https://issues.apache.org/jira/browse/PIO-61): S3 support for model data
+- [PIO-69](https://issues.apache.org/jira/browse/PIO-69), [PIO-91](https://issues.apache.org/jira/browse/PIO-91): Binary distribution of PredictionIO
+- [PIO-105](https://issues.apache.org/jira/browse/PIO-105), [PIO-110](https://issues.apache.org/jira/browse/PIO-110), [PIO-111](https://issues.apache.org/jira/browse/PIO-111): Batch predictions
+- [PIO-95](https://issues.apache.org/jira/browse/PIO-95): Raise request timeout for REST API to 35-seconds
+- [PIO-114](https://issues.apache.org/jira/browse/PIO-114): Basic HTTP authentication for Elasticsearch 5.x StorageClient
+- [PIO-116](https://issues.apache.org/jira/browse/PIO-116): PySpark support
+
+#### Breaking changes
+
+- [PIO-106](https://issues.apache.org/jira/browse/PIO-106): Elasticsearch 5.x StorageClient should reuse RestClient (see the [pull request](https://github.com/apache/incubator-predictionio/pull/421))
 
 #### Behavior Changes
 
-- PIO-59: `pio app new` uses /dev/urandom/ to generate entropy.
-- PIO-72: `pio-shell` properly loads storage dependencies.
-- PIO-83, PIO-119: Default environment changed to Spark 2.1.1, Scala 2.11.8,
+- [PIO-59](https://issues.apache.org/jira/browse/PIO-59): `pio app new` uses /dev/urandom/ to generate entropy.
+- [PIO-72](https://issues.apache.org/jira/browse/PIO-72): `pio-shell` properly loads storage dependencies.
+- [PIO-83](https://issues.apache.org/jira/browse/PIO-83), [PIO-119](https://issues.apache.org/jira/browse/PIO-119): Default environment changed to Spark 2.1.1, Scala 2.11.8,
   and Elasticsearch 5.5.2.
-- PIO-99: `pio-build` checks for compilation errors before proceeding
+- [PIO-99](https://issues.apache.org/jira/browse/PIO-99): `pio-build` checks for compilation errors before proceeding
   to build engine.
-- PIO-100: `pio` commands no longer display SLF4J warning messages.
+- [PIO-100](https://issues.apache.org/jira/browse/PIO-100): `pio` commands no longer display SLF4J warning messages.
 
 #### Other Changes
 
-- PIO-56: Core unit tests no longer require meta data setup.
-- PIO-60, PIO-62: Minor fixes in authorship information and license checking.
-- PIO-63: Apache incubator logo and disclaimer is displayed on the website.
-- PIO-65: Integration tests on Travis caches downloaded jars.
-- PIO-66: More detailed documentation regarding release process and adding
+- [PIO-56](https://issues.apache.org/jira/browse/PIO-56): Core unit tests no longer require meta data setup.
+- [PIO-60](https://issues.apache.org/jira/browse/PIO-60), [PIO-62](https://issues.apache.org/jira/browse/PIO-62): Minor fixes in authorship information and license checking.
+- [PIO-63](https://issues.apache.org/jira/browse/PIO-63): Apache incubator logo and disclaimer is displayed on the website.
+- [PIO-65](https://issues.apache.org/jira/browse/PIO-65): Integration tests on Travis caches downloaded jars.
+- [PIO-66](https://issues.apache.org/jira/browse/PIO-66): More detailed documentation regarding release process and adding
   JIRA tickets.
-- PIO-90: Improved performance for /batch/events.json API call.
-- PIO-94: More detailed stack trace for REST API errors.
-- PIO-97: Update examples in official templates.
-- PIO-102, PIO-106, PIO-117, PIO-118, PIO-120: Bug fixes, refactoring, and
-  improved performance on elasticsearch behavior.
-- PIO-104: Bug fix regarding plugins.
-- PIO-107: Obsolete experimental examples are removed.
+- [PIO-90](https://issues.apache.org/jira/browse/PIO-90): Improved performance for /batch/events.json API call.
+- [PIO-94](https://issues.apache.org/jira/browse/PIO-94): More detailed stack trace for REST API errors.
+- [PIO-97](https://issues.apache.org/jira/browse/PIO-97): Update examples in official templates.
+- [PIO-102](https://issues.apache.org/jira/browse/PIO-102), [PIO-117](https://issues.apache.org/jira/browse/PIO-117), [PIO-118](https://issues.apache.org/jira/browse/PIO-118), [PIO-120](https://issues.apache.org/jira/browse/PIO-120): Bug fixes, refactoring, and
+  improved performance on Elasticsearch behavior.
+- [PIO-104](https://issues.apache.org/jira/browse/PIO-104): Bug fix regarding plugins.
+- [PIO-107](https://issues.apache.org/jira/browse/PIO-107): Obsolete experimental examples are removed.
 
 #### Credits
 
@@ -75,34 +79,34 @@ Apr 25, 2017
 
 #### New Features
 
-- PIO-30: Scala 2.11 support
-- PIO-30: Spark 2 support
-- PIO-49: Elasticsearch 5 support
-- PIO-30, PIO-49: Flexible build system
-- PIO-47, PIO-51: Removal of engine manifests
-- PIO-49: Modularized storage backend modules
-- PIO-45: Self cleaning data source
+- [PIO-30](https://issues.apache.org/jira/browse/PIO-30): Scala 2.11 support
+- [PIO-30](https://issues.apache.org/jira/browse/PIO-30): Spark 2 support
+- [PIO-49](https://issues.apache.org/jira/browse/PIO-49): Elasticsearch 5 support
+- [PIO-30](https://issues.apache.org/jira/browse/PIO-30), [PIO-49](https://issues.apache.org/jira/browse/PIO-49): Flexible build system
+- [PIO-47](https://issues.apache.org/jira/browse/PIO-47), [PIO-51](https://issues.apache.org/jira/browse/PIO-51): Removal of engine manifests
+- [PIO-49](https://issues.apache.org/jira/browse/PIO-49): Modularized storage backend modules
+- [PIO-45](https://issues.apache.org/jira/browse/PIO-45): Self cleaning data source
 
 #### Behavior Changes
 
-- PIO-25: `pio-start-all` will no longer start PostgreSQL if it is not being
+- [PIO-25](https://issues.apache.org/jira/browse/PIO-25): `pio-start-all` will no longer start PostgreSQL if it is not being
   used.
-- PIO-47, PIO-51: `pio build` no longer requires access to the metadata
+- [PIO-47](https://issues.apache.org/jira/browse/PIO-47), [PIO-51](https://issues.apache.org/jira/browse/PIO-51): `pio build` no longer requires access to the metadata
   repository. `pio` commands will now accept an optional `--engine-dir`
   parameter if you want to run `pio build`, `pio train`, or `pio deploy` outside
   of an engine directory. This is an interim solution before an engine registry
   feature becomes available in the future.
-- PIO-49: PostgreSQL JDBC driver is no longer bundled with the core assembly. If
+- [PIO-49](https://issues.apache.org/jira/browse/PIO-49): PostgreSQL JDBC driver is no longer bundled with the core assembly. If
   you are using PostgreSQL, you must download the JDBC driver and update your
   configuration to point to the correct JDBC driver file.
-- PIO-54: New generated access keys will no longer start with a `-` character.
+- [PIO-54](https://issues.apache.org/jira/browse/PIO-54): New generated access keys will no longer start with a `-` character.
 
 #### Other Changes
 
-- PIO-28: Code refactoring of the command line interface. It is now possible to
+- [PIO-28](https://issues.apache.org/jira/browse/PIO-28): Code refactoring of the command line interface. It is now possible to
   develop new interfaces that perform the same functionalities provided by the
   CLI.
-- PIO-53: Integration tests can now be tied to every single Git commit, without
+- [PIO-53](https://issues.apache.org/jira/browse/PIO-53): Integration tests can now be tied to every single Git commit, without
   the need to update the official test Docker image.
 - The meta data and model data access object methods are now public and marked
   as Core Developer API.
