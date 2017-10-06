@@ -333,3 +333,22 @@ root:
       -
         body: 'Glossary'
         url: '/resources/glossary/'
+  -
+    body: 'Apache Software Foundation'
+    url: '#'
+    children:
+      -
+        body: 'Apache Homepage'
+        url: 'https://www.apache.org/'
+      -
+        body: 'License'
+        url: 'https://www.apache.org/licenses/'
+      -
+        body: 'Sponsorship'
+        url: 'https://www.apache.org/foundation/sponsorship.html'
+      -
+        body: 'Thanks'
+        url: 'https://www.apache.org/foundation/thanks.html'
+      -
+        body: 'Security'
+        url: 'https://www.apache.org/security/'
