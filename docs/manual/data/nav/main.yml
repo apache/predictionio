@@ -70,6 +70,9 @@ root:
       -
         body: 'Deploying Multiple Engine Variants'
         url: '/deploy/enginevariants/'
+      -
+        body: 'Engine Server Plugin'
+        url: '/deploy/plugin/'
   -
     body: 'Customizing an Engine'
     url: '#'
@@ -111,6 +114,9 @@ root:
       -
         body: 'Using Analytics Tools'
         url: '/datacollection/analytics/'
+      -
+        body: 'Event Server Plugin'
+        url: '/datacollection/plugin/'
   -
     body: 'Choosing an Algorithm(s)'
     url: '#'
