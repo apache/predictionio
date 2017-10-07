@@ -1,6 +1,6 @@
 root:
   -
-    body: 'Apache PredictionIO (incubating) Documentation'
+    body: 'Apache PredictionIO™ (incubating) Documentation'
     url: '/'
     children:
       -
