@@ -21,13 +21,13 @@ limitations under the License.
 
 ## User Mailing List
 
-This list is for users of Apache PredictionIO (incubating) to ask questions,
+This list is for users of Apache PredictionIO to ask questions,
 share knowledge, and discuss issues. Do send mail to this list with usage and
 configuration questions and problems. Also, please send questions to this list
 to verify your problem before filing issues in JIRA.
 
-[Subscribe](mailto:user-subscribe@predictionio.incubator.apache.org) to our User Mailing List.
-[Unsubscribe](mailto:user-unsubscribe@predictionio.incubator.apache.org) from our User Mailing List.
+[Subscribe](mailto:user-subscribe@predictionio.apache.org) to our User Mailing List.
+[Unsubscribe](mailto:user-unsubscribe@predictionio.apache.org) from our User Mailing List.
 
 ## Twitter
 

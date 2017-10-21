@@ -266,7 +266,7 @@ pioUnidoc := {
     IO.read(baseDirectory.value / "docs" / "scaladoc" / "api-docs.js"))
 }
 
-homepage := Some(url("http://predictionio.incubator.apache.org"))
+homepage := Some(url("http://predictionio.apache.org"))
 
 pomExtra := {
   <parent>
@@ -283,7 +283,7 @@ pomExtra := {
     <developer>
       <id>donald</id>
       <name>Donald Szeto</name>
-      <url>http://predictionio.incubator.apache.org</url>
+      <url>http://predictionio.apache.org</url>
       <email>donald@apache.org</email>
     </developer>
   </developers>

@@ -17,7 +17,7 @@ limitations under the License.
 
 # Release Notes and News
 
-**Note:** For upgrade instructions please refer to [this page](http://predictionio.incubator.apache.org/resources/upgrade/).
+**Note:** For upgrade instructions please refer to [this page](http://predictionio.apache.org/resources/upgrade/).
 
 ## Version History
 
@@ -128,7 +128,7 @@ Oct 7, 2016
 
  - Make SSL optional
  - Merge ActionML fork
- - First Apache PredictionIO (incubating) release
+ - First Apache PredictionIO release
 
 ### 0.9.7-aml (ActionML fork)
 
@@ -198,7 +198,7 @@ Release Notes
 
 - Channels in the Event Server
 - Spark 1.3+ support (upgrade to Spark 1.3+ required)
-- [Webhook Connector](http://predictionio.incubator.apache.org/community/contribute-webhook/) support
+- [Webhook Connector](http://predictionio.apache.org/community/contribute-webhook/) support
 - Engine and Event Servers now by default bind to 0.0.0.0
 - Many documentation improvements
 
@@ -217,9 +217,9 @@ March 4th, 2015
 
 Release Notes
 
-- [E-Commerce Recommendation Template](http://predictionio.incubator.apache.org/gallery/template-gallery#recommender-systems) which includes 1) out-of-stock items support 2) new user recommendation 3) unseen items only
-- [Complementary Purchase Template](http://predictionio.incubator.apache.org/gallery/template-gallery#unsupervised-learning) for shopping cart recommendation
-- [Lead Scoring Template](http://predictionio.incubator.apache.org/gallery/template-gallery#classification) predicts the probability of an user will convert in the current session
+- [E-Commerce Recommendation Template](http://predictionio.apache.org/gallery/template-gallery#recommender-systems) which includes 1) out-of-stock items support 2) new user recommendation 3) unseen items only
+- [Complementary Purchase Template](http://predictionio.apache.org/gallery/template-gallery#unsupervised-learning) for shopping cart recommendation
+- [Lead Scoring Template](http://predictionio.apache.org/gallery/template-gallery#classification) predicts the probability of an user will convert in the current session
 - `pio-start-all`, `pio-stop-all` commands to start and stop all PredictionIO related services
 
 ### 0.8.6

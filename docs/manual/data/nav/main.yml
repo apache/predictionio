@@ -1,10 +1,10 @@
 root:
   -
-    body: 'Apache PredictionIO™ (incubating) Documentation'
+    body: 'Apache PredictionIO™ Documentation'
     url: '/'
     children:
       -
-        body: 'Welcome to Apache PredictionIO (incubating)'
+        body: 'Welcome to Apache PredictionIO'
         url: '/'
   -
     body: 'Getting Started'
@@ -14,7 +14,7 @@ root:
         body: 'A Quick Intro'
         url: '/start/'
       -
-        body: 'Installing Apache PredictionIO (incubating)'
+        body: 'Installing Apache PredictionIO'
         url: '/install/'
       -
         body: 'Downloading an Engine Template'

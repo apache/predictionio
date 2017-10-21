@@ -21,7 +21,7 @@ limitations under the License.
 
 ## How to Write Documentation
 
-You can help improve the Apache PredictionIO (incubating) documentation by
+You can help improve the Apache PredictionIO documentation by
 submitting tutorials, writing how-tos, fixing errors, and adding missing
 information. You can edit any page live on
 [GitHub](https://github.com/apache/incubator-predictionio) by clicking the
@@ -37,7 +37,7 @@ release.
 
 ## Installing Locally
 
-Apache PredictionIO (incubating) documentation uses
+Apache PredictionIO documentation uses
 [Middleman](http://middlemanapp.com/) and is hosted on Apache.
 
 [Gems](http://rubygems.org/) are managed with [Bundler](http://bundler.io/).
@@ -190,7 +190,7 @@ NOTE: Files must end with a `.erb` extension to be processed as ERB.
 ## Going Live
 
 For Apache project committers, pushing to the `livedoc` branch of PredictionIO ASF git will update
-http://predictionio.incubator.apache.org in about 10 minutes.
+http://predictionio.apache.org in about 10 minutes.
 
 Make sure the **apache.org** remote is attached to your `incubator-predictionio` repo, and if not, add it:
 
