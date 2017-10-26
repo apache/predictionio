@@ -71,7 +71,7 @@ module ApplicationHelpers
         return current_page.data.title
       end
     else
-      return "Welcome to Apache PredictionIO (incubating) Documentation!"
+      return "Welcome to Apache PredictionIO Documentation!"
     end
 
   end

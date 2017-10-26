@@ -46,7 +46,7 @@ set :markdown,
 sprockets.append_path File.join root, 'bower_components'
 
 # Sitemap
-set :url_root, '//predictionio.incubator.apache.org'
+set :url_root, '//predictionio.apache.org'
 activate :search_engine_sitemap, exclude_attr: 'hidden'
 
 # Development Settings
@@ -61,7 +61,7 @@ end
 # Build Settings
 configure :build do
   set :scheme, 'https'
-  set :host, 'predictionio.incubator.apache.org'
+  set :host, 'predictionio.apache.org'
   set :port, 80
   Slim::Engine.set_options pretty: false, sort_attrs: false
   activate :asset_hash
@@ -84,12 +84,6 @@ configure :build do
     html.preserve_line_breaks       = false
     html.simple_boolean_attributes  = false
   end
-end
-
-# S3 Sync
-activate :s3_sync do |s3_sync|
-  s3_sync.bucket = 'predictionio.incubator.apache.org'
-  s3_sync.prefer_gzip = false
 end
 
 # Hacks

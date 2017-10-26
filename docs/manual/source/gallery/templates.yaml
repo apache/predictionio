@@ -125,7 +125,7 @@
     status: stable
     pio_min_version: 0.10.0-incubating
     apache_pio_convesion_required: "already compatible"
-    support_link: '<a href="http://predictionio.incubator.apache.org/support/">Apache PredictionIO mailing lists</a>'
+    support_link: '<a href="http://predictionio.apache.org/support/">Apache PredictionIO mailing lists</a>'
 
 - template:
     name: E-Commerce Recommendation
@@ -146,7 +146,7 @@
     status: alpha
     pio_min_version: 0.10.0-incubating
     apache_pio_convesion_required: "already compatible"
-    support_link: '<a href="http://predictionio.incubator.apache.org/support/">Apache PredictionIO mailing lists</a>'
+    support_link: '<a href="http://predictionio.apache.org/support/">Apache PredictionIO mailing lists</a>'
 
 - template:
     name: Similar Product
@@ -160,7 +160,7 @@
     status: stable
     pio_min_version: 0.10.0-incubating
     apache_pio_convesion_required: "already compatible"
-    support_link: '<a href="http://predictionio.incubator.apache.org/support/">Apache PredictionIO mailing lists</a>'
+    support_link: '<a href="http://predictionio.apache.org/support/">Apache PredictionIO mailing lists</a>'
 
 - template:
     name: E-Commerce Recommendation (Java)
@@ -181,7 +181,7 @@
     status: alpha
     pio_min_version: 0.9.3
     apache_pio_convesion_required: "requires conversion"
-    support_link: '<a href="http://predictionio.incubator.apache.org/support/">Apache PredictionIO mailing lists</a>'
+    support_link: '<a href="http://predictionio.apache.org/support/">Apache PredictionIO mailing lists</a>'
 
 - template:
     name: Product Ranking
@@ -293,7 +293,7 @@
     status: stable
     pio_min_version: 0.9.2
     apache_pio_convesion_required: "already compatible"
-    support_link: '<a href="http://predictionio.incubator.apache.org/support/">Apache PredictionIO mailing lists</a>'
+    support_link: '<a href="http://predictionio.apache.org/support/">Apache PredictionIO mailing lists</a>'
 
 - template:
     name: Classification
@@ -683,7 +683,7 @@
     status: stable
     pio_min_version: 0.9.2
     apache_pio_convesion_required: "already compatible"
-    support_link: '<a href="http://predictionio.incubator.apache.org/support/">Apache PredictionIO mailing lists</a>'
+    support_link: '<a href="http://predictionio.apache.org/support/">Apache PredictionIO mailing lists</a>'
 
 - template:
     name: Linear Regression BFGS

@@ -18,7 +18,7 @@
 # WARNING: THIS DOCKERFILE IS NOT INTENDED FOR PRODUCTION USE OR DEPLOYMENT. AT
 #          THIS POINT, THIS IS ONLY INTENDED FOR USE IN AUTOMATED TESTS. IF YOU
 #          ARE LOOKING TO DEPLOY PREDICTIONIO WITH DOCKER, PLEASE REFER TO
-#          http://predictionio.incubator.apache.org/community/projects/#docker-installation-for-predictionio
+#          http://predictionio.apache.org/community/projects/#docker-installation-for-predictionio
 
 FROM predictionio/pio-testing-base
 
