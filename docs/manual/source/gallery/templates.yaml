@@ -696,3 +696,27 @@
     license: "Apache Licence 2.0"
     status: beta
     pio_min_version: 0.10.0
+
+- template:
+    name: Classification template for Iris
+    repo: "https://github.com/jpioug/predictionio-template-iris"
+    description: |-
+      This is Python(PySpark) based classification example for Iris dataset.
+    tags: [classification]
+    type: Parallel
+    language: Python
+    license: "Apache Licence 2.0"
+    status: stable
+    pio_min_version: 0.12.0-incubating
+
+- template:
+    name: Regression template for Boston House Prices
+    repo: "https://github.com/jpioug/predictionio-template-boston-house-prices"
+    description: |-
+      This is Python(PySpark) based regression example for Boston House Prices dataset.
+    tags: [regression]
+    type: Parallel
+    language: Python
+    license: "Apache Licence 2.0"
+    status: stable
+    pio_min_version: 0.12.0-incubating
