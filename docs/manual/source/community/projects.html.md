@@ -82,7 +82,7 @@ Docker container for PredictionIO-based machine learning services.
 
 - Maintainer: Steven Yan
 
-- Status: Runs latest stable version of PredictionIO v0.10.0 - Under active development
+- Status: Runs latest stable version of PredictionIO v0.12.0 (as well as v0.10.0) - Under active development
 
 
 ## GraphX Parallel SimRank Algorithm
