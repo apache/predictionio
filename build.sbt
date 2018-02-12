@@ -195,8 +195,8 @@ val root = (project in file(".")).
   settings(commonSettings: _*).
   enablePlugins(ScalaUnidocPlugin).
   settings(
-    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(dataElasticsearch),
-    unidocProjectFilter in (JavaUnidoc, unidoc) := inAnyProject -- inProjects(dataElasticsearch),
+    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(dataElasticsearch, dataElasticsearch1),
+    unidocProjectFilter in (JavaUnidoc, unidoc) := inAnyProject -- inProjects(dataElasticsearch, dataElasticsearch1),
     scalacOptions in (ScalaUnidoc, unidoc) ++= Seq(
       "-groups",
       "-skip-packages",
@@ -208,8 +208,16 @@ val root = (project in file(".")).
         "org.apache.predictionio.controller.html",
         "org.apache.predictionio.controller.java",
         "org.apache.predictionio.data.api",
+        "org.apache.predictionio.data.storage.*",
+        "org.apache.predictionio.data.storage.hdfs",
+        "org.apache.predictionio.data.storage.jdbc",
+        "org.apache.predictionio.data.storage.localfs",
+        "org.apache.predictionio.data.storage.s3",
+        "org.apache.predictionio.data.storage.hbase",
         "org.apache.predictionio.data.view",
+        "org.apache.predictionio.data.webhooks",
         "org.apache.predictionio.tools",
+        "org.apache.predictionio.workflow.html",
         "scalikejdbc").mkString(":"),
       "-doc-title",
       "PredictionIO Scala API",
