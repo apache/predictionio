@@ -18,7 +18,7 @@ limitations under the License.
 # [Apache PredictionIO](http://predictionio.apache.org)
 
 [![Build
-Status](https://api.travis-ci.org/apache/incubator-predictionio.svg?branch=develop)](https://travis-ci.org/apache/incubator-predictionio)
+Status](https://api.travis-ci.org/apache/predictionio.svg?branch=develop)](https://travis-ci.org/apache/predictionio)
 
 Apache PredictionIO is an open source machine learning framework
 for developers, data scientists, and end users. It supports event collection,

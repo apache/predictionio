@@ -77,7 +77,7 @@ pio deploy --port 8123 --ip 1.2.3.4
 ## Retrain and Deploy Script
 
 A retrain and deploy script is available [in the *examples/redeploy-script*
-directory](https://github.com/apache/incubator-predictionio/tree/develop/examples/redeploy-script).
+directory](https://github.com/apache/predictionio/tree/develop/examples/redeploy-script).
 
 To use the script, copy *local.sh.template* as *local.sh*, *redeploy.sh* as (say) *MyEngine_Redeploy_(production).sh* (Name of the script will appear as title of email) and put both files under the *scripts/* directory of your engine.
 Then, modify the settings inside both file, filling in details like `PIO_HOME`, `LOG_DIR`, `TARGET_EMAIL`, `ENGINE_JSON` and others.

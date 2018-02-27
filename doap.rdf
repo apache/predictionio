@@ -21,22 +21,22 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-  <Project rdf:about="http://predictionio.incubator.apache.org/">
+  <Project rdf:about="http://predictionio.apache.org/">
     <created>2016-05-26</created>
     <license rdf:resource="http://spdx.org/licenses/Apache-2.0" />
     <name>Apache PredictionIO</name>
-    <homepage rdf:resource="http://predictionio.incubator.apache.org/" />
-    <asfext:pmc rdf:resource="http://incubator.apache.org" />
+    <homepage rdf:resource="http://predictionio.apache.org/" />
+    <asfext:pmc rdf:resource="http://apache.org" />
     <shortdesc>PredictionIO is an open source Machine Learning Server built on top of state-of-the-art open source stack, that enables developers to manage and deploy production-ready predictive services for various kinds of machine learning tasks.</shortdesc>
     <description>PredictionIO is an open source Machine Learning Server built on top of state-of-the-art open source stack, that enables developers to manage and deploy production-ready predictive services for various kinds of machine learning tasks.</description>
     <bug-database rdf:resource="https://issues.apache.org/jira/browse/PIO" />
-    <mailing-list rdf:resource="http://predictionio.incubator.apache.org/support/" />
+    <mailing-list rdf:resource="http://predictionio.apache.org/support/" />
     <programming-language>Scala</programming-language>
     <category rdf:resource="http://projects.apache.org/category/big-data" />
     <repository>
       <GitRepository>
-        <location rdf:resource="https://git-wip-us.apache.org/repos/asf/incubator-predictionio.git"/>
-        <browse rdf:resource="https://git-wip-us.apache.org/repos/asf/incubator-predictionio.git"/>
+        <location rdf:resource="https://git-wip-us.apache.org/repos/asf/predictionio.git"/>
+        <browse rdf:resource="https://git-wip-us.apache.org/repos/asf/predictionio.git"/>
       </GitRepository>
     </repository>
     <maintainer>

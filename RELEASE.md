@@ -36,7 +36,7 @@ Sep ?, 2017
 
 #### Breaking changes
 
-- [PIO-106](https://issues.apache.org/jira/browse/PIO-106): Elasticsearch 5.x StorageClient should reuse RestClient (see the [pull request](https://github.com/apache/incubator-predictionio/pull/421))
+- [PIO-106](https://issues.apache.org/jira/browse/PIO-106): Elasticsearch 5.x StorageClient should reuse RestClient (see the [pull request](https://github.com/apache/predictionio/pull/421))
 
 #### Behavior Changes
 
@@ -142,7 +142,7 @@ Aug 5, 2016
 
 April 11, 2015
 
-For a detailed list of commits check [this page](https://github.com/apache/incubator-predictionio/commits/master)
+For a detailed list of commits check [this page](https://github.com/apache/predictionio/commits/v0.9.6)
 
 - Upgrade components for install/runtime to Hbase 1, Spark 1.5.2 PIO still runs on older HBase and Spark back to 1.3.1, upgrading install of Elaticsearch to 1.5.2 since pio run well on it but also runs on older versions.
 - Support for maintaining a moving window of events by discarding old events from the EventStore
@@ -160,7 +160,7 @@ March 26, 2016
 
 October 14th, 2015
 
-[Release Notes](https://github.com/apache/incubator-predictionio/blob/master/RELEASE.md) have been moved to Github and you are reading them. For a detailed list of commits check [this page](https://github.com/apache/incubator-predictionio/commits/v0.9.5)
+[Release Notes](https://github.com/apache/predictionio/blob/master/RELEASE.md) have been moved to Github and you are reading them. For a detailed list of commits check [this page](https://github.com/apache/predictionio/commits/v0.9.5)
 
 - Support batches of events sent to the EventServer as json arrays
 - Support creating an Elasticsearch StorageClient created for an Elasticsearch cluster from variables in pio-env.sh

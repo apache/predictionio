@@ -279,9 +279,9 @@ pomExtra := {
     <version>18</version>
   </parent>
   <scm>
-    <connection>scm:git:github.com/apache/incubator-predictionio</connection>
-    <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-predictionio.git</developerConnection>
-    <url>github.com/apache/incubator-predictionio</url>
+    <connection>scm:git:github.com/apache/predictionio</connection>
+    <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/predictionio.git</developerConnection>
+    <url>github.com/apache/predictionio</url>
   </scm>
   <developers>
     <developer>
