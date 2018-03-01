@@ -41,7 +41,7 @@ Personalised Products is a Magento 2 module that will serve realtime predicted s
 
 - Status: It works with PredictionIO v0.9.5 - Under active development
 
-## Vagrant Installation for PredictionIO
+## Vagrant Installation for Apache PredictionIO®
 
 URL: https://github.com/PredictionIO/PredictionIO-Vagrant
 
@@ -52,7 +52,7 @@ Bring Up PredictionIO 0.9.x VM with Vagrant.
 - Status: It works with PredictionIO v0.8 - Under active development
 
 
-## Docker Installation for PredictionIO
+## Docker Installation for Apache PredictionIO®
 
 URL: https://github.com/mingfang/docker-predictionio
 
@@ -63,7 +63,7 @@ Run PredictionIO inside Docker.
 - Status: It works with PredictionIO v0.8 - Under active development
 
 
-## Another Docker Installation for PredictionIO
+## Another Docker Installation for Apache PredictionIO®
 
 URL: https://github.com/sphereio/docker-predictionio
 
@@ -74,7 +74,7 @@ Docker container for PredictionIO-based machine learning services.
 - Status: It works with PredictionIO v0.9.3 - Under active development
 
 
-## Third Docker Installation for PredictionIO
+## Third Docker Installation for Apache PredictionIO®
 
 URL: https://github.com/steveny2k/docker-predictionio
 
