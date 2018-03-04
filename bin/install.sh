@@ -284,11 +284,10 @@ files=$(ls PredictionIO*.tar.gz 2> /dev/null | wc -l)
 
 if [[ $files == 0 ]]; then
   echo "Downloading PredictionIO..."
-  curl -L https://codeload.github.com/apache/predictionio/tar.gz/master > predictionio-master.tar.gz
+  curl -L https://dist.apache.org/repos/dist/release/predictionio/0.12.1/apache-predictionio-0.12.1-bin.tar.gz > predictionio-release.tar.gz
+  tar zxf predictionio-0.12.1.tar.gz
 
-  tar zxf predictionio-master.tar.gz
-
-  mv predictionio-master PredictionIO
+  mv predictionio-0.12.1 PredictionIO
 
   sh PredictionIO/make-distribution.sh
   cp PredictionIO/${PIO_FILE} ${TEMP_DIR}
