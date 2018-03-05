@@ -43,9 +43,7 @@ for staging release candidates for voting.
 (http://apache.org/dev/release-signing.html#openpgp-ascii-detach-sig)
     * `gpg --armor --output apache-predictionio-0.13.0-rc1.tar.gz.asc
   --detach-sig apache-predictionio-0.13.0-rc1.tar.gz`
-7. Generate MD5 and SHA512 checksums for the release candidate.
-    * `gpg --print-md MD5 apache-predictionio-0.13.0-rc1.tar.gz >
-  apache-predictionio-0.13.0-rc1.tar.gz.md5`
+7. Generate SHA512 checksums for the release candidate.
     * `gpg --print-md SHA512 apache-predictionio-0.13.0-rc1.tar.gz >
   apache-predictionio-0.13.0-rc1.tar.gz.sha512`
 8. Run `./make-distribution.sh` and repeat steps 5 to 7 to create binary distribution release.
