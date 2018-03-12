@@ -21,9 +21,46 @@ limitations under the License.
 
 ## Version History
 
+### 0.12.1
+
+Mar 11, 2018
+
+#### New Features
+
+- [PIO-125](https://issues.apache.org/jira/browse/PIO-125): Add support for Spark 2.2.
+- [PIO-137](https://issues.apache.org/jira/browse/PIO-137): Add CleanupFunctions for Python.
+
+#### Behavior Changes
+
+- [PIO-126](https://issues.apache.org/jira/browse/PIO-126): Update install.sh to use binary release.
+- [PIO-137](https://issues.apache.org/jira/browse/PIO-137): Create a connection object at a worker to delete events.
+
+#### Other Changes
+
+- [PIO-101](https://issues.apache.org/jira/browse/PIO-101): Document usage of plug-in of event server and engine server.
+- [PIO-127](https://issues.apache.org/jira/browse/PIO-127): Update PMC documentation for release process.
+- [PIO-129](https://issues.apache.org/jira/browse/PIO-129): Move CLI document in side menu.
+- [PIO-131](https://issues.apache.org/jira/browse/PIO-131): Fix Apache licensing issues for doc site.
+- [PIO-133](https://issues.apache.org/jira/browse/PIO-133): Make sure project web site meets all requirements in Apache Project Website Branding Policy.
+- [PIO-135](https://issues.apache.org/jira/browse/PIO-135): Remove all incubating status.
+- [PIO-139](https://issues.apache.org/jira/browse/PIO-139): Update release process doc to include closing all resolved stories within the new release.
+- [PIO-146](https://issues.apache.org/jira/browse/PIO-146): Change TM to (R) on text marks.
+- [PIO-147](https://issues.apache.org/jira/browse/PIO-147): Fix broken Scala API documentation.
+- [PIO-150](https://issues.apache.org/jira/browse/PIO-150): Update Ruby gem dependency versions for security improvement.
+- [PIO-151](https://issues.apache.org/jira/browse/PIO-151): Add S3 storage provider docs.
+
+#### Credits
+
+The following contributors have spent a great deal of effort to bring to you
+this release:
+
+Chan Lee, Donald Szeto, Helene Brashear, James Ward, Jeffrey Cafferata,
+Mars Hall, Naoki Takezoe, Shinsuke Sugaya, Steven Yan, Takahiro Hagino,
+Takako Shimamoto
+
 ### 0.12.0
 
-Sep ?, 2017
+Sep 27, 2017
 
 #### New Features
 
