@@ -90,7 +90,7 @@ $rails server
 Follow the installation instructions [here](http://predictionio.apache.org/install/) or simply run:
 
 ```
-$ bash -c "$(curl -s https://raw.githubusercontent.com/apache/incubator-predictionio/master/bin/install.sh)"
+$ bash -c "$(curl -s https://raw.githubusercontent.com/apache/predictionio/master/bin/install.sh)"
 ```
 
 ![PIO Install](/images/demo/tapster/pio-install.png)
@@ -114,7 +114,7 @@ We are going to copy the Similar Product Template into the PIO directory.
 
 ```
 $ cd PredictionIO
-$ git clone https://github.com/apache/incubator-predictionio-template-similar-product.git tapster-episode-similar
+$ git clone https://github.com/apache/predictionio-template-similar-product.git tapster-episode-similar
 ```
 
 Next we are going to update the App ID in the ‘engine.json’ file to match the App ID we just created.
@@ -293,10 +293,9 @@ $ pio train -- --driver-memory 4g
 
 ![PIO Train](/images/demo/tapster/pio-train.png)
 
-Using the --driver-memory option to limit the memory used by Apache PredictionIO
-(incubating). Without this Apache PredictionIO can consume too much
-memory leading to a crash. You can adjust the 4g up or down depending on your
-system specs.
+Using the --driver-memory option to limit the memory used by Apache PredictionIO.
+Without this Apache PredictionIO can consume too much memory leading to a crash.
+You can adjust the 4g up or down depending on your system specs.
 
 You can set up a job to periodically retrain the engine so the model is updated with the latest dataset.
 
@@ -306,9 +305,9 @@ You can set up a job to periodically retrain the engine so the model is updated 
 You can deploy the model with: `$ pio deploy` from the `tapster-episode-similar` directory.
 
 At this point, you have an demo app with data and a Apache PredictionIO
-(incubating) server with a trained model all setup. Next, we will connect the
+server with a trained model all setup. Next, we will connect the
 two so you can log the live interaction (likes) events into Apache PredictionIO
-(incubating) event server and query the engine server for recommendation.
+event server and query the engine server for recommendation.
 
 
 ## Connect Demo app with Apache PredictionIO
@@ -396,8 +395,7 @@ Next we decode the JSON sent from the browser.
 
 After that we check to see if the user has liked anything yet. If not we just return a random episode.
 
-If the user has likes then we can send that data to Apache PredictionIO
-(incubating) event server.
+If the user has likes then we can send that data to Apache PredictionIO event server.
 
 We also blacklist the dislikes so that they are not returned.
 
@@ -420,7 +418,7 @@ will link to it from here.
 
 Found a typo? Think something should be explained better? This tutorial (and all
 our other documenation) live in the main repo
-[here](https://github.com/apache/incubator-predictionio/blob/livedoc/docs/manual/source/demo/tapster.html.md).
+[here](https://github.com/apache/predictionio/blob/livedoc/docs/manual/source/demo/tapster.html.md).
 Our documentation is in the `livedoc` branch. Find out how to contribute
 documentation at
 http://predictionio.apache.org/community/contribute-documentation/].

@@ -22,15 +22,34 @@ limitations under the License.
 INFO: Assuming you are following the directory structure in the following,
 replace `/home/abc` with your own home directory wherever you see it.
 
+## Downloading Binary Distribution
+
+You can use pre-built binary distribution for Apache PredictionIO® if you are
+building against
+
+* Scala 2.11.8
+* Spark 2.1.1
+* Hadoop 2.7.3
+* Elasticsearch 5.5.2
+
+Download and extract binary release.
+
+```
+$ curl -L https://dist.apache.org/repos/dist/release/predictionio/<%= data.versions.pio %>/apache-predictionio-<%= data.versions.pio %>-bin.tar.gz > PredictionIO-<%= data.versions.pio %>.tar.gz
+$ tar zxvf PredictionIO-<%= data.versions.pio %>.tar.gz
+```
+
+Proceed to [Installing Dependencies](#installing-dependencies).
+
 ## Downloading Source Code
 
 Download Apache PredictionIO <%= data.versions.pio %> from an
-Apache [mirror](https://www.apache.org/dyn/closer.cgi/incubator/predictionio/<%=
+Apache [mirror](https://www.apache.org/dyn/closer.cgi/predictionio/<%=
 data.versions.pio %>/apache-predictionio-<%= data.versions.pio %>.tar.gz). 
 
 Verify this release using [signatures and checksums]
-(https://www.apache.org/dist/incubator/predictionio/<%= data.versions.pio %>/)
-and [project release KEYS](https://www.apache.org/dist/incubator/predictionio/KEYS).
+(https://www.apache.org/dist/predictionio/<%= data.versions.pio %>/)
+and [project release KEYS](https://www.apache.org/dist/predictionio/KEYS).
 
 ```
 $ gpg --import KEYS
@@ -99,7 +118,7 @@ $ ./make-distribution.sh -Dscala.version=2.11.8 -Dspark.version=2.1.0 -Delastics
 ## Installing Dependencies
 
 Let us install dependencies inside a subdirectory of the Apache PredictionIO
-(incubating) installation. By following this convention, you can use
+installation. By following this convention, you can use
 Apache PredictionIO's default configuration as is.
 
 ```

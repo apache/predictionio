@@ -24,7 +24,7 @@ limitations under the License.
 You can help improve the Apache PredictionIO documentation by
 submitting tutorials, writing how-tos, fixing errors, and adding missing
 information. You can edit any page live on
-[GitHub](https://github.com/apache/incubator-predictionio) by clicking the
+[GitHub](https://github.com/apache/predictionio) by clicking the
 pencil icon on any page or open a [Pull
 Request](https://help.github.com/articles/creating-a-pull-request/).
 
@@ -192,11 +192,11 @@ NOTE: Files must end with a `.erb` extension to be processed as ERB.
 For Apache project committers, pushing to the `livedoc` branch of PredictionIO ASF git will update
 http://predictionio.apache.org in about 10 minutes.
 
-Make sure the **apache.org** remote is attached to your `incubator-predictionio` repo, and if not, add it:
+Make sure the **apache.org** remote is attached to your `predictionio` repo, and if not, add it:
 
 ```
 $ git remote -v
-$ git remote add apache https://git-wip-us.apache.org/repos/asf/incubator-predictionio.git
+$ git remote add apache https://git-wip-us.apache.org/repos/asf/predictionio.git
 ```
 
 Then, push the `livedoc` branch. (It will be published and synced with the public GitHub mirror):

@@ -284,11 +284,10 @@ files=$(ls PredictionIO*.tar.gz 2> /dev/null | wc -l)
 
 if [[ $files == 0 ]]; then
   echo "Downloading PredictionIO..."
-  curl -L https://codeload.github.com/apache/incubator-predictionio/tar.gz/master > incubator-predictionio-master.tar.gz
+  curl -L https://dist.apache.org/repos/dist/release/predictionio/0.12.1/apache-predictionio-0.12.1-bin.tar.gz > predictionio-release.tar.gz
+  tar zxf predictionio-0.12.1.tar.gz
 
-  tar zxf incubator-predictionio-master.tar.gz
-
-  mv incubator-predictionio-master PredictionIO
+  mv predictionio-0.12.1 PredictionIO
 
   sh PredictionIO/make-distribution.sh
   cp PredictionIO/${PIO_FILE} ${TEMP_DIR}
@@ -467,7 +466,7 @@ echo -e "\033[1;32mInstallation done!\033[0m"
 
 echo "--------------------------------------------------------------------------------"
 echo -e "\033[1;32mInstallation of PredictionIO complete!\033[0m"
-echo -e "\033[1;32mPlease follow documentation at http://predictionio.incubator.apache.org/start/download/ to download the engine template based on your needs\033[0m"
+echo -e "\033[1;32mPlease follow documentation at http://predictionio.apache.org/start/download/ to download the engine template based on your needs\033[0m"
 echo -e
 echo -e "\033[1;33mCommand Line Usage Notes:\033[0m"
 if [[ ${source_setup} = $ES_HB ]]; then
@@ -482,5 +481,5 @@ if [[ ${source_setup} = $ES_HB ]]; then
 fi
 echo -e ""
 echo -e "Please report any problems to the user mailing list."
-echo -e "User mailing list instructions: \033[1;34mhttp://predictionio.incubator.apache.org/support/\033[0m"
+echo -e "User mailing list instructions: \033[1;34mhttp://predictionio.apache.org/support/\033[0m"
 echo "--------------------------------------------------------------------------------"

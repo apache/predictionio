@@ -39,7 +39,7 @@ Like us on Facebook at https://www.facebook.com/predictionio.
 
 ## GitHub
 
-View our code on GitHub at https://github.com/apache/incubator-predictionio.
+View our code on GitHub at https://github.com/apache/predictionio.
 
-<iframe src="/github/?user=apache&repo=incubator-predictionio&type=fork&count=true&size=large" allowtransparency="true" frameborder="0" scrolling="0" width="170" height="30"></iframe>
-<iframe src="/github/?user=apache&repo=incubator-predictionio&type=watch&count=true&size=large" allowtransparency="true" frameborder="0" scrolling="0" width="170" height="30"></iframe>
+<iframe src="/github/?user=apache&repo=predictionio&type=fork&count=true&size=large" allowtransparency="true" frameborder="0" scrolling="0" width="170" height="30"></iframe>
+<iframe src="/github/?user=apache&repo=predictionio&type=watch&count=true&size=large" allowtransparency="true" frameborder="0" scrolling="0" width="170" height="30"></iframe>

@@ -43,7 +43,7 @@ show features that are highly sought after by the community.
 ## How to Report an Issue
 
 If you wish to report an issue you found, you can do so on [Apache PredictionIO
-(incubating) JIRA](https://issues.apache.org/jira/browse/PIO).
+JIRA](https://issues.apache.org/jira/browse/PIO).
 
 ## How to Help Resolve Existing Issues
 
@@ -135,7 +135,7 @@ https://help.github.com/articles/fork-a-repo/.
 ### Building Apache PredictionIO from Source
 
 After the previous section, you should have a copy of Apache PredictionIO
-(incubating) in your local machine ready to be built.
+in your local machine ready to be built.
 
 1. Make sure you are on the *develop* branch. You can double check by `git
    status` or simply `git checkout develop`.

@@ -42,11 +42,15 @@ lazy val scalaSparkDepsVersion = Map(
     "2.1" -> Map(
       "akka" -> "2.4.17",
       "hadoop" -> "2.7.3",
+      "json4s" -> "3.2.11"),
+    "2.2" -> Map(
+      "akka" -> "2.4.17",
+      "hadoop" -> "2.7.3",
       "json4s" -> "3.2.11")))
 
 name := "apache-predictionio-parent"
 
-version in ThisBuild := "0.12.0-incubating"
+version in ThisBuild := "0.12.1"
 
 organization in ThisBuild := "org.apache.predictionio"
 
@@ -107,7 +111,7 @@ val commonSettings = Seq(
 val commonTestSettings = Seq(
   libraryDependencies ++= Seq(
     "org.postgresql"   % "postgresql"  % "9.4-1204-jdbc41" % "test",
-    "org.scalikejdbc" %% "scalikejdbc" % "2.3.5" % "test"))
+    "org.scalikejdbc" %% "scalikejdbc" % "3.1.0" % "test"))
 
 val dataElasticsearch1 = (project in file("storage/elasticsearch1")).
   settings(commonSettings: _*).
@@ -283,9 +287,9 @@ pomExtra := {
     <version>18</version>
   </parent>
   <scm>
-    <connection>scm:git:github.com/apache/incubator-predictionio</connection>
-    <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-predictionio.git</developerConnection>
-    <url>github.com/apache/incubator-predictionio</url>
+    <connection>scm:git:github.com/apache/predictionio</connection>
+    <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/predictionio.git</developerConnection>
+    <url>github.com/apache/predictionio</url>
   </scm>
   <developers>
     <developer>

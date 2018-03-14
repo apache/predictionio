@@ -20,7 +20,7 @@ limitations under the License.
 -->
 
 **Event Server** is designed to collect data into Apache PredictionIO
-(incubating) in an event-based style. Once the Event Server is launched, your
+in an event-based style. Once the Event Server is launched, your
 application can send data to it through its **Event API** with HTTP requests or
 with `EventClient`s of PredictionIO's SDKs.
 
@@ -33,7 +33,7 @@ API](http://predictionio.apache.org/api/current/index.html#org.apache.prediction
 
 INFO: Before launching the Event Server, make sure that your event data store
 backend is properly configured and is running. By default, Apache PredictionIO
-(incubating) uses Apache HBase, and a quick configuration can be found
+uses Apache HBase, and a quick configuration can be found
 [here](/install/install-sourcecode/#hbase). Please allow a minute (usually less
 than 30 seconds) after HBase is started for its initialization to complete
 before starting the Event Server.

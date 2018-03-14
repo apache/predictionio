@@ -24,8 +24,8 @@ record users' behaviors in Apache PredictionIO's Event Server and
 also query recommendations from the ML Engines. Therefore, a SDK typically has 2
 corresponding clients: `Event Client` and `Engine Client`.
 
-The following guideline bases on the REST API provided by Apache PredictionIO
-(incubating)'s  Event Client which details can be found
+The following guideline bases on the REST API provided by Apache PredictionIO's
+Event Client which details can be found
 [here](http://predictionio.apache.org/datacollection/eventapi/).
 
 ## Event Client
