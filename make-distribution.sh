@@ -67,15 +67,15 @@ echo "Building binary distribution for PredictionIO $VERSION..."
 
 cd ${FWDIR}
 set -x
-sbt/sbt "${JAVA_PROPS[@]}" clean
-sbt/sbt "${JAVA_PROPS[@]}" printBuildInfo
-sbt/sbt "${JAVA_PROPS[@]}" publishLocal assembly storage/publishLocal storage/assembly
-sbt/sbt "${JAVA_PROPS[@]}" assembly/clean assembly/universal:packageBin assembly/universal:packageZipTarball
+sbt "${JAVA_PROPS[@]}" clean
+sbt "${JAVA_PROPS[@]}" printBuildInfo
+sbt "${JAVA_PROPS[@]}" publishLocal assembly storage/publishLocal storage/assembly
+sbt "${JAVA_PROPS[@]}" assembly/clean assembly/universal:packageBin assembly/universal:packageZipTarball
 if [ x$RPM_BUILD = "xtrue" ] ; then
-    sbt/sbt "${JAVA_PROPS[@]}" assembly/rpm:packageBin
+    sbt "${JAVA_PROPS[@]}" assembly/rpm:packageBin
 fi
 if [ x$DEB_BUILD = "xtrue" ] ; then
-    sbt/sbt "${JAVA_PROPS[@]}" assembly/debian:packageBin
+    sbt "${JAVA_PROPS[@]}" assembly/debian:packageBin
 fi
 set +x
 
@@ -94,7 +94,6 @@ cp ${FWDIR}/bin/* ${DISTDIR}/bin || :
 cp ${FWDIR}/conf/* ${DISTDIR}/conf
 cp -r ${FWDIR}/python/* ${DISTDIR}/python
 cp ${FWDIR}/project/build.properties ${DISTDIR}/project
-cp ${FWDIR}/sbt/sbt ${DISTDIR}/sbt
 cp ${FWDIR}/assembly/src/universal/lib/*assembly*jar ${DISTDIR}/lib
 cp ${FWDIR}/assembly/src/universal/lib/spark/*jar ${DISTDIR}/lib/spark
 
