@@ -54,11 +54,11 @@ version in ThisBuild := "0.12.1"
 
 organization in ThisBuild := "org.apache.predictionio"
 
-scalaVersion in ThisBuild := sys.props.getOrElse("scala.version", "2.11.8")
+scalaVersion in ThisBuild := sys.props.getOrElse("scala.version", "2.11.12")
 
 scalaBinaryVersion in ThisBuild := binaryVersion(scalaVersion.value)
 
-crossScalaVersions in ThisBuild := Seq("2.10.6", "2.11.8")
+crossScalaVersions in ThisBuild := Seq("2.10.6", "2.11.12")
 
 scalacOptions in ThisBuild ++= Seq("-deprecation", "-unchecked", "-feature")
 
@@ -77,7 +77,7 @@ akkaVersion in ThisBuild := sys.props.getOrElse(
   "akka.version",
   scalaSparkDepsVersion(scalaBinaryVersion.value)(sparkBinaryVersion.value)("akka"))
 
-lazy val es = sys.props.getOrElse("elasticsearch.version", "5.5.2")
+lazy val es = sys.props.getOrElse("elasticsearch.version", "5.6.9")
 
 elasticsearchVersion in ThisBuild := es
 
