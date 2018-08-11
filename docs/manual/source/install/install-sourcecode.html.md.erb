@@ -32,22 +32,27 @@ building against
 * Hadoop 2.7.3
 * Elasticsearch 5.5.2
 
-Download and extract binary release.
+Download binary release from an [Apache mirror](https://www.apache.org/dyn/closer.cgi/predictionio/<%=
+data.versions.pio %>/apache-predictionio-<%= data.versions.pio %>-bin.tar.gz)
+and verify the release.
+
+Extract the binary distribution and proceed to
+[Installing Dependencies](#installing-dependencies).
 
 ```
-$ curl -L https://dist.apache.org/repos/dist/release/predictionio/<%= data.versions.pio %>/apache-predictionio-<%= data.versions.pio %>-bin.tar.gz > PredictionIO-<%= data.versions.pio %>.tar.gz
-$ tar zxvf PredictionIO-<%= data.versions.pio %>.tar.gz
+$ tar zxvf apache-predictionio-<%= data.versions.pio %>.tar.gz
 ```
-
-Proceed to [Installing Dependencies](#installing-dependencies).
 
 ## Downloading Source Code
 
-Download Apache PredictionIO <%= data.versions.pio %> from an
-Apache [mirror](https://www.apache.org/dyn/closer.cgi/predictionio/<%=
-data.versions.pio %>/apache-predictionio-<%= data.versions.pio %>.tar.gz). 
+Download Apache PredictionIO source <%= data.versions.pio %> from an
+[Apache mirror](https://www.apache.org/dyn/closer.cgi/predictionio/<%=
+data.versions.pio %>/apache-predictionio-<%= data.versions.pio %>.tar.gz) and
+verify the release.
 
-Verify this release using [signatures and checksums]
+### Verifying Release
+
+Verify binary/source release using [signatures and checksums]
 (https://www.apache.org/dist/predictionio/<%= data.versions.pio %>/)
 and [project release KEYS](https://www.apache.org/dist/predictionio/KEYS).
 
