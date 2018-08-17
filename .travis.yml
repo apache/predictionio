@@ -137,17 +137,17 @@ env:
 before_install:
   - unset SBT_OPTS JVM_OPTS
   - sudo rm /usr/local/bin/docker-compose
-  - curl -L https://github.com/docker/compose/releases/download/1.11.1/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - travis_retry curl -L https://github.com/docker/compose/releases/download/1.11.1/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
 
 before_script:
   - sudo sysctl -w vm.max_map_count=262144
   - docker-compose -v
-  - ./tests/before_script.travis.sh
+  - travis_retry ./tests/before_script.travis.sh
 
 script:
-  - ./tests/script.travis.sh
+  - travis_retry ./tests/script.travis.sh
 
 after_script:
   - ./tests/after_script.travis.sh
