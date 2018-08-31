@@ -28,7 +28,7 @@ if [ ! -f $DIR/docker-files/${PGSQL_JAR} ]; then
   mv ${PGSQL_JAR} $DIR/docker-files/
 fi
 if [ ! -f $DIR/docker-files/${SPARK_ARCHIVE} ]; then
-  wget $SPARK_DOWNLOAD
+  wget -O $SPARK_ARCHIVE $SPARK_DOWNLOAD
   mv $SPARK_ARCHIVE $DIR/docker-files/
 fi
 

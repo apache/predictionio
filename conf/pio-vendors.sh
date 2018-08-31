@@ -19,6 +19,11 @@
 # IMPORTANT: PIO_*_VERSION for dependencies must be set before envoking this script.
 # `source conf/set_build_profile.sh $BUILD_PROFILE` to get the proper versions
 
+# Figure out current script's location
+THIS_SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+
+. $THIS_SCRIPT_DIR/../bin/semver.sh
+
 if [ -z "$PIO_SCALA_VERSION" ]; then
     PIO_SCALA_VERSION="2.11.8"
 fi
@@ -51,7 +56,11 @@ PGSQL_DOWNLOAD=https://jdbc.postgresql.org/download/${PGSQL_JAR}
 HADOOP_MAJOR=`echo $PIO_HADOOP_VERSION | awk -F. '{print $1 "." $2}'`
 SPARK_DIR=spark-${PIO_SPARK_VERSION}-bin-hadoop${HADOOP_MAJOR}
 SPARK_ARCHIVE=${SPARK_DIR}.tgz
-SPARK_DOWNLOAD=http://d3kbcqa49mib13.cloudfront.net/${SPARK_ARCHIVE}
+if semverGT $PIO_SPARK_VERSION "2.1.2"; then
+    SPARK_DOWNLOAD=https://www.apache.org/dyn/closer.lua\?action=download\&filename=spark/spark-${PIO_SPARK_VERSION}/${SPARK_ARCHIVE}
+else
+    SPARK_DOWNLOAD=https://archive.apache.org/dist/spark/spark-${PIO_SPARK_VERSION}/${SPARK_ARCHIVE}
+fi
 # ELASTICSEARCH_DOWNLOAD
 #   5.x https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-${PIO_ELASTICSEARCH_VERSION}.tar.gz
 #   1.x https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${PIO_ELASTICSEARCH_VERSION}.tar.gz
