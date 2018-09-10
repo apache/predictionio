@@ -1,5 +1,5 @@
 ---
-title: ML Tuning and Evaluation
+title: Tuning and Evaluation
 ---
 
 <!--

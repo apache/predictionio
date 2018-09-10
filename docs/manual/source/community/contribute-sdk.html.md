@@ -19,9 +19,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-A SDK should provide convenient methods for client applications to easily
-record users' behaviors in Apache PredictionIO's Event Server and
-also query recommendations from the ML Engines. Therefore, a SDK typically has 2
+A SDK should provide convenient methods for client applications to easily record
+users' behaviors in Apache PredictionIO's Event Server and also query
+recommendations from machine learning Engines. Therefore, a SDK typically has 2
 corresponding clients: `Event Client` and `Engine Client`.
 
 The following guideline bases on the REST API provided by Apache PredictionIO's
