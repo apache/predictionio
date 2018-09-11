@@ -134,7 +134,7 @@ root:
         body: 'Adding Your Own Algorithms'
         url: '/algorithm/custom/'
   -
-    body: 'ML Tuning and Evaluation'
+    body: 'Tuning and Evaluation'
     url: '#'
     children:
       -
