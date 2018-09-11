@@ -118,7 +118,7 @@ root:
         body: 'Event Server Plugin'
         url: '/datacollection/plugin/'
   -
-    body: 'Choosing an Algorithm(s)'
+    body: 'Choosing an Algorithm'
     url: '#'
     children:
       -
