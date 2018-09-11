@@ -54,7 +54,7 @@ lazy val scalaSparkDepsVersion = Map(
 
 name := "apache-predictionio-parent"
 
-version in ThisBuild := "0.13.0-SNAPSHOT"
+version in ThisBuild := "0.13.0"
 
 organization in ThisBuild := "org.apache.predictionio"
 
