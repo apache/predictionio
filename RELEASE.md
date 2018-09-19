@@ -21,6 +21,32 @@ limitations under the License.
 
 ## Version History
 
+### 0.13.0
+
+Sep 20, 2018
+
+#### New Features
+
+- [PIO-161](https://issues.apache.org/jira/browse/PIO-161): Spark 2.3 support.
+
+#### Behavior Changes
+
+- [PIO-158](https://issues.apache.org/jira/browse/PIO-158): More officially deprecate support for Scala 2.10 and Spark 1.x.
+
+#### Other Changes
+
+- [PIO-152](https://issues.apache.org/jira/browse/PIO-152): DOAP syntax error.
+- [PIO-155](https://issues.apache.org/jira/browse/PIO-155): Fix 'Topic Labelling with Wikipedia' Template Link.
+- [PIO-156](https://issues.apache.org/jira/browse/PIO-156): Stale release on download page.
+- [PIO-160](https://issues.apache.org/jira/browse/PIO-160): Array out of bound exception in JDBCUtils when --env is not supplied to CreateWorkflow.
+
+#### Credits
+
+The following contributors have spent a great deal of effort to bring to you
+this release:
+
+Donald Szeto, Takako Shimamoto
+
 ### 0.12.1
 
 Mar 11, 2018
