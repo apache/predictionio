@@ -15,6 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-This is based on E-Commerce Recommendation Template v0.12.0-incubating.
+This is based on E-Commerce Recommendation Template v0.13.0.
 
 Please refer to http://predictionio.apache.org/templates/ecommercerecommendation/how-to/

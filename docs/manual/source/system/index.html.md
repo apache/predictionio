@@ -19,14 +19,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-During the [installation](/install), you have installed the latest stable
-versions of the following software:
-
-* Apache Hadoop up to 2.7.2 (required only if YARN and HDFS are needed)
-* Apache HBase up to 1.2.4
-* Apache Spark up to 1.6.3, or up to 2.3.1
-* Elasticsearch up to 1.7.5, or up to 5.6.11
-
 This section explains general rules-of-thumb for how they are used in
 PredictionIO. The actual implementation of the Template will define how much of
 this applies. PredictionIO is flexible about much of this configuration but its

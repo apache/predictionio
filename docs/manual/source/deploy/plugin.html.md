@@ -32,7 +32,7 @@ At first, create a sbt project with following `build.sbt`:
 name := "pio-plugin-example"
 version := "1.0"
 scalaVersion := "2.11.11"
-libraryDependencies += "org.apache.predictionio" %% "apache-predictionio-core" % "0.12.1"
+libraryDependencies += "org.apache.predictionio" %% "apache-predictionio-core" % "0.13.0"
 ```
 
 Engine server plug-ins must extend `EngineServerPlugin`. Here is an example of engine server plug-in:
