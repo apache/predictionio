@@ -42,8 +42,8 @@ To get started, check out http://predictionio.apache.org!
 
 A few installation options available.
 
-*   [Installing Apache PredictionIO from Source
-    Code](http://predictionio.apache.org/install/install-sourcecode/)
+*   [Installing Apache PredictionIO from
+    Binary/Source](http://predictionio.apache.org/install/install-sourcecode/)
 *   [Installing Apache PredictionIO with
     Docker](http://predictionio.apache.org/community/projects/#docker-installation-for-predictionio)
     (community contributed)

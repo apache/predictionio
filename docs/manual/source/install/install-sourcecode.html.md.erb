@@ -1,5 +1,5 @@
 ---
-title: Installing Apache PredictionIO® from Source Code
+title: Installing Apache PredictionIO®
 ---
 
 <!--
@@ -34,24 +34,17 @@ building against
 
 Download [binary release from an Apache
 mirror](https://www.apache.org/dyn/closer.lua/predictionio/<%= data.versions.pio
-%>/apache-predictionio-<%= data.versions.pio %>-bin.tar.gz) and verify the
-release with the corresponding
-[signature](https://archive.apache.org/dist/predictionio/<%=
-data.versions.pio %>/apache-predictionio-<%= data.versions.pio
-%>-bin.tar.gz.asc) and
-[checksum](https://archive.apache.org/dist/predictionio/<%=
-data.versions.pio %>/apache-predictionio-<%= data.versions.pio
-%>-bin.tar.gz.sha512).
+%>/apache-predictionio-<%= data.versions.pio %>-bin.tar.gz).
 
 ### Verifying Release
 
-Verify binary/source release using [signatures and checksums]
-(https://www.apache.org/dist/predictionio/<%= data.versions.pio %>/)
+Verify binary release using the [signatures and checksums]
+(https://archive.apache.org/dist/predictionio/<%= data.versions.pio %>/)
 and [project release KEYS](https://www.apache.org/dist/predictionio/KEYS).
 
 ```
 $ gpg --import KEYS
-$ gpg --verify apache-predictionio-<%= data.versions.pio %>.tar.gz.asc apache-predictionio-<%= data.versions.pio %>.tar.gz
+$ gpg --verify apache-predictionio-<%= data.versions.pio %>-bin.tar.gz.asc apache-predictionio-<%= data.versions.pio %>-bin.tar.gz
 ```
 
 You should see something like this.
@@ -72,24 +65,19 @@ Extract the binary distribution and proceed to
 [Installing Dependencies](#installing-dependencies).
 
 ```
-$ tar zxvf apache-predictionio-<%= data.versions.pio %>.tar.gz
+$ tar zxvf apache-predictionio-<%= data.versions.pio %>-bin.tar.gz
 ```
 
 ## Downloading Source Code
 
 Download [source release from an Apache
-mirror](https://www.apache.org/dyn/closer.cgi/predictionio/<%= data.versions.pio
-%>/apache-predictionio-<%= data.versions.pio %>.tar.gz) and verify the release
-with the corresponding
-[signature](https://archive.apache.org/dist/predictionio/<%= data.versions.pio
-%>/apache-predictionio-<%= data.versions.pio %>.tar.gz.asc) and
-[checksum](https://archive.apache.org/dist/predictionio/<%= data.versions.pio
-%>/apache-predictionio-<%= data.versions.pio %>.tar.gz.sha512).
+mirror](https://archive.apache.org/dist/predictionio/<%= data.versions.pio
+%>/apache-predictionio-<%= data.versions.pio %>.tar.gz).
 
 ### Verifying Release
 
-Verify binary/source release using [signatures and checksums]
-(https://www.apache.org/dist/predictionio/<%= data.versions.pio %>/)
+Verify source release using [signatures and checksums]
+(https://archive.apache.org/dist/predictionio/<%= data.versions.pio %>/)
 and [project release KEYS](https://www.apache.org/dist/predictionio/KEYS).
 
 ```
@@ -109,7 +97,7 @@ For further information, the [official guide from
 Apache](https://www.apache.org/info/verification.html) has the most up-to-date
 and complete information.
 
-## Building
+### Building
 
 Run the following at the directory where you downloaded the source code to build
 Apache PredictionIO®. By default, the build will be against
