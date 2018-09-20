@@ -19,6 +19,14 @@ limitations under the License.
 
 **Note:** For upgrade instructions please refer to [this page](http://predictionio.apache.org/resources/upgrade/).
 
+## Deprecation Notice
+
+### 0.13.0
+
+- Support for Scala 2.10.x and Spark 1.x are now deprecated. The next non-patch
+  version of PredictionIO may no longer support them
+  ([PIO-158](https://issues.apache.org/jira/browse/PIO-158)).
+
 ## Version History
 
 ### 0.13.0
