@@ -17,24 +17,7 @@
 import PIOBuild._
 
 lazy val scalaSparkDepsVersion = Map(
-  "2.10" -> Map(
-    "1.6" -> Map(
-      "akka" -> "2.3.15",
-      "hadoop" -> "2.6.5",
-      "json4s" -> "3.2.10"),
-    "2.0" -> Map(
-      "akka" -> "2.3.16",
-      "hadoop" -> "2.7.3",
-      "json4s" -> "3.2.11"),
-    "2.1" -> Map(
-      "akka" -> "2.3.16",
-      "hadoop" -> "2.7.3",
-      "json4s" -> "3.2.11")),
   "2.11" -> Map(
-    "1.6" -> Map(
-      "akka" -> "2.3.15",
-      "hadoop" -> "2.6.5",
-      "json4s" -> "3.2.10"),
     "2.0" -> Map(
       "akka" -> "2.4.17",
       "hadoop" -> "2.7.3",
@@ -46,11 +29,15 @@ lazy val scalaSparkDepsVersion = Map(
     "2.2" -> Map(
       "akka" -> "2.4.17",
       "hadoop" -> "2.7.3",
+      "json4s" -> "3.2.11"),
+    "2.3" -> Map(
+      "akka" -> "2.4.17",
+      "hadoop" -> "2.7.3",
       "json4s" -> "3.2.11")))
 
 name := "apache-predictionio-parent"
 
-version in ThisBuild := "0.12.1"
+version in ThisBuild := "0.14.0-SNAPSHOT"
 
 organization in ThisBuild := "org.apache.predictionio"
 
@@ -58,18 +45,18 @@ scalaVersion in ThisBuild := sys.props.getOrElse("scala.version", "2.11.12")
 
 scalaBinaryVersion in ThisBuild := binaryVersion(scalaVersion.value)
 
-crossScalaVersions in ThisBuild := Seq("2.10.6", "2.11.12")
+crossScalaVersions in ThisBuild := Seq("2.11.12")
 
 scalacOptions in ThisBuild ++= Seq("-deprecation", "-unchecked", "-feature")
 
 scalacOptions in (ThisBuild, Test) ++= Seq("-Yrangepos")
 fork in (ThisBuild, run) := true
 
-javacOptions in (ThisBuild, compile) ++= Seq("-source", "1.7", "-target", "1.7",
+javacOptions in (ThisBuild, compile) ++= Seq("-source", "1.8", "-target", "1.8",
   "-Xlint:deprecation", "-Xlint:unchecked")
 
 // Ignore differentiation of Spark patch levels
-sparkVersion in ThisBuild := sys.props.getOrElse("spark.version", (if (scalaBinaryVersion.value == "2.10") "1.6.3" else "2.1.2"))
+sparkVersion in ThisBuild := sys.props.getOrElse("spark.version", "2.1.2")
 
 sparkBinaryVersion in ThisBuild := binaryVersion(sparkVersion.value)
 
@@ -323,6 +310,10 @@ parallelExecution in Global := false
 testOptions in Test += Tests.Argument("-oDF")
 
 printBuildInfo := {
+  if (scalaBinaryVersion.value == "2.10")
+    streams.value.log.warn("Support for Scala 2.10 is deprecated. Please upgrade to a newer version of Scala.")
+  if (sparkBinaryVersion.value == "1.6")
+    streams.value.log.warn("Support for Spark 1.6 is deprecated. Please upgrade to a newer version of Spark.")
   println(s"PIO_SCALA_VERSION=${scalaVersion.value}")
   println(s"PIO_SPARK_VERSION=${sparkVersion.value}")
   println(s"PIO_ELASTICSEARCH_VERSION=${elasticsearchVersion.value}")

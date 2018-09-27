@@ -1,5 +1,5 @@
 ---
-title: Installing Apache PredictionIO® from Source Code
+title: Installing Apache PredictionIO®
 ---
 
 <!--
@@ -32,23 +32,52 @@ building against
 * Hadoop 2.7.3
 * Elasticsearch 5.6.9
 
-Download and extract binary release.
+Download [binary release from an Apache
+mirror](https://www.apache.org/dyn/closer.lua/predictionio/<%= data.versions.pio
+%>/apache-predictionio-<%= data.versions.pio %>-bin.tar.gz).
+
+### Verifying Release
+
+Verify binary release using the [signatures and checksums]
+(https://archive.apache.org/dist/predictionio/<%= data.versions.pio %>/)
+and [project release KEYS](https://www.apache.org/dist/predictionio/KEYS).
 
 ```
-$ curl -L https://dist.apache.org/repos/dist/release/predictionio/<%= data.versions.pio %>/apache-predictionio-<%= data.versions.pio %>-bin.tar.gz > PredictionIO-<%= data.versions.pio %>.tar.gz
-$ tar zxvf PredictionIO-<%= data.versions.pio %>.tar.gz
+$ gpg --import KEYS
+$ gpg --verify apache-predictionio-<%= data.versions.pio %>-bin.tar.gz.asc apache-predictionio-<%= data.versions.pio %>-bin.tar.gz
 ```
 
-Proceed to [Installing Dependencies](#installing-dependencies).
+You should see something like this.
+
+```
+gpg: Signature made Tue Sep 26 22:55:22 2017 PDT
+gpg:                using RSA key 7E2363D84719A8F4
+gpg: Good signature from "Chan Lee <chanlee@apache.org>" [ultimate]
+```
+
+For further information, the [official guide from
+Apache](https://www.apache.org/info/verification.html) has the most up-to-date
+and complete information.
+
+### Installation
+
+Extract the binary distribution and proceed to
+[Installing Dependencies](#installing-dependencies).
+
+```
+$ tar zxvf apache-predictionio-<%= data.versions.pio %>-bin.tar.gz
+```
 
 ## Downloading Source Code
 
-Download Apache PredictionIO <%= data.versions.pio %> from an
-Apache [mirror](https://www.apache.org/dyn/closer.cgi/predictionio/<%=
-data.versions.pio %>/apache-predictionio-<%= data.versions.pio %>.tar.gz). 
+Download [source release from an Apache
+mirror](https://archive.apache.org/dist/predictionio/<%= data.versions.pio
+%>/apache-predictionio-<%= data.versions.pio %>.tar.gz).
 
-Verify this release using [signatures and checksums]
-(https://www.apache.org/dist/predictionio/<%= data.versions.pio %>/)
+### Verifying Release
+
+Verify source release using [signatures and checksums]
+(https://archive.apache.org/dist/predictionio/<%= data.versions.pio %>/)
 and [project release KEYS](https://www.apache.org/dist/predictionio/KEYS).
 
 ```
@@ -64,7 +93,11 @@ gpg:                using RSA key 7E2363D84719A8F4
 gpg: Good signature from "Chan Lee <chanlee@apache.org>" [ultimate]
 ```
 
-## Building
+For further information, the [official guide from
+Apache](https://www.apache.org/info/verification.html) has the most up-to-date
+and complete information.
+
+### Building
 
 Run the following at the directory where you downloaded the source code to build
 Apache PredictionIO®. By default, the build will be against
@@ -103,9 +136,9 @@ Starting from version 0.11.0, PredictionIO can be built against different
 versions of dependencies. As of writing, one could build PredictionIO against
 these different dependencies:
 
-* Scala 2.10.x, 2.11.x
-* Spark 1.6.x, 2.0.x, 2.1.x
-* Hadoop 2.4.x to 2.7.x
+* Scala 2.10.x(deprecated), 2.11.x
+* Spark 1.6.x(deprecated), 2.0.x, 2.1.x
+* Hadoop 2.6.x, 2.7.x
 * Elasticsearch 1.7.x, 5.x
 
 As an example, if you want to build PredictionIO to support Scala 2.11.8,

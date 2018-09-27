@@ -118,7 +118,7 @@ root:
         body: 'Event Server Plugin'
         url: '/datacollection/plugin/'
   -
-    body: 'Choosing an Algorithm(s)'
+    body: 'Choosing an Algorithm'
     url: '#'
     children:
       -
@@ -134,7 +134,7 @@ root:
         body: 'Adding Your Own Algorithms'
         url: '/algorithm/custom/'
   -
-    body: 'ML Tuning and Evaluation'
+    body: 'Tuning and Evaluation'
     url: '#'
     children:
       -

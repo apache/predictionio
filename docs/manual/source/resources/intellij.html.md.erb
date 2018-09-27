@@ -25,6 +25,9 @@ This documentation assumes that you have a fully functional PredictionIO setup.
 If you have not installed PredictionIO yet, please follow [these
 instructions](/install/).
 
+The following instructions have been tested with IntelliJ IDEA 2018.2.2
+Community Edition.
+
 
 ## Preparing IntelliJ for Engine Development
 
@@ -51,29 +54,28 @@ IDEA if asked to do so.
 
 ### Setting Up the Engine Directory
 
-INFO: It is very important to run at least `pio build` once in your engine
-directory so that the project correctly recognizes the version of PredictionIO
-that you are using. If you upgraded your PredictionIO installation later, you
-will need to run `pio build` again in order for the engine to pick up the latest
-version of PredictionIO.
-
-Create an engine directory from a template. This requires that you install a
+Create an engine directory from a template. This requires that you download a
 template that you wish to start from or modify.
-Follow template [install](/start/download) and [deploy](/start/deploy) instructions
-or go through the [Quick Start](/templates/recommendation/quickstart/) if you are
-planning to modify a recommender. Make sure to build, train, and deploy the
-engine to make sure all is configured properly.
+
+Follow template [install](/start/download) and [deploy](/start/deploy)
+instructions or go through the [Quick
+Start](/templates/recommendation/quickstart/) if you are planning to modify a
+recommender. Make sure to build, train, and deploy the engine to make sure all
+is configured properly.
 
 From IntelliJ IDEA, choose *File* > *New* > *Project from Existing Sources...*.
-When asked to select a directory to import, browse to the engine directory that you
-downloaded too and proceed. Make sure you pick *Import project from external model* > *SBT*,
-then proceed to finish.
+When asked to select a directory to import, browse to the engine directory that
+you downloaded too and proceed. Make sure you pick *Import project from external
+model* > *SBT*, then proceed to finish.
 
-You should be able to build the project at this point. To run and debug
-PredictionIO server, continue on to the rest of the steps.
+You should be able to build the project at this point. To run and debug your
+template, continue on to the rest of the steps.
 
-INFO: If you are running on OS X, you will need to do the following due to
-this [known issue](http://bit.ly/12Abtvn).
+
+### Optional: Issues with Snappy on macOS
+
+If you are running on macOS and run into the following [known
+issue](http://bit.ly/12Abtvn), follow steps in this section.
 
 Edit `build.sbt` and add the following under `libraryDependencies`
 
@@ -83,35 +85,71 @@ Edit `build.sbt` and add the following under `libraryDependencies`
 
 ![Updating build.sbt](/images/intellij/intellij-buildsbt.png)
 
-When you are done editing, IntelliJ should either refresh the project
-automatically or prompt you to refresh.
+When you are done editing, IntelliJ should prompt you to import new changes,
+unless you have already enabled auto import. Import this change to make it
+effective.
 
 
-### Dependencies
+### Module Settings
 
-IntelliJ has the annoying tendency to drop some dependencies when you refresh your build.sbt after any changes.
-To avoid this we put any jars that must be available at runtime into a separate empty module in the project then
-we make the main engine project depend on this dummy module for runtime classes.
+INFO: IntelliJ will recreate module settings whenever it imports changes of your
+project. You will need to repeat this section whenever that happens.
 
-Right click on the project and click *Open Module Settings*. In the second modules column hit **+** and create a
-new Scala module. Name it pio-runtime-jars and add these assemblies under the module dependencies tab and remember to
-change the scope of the jars to **runtime**:
+Due to the way how `pio` command sources required classes during runtime, it is
+necessary to add them manually in module settings for *Run/Debug Configurations*
+to work properly.
 
--   `pio-assembly-<%= data.versions.pio %>.jar`
+Right click on the project and click *Open Module Settings*. Hit the **+**
+button right below the list of dependencies, and select *JARs or
+directories...*.
 
-    This JAR can be found inside the `assembly` or `lib` directory of your PredictionIO
-    installation directory.
+The first JAR that you need to add is the `pio-assembly-<%= data.versions.pio
+%>.jar` that contains all necessary classes. It can be found inside the
+`dist/lib` directory of your PredictionIO source installation directory (if you
+have built from sources) or the `lib` directory of your PredictionIO binary
+installation directory.
 
--   `spark-assembly-<%= data.versions.spark %>-hadoop2.4.0.jar`
+Next, you will need to make sure some configuration files from your PredictionIO
+installation can be found during runtime. Add the `conf` directory of your
+PredictionIO installation directory. When asked about categories of the
+directory, pick *Classes*.
 
-    This JAR can be found inside the `assembly` or `lib` directory of your Apache Spark
-    installation directory.
+Finally, you will need to add storage classes. The exact list of JARs that you
+will need to add depends on your storage configuration. These JARs can be found
+inside the `dist/lib/spark` directory of your PredictionIO source installation
+directory (if you have built from sources) or the `lib/spark` directory of your
+PredictionIO binary installation directory.
 
-![Create empty module and add dependencies](/images/intellij/pio-runtime-jar-deps.png)
+*   `pio-data-elasticsearch-assembly-<%= data.versions.pio %>.jar`
 
-Now make your engine module dependent on the pio-runtime-jars module for scope = runtime.
+    Add this JAR if your configuration uses Elasticsearch.
 
-![Create empty module and add dependencies](/images/intellij/pio-runtime-jars.png)
+*   `pio-data-hbase-assembly-<%= data.versions.pio %>.jar`
+
+    Add this JAR if your configuration uses Apache HBase.
+
+*   `pio-data-hdfs-assembly-<%= data.versions.pio %>.jar`
+
+    Add this JAR if your configuration uses HDFS.
+
+*   `pio-data-jdbc-assembly-<%= data.versions.pio %>.jar`
+
+    Add this JAR if your configuration uses JDBC. Notice that you must also add any
+    additional JDBC driver JARs.
+
+*   `pio-data-localfs-assembly-<%= data.versions.pio %>.jar`
+
+    Add this JAR if your configuration uses local filesystem.
+
+*   `pio-data-s3-assembly-<%= data.versions.pio %>.jar`
+
+    Add this JAR if your configuration uses Amazon Web Services S3.
+
+Make sure to change all these additions to *Runtime* scope. The following shows
+an example that uses the JDBC storage backend with PostgreSQL driver.
+
+![Example module settings for a JDBC and PostgreSQL
+configuration](/images/intellij/intellij-module-settings.png)
 
 
 ## Running and Debugging in IntelliJ IDEA
@@ -121,47 +159,41 @@ Now make your engine module dependent on the pio-runtime-jars module for scope =
 
 Create a new *Run/Debug Configuration* by going to *Run* > *Edit
 Configurations...*. Click on the **+** button and select *Application*. Name it
-`pio train` and put in the following.
+`pio train` and put in the following:
 
-```
-Main class: org.apache.predictionio.workflow.CreateWorkflow
-VM options: -Dspark.master=local -Dlog4j.configuration=file:/**replace_with_your_PredictionIO_path**/conf/log4j.properties
-Program arguments: --engine-id dummy --engine-version dummy --engine-variant engine.json
-```
+*   Main class:
 
-Click the **...** button to the right of *Environment variables*, and paste the
-following.
+    ```
+    org.apache.predictionio.workflow.CreateWorkflow
+    ```
 
-```
-SPARK_HOME=/**reaplce_w_your_spark_binary_path**
-PIO_FS_BASEDIR=/**replace_w_your_path_to**/.pio_store
-PIO_FS_ENGINESDIR=/**replace_w_your_path_to**/.pio_store/engines
-PIO_FS_TMPDIR=/**replace_w_your_path_to*/.pio_store/tmp
-PIO_STORAGE_REPOSITORIES_METADATA_NAME=predictionio_metadata
-PIO_STORAGE_REPOSITORIES_METADATA_SOURCE=ELASTICSEARCH
-PIO_STORAGE_REPOSITORIES_MODELDATA_NAME=pio_
-PIO_STORAGE_REPOSITORIES_MODELDATA_SOURCE=LOCALFS
-PIO_STORAGE_REPOSITORIES_APPDATA_NAME=predictionio_appdata
-PIO_STORAGE_REPOSITORIES_APPDATA_SOURCE=ELASTICSEARCH
-PIO_STORAGE_REPOSITORIES_EVENTDATA_NAME=predictionio_eventdata
-PIO_STORAGE_REPOSITORIES_EVENTDATA_SOURCE=HBASE
-PIO_STORAGE_SOURCES_ELASTICSEARCH_TYPE=elasticsearch
-PIO_STORAGE_SOURCES_ELASTICSEARCH_HOSTS=localhost
-PIO_STORAGE_SOURCES_ELASTICSEARCH_PORTS=9300
-PIO_STORAGE_SOURCES_LOCALFS_TYPE=localfs
-PIO_STORAGE_SOURCES_LOCALFS_HOSTS=/**replace_w_your_path_to**/.pio_store/models
-PIO_STORAGE_SOURCES_LOCALFS_PORTS=0
-PIO_STORAGE_SOURCES_HBASE_TYPE=hbase
-PIO_STORAGE_SOURCES_HBASE_HOSTS=0
-PIO_STORAGE_SOURCES_HBASE_PORTS=0
-```
+*   VM options:
 
-INFO: Remember to replace all paths that start with `**replace` with actual
-values. The directory `.pio_store` typically locates inside your home directory.
+    ```
+    -Dspark.master=local -Dlog4j.configuration=file:/<your_pio_path>/conf/log4j.properties -Dpio.log.dir=<path_of_log_file>
+    ```
+
+*   Program arguments:
+
+    ```
+    --engine-id dummy --engine-version dummy --engine-variant engine.json --env dummy=dummy
+    ```
+
+Make sure *Working directory* is set to the base directory of the template that
+you are working on.
+
+Click the folder button to the right of *Environment variables*, and paste the
+relevant values from `conf/pio-env.sh` in your PredictionIO installation
+directory. The following shows an example using JDBC and PostgreSQL.
+
+![Example environment variables
+settings](/images/intellij/pio-train-env-vars.png)
+
+Make sure *Include dependencies with "Provided" scope* is checked.
 
 The end result should look something similar to this.
 
-![Run Configuration](/images/intellij/intellij-config.png)
+![Run Configuration](/images/intellij/pio-train.png)
 
 Save and you can run or debug `pio train` with the new configuration!
 
@@ -171,20 +203,30 @@ Save and you can run or debug `pio train` with the new configuration!
 For `pio deploy`, simply duplicate the previous configuration and replace with
 the following.
 
-```
-Main class: org.apache.predictionio.workflow.CreateServer
-Program Arguments: --engineInstanceId **replace_with_the_id_from_pio_train**
-```
+*   Main class:
+
+    ```
+    org.apache.predictionio.workflow.CreateServer
+    ```
+
+*   Program Arguments:
+
+    ```
+    --engineInstanceId <id_from_pio_train> --engine-variant engine.json
+    ```
+
 
 ### Executing a Query
 
-You can execute a query with the correct SDK. For a recommender  that has been
-trained with the sample MovieLens dataset perhaps the easiest query is a curl
-one.  Start by running or debuging your `deploy` config so the service is
-waiting for the query. Then go  to the "Terminal" tab at the very bottom of the
-IDEA window and enter the curl request:
+You can execute a query with the correct SDK. For a recommender that has been
+trained with the sample MovieLens dataset perhaps the easiest query is a `curl`
+one. Start by running or debugging your `pio deploy` config so the service is
+waiting for the query. Then go to the "Terminal" tab at the very bottom of the
+IntelliJ IDEA window and enter the `curl` request:
 
-```$ curl -H "Content-Type: application/json" -d '{ "user": "1", "num": 4 }' http://localhost:8000/queries.json```
+```
+curl -H "Content-Type: application/json" -d '{ "user": "1", "num": 4 }' http://localhost:8000/queries.json
+```
 
 This should return something like:
 
@@ -200,19 +242,3 @@ This should return something like:
 INFO: If you hit a breakpoint you are likely to get a connection timeout. To see
 the data that would have been returned, just place a breakpoint where the
 response is created or run the query with no breakpoints.
-
-## Loading a Template Into Intellij IDEA
-
-To customize an existing [template](/gallery/template-gallery) using Intellij IDEA, first pull it from the template gallery:
-
-```bash
-$ git clone <Template Source> <New Engine Directory>
-```
-
-Now, before opening the template with Intellij, run the following command in the new engine template directory
-
-```bash
-$ pio build
-```
-
-This should update the pioVersion key in SBT to the version of PredictionIO you have installed, so that Intellij loads the correct JARS via its Auto-Import feature. Now, you can go ahead and open the file `build.sbt` with Intellij IDEA. You are now ready to [customize](/customize/) your new engine template.

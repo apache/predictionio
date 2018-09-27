@@ -26,7 +26,7 @@
     <license rdf:resource="http://spdx.org/licenses/Apache-2.0" />
     <name>Apache PredictionIO</name>
     <homepage rdf:resource="http://predictionio.apache.org/" />
-    <asfext:pmc rdf:resource="http://apache.org" />
+    <asfext:pmc rdf:resource="http://predictionio.apache.org" />
     <shortdesc>PredictionIO is an open source Machine Learning Server built on top of state-of-the-art open source stack, that enables developers to manage and deploy production-ready predictive services for various kinds of machine learning tasks.</shortdesc>
     <description>PredictionIO is an open source Machine Learning Server built on top of state-of-the-art open source stack, that enables developers to manage and deploy production-ready predictive services for various kinds of machine learning tasks.</description>
     <bug-database rdf:resource="https://issues.apache.org/jira/browse/PIO" />

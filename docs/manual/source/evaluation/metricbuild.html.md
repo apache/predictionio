@@ -30,7 +30,7 @@ A simplistic form of metric is a function which takes a
 `(Query, PredictedResult, ActualResult)`-tuple (*QPA-tuple*) as input
 and return a score.
 Exploiting this properties allows us to implement custom metric with a single
-line of code (plus some boilerplates). We demonstate this with two metrics:
+line of code (plus some boilerplates). We demonstrate this with two metrics:
 accuracy and precision.
 
 <!--
@@ -67,8 +67,7 @@ object. We can run the following command to kick start the evaluation.
 ```
 $ pio build
 ...
-$ pio eval org.template.classification.AccuracyEvaluation \
-    org.template.classification.EngineParamsList
+$ pio eval org.example.classification.AccuracyEvaluation org.example.classification.EngineParamsList
 ...
 ```
 
@@ -98,11 +97,11 @@ negative cases.
 
 PredictionIO provides a helper class `OptionAverageMetric` allows user to
 specify *don't care* values as `None`. It only aggregates the non-None values.
-Lines 3 to 4 is the method signature of `calcuate` method. The key difference
+Lines 3 to 4 is the method signature of `calculate` method. The key difference
 is that the return value is a `Option[Double]`, in contrast to `Double` for
 `AverageMetric`. This class only computes the average of `Some(.)` results.
 Lines 5 to 13 are the actual logic. The first `if` factors out the
-positively predicted case, and the computation is simliar to the accuracy
+positively predicted case, and the computation is similar to the accuracy
 metric. The negatively predicted case are the *don't cares*, which we return
 `None`.
 
@@ -140,8 +139,7 @@ separation of concern when we conduct hyperparameter tuning.
 ```
 $ pio build
 ...
-$ pio eval org.template.classification.PrecisionEvaluation \
-    org.template.classification.EngineParamsList
+$ pio eval org.example.classification.PrecisionEvaluation org.example.classification.EngineParamsList
 ...
 [INFO] [CoreWorkflow$] Starting evaluation instance ID: SMhzYbJ9QgKkD0fQzTA7MA
 ...
@@ -183,7 +181,7 @@ Optimal Engine Params:
   }
 }
 Metrics:
-  org.template.classification.Precision: 0.8846153846153846
+  org.example.classification.Precision: 0.8846153846153846
 ```
 
 (See MyClassification/src/main/scala/***PrecisionEvaluation.scala*** for

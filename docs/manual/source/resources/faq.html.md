@@ -81,7 +81,7 @@ Storage Backend Connections
 2015-02-03 18:40:04,812 ERROR zookeeper.ZooKeeperWatcher - hconnection-0x1e4075ce, quorum=localhost:2181, baseZNode=/hbase Received unexpected KeeperException, re-throwing exception
 org.apache.zookeeper.KeeperException$ConnectionLossException: KeeperErrorCode = ConnectionLoss for /hbase/hbaseid
 ...
-2015-02-03 18:40:07,021 ERROR hbase.StorageClient - Failed to connect to HBase. Plase check if HBase is running properly.
+2015-02-03 18:40:07,021 ERROR hbase.StorageClient - Failed to connect to HBase. Please check if HBase is running properly.
 2015-02-03 18:40:07,026 ERROR storage.Storage$ - Error initializing storage client for source HBASE
 2015-02-03 18:40:07,027 ERROR storage.Storage$ - Can't connect to ZooKeeper
 java.util.NoSuchElementException: None.get
@@ -145,7 +145,7 @@ url, etc.) with it. You can supply these as pass-through arguments at the end of
 
 If the engine training seems stuck, it's possible that the the executor doesn't have enough memory.
 
-First, follow [instruction here]( http://spark.apache.org/docs/latest/spark-standalone.html) to start standalone Spark cluster and get the master URL. If you use the provided quick install script to install PredictionIO, the Spark is installed at `PredictionIO/vendors/spark-1.2.0/` where you could run the Spark commands in `sbin/` as described in the Spark documentation. Then use following train commmand to specify executor memory (default is only 512 MB) and driver memory.
+First, follow [instruction here]( http://spark.apache.org/docs/latest/spark-standalone.html) to start standalone Spark cluster and get the master URL. If you use the provided quick install script to install PredictionIO, the Spark is installed at `PredictionIO/vendors/spark-1.2.0/` where you could run the Spark commands in `sbin/` as described in the Spark documentation. Then use following train command to specify executor memory (default is only 512 MB) and driver memory.
 
 For example, the follow command set the Spark master to `spark://localhost:7077`
 (the default url of standalone cluster), set the driver memory to 16G and set the executor memory to 24G for `pio train`.

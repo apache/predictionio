@@ -19,7 +19,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-This how-to tutorial would explain how you can also use `$pio eval` to persist predicted result for a batch of queries. Please read the [Evaluation](/templates/recommendation/evaluation/) to understand the usage of DataSoure's `readEval()` and the Evaluation component first.
+This how-to tutorial would explain how you can also use `$pio eval` to persist predicted result for a batch of queries. Please read the [Evaluation](/templates/recommendation/evaluation/) to understand the usage of DataSource's `readEval()` and the Evaluation component first.
 
 WARNING: This tutorial is based on some experimental and developer features, which may be changed in future release.
 
@@ -70,7 +70,7 @@ NOTE: Alternatively, you can create a new DataSource extending original DataSour
 
 ## 2. Add a new Evaluator
 
-Create a new file `BatchPersistableEvaluator.scala`. Unlike the `MetricEvaluator`, this Evaluator simply writes the Query and correpsonding PredictedResult to the output directory without performaning any metrics calculation.
+Create a new file `BatchPersistableEvaluator.scala`. Unlike the `MetricEvaluator`, this Evaluator simply writes the Query and corresponding PredictedResult to the output directory without performing any metrics calculation.
 
 Note that output directory is specified by the variable `outputDir`.
 
