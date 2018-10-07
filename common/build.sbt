@@ -22,7 +22,6 @@ name := "apache-predictionio-common"
 libraryDependencies ++= Seq(
   "io.spray"          %% "spray-can"     % "1.3.3",
   "io.spray"          %% "spray-routing" % "1.3.3",
-  "org.apache.commons" % "commons-lang3" % "3.5",
   "com.typesafe.akka" %% "akka-actor"    % akkaVersion.value,
   "com.typesafe.akka" %% "akka-slf4j"    % akkaVersion.value)
 
