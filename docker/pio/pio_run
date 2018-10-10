@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+. /etc/predictionio/pio-env.sh
+
+# check elasticsearch status
+if [ x"$PIO_STORAGE_SOURCES_ELASTICSEARCH_TYPE" != "x" ] ; then
+  RET=-1
+  COUNT=0
+  ES_HOST=`echo $PIO_STORAGE_SOURCES_ELASTICSEARCH_HOSTS | sed -e "s/,.*//"`
+  ES_PORT=`echo $PIO_STORAGE_SOURCES_ELASTICSEARCH_PORTS | sed -e "s/,.*//"`
+  # Wait for elasticsearch startup
+  while [ $RET != 0 -a $COUNT -lt 10 ] ; do
+    echo "Waiting for ${ES_HOST}..."
+    curl --connect-timeout 60 --retry 10 -s "$ES_HOST:$ES_PORT/_cluster/health?wait_for_status=green&timeout=1m"
+    RET=$?
+    COUNT=`expr $COUNT + 1`
+    sleep 1
+  done
+fi
+
+# check mysql jar file
+if [ x"$PIO_STORAGE_SOURCES_MYSQL_TYPE" != "x" ] ; then
+  MYSQL_JAR_FILE=$PIO_HOME/lib/mysql-connector-java-$MYSQL_VERSION.jar
+  if [ ! -f $MYSQL_JAR_FILE ] ; then
+    curl -o $MYSQL_JAR_FILE http://central.maven.org/maven2/mysql/mysql-connector-java/$MYSQL_VERSION/mysql-connector-java-$MYSQL_VERSION.jar
+  fi
+fi
+
+# Check PIO status
+RET=-1
+COUNT=0
+while [ $RET != 0 -a $COUNT -lt 10 ] ; do
+  echo "Waiting for PredictionIO..."
+  $PIO_HOME/bin/pio status
+  RET=$?
+  COUNT=`expr $COUNT + 1`
+  sleep 1
+done
+
+
+if [ x"$PIO_RUN_FILE" != "x" ] ; then
+  sh $PIO_RUN_FILE
+else
+  # Start PIO Event Server
+  $PIO_HOME/bin/pio eventserver
+fi
+

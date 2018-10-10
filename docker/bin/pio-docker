@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+BASE_WORK_DIR=/templates
+CURRENT_DIR=`pwd`
+
+get_container_id() {
+  if [ x"$PIO_CONTAINER_ID" != "x" ] ; then
+    echo $PIO_CONTAINER_ID
+    return
+  fi
+  for i in `docker ps -f "name=pio" -q` ; do
+    echo $i
+    return
+  done
+}
+
+get_current_dir() {
+  if [ x"$PIO_CURRENT_DIR" != "x" ] ; then
+    echo $PIO_CURRENT_DIR
+    return
+  fi
+  D=`echo $CURRENT_DIR | sed -e "s,.*$BASE_WORK_DIR,$BASE_WORK_DIR,"`
+  if [[ $D = $BASE_WORK_DIR* ]] ; then
+    echo $D
+  else
+    echo $BASE_WORK_DIR
+  fi
+}
+
+cid=`get_container_id`
+if [ x"$cid" = "x" ] ; then
+  echo "Docker Container is not found."
+  exit 1
+fi
+
+wdir=`get_current_dir`
+
+docker exec -w $wdir -it $cid pio $@
+
