@@ -17,22 +17,20 @@
 
 package org.apache.predictionio.data.api
 
-import akka.actor.{ActorRef, ActorSystem, Props}
-import akka.testkit.TestProbe
+import akka.event.Logging
+import akka.http.scaladsl.model.ContentTypes
+import akka.http.scaladsl.model.headers.RawHeader
+import akka.http.scaladsl.server.Route
 import org.apache.predictionio.data.storage._
 import org.joda.time.DateTime
-import org.scalamock.specs2.MockContext
 import org.specs2.mutable.Specification
-import spray.http.HttpHeaders.RawHeader
-import spray.http.{ContentTypes, HttpEntity, HttpResponse}
-import spray.httpx.RequestBuilding._
 import sun.misc.BASE64Encoder
+import akka.http.scaladsl.testkit.Specs2RouteTest
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class SegmentIOAuthSpec extends Specification {
+class SegmentIOAuthSpec extends Specification with Specs2RouteTest {
 
-  val system = ActorSystem("EventServiceSpecSystem")
   sequential
   isolated
   val eventClient = new LEvents {
@@ -74,75 +72,51 @@ class SegmentIOAuthSpec extends Specification {
 
     override def get(k: String): Option[AccessKey] =
       k match {
-        case "abc" ⇒ Some(AccessKey(k, appId, Seq.empty))
-        case _ ⇒ None
+        case "abc" => Some(AccessKey(k, appId, Seq.empty))
+        case _ => None
       }
   }
 
-  val base64Encoder = new BASE64Encoder
+  val channelsClient = Storage.getMetaDataChannels()
 
-  def createEventServiceActor(): ActorRef = {
-    val channelsClient = Storage.getMetaDataChannels()
-    system.actorOf(
-      Props(
-        new EventServiceActor(
-          eventClient,
-          accessKeysClient,
-          channelsClient,
-          EventServerConfig()
-        )
-      )
-    )
-  }
+  val statsActorRef = system.actorSelection("/user/StatsActor")
+  val pluginsActorRef = system.actorSelection("/user/PluginsActor")
+
+  val base64Encoder = new BASE64Encoder
+  val logger = Logging(system, getClass)
+  val config = EventServerConfig(ip = "0.0.0.0", port = 7070)
+
+  val route = EventServer.createRoute(
+    eventClient,
+    accessKeysClient,
+    channelsClient,
+    logger,
+    statsActorRef,
+    pluginsActorRef,
+    config
+  )
 
   "Event Service" should {
-
     "reject with CredentialsRejected with invalid credentials" in new StorageMockContext {
-      val eventServiceActor = createEventServiceActor
       val accessKey = "abc123:"
-      val probe = TestProbe()(system)
-      probe.send(
-        eventServiceActor,
-        Post("/webhooks/segmentio.json")
-          .withHeaders(
-            List(
-              RawHeader("Authorization", s"Basic $accessKey")
-            )
-          )
-      )
-      probe.expectMsg(
-        HttpResponse(
-          401,
-          HttpEntity(
-            contentType = ContentTypes.`application/json`,
-            string = """{"message":"Invalid accessKey."}"""
-          )
-        )
-      )
+      Post("/webhooks/segmentio.json")
+          .withHeaders(RawHeader("Authorization", s"Basic $accessKey")) ~> Route.seal(route) ~> check {
+        status.intValue() shouldEqual 401
+        responseAs[String] shouldEqual """{"message":"Invalid accessKey."}"""
+      }
       success
     }
+  }
 
     "reject with CredentialsMissed without credentials" in {
-      val eventServiceActor = createEventServiceActor
-      val probe = TestProbe()(system)
-      probe.send(
-        eventServiceActor,
-        Post("/webhooks/segmentio.json")
-      )
-      probe.expectMsg(
-        HttpResponse(
-          401,
-          HttpEntity(
-            contentType = ContentTypes.`application/json`,
-            string = """{"message":"Missing accessKey."}"""
-          )
-        )
-      )
+      Post("/webhooks/segmentio.json") ~> Route.seal(route) ~> check {
+        status.intValue() shouldEqual 401
+        responseAs[String] shouldEqual """{"message":"Missing accessKey."}"""
+      }
       success
     }
 
     "process SegmentIO identity request properly" in {
-      val eventServiceActor = createEventServiceActor
       val jsonReq =
         """
           |{
@@ -169,32 +143,15 @@ class SegmentIOAuthSpec extends Specification {
 
       val accessKey = "abc:"
       val accessKeyEncoded = base64Encoder.encodeBuffer(accessKey.getBytes)
-      val probe = TestProbe()(system)
-      probe.send(
-        eventServiceActor,
-        Post(
-          "/webhooks/segmentio.json",
-          HttpEntity(ContentTypes.`application/json`, jsonReq.getBytes)
-        ).withHeaders(
-            List(
-              RawHeader("Authorization", s"Basic $accessKeyEncoded")
-            )
-          )
-      )
-      probe.expectMsg(
-        HttpResponse(
-          201,
-          HttpEntity(
-            contentType = ContentTypes.`application/json`,
-            string = """{"eventId":"event_id"}"""
-          )
-        )
-      )
+      Post("/webhooks/segmentio.json")
+          .withHeaders(RawHeader("Authorization", s"Basic $accessKeyEncoded"))
+          .withEntity(ContentTypes.`application/json`, jsonReq) ~> route ~> check {
+        println(responseAs[String])
+        status.intValue() shouldEqual 201
+        responseAs[String] shouldEqual """{"eventId":"event_id"}"""
+      }
       success
-    }
   }
-
-  step(system.shutdown())
 }
 
 

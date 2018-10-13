@@ -15,19 +15,13 @@
  * limitations under the License.
  */
 
-
 package org.apache.predictionio.configuration
-
-/**
-  * Created by ykhodorkovsky on 2/26/16.
-  */
 
 import java.io.FileInputStream
 import java.security.KeyStore
-import javax.net.ssl.{KeyManagerFactory, SSLContext, TrustManagerFactory}
 
 import com.typesafe.config.ConfigFactory
-import spray.io.ServerSSLEngineProvider
+import javax.net.ssl.{KeyManagerFactory, SSLContext, TrustManagerFactory}
 
 trait SSLConfiguration {
 
@@ -39,7 +33,6 @@ trait SSLConfiguration {
   private val keyAlias = serverConfig.getString("org.apache.predictionio.server.ssl-key-alias")
 
   private val keyStore = {
-
     // Loading keystore from specified file
     val clientStore = KeyStore.getInstance("JKS")
     val inputStream = new FileInputStream(
@@ -50,7 +43,7 @@ trait SSLConfiguration {
   }
 
   // Creating SSL context
-  implicit def sslContext: SSLContext = {
+  def sslContext: SSLContext = {
     val context = SSLContext.getInstance("TLS")
     val tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm)
     val kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm)
@@ -60,15 +53,4 @@ trait SSLConfiguration {
     context
   }
 
-  // provide implicit SSLEngine with some protocols
-  implicit def sslEngineProvider: ServerSSLEngineProvider = {
-    ServerSSLEngineProvider { engine =>
-      engine.setEnabledCipherSuites(Array(
-        "TLS_RSA_WITH_AES_256_CBC_SHA",
-        "TLS_ECDH_ECDSA_WITH_RC4_128_SHA",
-        "TLS_RSA_WITH_AES_128_CBC_SHA"))
-      engine.setEnabledProtocols(Array("TLSv1", "TLSv1.2", "TLSv1.1"))
-      engine
-    }
-  }
 }

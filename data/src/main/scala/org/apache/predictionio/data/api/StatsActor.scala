@@ -18,9 +18,8 @@
 
 package org.apache.predictionio.data.api
 
+import akka.http.scaladsl.model.StatusCode
 import org.apache.predictionio.data.storage.Event
-
-import spray.http.StatusCode
 
 import akka.actor.Actor
 import akka.event.Logging
