@@ -38,7 +38,7 @@ import org.json4s.ext.JodaTimeSerializers
 import grizzled.slf4j.Logging
 import org.apache.http.message.BasicHeader
 
-class ESLEvents(val client: RestClient, config: StorageClientConfig, val index: String)
+class ESLEvents(val client: RestClient, config: StorageClientConfig, val baseIndex: String)
     extends LEvents with Logging {
   implicit val formats = DefaultFormats.lossless ++ JodaTimeSerializers.all
 
@@ -52,6 +52,7 @@ class ESLEvents(val client: RestClient, config: StorageClientConfig, val index: 
 
   override def init(appId: Int, channelId: Option[Int] = None): Boolean = {
     val estype = getEsType(appId, channelId)
+    val index = baseIndex + "_" + estype
     ESUtils.createIndex(client, index,
       ESUtils.getNumberOfShards(config, index.toUpperCase),
       ESUtils.getNumberOfReplicas(config, index.toUpperCase))
@@ -77,6 +78,7 @@ class ESLEvents(val client: RestClient, config: StorageClientConfig, val index: 
 
   override def remove(appId: Int, channelId: Option[Int] = None): Boolean = {
     val estype = getEsType(appId, channelId)
+    val index = baseIndex + "_" + estype
     try {
       val json =
         ("query" ->
@@ -107,6 +109,7 @@ class ESLEvents(val client: RestClient, config: StorageClientConfig, val index: 
     channelId: Option[Int])(implicit ec: ExecutionContext): Future[String] = {
     Future {
       val estype = getEsType(appId, channelId)
+      val index = baseIndex + "_" + estype
       try {
         val id = event.eventId.getOrElse {
           ESEventsUtil.getBase64UUID
@@ -152,6 +155,7 @@ class ESLEvents(val client: RestClient, config: StorageClientConfig, val index: 
     channelId: Option[Int])(implicit ec: ExecutionContext): Future[Seq[String]] = {
     Future {
       val estype = getEsType(appId, channelId)
+      val index = baseIndex + "_" + estype
       try {
         val ids = events.map { event =>
           event.eventId.getOrElse(ESEventsUtil.getBase64UUID)
@@ -214,6 +218,7 @@ class ESLEvents(val client: RestClient, config: StorageClientConfig, val index: 
   }
 
   private def exists(client: RestClient, estype: String, id: Int): Boolean = {
+    val index = baseIndex + "_" + estype
     try {
       client.performRequest(
         "GET",
@@ -242,6 +247,7 @@ class ESLEvents(val client: RestClient, config: StorageClientConfig, val index: 
     channelId: Option[Int])(implicit ec: ExecutionContext): Future[Option[Event]] = {
     Future {
       val estype = getEsType(appId, channelId)
+      val index = baseIndex + "_" + estype
       try {
         val json =
           ("query" ->
@@ -275,6 +281,7 @@ class ESLEvents(val client: RestClient, config: StorageClientConfig, val index: 
     channelId: Option[Int])(implicit ec: ExecutionContext): Future[Boolean] = {
     Future {
       val estype = getEsType(appId, channelId)
+      val index = baseIndex + "_" + estype
       try {
         val json =
           ("query" ->
@@ -311,6 +318,7 @@ class ESLEvents(val client: RestClient, config: StorageClientConfig, val index: 
     (implicit ec: ExecutionContext): Future[Iterator[Event]] = {
     Future {
       val estype = getEsType(appId, channelId)
+      val index = baseIndex + "_" + estype
       try {
         val query = ESUtils.createEventQuery(
           startTime, untilTime, entityType, entityId,
