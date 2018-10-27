@@ -19,19 +19,19 @@ import PIOBuild._
 lazy val scalaSparkDepsVersion = Map(
   "2.11" -> Map(
     "2.0" -> Map(
-      "akka" -> "2.4.20",
+      "akka" -> "2.5.16",
       "hadoop" -> "2.7.7",
       "json4s" -> "3.2.11"),
     "2.1" -> Map(
-      "akka" -> "2.4.20",
+      "akka" -> "2.5.17",
       "hadoop" -> "2.7.7",
       "json4s" -> "3.2.11"),
     "2.2" -> Map(
-      "akka" -> "2.4.20",
+      "akka" -> "2.5.17",
       "hadoop" -> "2.7.7",
       "json4s" -> "3.2.11"),
     "2.3" -> Map(
-      "akka" -> "2.4.20",
+      "akka" -> "2.5.17",
       "hadoop" -> "2.7.7",
       "json4s" -> "3.2.11")))
 
@@ -277,7 +277,7 @@ pomExtra := {
   </parent>
   <scm>
     <connection>scm:git:github.com/apache/predictionio</connection>
-    <developerConnection>scm:git:https://gitbox-us.apache.org/repos/asf/predictionio.git</developerConnection>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/predictionio.git</developerConnection>
     <url>github.com/apache/predictionio</url>
   </scm>
   <developers>
