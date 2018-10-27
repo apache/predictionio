@@ -1669,7 +1669,7 @@ DAMAGE.
 --------------------------------------------------------------------------------
 Binary distribution bundles
 
-  com.jcraft # jsch # 0.1.42 (http://www.jcraft.com/jsch/)
+  com.jcraft # jsch # 0.1.54 (http://www.jcraft.com/jsch/)
 
   which is available under the BSD license (http://www.jcraft.com/jsch/LICENSE.txt)
   
