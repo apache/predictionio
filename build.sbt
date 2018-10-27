@@ -19,20 +19,20 @@ import PIOBuild._
 lazy val scalaSparkDepsVersion = Map(
   "2.11" -> Map(
     "2.0" -> Map(
-      "akka" -> "2.4.17",
-      "hadoop" -> "2.7.3",
+      "akka" -> "2.5.16",
+      "hadoop" -> "2.7.7",
       "json4s" -> "3.2.11"),
     "2.1" -> Map(
-      "akka" -> "2.4.17",
-      "hadoop" -> "2.7.3",
+      "akka" -> "2.5.17",
+      "hadoop" -> "2.7.7",
       "json4s" -> "3.2.11"),
     "2.2" -> Map(
-      "akka" -> "2.4.17",
-      "hadoop" -> "2.7.3",
+      "akka" -> "2.5.17",
+      "hadoop" -> "2.7.7",
       "json4s" -> "3.2.11"),
     "2.3" -> Map(
-      "akka" -> "2.4.17",
-      "hadoop" -> "2.7.3",
+      "akka" -> "2.5.17",
+      "hadoop" -> "2.7.7",
       "json4s" -> "3.2.11")))
 
 name := "apache-predictionio-parent"

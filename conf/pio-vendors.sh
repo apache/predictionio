@@ -28,7 +28,7 @@ if [ -z "$PIO_SPARK_VERSION" ]; then
 fi
 
 if [ -z "$PIO_HADOOP_VERSION" ]; then
-    PIO_HADOOP_VERSION="2.7.3"
+    PIO_HADOOP_VERSION="2.7.7"
 fi
 
 if [ -z "$PIO_ELASTICSEARCH_VERSION" ]; then

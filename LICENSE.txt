@@ -1356,8 +1356,6 @@ Binary distribution bundles
 Binary distribution bundles
 
   org.slf4j # slf4j-api # 1.7.25 (https://www.slf4j.org/)
-  org.slf4j # slf4j-api # 1.7.18 (https://www.slf4j.org/)
-  org.slf4j # slf4j-api # 1.7.16 (https://www.slf4j.org/)
   org.slf4j # slf4j-api # 1.7.10 (https://www.slf4j.org/)
   org.slf4j # slf4j-api # 1.7.2 (https://www.slf4j.org/)
   org.slf4j # slf4j-log4j12 # 1.7.18 (https://www.slf4j.org/)
@@ -1669,7 +1667,7 @@ DAMAGE.
 --------------------------------------------------------------------------------
 Binary distribution bundles
 
-  com.jcraft # jsch # 0.1.42 (http://www.jcraft.com/jsch/)
+  com.jcraft # jsch # 0.1.54 (http://www.jcraft.com/jsch/)
 
   which is available under the BSD license (http://www.jcraft.com/jsch/LICENSE.txt)
   
