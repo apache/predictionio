@@ -231,19 +231,39 @@ docker-compose -f docker-compose.yml \
 
 See `deploy/run.sh` and `docker-compose.deploy.yml` if changing a deployment.
 
+### Run with Jupyter
+
+You can launch PredictionIO with Jupyter.
+
+```
+docker-compose -f docker-compose.jupyter.yml \
+  -f pgsql/docker-compose.base.yml \
+  -f pgsql/docker-compose.meta.yml \
+  -f pgsql/docker-compose.event.yml \
+  -f pgsql/docker-compose.model.yml \
+  up
+```
+
+For more information, see [JUPYTER.md](./JUPYTER.md).
 
 ## Development
 
-### Build Docker Image
+### Build Base Docker Image
 
 ```
 docker build -t predictionio/pio pio
+```
+
+### Build Jupyter Docker Image
+
+```
+docker build -t predictionio/pio-jupyter jupyter
 ```
 
 ### Push Docker Image
 
 ```
 docker push predictionio/pio:latest
-docker tag predictionio/pio:latest predictionio/pio:$PIO\_VERSION
-docker push predictionio/pio:$PIO\_VERSION
+docker tag predictionio/pio:latest predictionio/pio:$PIO_VERSION
+docker push predictionio/pio:$PIO_VERSION
 ```
