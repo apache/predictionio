@@ -36,13 +36,7 @@ docker-compose -f docker-compose.jupyter.yml \
   up
 ```
 
-The above command prints a token to the console as below.
-
-```
-pio_1       |         http://(3aaf67361022 or 127.0.0.1):8888/?token=e87a634b4ab7e2c8bcd86aea9def3eb48183c043eac86f3e
-```
-
-Open `http://127.0.0.1:8888/`, type the token, and then open a new terminal in Jupyter from `New` pulldown button.
+Open `http://127.0.0.1:8888/` and then open a new terminal in Jupyter from `New` pulldown button.
 
 ## Getting Started With Scala Based Template
 

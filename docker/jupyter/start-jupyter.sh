@@ -30,8 +30,12 @@ fi
 sh /usr/bin/pio_run &
 
 export PYSPARK_PYTHON=$CONDA_DIR/bin/python
-export PYSPARK_DRIVER_PYTHON=$CONDA_DIR/bin/jupyter
-export PYSPARK_DRIVER_PYTHON_OPTS=notebook
+if [ x"$PYSPARK_DRIVER_PYTHON" = "x" ] ; then
+  export PYSPARK_DRIVER_PYTHON=$CONDA_DIR/bin/jupyter
+fi
+if [ x"$PYSPARK_DRIVER_PYTHON_OPTS" = "x" ] ; then
+  export PYSPARK_DRIVER_PYTHON_OPTS=notebook
+fi
 
 . /usr/local/bin/start.sh $PIO_HOME/bin/pio-shell --with-pyspark
 

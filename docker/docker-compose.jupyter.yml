@@ -28,4 +28,5 @@ services:
       - CHOWN_HOME=yes
       - GRANT_SUDO=yes
       - VOLUME_UID=yes
+      - "PYSPARK_DRIVER_PYTHON_OPTS=notebook --NotebookApp.token=''"
     dns: 8.8.8.8
