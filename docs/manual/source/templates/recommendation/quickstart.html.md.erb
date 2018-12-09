@@ -37,12 +37,12 @@ By default, the template requires the following events to be collected:
 - user 'rate' item events
 - user 'buy' item events
 
-NOTE: You can customize to use other event.
+NOTE: You can customize this engine to use other events.
 
 ### Input Query
 
 - user ID
-- num of recommended items
+- number of recommended items
 
 ### Output PredictedResult
 
@@ -67,7 +67,7 @@ Next, let's collect some training data. By default,
 the Recommendation Engine Template supports 2 types of events: **rate** and
 **buy**. A user can give a rating score to an item or buy an item. This template requires user-view-item and user-buy-item events.
 
-INFO: This template can easily be customized to consider more user events such as *like*, *dislike* etc.
+INFO: This template can easily be customized to consider more user events such as *like*, *dislike*, etc.
 
 <%= partial 'shared/quickstart/collect_data' %>
 
@@ -258,8 +258,8 @@ client.createEvent(buyEvent);
 
 <%= partial 'shared/quickstart/import_sample_data' %>
 
-A Python import script `import_eventserver.py` is provided in the template to import the data to
-Event Server using Python SDK. Please upgrade to the latest Python SDK.
+A Python import script `import_eventserver.py` is provided in the template to import the data to the
+Event Server using the Python SDK. Please upgrade to the latest Python SDK.
 
 <%= partial 'shared/quickstart/install_python_sdk' %>
 
@@ -284,7 +284,7 @@ Now the movie ratings data is stored as events inside the Event Store.
 
 <%= partial 'shared/quickstart/query_eventserver_short' %>
 
-INFO: By default, the template train the model with "rate" events (explicit rating). You can customize the engine to [read other custom events](/templates/recommendation/reading-custom-events/) and [handle events of implicit preference (such as, view, buy)](/templates/recommendation/training-with-implicit-preference/)
+INFO: By default, the template trains the model with "rate" events (explicit rating). You can customize the engine to [read other custom events](/templates/recommendation/reading-custom-events/) and [handle events of implicit preference (such as, view, buy)](/templates/recommendation/training-with-implicit-preference/)
 
 ## 5. Deploy the Engine as a Service
 
@@ -294,12 +294,12 @@ INFO: By default, the template train the model with "rate" events (explicit rati
 
 ## 6. Use the Engine
 
-Now, You can try to retrieve predicted results. To recommend 4 movies to user
+Now, you can try to retrieve predicted results. To recommend 4 movies to a user
 whose id is 1, you send this JSON `{ "user": "1", "num": 4 }` to the deployed
-engine and it will return a JSON of the recommended movies. Simply send a query
-by making a HTTP request or through the `EngineClient` of an SDK.
+engine and it will return a JSON result of the recommended movies. Simply send a query
+by making an HTTP request or through the `EngineClient` of an SDK.
 
-With the deployed engine running, open another terminal and run the following `curl` command or use SDK to send the query:
+With the deployed engine running, open another terminal and run the following `curl` command or use an SDK to send the query:
 
 <div class="tabs">
   <div data-tab="REST API" data-lang="json">
