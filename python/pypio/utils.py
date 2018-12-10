@@ -16,12 +16,38 @@
 #
 
 
-def new_string_array(list_data, gateway):
-    if list_data is None:
-        return None
-    string_class = gateway.jvm.String
-    args = gateway.new_array(string_class, len(list_data))
-    for i in range(len(list_data)):
-        args[i] = list_data[i]
-    return args
+def dict_to_scalamap(jvm, d):
+    """
+    Convert python dictionary to scala type map
 
+    :param jvm: sc._jvm
+    :param d: python type dictionary
+    """
+    if d is None:
+        return None
+    sm = jvm.scala.Predef.Map().empty()
+    for k, v in d.items():
+        sm = sm.updated(k, v)
+    return sm
+
+def list_to_dict(l):
+    """
+    Convert python list to python dictionary
+
+    :param l: python type list
+
+    >>> list = ["key1", 1, "key2", 2, "key3", 3]
+    >>> list_to_dict(list) == {'key1': 1, 'key2': 2, 'key3': 3}
+    True
+    """
+    if l is None:
+        return None
+    return dict(zip(l[0::2], l[1::2]))
+
+
+if __name__ == "__main__":
+    import doctest
+    import sys
+    (failure_count, test_count) = doctest.testmod()
+    if failure_count:
+        sys.exit(-1)
