@@ -18,7 +18,7 @@ import PIOBuild._
 
 name := "apache-predictionio-parent"
 
-version in ThisBuild := "0.14.0-SNAPSHOT"
+version in ThisBuild := "0.14.0"
 
 organization in ThisBuild := "org.apache.predictionio"
 
