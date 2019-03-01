@@ -60,7 +60,7 @@ for staging release candidates for voting.
 12. If you have updated the `KEYS` file, also copy that to the staging area.
 13. `svn commit -m "Apache PredictionIO 0.14.0-rc1"`
 14. Set up credentials with Apache Nexus using the SBT Sonatype plugin. Put this
-in `~/.sbt/0.13/sonatype.sbt`.
+in `~/.sbt/1.0/sonatype.sbt`.
 
   ```
   publishTo := {
