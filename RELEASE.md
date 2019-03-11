@@ -17,17 +17,59 @@ limitations under the License.
 
 # Release Notes and News
 
-**Note:** For upgrade instructions please refer to [this page](http://predictionio.apache.org/resources/upgrade/).
-
-## Deprecation Notice
-
-### 0.13.0
-
-- Support for Scala 2.10.x and Spark 1.x are now deprecated. The next non-patch
-  version of PredictionIO may no longer support them
-  ([PIO-158](https://issues.apache.org/jira/browse/PIO-158)).
+**Note:** For upgrade instructions please refer to [this page](https://predictionio.apache.org/resources/upgrade/).
 
 ## Version History
+
+### 0.14.0
+
+Mar 11, 2019
+
+#### Breaking changes
+
+- [PIO-168](https://issues.apache.org/jira/browse/PIO-168): Elasticsearch 6.x support (see the [pull request](https://github.com/apache/predictionio/pull/466))
+
+#### New Features
+
+- [PIO-183](https://issues.apache.org/jira/browse/PIO-183): Add Jupyter Docker image
+- [PIO-199](https://issues.apache.org/jira/browse/PIO-199): Spark 2.4 (Scala 2.11) support
+
+#### Behavior Changes
+
+- [PIO-31](https://issues.apache.org/jira/browse/PIO-31): Move from spray to akka-http in servers
+- [PIO-171](https://issues.apache.org/jira/browse/PIO-171): Drop Scala 2.10 and Spark 1.6 support
+- [PIO-175](https://issues.apache.org/jira/browse/PIO-175): Deprecation of Elasticsearch 1.x support
+- [PIO-179](https://issues.apache.org/jira/browse/PIO-179): bump up hbase client version and make it configurable
+- [PIO-192](https://issues.apache.org/jira/browse/PIO-192): Enhance PySpark support
+- [PIO-196](https://issues.apache.org/jira/browse/PIO-196): Use external PySpark environment variables in Jupyter Docker image
+
+#### Other Changes
+
+- [PIO-153](https://issues.apache.org/jira/browse/PIO-153): Allow use of GNU tar on non-GNU systems
+- [PIO-170](https://issues.apache.org/jira/browse/PIO-170): Upgrade sbt to 1.x
+- [PIO-176](https://issues.apache.org/jira/browse/PIO-176): Clean up unmanaged sources in the data module
+- [PIO-182](https://issues.apache.org/jira/browse/PIO-182): Add asynchronous (non-blocking) methods to LEventStore
+- [PIO-188](https://issues.apache.org/jira/browse/PIO-188): Update the build matrix to the latest supported versions
+- [PIO-189](https://issues.apache.org/jira/browse/PIO-189): ES6 integration test fails
+- [PIO-194](https://issues.apache.org/jira/browse/PIO-194): S3 Model Data Storage should allow more flexible ways for specifying AWS credentials
+- [PIO-203](https://issues.apache.org/jira/browse/PIO-203): pio status warnings
+- [PIO-205](https://issues.apache.org/jira/browse/PIO-205): Update Dockerfile to reflect new Spark version
+- [PIO-206](https://issues.apache.org/jira/browse/PIO-206): Spark 2.3.2 to 2.3.3
+
+#### Documentation
+
+- [PIO-172](https://issues.apache.org/jira/browse/PIO-172): Migration guide for ES 6.x changes
+- [PIO-180](https://issues.apache.org/jira/browse/PIO-180): Trivial LiveDoc Link Change in Readme
+- [PIO-185](https://issues.apache.org/jira/browse/PIO-185): Non-tracked Link in Apache Project page
+- [PIO-195](https://issues.apache.org/jira/browse/PIO-195): Improve readability and grammar of documentation
+
+#### Credits
+
+The following contributors have spent a great deal of effort to bring to you
+this release:
+
+Alexander Merritt, Chris Wewerka, Donald Szeto, Naoki Takezoe, Saurabh Gulati,
+Shinsuke Sugaya, Takako Shimamoto, Wei Chen, Yavor Stoychev
 
 ### 0.13.0
 
