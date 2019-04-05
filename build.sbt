@@ -45,9 +45,7 @@ hadoopVersion in ThisBuild := sys.props.getOrElse("hadoop.version", "2.7.7")
 
 akkaVersion in ThisBuild := sys.props.getOrElse("akka.version", "2.5.17")
 
-lazy val es = sys.props.getOrElse("elasticsearch.version", "5.6.9")
-
-elasticsearchVersion in ThisBuild := es
+elasticsearchVersion in ThisBuild := sys.props.getOrElse("elasticsearch.version", "5.6.9")
 
 hbaseVersion in ThisBuild := sys.props.getOrElse("hbase.version", "1.2.6")
 
@@ -71,10 +69,6 @@ val commonTestSettings = Seq(
   libraryDependencies ++= Seq(
     "org.postgresql"   % "postgresql"  % "9.4-1204-jdbc41" % "test",
     "org.scalikejdbc" %% "scalikejdbc" % "3.1.0" % "test"))
-
-val dataElasticsearch1 = (project in file("storage/elasticsearch1")).
-  settings(commonSettings: _*).
-  enablePlugins(GenJavadocPlugin)
 
 val dataElasticsearch = (project in file("storage/elasticsearch")).
   settings(commonSettings: _*)
@@ -145,19 +139,17 @@ val tools = (project in file("tools")).
   enablePlugins(GenJavadocPlugin).
   enablePlugins(SbtTwirl)
 
-val dataEs = if (majorVersion(es) == 1) dataElasticsearch1 else dataElasticsearch
-
-val storageSubprojects = Seq(
-    dataEs,
+val storageProjectReference = Seq(
+    dataElasticsearch,
     dataHbase,
     dataHdfs,
     dataJdbc,
     dataLocalfs,
-    dataS3)
+    dataS3) map Project.projectToRef
 
 val storage = (project in file("storage"))
   .settings(skip in publish := true)
-  .aggregate(storageSubprojects map Project.projectToRef: _*)
+  .aggregate(storageProjectReference: _*)
   .disablePlugins(sbtassembly.AssemblyPlugin)
 
 val assembly = (project in file("assembly")).
@@ -167,8 +159,8 @@ val root = (project in file(".")).
   settings(commonSettings: _*).
   enablePlugins(ScalaUnidocPlugin).
   settings(
-    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(dataElasticsearch, dataElasticsearch1),
-    unidocProjectFilter in (JavaUnidoc, unidoc) := inAnyProject -- inProjects(dataElasticsearch, dataElasticsearch1),
+    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(storageProjectReference: _*),
+    unidocProjectFilter in (JavaUnidoc, unidoc) := inAnyProject -- inProjects(storageProjectReference: _*),
     scalacOptions in (ScalaUnidoc, unidoc) ++= Seq(
       "-groups",
       "-skip-packages",
@@ -181,11 +173,6 @@ val root = (project in file(".")).
         "org.apache.predictionio.controller.java",
         "org.apache.predictionio.data.api",
         "org.apache.predictionio.data.storage.*",
-        "org.apache.predictionio.data.storage.hdfs",
-        "org.apache.predictionio.data.storage.jdbc",
-        "org.apache.predictionio.data.storage.localfs",
-        "org.apache.predictionio.data.storage.s3",
-        "org.apache.predictionio.data.storage.hbase",
         "org.apache.predictionio.data.view",
         "org.apache.predictionio.data.webhooks",
         "org.apache.predictionio.tools",
