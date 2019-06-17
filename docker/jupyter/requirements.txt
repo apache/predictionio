@@ -1,0 +1,14 @@
+cython
+google-cloud
+h5py
+ipywidgets
+jupyter_contrib_nbextensions
+keras
+matplotlib
+pandas
+pandas-gbq
+predictionio
+sklearn
+tensor2tensor
+tensorflow
+widgetsnbextension

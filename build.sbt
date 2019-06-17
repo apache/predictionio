@@ -37,7 +37,7 @@ lazy val scalaSparkDepsVersion = Map(
 
 name := "apache-predictionio-parent"
 
-version in ThisBuild := "0.14.0-SNAPSHOT"
+version in ThisBuild := "0.15.0-SNAPSHOT"
 
 organization in ThisBuild := "org.apache.predictionio"
 
@@ -60,23 +60,20 @@ sparkVersion in ThisBuild := sys.props.getOrElse("spark.version", "2.1.3")
 
 sparkBinaryVersion in ThisBuild := binaryVersion(sparkVersion.value)
 
-akkaVersion in ThisBuild := sys.props.getOrElse(
-  "akka.version",
-  scalaSparkDepsVersion(scalaBinaryVersion.value)(sparkBinaryVersion.value)("akka"))
+hadoopVersion in ThisBuild := sys.props.getOrElse("hadoop.version", "2.7.7")
 
-lazy val es = sys.props.getOrElse("elasticsearch.version", "5.6.9")
+akkaVersion in ThisBuild := sys.props.getOrElse("akka.version", "2.5.17")
 
-elasticsearchVersion in ThisBuild := es
+elasticsearchVersion in ThisBuild := sys.props.getOrElse("elasticsearch.version", "5.6.9")
 
-lazy val hbase = sys.props.getOrElse("hbase.version", "1.2.6")
+hbaseVersion in ThisBuild := sys.props.getOrElse("hbase.version", "1.2.6")
 
-hbaseVersion in ThisBuild := hbase
-
-json4sVersion in ThisBuild := scalaSparkDepsVersion(scalaBinaryVersion.value)(sparkBinaryVersion.value)("json4s")
-
-hadoopVersion in ThisBuild := sys.props.getOrElse(
-  "hadoop.version",
-  scalaSparkDepsVersion(scalaBinaryVersion.value)(sparkBinaryVersion.value)("hadoop"))
+json4sVersion in ThisBuild := {
+  sparkBinaryVersion.value match {
+    case "2.0" | "2.1" | "2.2" | "2.3" => "3.2.11"
+    case "2.4" => "3.5.3"
+  }
+}
 
 val conf = file("conf")
 
@@ -91,10 +88,6 @@ val commonTestSettings = Seq(
   libraryDependencies ++= Seq(
     "org.postgresql"   % "postgresql"  % "9.4-1204-jdbc41" % "test",
     "org.scalikejdbc" %% "scalikejdbc" % "3.1.0" % "test"))
-
-val dataElasticsearch1 = (project in file("storage/elasticsearch1")).
-  settings(commonSettings: _*).
-  enablePlugins(GenJavadocPlugin)
 
 val dataElasticsearch = (project in file("storage/elasticsearch")).
   settings(commonSettings: _*)
@@ -151,33 +144,31 @@ val core = (project in file("core")).
   enablePlugins(SbtTwirl).
   disablePlugins(sbtassembly.AssemblyPlugin)
 
-val tools = (project in file("tools")).
+val e2 = (project in file("e2")).
   dependsOn(core).
-  dependsOn(data).
+  settings(commonSettings: _*).
+  enablePlugins(GenJavadocPlugin).
+  disablePlugins(sbtassembly.AssemblyPlugin)
+
+val tools = (project in file("tools")).
+  dependsOn(e2).
   settings(commonSettings: _*).
   settings(commonTestSettings: _*).
   settings(skip in publish := true).
   enablePlugins(GenJavadocPlugin).
   enablePlugins(SbtTwirl)
 
-val e2 = (project in file("e2")).
-  settings(commonSettings: _*).
-  enablePlugins(GenJavadocPlugin).
-  disablePlugins(sbtassembly.AssemblyPlugin)
-
-val dataEs = if (majorVersion(es) == 1) dataElasticsearch1 else dataElasticsearch
-
-val storageSubprojects = Seq(
-    dataEs,
+val storageProjectReference = Seq(
+    dataElasticsearch,
     dataHbase,
     dataHdfs,
     dataJdbc,
     dataLocalfs,
-    dataS3)
+    dataS3) map Project.projectToRef
 
 val storage = (project in file("storage"))
   .settings(skip in publish := true)
-  .aggregate(storageSubprojects map Project.projectToRef: _*)
+  .aggregate(storageProjectReference: _*)
   .disablePlugins(sbtassembly.AssemblyPlugin)
 
 val assembly = (project in file("assembly")).
@@ -187,9 +178,8 @@ val root = (project in file(".")).
   settings(commonSettings: _*).
   enablePlugins(ScalaUnidocPlugin).
   settings(
-    skip in publish := true,
-    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(dataElasticsearch, dataElasticsearch1),
-    unidocProjectFilter in (JavaUnidoc, unidoc) := inAnyProject -- inProjects(dataElasticsearch, dataElasticsearch1),
+    unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(storageProjectReference: _*),
+    unidocProjectFilter in (JavaUnidoc, unidoc) := inAnyProject -- inProjects(storageProjectReference: _*),
     scalacOptions in (ScalaUnidoc, unidoc) ++= Seq(
       "-groups",
       "-skip-packages",
@@ -202,11 +192,6 @@ val root = (project in file(".")).
         "org.apache.predictionio.controller.java",
         "org.apache.predictionio.data.api",
         "org.apache.predictionio.data.storage.*",
-        "org.apache.predictionio.data.storage.hdfs",
-        "org.apache.predictionio.data.storage.jdbc",
-        "org.apache.predictionio.data.storage.localfs",
-        "org.apache.predictionio.data.storage.s3",
-        "org.apache.predictionio.data.storage.hbase",
         "org.apache.predictionio.data.view",
         "org.apache.predictionio.data.webhooks",
         "org.apache.predictionio.tools",

@@ -20,7 +20,7 @@ FROM openjdk:8
 ARG PIO_GIT_URL=https://github.com/apache/predictionio.git
 ARG PIO_TAG=v0.13.0
 ENV SCALA_VERSION=2.11.12
-ENV SPARK_VERSION=2.2.2
+ENV SPARK_VERSION=2.2.3
 ENV HADOOP_VERSION=2.7.7
 ENV ELASTICSEARCH_VERSION=5.5.3
 ENV PGSQL_VERSION=42.2.4
@@ -42,6 +42,8 @@ RUN bash ./make-distribution.sh \
       -Delasticsearch.version=$ELASTICSEARCH_VERSION \
       --with-deb && \
     dpkg -i ./assembly/target/predictionio_*.deb && \
+    cp -r ./python /usr/share/predictionio && \
+    mkdir /var/log/predictionio && \
     rm -rf /opt/src/predictionio/*
 
 
@@ -54,7 +56,7 @@ RUN curl -o $PIO_HOME/lib/postgresql-$PGSQL_VERSION.jar \
 
 WORKDIR /usr/share
 RUN curl -o /opt/src/spark-$SPARK_VERSION.tgz \
-    http://www-us.apache.org/dist/spark/spark-$SPARK_VERSION/spark-$SPARK_VERSION-bin-hadoop2.7.tgz && \
+    http://archive.apache.org/dist/spark/spark-$SPARK_VERSION/spark-$SPARK_VERSION-bin-hadoop2.7.tgz && \
     tar zxvf /opt/src/spark-$SPARK_VERSION.tgz && \
     echo "SPARK_HOME="`pwd`/`ls -d spark*` >> /etc/predictionio/pio-env.sh && \
     rm -rf /opt/src
